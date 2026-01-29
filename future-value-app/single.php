@@ -1,13 +1,24 @@
 <?php
 require_once __DIR__ . '/_includes/header.php';
 
+require_once __DIR__ . '/_includes/functions.php';
+
+// If PHP error display is off, force it on locally for troubleshooting
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+error_reporting(E_ALL);
+
+if (!function_exists('future_value') || !function_exists('present_value')) {
+    die('ERROR: Calculator functions not loaded.');
+}
+
 $result = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $type  = $_POST['type'];
-    $amount = (float) $_POST['amount'];
-    $rate   = (float) $_POST['rate'] / 100;
-    $years  = (int) $_POST['years'];
+    $type   = $_POST['type'] ?? 'fv';
+    $amount = (float) ($_POST['amount'] ?? 0);
+    $rate   = (float) ($_POST['rate'] ?? 0) / 100;
+    $years  = (int) ($_POST['years'] ?? 0);
 
     if ($type === 'pv') {
         $result = present_value($amount, $rate, $years);
@@ -62,9 +73,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h3>Result</h3>
     <p><strong><?php echo number_format($result, 2); ?></strong></p>
 <?php endif; ?>
-
-<p>
-    <a href="index.php">← Back to Future Value App</a>
-</p>
 
 <?php require_once __DIR__ . '/_includes/footer.php'; ?>

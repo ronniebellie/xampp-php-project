@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/_includes/header.php';
+require_once __DIR__ . '/_includes/functions.php';
 
 $result = null;
 
@@ -16,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $rate_num    = ((float) $rate_pct) / 100;
     $years_num   = (int) $years;
 
-    if ($years_num > 0 && $rate_num > 0) {
+    if ($years_num > 0) {
         $result = future_value_annuity($payment_num, $rate_num, $years_num);
     }
 }

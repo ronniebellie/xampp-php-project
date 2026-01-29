@@ -1,5 +1,13 @@
 <?php
+// Debug mode (only when ?debug=1 is present)
+if (isset($_GET['debug']) && $_GET['debug'] === '1') {
+    ini_set('display_errors', '1');
+    ini_set('display_startup_errors', '1');
+    error_reporting(E_ALL);
+}
+
 require_once __DIR__ . '/_includes/header.php';
+require_once __DIR__ . '/_includes/functions.php';
 
 $result = null;
 
@@ -19,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $years_num     = (int) $years;
     $present_num   = (float) $present;
 
-    if ($years_num > 0 && $rate_num > 0) {
+    if ($years_num > 0) {
         $result = required_payment_for_target($target_fv_num, $rate_num, $years_num, $present_num);
     }
 }
@@ -72,6 +80,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <a href="index.php">← Back to Future Value App</a>
 </p>
 
-<?php
-require_once __DIR__ . '/_includes/footer.php';
-?>
+<?php require_once __DIR__ . '/_includes/footer.php'; ?>
