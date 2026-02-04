@@ -42,7 +42,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-            padding: 10px 12px;
+            padding: 14px 16px;
             border: 1px solid var(--border);
             background: rgba(255,255,255,0.04);
             border-radius: var(--radius);
@@ -57,8 +57,8 @@
         }
 
         .mark {
-            width: 34px;
-            height: 34px;
+            width: 40px;
+            height: 40px;
             border-radius: 12px;
             border: 1px solid var(--border);
             background: linear-gradient(135deg, rgba(96,165,250,0.20), rgba(167,139,250,0.18));
@@ -71,8 +71,8 @@
         }
 
         .brand-title {
-            font-size: 14px;
-            font-weight: 750;
+            font-size: 18px;
+            font-weight: 800;
             letter-spacing: -0.01em;
             white-space: nowrap;
             overflow: hidden;
@@ -80,7 +80,7 @@
         }
 
         .brand-sub {
-            font-size: 12px;
+            font-size: 13px;
             color: var(--muted);
             margin-top: 1px;
             white-space: nowrap;
@@ -108,27 +108,44 @@
             background: rgba(255,255,255,0.06);
         }
 
+        /* Hero + buttons (finance/tech look) */
         .hero {
             margin-top: 16px;
             border: 1px solid var(--border);
             background: rgba(255,255,255,0.05);
             border-radius: calc(var(--radius) + 6px);
             box-shadow: var(--shadow);
-            padding: 18px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(900px 500px at 15% 15%, rgba(96,165,250,0.22), transparent 60%),
+                radial-gradient(900px 520px at 90% 10%, rgba(167,139,250,0.20), transparent 60%),
+                repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 34px),
+                repeating-linear-gradient(0deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 34px);
+            opacity: 0.35;
+            pointer-events: none;
         }
 
         .hero-inner {
+            position: relative;
             display: grid;
             grid-template-columns: 1fr;
-            gap: 16px;
+            gap: 18px;
+            padding: 18px;
             align-items: center;
         }
 
         @media (min-width: 860px) {
-            .hero-inner { grid-template-columns: 1.5fr 0.9fr; }
+            .hero-inner { grid-template-columns: 1.2fr 0.8fr; }
         }
 
-        h1 {
+        .hero h1 {
             margin: 0;
             font-size: 34px;
             letter-spacing: -0.03em;
@@ -138,7 +155,7 @@
         .lead {
             margin: 10px 0 0;
             color: var(--muted);
-            max-width: 70ch;
+            max-width: 62ch;
         }
 
         .cta {
@@ -166,18 +183,26 @@
             background: rgba(255,255,255,0.05);
         }
 
-        .avatar {
-            display: grid;
-            place-items: center;
+        .hero-art {
+            height: 220px;
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background:
+                radial-gradient(600px 300px at 30% 30%, rgba(96,165,250,0.22), transparent 55%),
+                radial-gradient(600px 340px at 80% 20%, rgba(167,139,250,0.20), transparent 55%),
+                linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+            position: relative;
+            overflow: hidden;
         }
 
-        .avatar img {
-            width: min(240px, 70vw);
-            height: auto;
-            border-radius: 22px;
-            border: 1px solid var(--border);
-            background: rgba(255,255,255,0.04);
-            box-shadow: 0 10px 26px rgba(0,0,0,0.35);
+        .hero-art::before {
+            content: "";
+            position: absolute;
+            inset: -10px;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='900' height='420' viewBox='0 0 900 420'><g fill='none' stroke='rgba(255,255,255,0.20)' stroke-width='2'><path d='M60 300 C170 265, 220 330, 320 285 S520 235, 610 255 S760 220, 840 185'/></g><g fill='rgba(255,255,255,0.55)'><circle cx='60' cy='300' r='4'/><circle cx='170' cy='270' r='4'/><circle cx='320' cy='285' r='4'/><circle cx='520' cy='240' r='4'/><circle cx='610' cy='255' r='4'/><circle cx='760' cy='220' r='4'/><circle cx='840' cy='185' r='4'/></g><g opacity='0.10' stroke='rgba(255,255,255,0.8)'><path d='M50 350 H850'/><path d='M50 310 H850'/><path d='M50 270 H850'/><path d='M50 230 H850'/><path d='M50 190 H850'/><path d='M50 150 H850'/></g></svg>");
+            background-size: cover;
+            background-position: center;
+            opacity: 0.55;
         }
 
         .section {
@@ -268,25 +293,23 @@
             </div>
         </div>
 
-        <section class="hero" aria-label="Intro">
+        <section class="hero" aria-label="Overview">
             <div class="hero-inner">
-                <div>
-                    <h1>Ron’s Homepage</h1>
-                    <p class="lead">A simple landing page that will grow over time as new calculators and web apps are added.</p>
+                <div class="hero-copy">
+                    <h1>Tools for long-term money decisions</h1>
+                    <p class="lead">Social Security, retirement income, and time-value calculators—built for clarity and real planning.</p>
                     <div class="cta">
                         <a class="btn" href="#apps">Browse apps</a>
-                        <a class="btn secondary" href="time-value-of-money/">Time Value of Money</a>
+                        <a class="btn secondary" href="social-security-claiming-analyzer/">Social Security Analyzer</a>
                     </div>
                 </div>
-                <div class="avatar">
-                    <img src="img/ron-avatar.jpeg" alt="Ron avatar">
-                </div>
+                <div class="hero-art" aria-hidden="true"></div>
             </div>
         </section>
 
         <div class="section" id="apps">
             <h2>Apps</h2>
-            <p class="hint">More links will be added as we build new tools.</p>
+            <p class="hint">More links will be added as new ones are developed.</p>
         </div>
 
         <main class="grid" aria-label="App links">
@@ -310,8 +333,12 @@
         </main>
 
         <footer>
+            <p class="small">© <span id="y"></span> Ron Belisle</p>
         </footer>
 
     </div>
+    <script>
+        document.getElementById('y').textContent = new Date().getFullYear();
+    </script>
 </body>
 </html>
