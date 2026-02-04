@@ -2,18 +2,315 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Ron’s Homepage</title>
-    <link rel="stylesheet" href="future-value-app/css/styles.css">
+    <style>
+        :root {
+            --max: 980px;
+            --bg: #0b1220;
+            --surface: rgba(255,255,255,0.06);
+            --surface2: rgba(255,255,255,0.09);
+            --text: #e5e7eb;
+            --muted: rgba(229,231,235,0.75);
+            --border: rgba(255,255,255,0.14);
+            --accent: #60a5fa;
+            --accent2: #a78bfa;
+            --shadow: 0 14px 40px rgba(0,0,0,0.35);
+            --radius: 16px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(900px 500px at 20% 0%, rgba(96,165,250,0.22), transparent 55%),
+                radial-gradient(900px 520px at 85% 10%, rgba(167,139,250,0.20), transparent 60%),
+                var(--bg);
+        }
+
+        .wrap {
+            max-width: var(--max);
+            margin: 0 auto;
+            padding: 24px 18px 44px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.04);
+            border-radius: var(--radius);
+            backdrop-filter: blur(10px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .mark {
+            width: 34px;
+            height: 34px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: linear-gradient(135deg, rgba(96,165,250,0.20), rgba(167,139,250,0.18));
+            display: grid;
+            place-items: center;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text);
+            flex: 0 0 auto;
+        }
+
+        .brand-title {
+            font-size: 14px;
+            font-weight: 750;
+            letter-spacing: -0.01em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .brand-sub {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .nav {
+            display: flex;
+            gap: 8px;
+            flex: 0 0 auto;
+        }
+
+        .nav a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 650;
+            padding: 8px 10px;
+            border-radius: 12px;
+        }
+
+        .nav a:hover {
+            color: var(--text);
+            background: rgba(255,255,255,0.06);
+        }
+
+        .hero {
+            margin-top: 16px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.05);
+            border-radius: calc(var(--radius) + 6px);
+            box-shadow: var(--shadow);
+            padding: 18px;
+        }
+
+        .hero-inner {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            align-items: center;
+        }
+
+        @media (min-width: 860px) {
+            .hero-inner { grid-template-columns: 1.5fr 0.9fr; }
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 34px;
+            letter-spacing: -0.03em;
+            line-height: 1.12;
+        }
+
+        .lead {
+            margin: 10px 0 0;
+            color: var(--muted);
+            max-width: 70ch;
+        }
+
+        .cta {
+            margin-top: 14px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            text-decoration: none;
+            font-weight: 750;
+            font-size: 14px;
+            padding: 10px 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.14);
+            background: linear-gradient(135deg, rgba(96,165,250,0.25), rgba(167,139,250,0.20));
+            color: var(--text);
+        }
+
+        .btn:hover { background: rgba(255,255,255,0.08); }
+
+        .btn.secondary {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .avatar {
+            display: grid;
+            place-items: center;
+        }
+
+        .avatar img {
+            width: min(240px, 70vw);
+            height: auto;
+            border-radius: 22px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.04);
+            box-shadow: 0 10px 26px rgba(0,0,0,0.35);
+        }
+
+        .section {
+            margin-top: 18px;
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 6px 4px 0;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 18px;
+            letter-spacing: -0.01em;
+        }
+
+        .hint {
+            margin: 0;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 14px;
+        }
+
+        @media (min-width: 720px) {
+            .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        .card {
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.05);
+            border-radius: var(--radius);
+            padding: 16px;
+            transition: transform 120ms ease, background 120ms ease;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 160px;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            background: rgba(255,255,255,0.07);
+        }
+
+        .card h3 {
+            margin: 0;
+            font-size: 16px;
+            letter-spacing: -0.01em;
+        }
+
+        .card p {
+            margin: 0;
+            color: var(--muted);
+            flex: 1;
+        }
+
+        footer {
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .small {
+            margin: 0;
+        }
+    </style>
 </head>
 <body>
-    <h1>Ron’s Homepage</h1>
+    <div class="wrap">
 
-    <p>
-        <a href="retirement-app/">Retirement Income Projection</a>
-    </p>
+        <div class="topbar" role="banner">
+            <div class="brand">
+                <div class="mark" aria-hidden="true">RB</div>
+                <div>
+                    <div class="brand-title">Ron Belisle</div>
+                    <div class="brand-sub">Personal tools and web apps</div>
+                </div>
+            </div>
+            <div class="nav">
+                <a href="#apps">Apps</a>
+                <a href="retirement-app/">Retirement</a>
+                <a href="time-value-of-money/">TVM</a>
+            </div>
+        </div>
 
-    <p>
-        <a href="time-value-of-money/">Time Value of Money</a>
-    </p>
+        <section class="hero" aria-label="Intro">
+            <div class="hero-inner">
+                <div>
+                    <h1>Ron’s Homepage</h1>
+                    <p class="lead">A simple landing page that will grow over time as new calculators and web apps are added.</p>
+                    <div class="cta">
+                        <a class="btn" href="#apps">Browse apps</a>
+                        <a class="btn secondary" href="time-value-of-money/">Time Value of Money</a>
+                    </div>
+                </div>
+                <div class="avatar">
+                    <img src="img/ron-avatar.jpeg" alt="Ron avatar">
+                </div>
+            </div>
+        </section>
+
+        <div class="section" id="apps">
+            <h2>Apps</h2>
+            <p class="hint">More links will be added as we build new tools.</p>
+        </div>
+
+        <main class="grid" aria-label="App links">
+            <section class="card">
+                <h3>Retirement Income Projection</h3>
+                <p>Model Social Security, portfolio withdrawals, and retirement income scenarios.</p>
+                <a class="btn" href="retirement-app/">Open</a>
+            </section>
+
+            <section class="card">
+                <h3>Time Value of Money</h3>
+                <p>Quick calculators for future value, present value, annuities, and loan math.</p>
+                <a class="btn" href="time-value-of-money/">Open</a>
+            </section>
+        </main>
+
+        <footer>
+        </footer>
+
+    </div>
 </body>
 </html>
