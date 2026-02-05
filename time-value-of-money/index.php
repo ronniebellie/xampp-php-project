@@ -148,17 +148,49 @@ function h(string $value): string {
             background: var(--link-hover);
         }
 
-        footer {
+        footer.site-footer {
             margin-top: 22px;
             padding-top: 14px;
             border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 14px;
             color: var(--muted);
             font-size: 13px;
         }
 
-        .note {
-            margin: 0;
+        .donate-text {
+            max-width: 52ch;
         }
+
+        a.donate-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            padding: 9px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: #f3f4f6;
+            color: var(--text);
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        a.donate-btn:hover {
+            background: #e5e7eb;
+        }
+
+        .donate-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            background: #93c5fd;
+            display: inline-block;
+        }
+
     </style>
 </head>
 <body>
@@ -180,9 +212,14 @@ function h(string $value): string {
         <?php endforeach; ?>
     </main>
 
-    <footer>
-        <p class="note">Tip: If a link 404s, create the folder shown in its path (for example, <code>future-value/</code>) and add that calculator’s <code>index.php</code>.</p>
+    <footer class="site-footer" aria-label="Support">
+        <div class="donate-text">If these tools are useful, please consider supporting future development.</div>
+        <a class="donate-btn" href="https://www.paypal.com/paypalme/rongbelisle" target="_blank" rel="noopener noreferrer">
+            <span class="donate-dot" aria-hidden="true"></span>
+            Donate
+        </a>
     </footer>
+
 
 </div>
 

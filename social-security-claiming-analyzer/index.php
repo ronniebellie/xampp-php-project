@@ -9,6 +9,53 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Social Security Claiming Analyzer</title>
   <link rel="stylesheet" href="css/style.css?v=1" />
+  <style>
+    hr.footer-sep {
+      border: 0;
+      border-top: 1px solid #e5e7eb;
+      margin: 26px 0 18px;
+    }
+
+    /* Footer safety styling (in case the shared footer include has minimal styling) */
+    .site-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      color: #6b7280;
+      font-size: 13px;
+      padding: 2px 0 10px;
+    }
+
+    .site-footer__right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      text-align: right;
+    }
+
+    .donate-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      color: #111827;
+      text-decoration: none;
+      font-weight: 600;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .donate-btn:hover {
+      background: #f9fafb;
+    }
+  </style>
 </head>
 <body>
   <div class="page">
@@ -97,13 +144,26 @@
       </div>
     </section>
 
-    <section id="assumptions" class="card" style="display:none;">
-      <h2>How the calculator ran your scenario</h2>
-      <p id="assumptionsPlain"></p>
-    </section>
 
     <section id="results" class="card"></section>
+
+    <hr class="footer-sep" />
+    <?php
+      $footerPath = __DIR__ . '/../includes/footer.php';
+      if (file_exists($footerPath)) {
+        include $footerPath;
+      } else {
+    ?>
+      <div class="site-footer">
+        <div class="site-footer__left">© 2026 Ron Belisle</div>
+        <div class="site-footer__right">
+          <span>If these tools are useful, please consider supporting future development.</span>
+          <a class="donate-btn" href="https://www.paypal.com/paypalme/rongbelisle" target="_blank" rel="noopener">Donate</a>
+        </div>
+      </div>
+    <?php } ?>
   </div>
+
 
   <script>
   // Social Security Claiming Analyzer
@@ -183,21 +243,6 @@
       return { fra: fra, claimTotalMonths: claimTotalMonths, monthly: piaAtFRA * factor };
     }
 
-    function renderAssumptions(assumptions) {
-      const section = $("assumptions");
-      const plain = $("assumptionsPlain");
-      if (!section || !plain) return;
-
-      const parts = [];
-      parts.push(`End age: ${assumptions.endAge}`);
-      parts.push(`COLA assumption: ${assumptions.colaRatePercent}% (applied once per year)`);
-      parts.push(`Person: birth date ${assumptions.person.birthDate}; benefit at full retirement age (monthly) ${fmtMoney(assumptions.person.piaMonthlyAtFRA)}.`);
-      parts.push(`Claim option A: ${assumptions.claimOptionA.claimAgeYears} years, month ${assumptions.claimOptionA.claimMonth}.`);
-      parts.push(`Claim option B: ${assumptions.claimOptionB.claimAgeYears} years, month ${assumptions.claimOptionB.claimMonth}.`);
-
-      plain.textContent = parts.join(" ");
-      section.style.display = "block";
-    }
 
     function tableHtml(headers, rows) {
       let html = '<div class="results-block">';
@@ -359,28 +404,6 @@
       $("results").innerHTML = html;
     }
 
-    function buildAssumptionsObject(shared, person, claimA, claimB) {
-      return {
-        endAge: shared.endAge,
-        colaRatePercent: shared.colaRate,
-        colaMonth: shared.colaMonth,
-        breakEvenBaseline: "FRA",
-        benefitModel: "retirement-only",
-        exclusions: ["no taxes", "no earnings test", "no Medicare / IRMAA", "no spousal benefits"],
-        person: {
-          birthDate: person.birthDateStr || "(not set)",
-          piaMonthlyAtFRA: person.pia,
-        },
-        claimOptionA: {
-          claimAgeYears: claimA.claimAgeYears,
-          claimMonth: claimA.claimMonth,
-        },
-        claimOptionB: {
-          claimAgeYears: claimB.claimAgeYears,
-          claimMonth: claimB.claimMonth,
-        },
-      };
-    }
 
 
     function onCalculate() {
@@ -401,7 +424,6 @@
           return;
         }
       }
-      const aBirthStr = $("aBirthDate") ? $("aBirthDate").value : "";
       const aPia = $("aPIA") ? parseFloat($("aPIA").value) : NaN;
 
       const claimAgeYearsA = $("aClaimAgeA") ? parseInt($("aClaimAgeA").value, 10) : 0;
@@ -411,14 +433,12 @@
 
       const person = {
         birthDate: aBirth,
-        birthDateStr: aBirthStr,
         pia: aPia,
       };
 
       const claimA = { claimAgeYears: claimAgeYearsA, claimMonth: claimMonthA };
       const claimB = { claimAgeYears: claimAgeYearsB, claimMonth: claimMonthB };
 
-      renderAssumptions(buildAssumptionsObject(shared, person, claimA, claimB));
 
       if (!person.birthDate || !isFinite(person.pia)) {
         $("results").innerHTML = "<p>Please enter a valid birth date (use the date picker) and your monthly benefit at Full Retirement Age (FRA), then click Calculate.</p>";
@@ -440,6 +460,6 @@
       if (btn) btn.addEventListener("click", onCalculate);
     });
   })();
-  </script>
+</script>
 </body>
 </html>
