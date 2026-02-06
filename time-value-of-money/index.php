@@ -58,144 +58,18 @@ function h(string $value): string {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo h($siteTitle); ?></title>
 
-    <style>
-        :root {
-            --max-width: 980px;
-            --bg: #ffffff;
-            --text: #111827;
-            --muted: #4b5563;
-            --border: #e5e7eb;
-            --card-bg: #f9fafb;
-            --link: #1d4ed8;
-            --link-hover: #1e40af;
-        }
+    <link rel="stylesheet" href="/css/styles.css">
 
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.45;
-        }
-
-        .wrap {
-            max-width: var(--max-width);
-            margin: 0 auto;
-            padding: 28px 18px 40px;
-        }
-
-        header {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 18px;
-        }
-
-        h1 {
-            margin: 0;
-            font-size: 28px;
-            letter-spacing: -0.02em;
-        }
-
-        .sub {
-            margin: 0;
-            color: var(--muted);
-            max-width: 70ch;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(1, minmax(0, 1fr));
-            gap: 14px;
-            margin-top: 18px;
-        }
-
-        @media (min-width: 720px) {
-            .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        }
-
-        .card {
-            border: 1px solid var(--border);
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 16px;
-        }
-
-        .card h2 {
-            margin: 0 0 6px;
-            font-size: 18px;
-        }
-
-        .card p {
-            margin: 0 0 12px;
-            color: var(--muted);
-        }
-
-        a.button {
-            display: inline-block;
-            text-decoration: none;
-            color: #ffffff;
-            background: var(--link);
-            padding: 9px 12px;
-            border-radius: 9px;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        a.button:hover {
-            background: var(--link-hover);
-        }
-
-        footer.site-footer {
-            margin-top: 22px;
-            padding-top: 14px;
-            border-top: 1px solid var(--border);
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 14px;
-            color: var(--muted);
-            font-size: 13px;
-        }
-
-        .donate-text {
-            max-width: 52ch;
-        }
-
-        a.donate-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            padding: 9px 14px;
-            border-radius: 999px;
-            border: 1px solid var(--border);
-            background: #f3f4f6;
-            color: var(--text);
-            font-weight: 600;
-            font-size: 14px;
-            white-space: nowrap;
-        }
-
-        a.donate-btn:hover {
-            background: #e5e7eb;
-        }
-
-        .donate-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 999px;
-            background: #93c5fd;
-            display: inline-block;
-        }
-
-    </style>
 </head>
-<body>
+<body class="tvm-page">
 
 <div class="wrap">
+
+    <div class="top-nav" style="margin: 0 0 12px 0;">
+        <a class="home-btn" href="/" style="display:inline-flex; align-items:center; padding:8px 14px; border-radius:999px; border:1px solid #e5e7eb; background:#ffffff; color:#111827; text-decoration:none; font-weight:600; line-height:1; white-space:nowrap;">
+            Return to home page
+        </a>
+    </div>
 
     <header>
         <h1><?php echo h($siteTitle); ?></h1>
@@ -212,14 +86,7 @@ function h(string $value): string {
         <?php endforeach; ?>
     </main>
 
-    <footer class="site-footer" aria-label="Support">
-        <div class="donate-text">If these tools are useful, please consider supporting future development.</div>
-        <a class="donate-btn" href="https://www.paypal.com/paypalme/rongbelisle" target="_blank" rel="noopener noreferrer">
-            <span class="donate-dot" aria-hidden="true"></span>
-            Donate
-        </a>
-    </footer>
-
+    <?php include __DIR__ . '/../includes/footer.php'; ?>
 
 </div>
 

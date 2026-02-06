@@ -162,6 +162,12 @@
         <p>Compare claiming ages and see how lifetime Social Security benefits change over time.</p>
         <a class="btn" href="social-security-claiming-analyzer/">Open</a>
       </section>
+
+      <section class="card">
+        <h3>Social Security + Spending Gap Calculator</h3>
+        <p>See how Social Security reduces the portfolio you need by identifying your real retirement spending gap.</p>
+        <a class="btn" href="ss-gap/">Open</a>
+      </section>
     </main>
 
     <?php include __DIR__ . '/includes/footer.php'; ?>

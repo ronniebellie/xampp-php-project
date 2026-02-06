@@ -8,8 +8,33 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Social Security Claiming Analyzer</title>
-  <link rel="stylesheet" href="css/style.css?v=1" />
+  <link rel="stylesheet" href="/css/styles.css?v=3" />
   <style>
+    .top-nav {
+      display: flex;
+      justify-content: flex-start;
+      margin: 0 0 12px 0;
+    }
+
+    .home-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      color: #111827;
+      text-decoration: none;
+      font-weight: 600;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .home-btn:hover {
+      background: #f9fafb;
+    }
+
     hr.footer-sep {
       border: 0;
       border-top: 1px solid #e5e7eb;
@@ -58,7 +83,11 @@
   </style>
 </head>
 <body>
-  <div class="page">
+  <div class="page container" style="max-width: 1100px; margin: 0 auto; padding: 24px 24px 40px;">
+    <div class="top-nav">
+      <a class="home-btn" href="/">Return to home page</a>
+    </div>
+
     <h1>Social Security Claiming Analyzer</h1>
 
     <section class="card">
