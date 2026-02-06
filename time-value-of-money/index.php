@@ -53,11 +53,13 @@
         <p>Find the present value of a series of equal payments to be received in the future.</p>
         <a class="btn" href="present-value-annuity/">Open</a>
       </section>
-      <a class="btn" href="/index.php">Return to Home</a>
     </main>
-    <footer>
-      <p>&copy; 2026 Ron Belisle</p>
-    </footer>
+    
+    <div style="margin-top: 20px; text-align: center;">
+      <a class="btn" href="/index.php">Return to Home</a>
+    </div>
+    
+    <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/footer.php'; ?>
   </div>
 </body>
-</html>
+</html> 

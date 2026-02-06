@@ -71,129 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Loan Payment</title>
-
-    <style>
-        :root {
-            --max-width: 980px;
-            --bg: #ffffff;
-            --text: #111827;
-            --muted: #4b5563;
-            --border: #e5e7eb;
-            --card: #f9fafb;
-            --link: #1d4ed8;
-            --link-hover: #1e40af;
-        }
-
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.45;
-        }
-
-        .wrap {
-            max-width: var(--max-width);
-            margin: 0 auto;
-            padding: 28px 18px 40px;
-        }
-
-        h1 {
-            margin: 0 0 6px;
-            font-size: 28px;
-            letter-spacing: -0.02em;
-        }
-
-        .sub {
-            margin: 0 0 18px;
-            color: var(--muted);
-            max-width: 70ch;
-        }
-
-        .card {
-            border: 1px solid var(--border);
-            background: var(--card);
-            border-radius: 12px;
-            padding: 16px;
-        }
-
-        .row {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-        }
-
-        @media (min-width: 720px) {
-            .row { grid-template-columns: 1fr 1fr; }
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            margin: 0 0 6px;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            font-size: 16px;
-            background: #ffffff;
-        }
-
-        .btn {
-            display: inline-block;
-            border: 0;
-            border-radius: 10px;
-            background: var(--link);
-            color: #ffffff;
-            padding: 10px 14px;
-            font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
-            text-decoration: none;
-            line-height: 1;
-        }
-
-        .btn:hover {
-            background: var(--link-hover);
-            text-decoration: none;
-        }
-
-        .errors {
-            margin: 0 0 12px;
-            padding: 12px;
-            border: 1px solid #fecaca;
-            background: #fef2f2;
-            border-radius: 12px;
-            color: #7f1d1d;
-        }
-
-        .result {
-            margin-top: 14px;
-            padding: 12px;
-            border: 1px solid #d1fae5;
-            background: #ecfdf5;
-            border-radius: 12px;
-        }
-
-        .result .big {
-            font-size: 22px;
-            font-weight: 800;
-            margin-top: 6px;
-        }
-
-        .topbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 14px;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/styles.css" />
 </head>
 <body>
 
@@ -263,6 +141,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
     </div>
+
+    <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/footer.php'; ?>
 
 </div>
 
