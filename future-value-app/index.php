@@ -179,7 +179,7 @@
 
         <footer class="site-footer">
             <span class="donate-text">If these tools are useful, please consider supporting future development.</span>
-            <a href="#" class="donate-btn">
+            <a href="https://www.paypal.com/paypalme/rongbelisle" target="_blank" class="donate-btn">
                 <span class="donate-dot"></span>
                 Donate
             </a>
