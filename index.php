@@ -158,9 +158,9 @@
       </section>
 
       <section class="card">
-        <h3>Time Value of Money</h3>
-        <p>Quick calculators for future value, present value, annuities, and loan math.</p>
-        <a class="btn" href="time-value-of-money/">Open</a>
+        <h3>Future Value Calculator</h3>
+        <p>Calculate present value, future value, annuities, and required payments to reach your financial goals.</p>
+        <a class="btn" href="future-value-app/">Open</a>
       </section>
 
       <section class="card">

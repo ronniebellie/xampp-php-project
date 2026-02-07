@@ -1,3 +1,4 @@
+cat > /tmp/styles-complete.css << 'EOF'
 /* ===== Global reset ===== */
 * {
     box-sizing: border-box;
@@ -57,7 +58,7 @@ h1 {
     margin: 0 0 12px;
     color: #4b5563;
 }
-a.button {
+a.button, button.button {
     display: inline-block;
     text-decoration: none;
     color: #ffffff;
@@ -66,8 +67,10 @@ a.button {
     border-radius: 9px;
     font-weight: 600;
     font-size: 14px;
+    border: none;
+    cursor: pointer;
 }
-a.button:hover {
+a.button:hover, button.button:hover {
     background: #1e40af;
 }
 /* ===== Shared footer ===== */
@@ -113,7 +116,7 @@ footer.site-footer .donate-dot {
 }
 
 /* ========================================
-   RMD IMPACT CALCULATOR STYLES
+   SHARED CALCULATOR STYLES
    ======================================== */
 
 /* Summary Grid for Cards */
@@ -168,4 +171,112 @@ footer.site-footer .donate-dot {
     max-height: 400px;
 }
 
-/* Blue Info Box for
+/* Blue Info Box for Interpretation */
+.info-box-blue {
+    background: #e7f3ff;
+    border-left: 4px solid #2196F3;
+    padding: 20px;
+    margin: 30px 0;
+    border-radius: 8px;
+}
+
+.info-box-blue h3 {
+    color: #2196F3;
+    margin-top: 0;
+}
+
+.info-box ul {
+    list-style-position: inside;
+    color: #555;
+}
+
+.info-box li {
+    margin: 10px 0;
+    line-height: 1.6;
+}
+
+.info-box strong {
+    color: #333;
+}
+
+/* Table Section */
+.table-section {
+    margin: 40px 0;
+}
+
+.table-section h3 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.3em;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.data-table th {
+    background: #667eea;
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.data-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.data-table tr:hover {
+    background: #f8f9fa;
+}
+
+/* Results container */
+.results-container {
+    margin-top: 40px;
+}
+
+.results-container h2 {
+    text-align: center;
+    color: #667eea;
+    font-size: 2em;
+    margin-bottom: 30px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .summary-value {
+        font-size: 1.5em;
+    }
+
+    .chart-wrapper {
+        height: 300px;
+    }
+
+    .data-table {
+        font-size: 0.9em;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+}
+EOF
+cat /tmp/styles-complete.css | pbcopy

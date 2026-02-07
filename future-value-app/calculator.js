@@ -1,0 +1,446 @@
+// Future Value Calculator - All-in-One
+
+// Tab switching
+function switchCalculator(type) {
+    // Update tab buttons
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // Update calculator content
+    document.querySelectorAll('.calculator-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    document.getElementById(`${type}-calculator`).classList.add('active');
+}
+
+// Update label when single type changes
+document.addEventListener('DOMContentLoaded', function() {
+    const singleType = document.getElementById('singleType');
+    if (singleType) {
+        singleType.addEventListener('change', function() {
+            const label = document.getElementById('singleAmountLabel');
+            if (this.value === 'fv') {
+                label.textContent = 'Starting amount today';
+            } else {
+                label.textContent = 'Target future amount';
+            }
+        });
+    }
+});
+
+// Format currency
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(amount);
+}
+
+// Financial functions
+function futureValue(pv, rate, years) {
+    return pv * Math.pow(1 + rate, years);
+}
+
+function presentValue(fv, rate, years) {
+    return fv / Math.pow(1 + rate, years);
+}
+
+function futureValueAnnuity(payment, rate, years) {
+    const periods = years * 12;
+    const monthlyRate = rate / 12;
+    return payment * ((Math.pow(1 + monthlyRate, periods) - 1) / monthlyRate);
+}
+
+function requiredPayment(targetFV, rate, years, presentValue = 0) {
+    const fvOfPresent = presentValue * Math.pow(1 + rate, years);
+    const remaining = targetFV - fvOfPresent;
+    const periods = years * 12;
+    const monthlyRate = rate / 12;
+    return remaining * monthlyRate / (Math.pow(1 + monthlyRate, periods) - 1);
+}
+
+// Generate year-by-year data for single amount
+function generateSingleGrowthData(amount, rate, years, type) {
+    const data = [];
+    const principal = type === 'pv' ? amount / Math.pow(1 + rate, years) : amount;
+    
+    for (let year = 0; year <= years; year++) {
+        const value = principal * Math.pow(1 + rate, year);
+        data.push({
+            year: year,
+            value: value,
+            interest: value - principal
+        });
+    }
+    return data;
+}
+
+// Generate year-by-year data for annuity
+function generateAnnuityGrowthData(payment, rate, years) {
+    const data = [];
+    const monthlyRate = rate / 12;
+    let balance = 0;
+    let totalContributed = 0;
+    
+    data.push({ year: 0, value: 0, contributed: 0, interest: 0 });
+    
+    for (let year = 1; year <= years; year++) {
+        for (let month = 1; month <= 12; month++) {
+            balance = (balance + payment) * (1 + monthlyRate);
+            totalContributed += payment;
+        }
+        data.push({
+            year: year,
+            value: balance,
+            contributed: totalContributed,
+            interest: balance - totalContributed
+        });
+    }
+    return data;
+}
+
+// Create growth chart
+function createGrowthChart(canvasId, labels, datasets) {
+    const ctx = document.getElementById(canvasId);
+    if (window[canvasId + 'Chart'] instanceof Chart) {
+        window[canvasId + 'Chart'].destroy();
+    }
+    window[canvasId + 'Chart'] = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Year'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Value'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return formatCurrency(value);
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Single Amount Calculator
+document.getElementById('singleForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const type = document.getElementById('singleType').value;
+    const amount = parseFloat(document.getElementById('singleAmount').value);
+    const rate = parseFloat(document.getElementById('singleRate').value) / 100;
+    const years = parseInt(document.getElementById('singleYears').value);
+    
+    let result, principal, future;
+    
+    if (type === 'fv') {
+        result = futureValue(amount, rate, years);
+        principal = amount;
+        future = result;
+    } else {
+        result = presentValue(amount, rate, years);
+        principal = result;
+        future = amount;
+    }
+    
+    const growthData = generateSingleGrowthData(amount, rate, years, type);
+    const totalGrowth = future - principal;
+    
+    // Create summary cards
+    let html = '<div class="results-container">';
+    html += '<h2>Results</h2>';
+    html += '<div class="summary-grid">';
+    html += `
+        <div class="summary-card">
+            <div class="summary-label">${type === 'fv' ? 'Starting Amount' : 'Required Today'}</div>
+            <div class="summary-value">${formatCurrency(principal)}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">${type === 'fv' ? 'Future Value' : 'Future Goal'}</div>
+            <div class="summary-value">${formatCurrency(future)}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Total Growth</div>
+            <div class="summary-value">${formatCurrency(totalGrowth)}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Return Multiple</div>
+            <div class="summary-value">${(future / principal).toFixed(2)}x</div>
+        </div>
+    `;
+    html += '</div>';
+    
+    // Create chart
+    html += '<div class="chart-section">';
+    html += '<h3>Growth Over Time</h3>';
+    html += '<div class="chart-wrapper"><canvas id="singleChart"></canvas></div>';
+    html += '</div>';
+    
+    // Interpretation
+    html += '<div class="info-box-blue">';
+    html += '<h3>What This Means</h3><ul>';
+    if (type === 'fv') {
+        html += `<li>If you invest <strong>${formatCurrency(principal)}</strong> today at ${(rate * 100).toFixed(1)}% annual return...</li>`;
+        html += `<li>In ${years} years, it will grow to <strong>${formatCurrency(future)}</strong></li>`;
+        html += `<li>That's a total gain of <strong>${formatCurrency(totalGrowth)}</strong> (${((totalGrowth / principal) * 100).toFixed(0)}% growth)</li>`;
+    } else {
+        html += `<li>To have <strong>${formatCurrency(future)}</strong> in ${years} years...</li>`;
+        html += `<li>You need to invest <strong>${formatCurrency(principal)}</strong> today at ${(rate * 100).toFixed(1)}% annual return</li>`;
+        html += `<li>Your investment will grow by <strong>${formatCurrency(totalGrowth)}</strong> over that time</li>`;
+    }
+    html += '</ul></div>';
+    
+    // Year-by-year table
+    html += '<div class="table-section">';
+    html += '<h3>Year-by-Year Growth</h3>';
+    html += '<div class="table-wrapper"><table class="data-table">';
+    html += '<thead><tr><th>Year</th><th>Balance</th><th>Interest Earned</th></tr></thead><tbody>';
+    
+    growthData.forEach(row => {
+        html += `<tr>
+            <td>${row.year}</td>
+            <td>${formatCurrency(row.value)}</td>
+            <td>${formatCurrency(row.interest)}</td>
+        </tr>`;
+    });
+    
+    html += '</tbody></table></div></div>';
+    html += '</div>';
+    
+    document.getElementById('singleResults').innerHTML = html;
+    document.getElementById('singleResults').style.display = 'block';
+    
+    // Create chart
+    createGrowthChart('singleChart', 
+        growthData.map(d => d.year),
+        [{
+            label: 'Account Value',
+            data: growthData.map(d => d.value),
+            borderColor: 'rgb(102, 126, 234)',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            fill: true,
+            tension: 0.1
+        }]
+    );
+    
+    document.getElementById('singleResults').scrollIntoView({ behavior: 'smooth' });
+});
+
+// Target Future Value Calculator
+document.getElementById('targetForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const targetGoal = parseFloat(document.getElementById('targetGoal').value);
+    const presentValue = parseFloat(document.getElementById('targetPresent').value);
+    const rate = parseFloat(document.getElementById('targetRate').value) / 100;
+    const years = parseInt(document.getElementById('targetYears').value);
+    
+    const monthlyPayment = requiredPayment(targetGoal, rate, years, presentValue);
+    const totalContributed = monthlyPayment * years * 12 + presentValue;
+    const totalGrowth = targetGoal - totalContributed;
+    
+    const growthData = generateAnnuityGrowthData(monthlyPayment, rate, years);
+    
+    // Adjust for initial present value
+    if (presentValue > 0) {
+        growthData.forEach(row => {
+            const pvGrowth = presentValue * Math.pow(1 + rate, row.year);
+            row.value += pvGrowth;
+            row.contributed += (row.year === 0 ? presentValue : 0);
+        });
+    }
+    
+    let html = '<div class="results-container">';
+    html += '<h2>Results</h2>';
+    html += '<div class="summary-grid">';
+    html += `
+        <div class="summary-card">
+            <div class="summary-label">Required Monthly Payment</div>
+            <div class="summary-value">${formatCurrency(monthlyPayment)}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Target Goal</div>
+            <div class="summary-value">${formatCurrency(targetGoal)}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Total You'll Contribute</div>
+            <div class="summary-value">${formatCurrency(totalContributed)}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Total Interest Earned</div>
+            <div class="summary-value">${formatCurrency(totalGrowth)}</div>
+        </div>
+    `;
+    html += '</div>';
+    
+    html += '<div class="chart-section">';
+    html += '<h3>Path to Your Goal</h3>';
+    html += '<div class="chart-wrapper"><canvas id="targetChart"></canvas></div>';
+    html += '</div>';
+    
+    html += '<div class="info-box-blue">';
+    html += '<h3>What This Means</h3><ul>';
+    html += `<li>To reach your goal of <strong>${formatCurrency(targetGoal)}</strong> in ${years} years...</li>`;
+    html += `<li>You need to save <strong>${formatCurrency(monthlyPayment)}</strong> per month</li>`;
+    if (presentValue > 0) {
+        html += `<li>Your starting balance of ${formatCurrency(presentValue)} will also grow during this time</li>`;
+    }
+    html += `<li>Your total contributions: <strong>${formatCurrency(totalContributed)}</strong></li>`;
+    html += `<li>Interest will add: <strong>${formatCurrency(totalGrowth)}</strong> (${((totalGrowth / totalContributed) * 100).toFixed(0)}% gain)</li>`;
+    html += '</ul></div>';
+    
+    html += '</div>';
+    
+    document.getElementById('targetResults').innerHTML = html;
+    document.getElementById('targetResults').style.display = 'block';
+    
+    createGrowthChart('targetChart',
+        growthData.map(d => d.year),
+        [
+            {
+                label: 'Total Value',
+                data: growthData.map(d => d.value),
+                borderColor: 'rgb(34, 197, 94)',
+                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                fill: true,
+                tension: 0.1
+            },
+            {
+                label: 'Your Contributions',
+                data: growthData.map(d => d.contributed),
+                borderColor: 'rgb(59, 130, 246)',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: true,
+                tension: 0.1
+            }
+        ]
+    );
+    
+    document.getElementById('targetResults').scrollIntoView({ behavior: 'smooth' });
+});
+
+// Annuity Future Value Calculator
+document.getElementById('annuityForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const payment = parseFloat(document.getElementById('annuityPayment').value);
+    const rate = parseFloat(document.getElementById('annuityRate').value) / 100;
+    const years = parseInt(document.getElementById('annuityYears').value);
+    
+    const finalValue = futureValueAnnuity(payment, rate, years);
+    const totalContributed = payment * years * 12;
+    const totalGrowth = finalValue - totalContributed;
+    
+    const growthData = generateAnnuityGrowthData(payment, rate, years);
+    
+    let html = '<div class="results-container">';
+    html += '<h2>Results</h2>';
+    html += '<div class="summary-grid">';
+    html += `
+        <div class="summary-card">
+            <div class="summary-label">Monthly Payment</div>
+            <div class="summary-value">${formatCurrency(payment)}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Future Value</div>
+            <div class="summary-value">${formatCurrency(finalValue)}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Total Contributed</div>
+            <div class="summary-value">${formatCurrency(totalContributed)}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Interest Earned</div>
+            <div class="summary-value">${formatCurrency(totalGrowth)}</div>
+        </div>
+    `;
+    html += '</div>';
+    
+    html += '<div class="chart-section">';
+    html += '<h3>Growth Over Time</h3>';
+    html += '<div class="chart-wrapper"><canvas id="annuityChart"></canvas></div>';
+    html += '</div>';
+    
+    html += '<div class="info-box-blue">';
+    html += '<h3>What This Means</h3><ul>';
+    html += `<li>If you save <strong>${formatCurrency(payment)}</strong> per month for ${years} years...</li>`;
+    html += `<li>At ${(rate * 100).toFixed(1)}% annual return, you'll accumulate <strong>${formatCurrency(finalValue)}</strong></li>`;
+    html += `<li>You'll contribute a total of <strong>${formatCurrency(totalContributed)}</strong></li>`;
+    html += `<li>Interest will add <strong>${formatCurrency(totalGrowth)}</strong> (${((totalGrowth / totalContributed) * 100).toFixed(0)}% gain)</li>`;
+    html += '</ul></div>';
+    
+    html += '<div class="table-section">';
+    html += '<h3>Year-by-Year Growth</h3>';
+    html += '<div class="table-wrapper"><table class="data-table">';
+    html += '<thead><tr><th>Year</th><th>Balance</th><th>Contributed</th><th>Interest Earned</th></tr></thead><tbody>';
+    
+    growthData.forEach(row => {
+        html += `<tr>
+            <td>${row.year}</td>
+            <td>${formatCurrency(row.value)}</td>
+            <td>${formatCurrency(row.contributed)}</td>
+            <td>${formatCurrency(row.interest)}</td>
+        </tr>`;
+    });
+    
+    html += '</tbody></table></div></div>';
+    html += '</div>';
+    
+    document.getElementById('annuityResults').innerHTML = html;
+    document.getElementById('annuityResults').style.display = 'block';
+    
+    createGrowthChart('annuityChart',
+        growthData.map(d => d.year),
+        [
+            {
+                label: 'Total Value',
+                data: growthData.map(d => d.value),
+                borderColor: 'rgb(139, 92, 246)',
+                backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                fill: true,
+                tension: 0.1
+            },
+            {
+                label: 'Your Contributions',
+                data: growthData.map(d => d.contributed),
+                borderColor: 'rgb(59, 130, 246)',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: true,
+                tension: 0.1
+            }
+        ]
+    );
+    
+    document.getElementById('annuityResults').scrollIntoView({ behavior: 'smooth' });
+});

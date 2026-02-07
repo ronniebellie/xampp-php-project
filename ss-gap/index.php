@@ -1,125 +1,111 @@
-<?php
-$isPost = (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST');
-
-function post_str(string $key, string $default=''): string {
-  if (!isset($_POST[$key])) return $default;
-  return trim((string)$_POST[$key]);
-}
-function post_float(string $key) {
-  $v = post_str($key, '');
-  if ($v === '') return '';
-  $v = str_replace(',', '', $v);
-  if (!is_numeric($v)) return '';
-  return (float)$v;
-}
-
-$household = $isPost ? post_str('household', 'married') : 'married';
-$targetMonthly = $isPost ? post_float('target_monthly_spending') : '';
-$ssMonthly = $isPost ? post_float('ss_monthly_income') : '';
-$withdrawRatePct = $isPost ? post_float('withdraw_rate_pct') : 4.7;
-
-$errors = [];
-$result = null;
-
-if ($isPost) {
-  if ($targetMonthly === '' || $targetMonthly < 0) $errors[] = 'Enter a valid Target Monthly Spending.';
-  if ($ssMonthly === '' || $ssMonthly < 0) $errors[] = 'Enter a valid Social Security Monthly Income.';
-  if ($withdrawRatePct === '' || $withdrawRatePct <= 0) $errors[] = 'Enter a valid Withdrawal Rate (%).';
-
-  if (!$errors) {
-    $monthlyGap = max(0, (float)$targetMonthly - (float)$ssMonthly);
-    $annualGap = $monthlyGap * 12;
-
-    $withdrawRate = ((float)$withdrawRatePct) / 100;
-    $portfolioNeeded = ($withdrawRate > 0) ? ($annualGap / $withdrawRate) : 0;
-
-    $result = [
-      'monthly_gap' => $monthlyGap,
-      'annual_gap' => $annualGap,
-      'portfolio_needed' => $portfolioNeeded,
-    ];
-  }
-}
-?>
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Social Security + Spending Gap Calculator</title>
-  <link rel="stylesheet" href="/css/styles.css?v=3">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Security + Spending Gap Calculator</title>
+    <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
-  <div class="page container" style="max-width: 900px; margin: 0 auto; padding: 24px 24px 40px;">
-    <div class="top-nav" style="margin-bottom: 12px;">
-      <a class="home-btn" href="/" style="display:inline-flex; align-items:center; padding:8px 14px; border-radius:999px; border:1px solid #e5e7eb; background:#ffffff; color:#111827; text-decoration:none; font-weight:600; line-height:1; white-space:nowrap;">
-        Return to home page
-      </a>
-    </div>
-    <h1 style="text-align:center; margin: 0 0 18px 0;">Social Security + Spending Gap Calculator</h1>
+    <div class="wrap">
+        <p style="margin-bottom: 20px;"><a href="../" style="text-decoration: none; color: #1d4ed8;">← Return to home page</a></p>
 
-    <p class="intro">
-      Enter your target monthly spending and your expected monthly Social Security income. The calculator estimates your spending gap and the portfolio size needed to cover that gap using a starting withdrawal rate.
-    </p>
+        <header>
+            <h1>Social Security + Spending Gap Calculator</h1>
+            <p class="sub">See how Social Security reduces the portfolio you need by identifying your real retirement spending gap</p>
+        </header>
 
-    <form method="post" action="">
-      <label>
-        Household:
-        <select name="household">
-          <option value="single"  <?= $household === 'single' ? 'selected' : '' ?>>Single</option>
-          <option value="married" <?= $household === 'married' ? 'selected' : '' ?>>Married</option>
-        </select>
-      </label>
-
-      <br><br>
-
-      <label>
-        Target Monthly Spending ($):
-        <input type="text" inputmode="decimal" name="target_monthly_spending" value="<?= htmlspecialchars($targetMonthly === '' ? '' : (string)$targetMonthly) ?>">
-      </label>
-
-      <br><br>
-
-      <label>
-        Social Security Monthly Income ($):
-        <input type="text" inputmode="decimal" name="ss_monthly_income" value="<?= htmlspecialchars($ssMonthly === '' ? '' : (string)$ssMonthly) ?>">
-      </label>
-
-      <br><br>
-
-      <label>
-        Starting Withdrawal Rate (%):
-        <input type="text" inputmode="decimal" name="withdraw_rate_pct" value="<?= htmlspecialchars($withdrawRatePct === '' ? '' : (string)$withdrawRatePct) ?>">
-      </label>
-
-      <br><br>
-
-      <?php if ($errors): ?>
-        <div style="margin: 8px 0 18px 0; padding: 10px 12px; border: 1px solid #d33; background: #fff5f5;">
-          <?= htmlspecialchars(implode(' ', $errors)) ?>
+        <div class="info-box-blue" style="margin-bottom: 30px;">
+            <h2>Understanding Your Spending Gap</h2>
+            <p>Many retirees overestimate how much they need to save because they forget that Social Security will cover a significant portion of their spending. This calculator shows your actual "spending gap" - the difference between what you want to spend and what Social Security provides - and calculates the portfolio size needed to fill that gap using sustainable withdrawal rates.</p>
         </div>
-      <?php endif; ?>
 
-      <button type="submit">Calculate</button>
-    </form>
+        <form id="gapForm">
+            <h3>Your Retirement Income & Expenses</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                <div>
+                    <label for="targetSpending" style="display: block; margin-bottom: 5px; font-weight: 600;">Target Monthly Spending ($)</label>
+                    <input type="number" id="targetSpending" step="100" value="8000" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                    <small style="color: #666;">Your desired monthly retirement budget</small>
+                </div>
+                <div>
+                    <label for="ssIncome" style="display: block; margin-bottom: 5px; font-weight: 600;">Social Security Monthly Income ($)</label>
+                    <input type="number" id="ssIncome" step="100" value="3500" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                    <small style="color: #666;">Combined household Social Security benefits</small>
+                </div>
+                <div>
+                    <label for="otherIncome" style="display: block; margin-bottom: 5px; font-weight: 600;">Other Monthly Income ($)</label>
+                    <input type="number" id="otherIncome" step="100" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                    <small style="color: #666;">Pension, rental income, part-time work, etc.</small>
+                </div>
+            </div>
 
-    <?php if ($result): ?>
-      <hr style="margin: 24px 0;">
+            <h3 style="margin-top: 30px;">Withdrawal Rate Assumptions</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                <div>
+                    <label for="withdrawalRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Starting Withdrawal Rate (%)</label>
+                    <input type="number" id="withdrawalRate" step="0.1" min="0" max="10" value="4.0" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                    <small style="color: #666;">Common range: 3.5% - 5.0%</small>
+                </div>
+                <div>
+                    <label for="filingStatus" style="display: block; margin-bottom: 5px; font-weight: 600;">Household Type</label>
+                    <select id="filingStatus" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                        <option value="single">Single</option>
+                        <option value="married" selected>Married</option>
+                    </select>
+                    <small style="color: #666;">For context in results</small>
+                </div>
+            </div>
 
-      <h2 style="margin: 0 0 12px 0;">Results</h2>
-      <p>Monthly Spending Gap: $<?= number_format((float)$result['monthly_gap'], 0) ?></p>
-      <p>Annual Spending Gap: $<?= number_format((float)$result['annual_gap'], 0) ?></p>
-      <p>Portfolio Needed (at <?= number_format((float)$withdrawRatePct, 2) ?>%): $<?= number_format((float)$result['portfolio_needed'], 0) ?></p>
-    <?php endif; ?>
+            <div style="text-align: center; margin: 30px 0;">
+                <button type="submit" class="button" style="font-size: 1.1em; padding: 12px 30px;">Calculate Gap</button>
+            </div>
+        </form>
 
-    <hr class="footer-divider" style="margin: 24px 0 0; border: 0; border-top: 1px solid #d0d0d0;">
+        <div id="results" class="results-container" style="display: none;">
+            <h2>Your Spending Gap Analysis</h2>
+            
+            <div class="summary-grid" id="summaryCards"></div>
 
-    <?php
-      $footerPath = __DIR__ . '/../includes/footer.php';
-      if (file_exists($footerPath)) {
-        include $footerPath;
-      }
-    ?>
-  </div>
+            <div class="chart-section">
+                <h3>Portfolio Needed at Different Withdrawal Rates</h3>
+                <div class="chart-wrapper" style="height: 350px;">
+                    <canvas id="withdrawalChart"></canvas>
+                </div>
+            </div>
+
+            <div class="info-box info-box-blue" id="interpretation"></div>
+
+            <div class="table-section">
+                <h3>Withdrawal Rate Comparison</h3>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Withdrawal Rate</th>
+                                <th>Portfolio Needed</th>
+                                <th>Annual Withdrawal</th>
+                                <th>Monthly Withdrawal</th>
+                                <th>Success Rate*</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+                <p style="font-size: 0.9em; color: #666; margin-top: 10px;">*Historical success rate over 30 years based on historical data (approximate)</p>
+            </div>
+        </div>
+
+        <footer class="site-footer">
+            <span class="donate-text">If these tools are useful, please consider supporting future development.</span>
+            <a href="#" class="donate-btn">
+                <span class="donate-dot"></span>
+                Donate
+            </a>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="calculator.js"></script>
 </body>
 </html>
