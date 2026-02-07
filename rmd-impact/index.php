@@ -27,9 +27,9 @@
                     <small style="color: #666;">Enter your age today</small>
                 </div>
                 <div>
-                    <label for="accountBalance" style="display: block; margin-bottom: 5px; font-weight: 600;">Account Balance (as of 12/31 last year) ($)</label>
+                    <label for="accountBalance" style="display: block; margin-bottom: 5px; font-weight: 600;">Tax-Deferred Account Balance (as of 12/31 last year) ($)</label>
                     <input type="number" id="accountBalance" min="0" step="1000" value="150000" required style="width: 100%;">
-                    <small style="color: #666;">Fair market value from your year-end statement</small>
+                    <small style="color: #666;">Traditional IRA, 401(k), etc. - exclude Roth accounts</small>
                 </div>
                 <div>
                     <label for="growthRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Expected Annual Growth Rate (%)</label>
