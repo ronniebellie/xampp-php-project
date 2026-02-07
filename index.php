@@ -135,7 +135,7 @@
     <div class="topbar" role="banner">
       <div class="brand">
         <div class="mark" aria-hidden="true">RB</div>
-        <div class="brand-title">Financial calculators and tools for sound financial planning</div>
+        <div class="brand-title">Calculators and tools for sound financial planning</div>
       </div>
     </div>
 
