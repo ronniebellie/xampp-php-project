@@ -152,12 +152,6 @@
       </section>
 
       <section class="card">
-        <h3>Retirement Income Projection</h3>
-        <p>Model Social Security, portfolio withdrawals, and retirement income scenarios.</p>
-        <a class="btn" href="retirement-app/">Open</a>
-      </section>
-
-      <section class="card">
         <h3>Future Value Calculator</h3>
         <p>Calculate present value, future value, annuities, and required payments to reach your financial goals.</p>
         <a class="btn" href="future-value-app/">Open</a>
