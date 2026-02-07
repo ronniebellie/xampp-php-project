@@ -8,6 +8,8 @@
 </head>
 <body>
     <div class="wrap">
+        <p style="margin-bottom: 20px;"><a href="../" style="text-decoration: none; color: #1d4ed8;">← Return to home page</a></p>
+
         <header>
             <h1>RMD Impact Calculator</h1>
             <p class="sub">Estimate how Required Minimum Distributions interact with your portfolio, taxes, and retirement income over time</p>
