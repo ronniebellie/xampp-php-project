@@ -146,6 +146,12 @@
 
     <main class="grid" aria-label="App links">
       <section class="card">
+        <h3>RMD Impact</h3>
+        <p>Estimate how Required Minimum Distributions interact with your portfolio, taxes, and retirement income over time.</p>
+        <a class="btn" href="rmd-impact/">Open</a>
+      </section>
+
+      <section class="card">
         <h3>Retirement Income Projection</h3>
         <p>Model Social Security, portfolio withdrawals, and retirement income scenarios.</p>
         <a class="btn" href="retirement-app/">Open</a>
@@ -166,12 +172,6 @@
       <section class="card">
         <h3>Social Security + Spending Gap Calculator</h3>
         <p>See how Social Security reduces the portfolio you need by identifying your real retirement spending gap.</p>
-        <a class="btn" href="ss-gap/">Open</a>
-      </section>
-
-       <section class="card">
-        <h3>RMD impact</h3>
-        <p>Estimate how Required Minimum Distributions interact with your portfolio, taxes, and retirement income over time. (Coming soon!)</p>
         <a class="btn" href="ss-gap/">Open</a>
       </section>
     </main>
