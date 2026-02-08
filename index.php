@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -167,6 +168,12 @@
         <h3>Social Security + Spending Gap Calculator</h3>
         <p>See how Social Security reduces the portfolio you need by identifying your real retirement spending gap.</p>
         <a class="btn" href="ss-gap/">Open</a>
+      </section>
+
+      <section class="card">
+        <h3>Roth Conversion Calculator</h3>
+        <p>Analyze the benefits of converting traditional IRA funds to Roth, considering current vs future tax brackets, RMDs, and Medicare IRMAA thresholds.</p>
+        <a class="btn" href="roth-conv/">Open</a>
       </section>
     </main>
 
