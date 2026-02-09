@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <?php include("includes/analytics.php"); ?>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Ron's Homepage</title>
@@ -219,6 +218,7 @@
   </div>
 
   <script>
+    document.getElementById('y').textContent = new Date().getFullYear();
   </script>
 </body>
 </html>
