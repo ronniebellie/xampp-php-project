@@ -212,6 +212,11 @@
         <p>Separate your essential needs from discretionary wants to determine exactly how much portfolio you actually need for a secure retirement.</p>
         <a class="btn" href="#" onclick="return false;"><span class="badge-coming-soon">Coming Soon</span></a>
       </section>
+      <section class="card">
+        <h3>Managed Portfolio vs Vanguard Index Fund</h3>
+        <p>See the true cost of advisor fees - including opportunity cost - compared to low-cost Vanguard index funds.</p>
+        <a class="btn" href="managed-vs-vanguard/">Open</a>
+      </section>
     </main>
 
     <?php include __DIR__ . '/includes/footer.php'; ?>
