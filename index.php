@@ -74,6 +74,34 @@
     }
     .btn:hover{background:rgba(29,78,216,.14)}
 
+    /* Coming Soon Badge */
+    .card.coming-soon {
+      position: relative;
+      opacity: 0.85;
+    }
+    .card.coming-soon .btn {
+      background: #94a3b8;
+      color: #475569;
+      border-color: #cbd5e1;
+      cursor: not-allowed;
+    }
+    .card.coming-soon .btn:hover {
+      background: #94a3b8;
+      transform: none;
+    }
+    .badge-coming-soon {
+      display: inline-block;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
     hr.footer-sep {
       border: 0;
       border-top: 1px solid rgba(15,23,42,.12);
@@ -131,12 +159,14 @@
   </style>
 </head>
 <body>
+<!-- Premium Banner -->
+    <?php include('includes/premium-banner-include.php'); ?>
   <div class="wrap">
 
     <div class="topbar" role="banner">
       <div class="brand">
         <div class="mark" aria-hidden="true">RB</div>
-        <div class="brand-title">Calculators and tools for sound financial planning</div>
+        <div class="brand-title">Free web apps for sound financial planning</div>
       </div>
     </div>
 
@@ -175,7 +205,12 @@
         <p>Analyze the benefits of converting traditional IRA funds to Roth, considering current vs future tax brackets, RMDs, and Medicare IRMAA thresholds.</p>
         <a class="btn" href="roth-conv/">Open</a>
       </section>
-    </main>
+
+     <section class="card">
+        <h3>Required vs. Desired Spending Calculator</h3>
+        <p>Separate your essential needs from discretionary wants to determine exactly how much portfolio you actually need for a secure retirement.</p>
+        <a class="btn" href="#" onclick="return false;"><span class="badge-coming-soon">Coming Soon</span></a>
+      </section>
 
     <?php include __DIR__ . '/includes/footer.php'; ?>
 

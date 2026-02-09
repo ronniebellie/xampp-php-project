@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
+
+    <!-- Premium Banner -->
+    <?php include('../includes/premium-banner-include.php'); ?>
+
     <div class="wrap">
         <p style="margin-bottom: 20px;"><a href="../" style="text-decoration: none; color: #1d4ed8;">← Return to home page</a></p>
 
