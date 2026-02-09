@@ -12,7 +12,7 @@
     
     <div class="container">
         <p style="margin-bottom: 20px;"><a href="../" style="text-decoration: none; color: #1d4ed8;">← Return to home page</a></p>
-        
+
         <header>
             <h1>Managed Portfolio vs Vanguard Index Fund</h1>
             <p class="subtitle">See the true cost of advisor fees - including opportunity cost</p>
@@ -38,10 +38,10 @@
                 </div>
 
                 <div class="input-group">
-                    <label for="vanguardFee">Vanguard VTSAX Expense Ratio (%)</label>
-                    <input type="number" id="vanguardFee" value="0.04" min="0" max="1" step="0.01" readonly>
-                    <span class="help-text">Actual Vanguard Total Stock Market Index Fund fee</span>
-                </div>
+    <label for="vanguardFee">Vanguard Index Fund Expense Ratio (%)</label>
+    <input type="number" id="vanguardFee" value="0.04" min="0" max="1" step="0.01" readonly>
+    <span class="help-text">Typical Vanguard index fund expense ratio is about 0.04%</span>
+</div>
 
                 <div class="input-group">
                     <label for="years">Investment Timeline (Years)</label>
