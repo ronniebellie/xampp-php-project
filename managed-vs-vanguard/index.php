@@ -11,6 +11,8 @@
     <?php include('../includes/premium-banner-include.php'); ?>
     
     <div class="container">
+        <p style="margin-bottom: 20px;"><a href="../" style="text-decoration: none; color: #1d4ed8;">← Return to home page</a></p>
+        
         <header>
             <h1>Managed Portfolio vs Vanguard Index Fund</h1>
             <p class="subtitle">See the true cost of advisor fees - including opportunity cost</p>
