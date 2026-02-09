@@ -16,6 +16,10 @@
         <header>
             <h1>Managed Portfolio vs Vanguard Index Fund</h1>
             <p class="subtitle">See the true cost of advisor fees - including opportunity cost</p>
+            <hr style="margin: 25px 0; border: 0; border-top: 1px solid #e2e8f0;">
+<p style="font-size: 15px; color: #64748b; line-height: 1.6; margin-bottom: 0;">
+    <strong style="color: #1e293b;">What is a Vanguard index fund?</strong> A Vanguard index fund is an investment fund that matches the performance of the entire stock market (like the S&P 500) rather than trying to beat it. Because it doesn't require expensive managers picking stocks, index funds have very low fees—typically around 0.04% compared to 1% for managed portfolios.
+</p>
         </header>
 
         <div class="calculator-wrapper">
