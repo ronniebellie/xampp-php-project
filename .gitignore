@@ -1,2 +1,14 @@
+```
+
+**Type these lines:**
+```
 .DS_Store
+vendor/
+composer.lock
+includes/stripe_config.php
+includes/db_config.php.DS_Store
 xampp-php-project/
+vendor/
+composer.lock
+includes/stripe_config.php
+includes/db_config.php

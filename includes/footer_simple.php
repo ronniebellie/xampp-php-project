@@ -2,15 +2,6 @@
 
 <footer style="max-width: 980px; margin: 0 auto; padding: 0 20px 20px;">
   
-  <!-- Disclaimer Section -->
-  <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin-bottom: 25px; border-radius: 4px;">
-    <div style="font-size: 13px; line-height: 1.6; color: #92400e;">
-      <strong style="display: block; margin-bottom: 8px;">⚠️ Important Disclaimer</strong>
-      These calculators are provided for educational and informational purposes only. Results are estimates based on the information you provide and assumptions about future conditions, tax laws, and Social Security rules. Your actual results may vary. This site does not provide financial, tax, investment, or legal advice. Always consult with qualified professionals before making important financial decisions.
-      <a href="disclaimer.php" style="color: #92400e; text-decoration: underline; font-weight: 600; margin-left: 5px;">Read full disclaimer</a>
-    </div>
-  </div>
-
   <!-- Social Share Section -->
   <div style="text-align: center; margin-bottom: 20px;">
     <div style="margin-bottom: 8px; font-weight: 600; color: #555;">Share this site:</div>
@@ -30,13 +21,9 @@
     </div>
   </div>
 
-  <!-- Bottom Line: Copyright | Message + Donate | Contact -->
-  <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0; font-size: 14px; color: #666;">
-    <div>© <?php echo date('Y'); ?> Ron Belisle | <a href="mailto:ronbelisle@gmail.com" style="color: #1d4ed8; text-decoration: none; font-weight: 600;">Contact Support</a></div>
-    <div style="display: flex; align-items: center; gap: 10px;">
-      <span>If these tools are useful, please support future development.</span>
-      <a href="https://paypal.me/rongbelisle" target="_blank" rel="noopener noreferrer" style="padding: 8px 16px; background-color: #0070ba; color: #fff; text-decoration: none; border-radius: 4px; font-weight: 600; white-space: nowrap; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#005ea6'" onmouseout="this.style.backgroundColor='#0070ba'">Donate</a>
-    </div>
+  <!-- Bottom Line: Copyright Only -->
+  <div style="text-align: center; padding-top: 15px; border-top: 1px solid #e2e8f0; font-size: 14px; color: #666;">
+    <div>© <?php echo date('Y'); ?> Ron Belisle</div>
   </div>
 
   <!-- Mobile Stack -->
@@ -46,9 +33,6 @@
         flex-direction: column;
         align-items: center;
         text-align: center;
-      }
-      footer > div:last-child > div:last-child {
-        flex-direction: column;
       }
     }
   </style>
