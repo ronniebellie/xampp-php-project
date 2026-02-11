@@ -350,3 +350,84 @@ document.getElementById('rmdForm').addEventListener('submit', function(e) {
     const results = calculateProjection(data);
     displayResults(results, data);
 });
+// Premium Save/Load Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const saveBtn = document.getElementById('saveScenarioBtn');
+    const loadBtn = document.getElementById('loadScenarioBtn');
+    
+    if (saveBtn) {
+        saveBtn.addEventListener('click', saveScenario);
+    }
+    
+    if (loadBtn) {
+        loadBtn.addEventListener('click', loadScenario);
+    }
+});
+
+function saveScenario() {
+    const scenarioName = prompt('Enter a name for this scenario:', 'My RMD Plan');
+    if (!scenarioName) return;
+    
+    // Gather all form inputs
+    const formData = {
+        currentAge: document.getElementById('currentAge').value,
+        accountBalance: document.getElementById('accountBalance').value,
+        // Add all other input fields here
+    };
+    
+    fetch('/api/save_scenario.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            calculator_type: 'rmd-impact',
+            scenario_name: scenarioName,
+            scenario_data: formData
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('saveStatus').textContent = '✓ Saved!';
+            setTimeout(() => {
+                document.getElementById('saveStatus').textContent = '';
+            }, 3000);
+        } else {
+            alert('Error: ' + data.error);
+        }
+    });
+}
+
+function loadScenario() {
+    fetch('/api/load_scenarios.php?calculator_type=rmd-impact')
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) {
+            alert('Error: ' + data.error);
+            return;
+        }
+        
+        if (data.scenarios.length === 0) {
+            alert('No saved scenarios yet. Save your first one!');
+            return;
+        }
+        
+        // Show list of scenarios
+        let message = 'Select a scenario to load:\n\n';
+        data.scenarios.forEach((s, i) => {
+            message += `${i + 1}. ${s.name} (saved ${new Date(s.updated_at).toLocaleDateString()})\n`;
+        });
+        
+        const choice = prompt(message + '\nEnter number:');
+        const index = parseInt(choice) - 1;
+        
+        if (index >= 0 && index < data.scenarios.length) {
+            const scenario = data.scenarios[index];
+            // Load data into form
+            Object.keys(scenario.data).forEach(key => {
+                const input = document.getElementById(key);
+                if (input) input.value = scenario.data[key];
+            });
+            alert('Scenario loaded! Click Calculate to see results.');
+        }
+    });
+}
