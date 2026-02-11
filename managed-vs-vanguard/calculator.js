@@ -232,3 +232,83 @@ window.addEventListener('load', function() {
     // Optional: Auto-calculate on load
     // calculate();
 });
+// Premium Save/Load Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const saveBtn = document.getElementById('saveScenarioBtn');
+    const loadBtn = document.getElementById('loadScenarioBtn');
+    
+    if (saveBtn) {
+        saveBtn.addEventListener('click', saveScenario);
+    }
+    
+    if (loadBtn) {
+        loadBtn.addEventListener('click', loadScenario);
+    }
+});
+
+function saveScenario() {
+    const scenarioName = prompt('Enter a name for this scenario:', 'My Comparison');
+    if (!scenarioName) return;
+    
+    const formData = {
+        portfolioValue: document.getElementById('portfolioValue')?.value,
+        advisorFee: document.getElementById('advisorFee')?.value,
+        vanguardFee: document.getElementById('vanguardFee')?.value,
+        years: document.getElementById('years')?.value,
+        returnRate: document.getElementById('returnRate')?.value
+    };
+    
+    fetch('/api/save_scenario.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            calculator_type: 'managed-vs-vanguard',
+            scenario_name: scenarioName,
+            scenario_data: formData
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('saveStatus').textContent = '✓ Saved!';
+            setTimeout(() => {
+                document.getElementById('saveStatus').textContent = '';
+            }, 3000);
+        } else {
+            alert('Error: ' + data.error);
+        }
+    });
+}
+
+function loadScenario() {
+    fetch('/api/load_scenarios.php?calculator_type=managed-vs-vanguard')
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) {
+            alert('Error: ' + data.error);
+            return;
+        }
+        
+        if (data.scenarios.length === 0) {
+            alert('No saved scenarios yet. Save your first one!');
+            return;
+        }
+        
+        let message = 'Select a scenario to load:\n\n';
+        data.scenarios.forEach((s, i) => {
+            message += `${i + 1}. ${s.name} (saved ${new Date(s.updated_at).toLocaleDateString()})\n`;
+        });
+        
+        const choice = prompt(message + '\nEnter number:');
+        const index = parseInt(choice) - 1;
+        
+        if (index >= 0 && index < data.scenarios.length) {
+            const scenario = data.scenarios[index];
+            Object.keys(scenario.data).forEach(key => {
+                const input = document.getElementById(key);
+                if (input) input.value = scenario.data[key];
+            });
+            alert('Scenario loaded! Click Calculate to see results.');
+        }
+    });
+}
