@@ -1,3 +1,18 @@
+ <?php
+session_start();
+$isLoggedIn = isset($_SESSION['user_id']);
+$isPremium = false;
+if ($isLoggedIn) {
+    require_once '../includes/db_config.php';
+    $user_id = $_SESSION['user_id'];
+    $stmt = $conn->prepare("SELECT subscription_status FROM users WHERE id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    $isPremium = ($user['subscription_status'] === 'premium');
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -25,21 +40,7 @@
             <p>Required Minimum Distributions (RMDs) force you to withdraw a percentage of your tax-deferred retirement accounts starting at age 73. While they can feel intimidating, for most retirees with modest account balances, RMDs don't create a significant tax burden. This calculator helps you understand your specific situation and whether RMD planning strategies make sense for you.</p>
         </div>
 
-        <?php
-session_start();
-$isLoggedIn = isset($_SESSION['user_id']);
-$isPremium = false;
-if ($isLoggedIn) {
-    require_once '../includes/db_config.php';
-    $user_id = $_SESSION['user_id'];
-    $stmt = $conn->prepare("SELECT subscription_status FROM users WHERE id = ?");
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $user = $result->fetch_assoc();
-    $isPremium = ($user['subscription_status'] === 'premium');
-}
-?>
+       
 
 <?php if ($isPremium): ?>
 <div class="premium-features" style="background: #f0fff4; border: 2px solid #48bb78; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
