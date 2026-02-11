@@ -24,78 +24,34 @@
     line-height: 1.5;
 }
 
-.premium-banner-buttons {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.premium-banner-btn {
-    display: inline-block;
-    padding: 12px 24px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-.premium-banner-btn.primary {
-    background: #48bb78;
-    color: white;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.premium-banner-btn.primary:hover {
-    background: #38a169;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-}
-
-.premium-banner-btn.secondary {
-    background: transparent;
-    color: white;
-    border: 2px solid white;
-}
-
-.premium-banner-btn.secondary:hover {
-    background: rgba(255,255,255,0.1);
-}
-
-/* Coming Soon version */
 .premium-banner.coming-soon {
     background: linear-gradient(135deg, #805ad5 0%, #9f7aea 100%);
 }
 
-.premium-banner.coming-soon .premium-banner-buttons {
-    display: none;
+.premium-banner.premium-active {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
 }
 
 @media (max-width: 768px) {
     .premium-banner h3 {
         font-size: 20px;
     }
-    
     .premium-banner p {
         font-size: 14px;
-    }
-    
-    .premium-banner-buttons {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .premium-banner-btn {
-        width: 100%;
-        max-width: 300px;
     }
 }
 </style>
 
-<!-- DEPLOYMENT VERSION - Coming Soon (no clickable buttons) -->
+<?php if (isset($isPremium) && $isPremium): ?>
+<!-- Premium User - Show active status -->
+<div class="premium-banner premium-active">
+    <h3>✓ Premium Active</h3>
+    <p>You have full access to all premium features including save scenarios, PDF exports, and advanced projections.</p>
+</div>
+<?php else: ?>
+<!-- Free User - Show coming soon -->
 <div class="premium-banner coming-soon">
     <h3>🎯 New: Premium Features Available Soon</h3>
     <p>Save your scenarios, export professional reports, and unlock advanced projections. Free tools remain free forever.</p>
 </div>
+<?php endif; ?>
