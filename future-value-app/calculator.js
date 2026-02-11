@@ -444,3 +444,89 @@ document.getElementById('annuityForm').addEventListener('submit', function(e) {
     
     document.getElementById('annuityResults').scrollIntoView({ behavior: 'smooth' });
 });
+// Premium Save/Load Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const saveBtn = document.getElementById('saveScenarioBtn');
+    const loadBtn = document.getElementById('loadScenarioBtn');
+    
+    if (saveBtn) {
+        saveBtn.addEventListener('click', saveScenario);
+    }
+    
+    if (loadBtn) {
+        loadBtn.addEventListener('click', loadScenario);
+    }
+});
+
+function saveScenario() {
+    const scenarioName = prompt('Enter a name for this scenario:', 'My FV Plan');
+    if (!scenarioName) return;
+    
+    const formData = {
+        singleType: document.getElementById('singleType')?.value,
+        singleAmount: document.getElementById('singleAmount')?.value,
+        singleRate: document.getElementById('singleRate')?.value,
+        singleYears: document.getElementById('singleYears')?.value,
+        targetGoal: document.getElementById('targetGoal')?.value,
+        targetPresent: document.getElementById('targetPresent')?.value,
+        targetRate: document.getElementById('targetRate')?.value,
+        targetYears: document.getElementById('targetYears')?.value,
+        annuityPayment: document.getElementById('annuityPayment')?.value,
+        annuityRate: document.getElementById('annuityRate')?.value,
+        annuityYears: document.getElementById('annuityYears')?.value
+    };
+    
+    fetch('/api/save_scenario.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            calculator_type: 'future-value',
+            scenario_name: scenarioName,
+            scenario_data: formData
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('saveStatus').textContent = '✓ Saved!';
+            setTimeout(() => {
+                document.getElementById('saveStatus').textContent = '';
+            }, 3000);
+        } else {
+            alert('Error: ' + data.error);
+        }
+    });
+}
+
+function loadScenario() {
+    fetch('/api/load_scenarios.php?calculator_type=future-value')
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) {
+            alert('Error: ' + data.error);
+            return;
+        }
+        
+        if (data.scenarios.length === 0) {
+            alert('No saved scenarios yet. Save your first one!');
+            return;
+        }
+        
+        let message = 'Select a scenario to load:\n\n';
+        data.scenarios.forEach((s, i) => {
+            message += `${i + 1}. ${s.name} (saved ${new Date(s.updated_at).toLocaleDateString()})\n`;
+        });
+        
+        const choice = prompt(message + '\nEnter number:');
+        const index = parseInt(choice) - 1;
+        
+        if (index >= 0 && index < data.scenarios.length) {
+            const scenario = data.scenarios[index];
+            Object.keys(scenario.data).forEach(key => {
+                const input = document.getElementById(key);
+                if (input) input.value = scenario.data[key];
+            });
+            alert('Scenario loaded!');
+        }
+    });
+}
