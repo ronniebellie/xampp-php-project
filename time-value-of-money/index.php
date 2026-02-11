@@ -1,3 +1,19 @@
+<?php
+session_start();
+$isLoggedIn = isset($_SESSION['user_id']);
+$isPremium = false;
+if ($isLoggedIn) {
+    require_once '../includes/db_config.php';
+    $user_id = $_SESSION['user_id'];
+    $stmt = $conn->prepare("SELECT subscription_status FROM users WHERE id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    $isPremium = ($user['subscription_status'] === 'premium');
+}
+// Don't close PHP yet - keep variables in scope
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +23,15 @@
     <link rel="stylesheet" href="/css/styles.css" />
 </head>
 <body>
+  <!-- Premium Banner -->
+<?php include('../includes/premium-banner-include.php'); ?>
+
+<?php if ($isPremium): ?>
+<div class="premium-features" style="background: #f0fff4; border: 2px solid #48bb78; border-radius: 8px; padding: 20px; margin-bottom: 30px; max-width: 900px; margin-left: auto; margin-right: auto;">
+    <h3 style="margin-top: 0; color: #22543d;">✓ Premium Active</h3>
+    <p style="margin: 0;">Save scenarios available in individual calculators.</p>
+</div>
+<?php endif; ?>
   <div class="wrap">
     <header>
       <h1>Time Value of Money Calculators</h1>
