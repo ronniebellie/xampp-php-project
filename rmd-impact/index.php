@@ -1,4 +1,4 @@
- <?php
+<?php
 session_start();
 $isLoggedIn = isset($_SESSION['user_id']);
 $isPremium = false;
@@ -12,6 +12,7 @@ if ($isLoggedIn) {
     $user = $result->fetch_assoc();
     $isPremium = ($user['subscription_status'] === 'premium');
 }
+// Don't close PHP yet - keep variables in scope
 ?>
 <!DOCTYPE html>
 <html lang="en">
