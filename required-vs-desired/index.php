@@ -1,3 +1,19 @@
+<?php
+session_start();
+$isLoggedIn = isset($_SESSION['user_id']);
+$isPremium = false;
+if ($isLoggedIn) {
+    require_once '../includes/db_config.php';
+    $user_id = $_SESSION['user_id'];
+    $stmt = $conn->prepare("SELECT subscription_status FROM users WHERE id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    $isPremium = ($user['subscription_status'] === 'premium');
+}
+// Don't close PHP yet - keep variables in scope
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,6 +27,16 @@
 
     <!-- Premium Banner -->
     <?php include('../includes/premium-banner-include.php'); ?>
+<?php if ($isPremium): ?>
+<div class="premium-features" style="background: #f0fff4; border: 2px solid #48bb78; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+    <h3 style="margin-top: 0; color: #22543d;">💾 Premium: Save & Load Scenarios</h3>
+    <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+        <button type="button" id="saveScenarioBtn" class="btn-primary" style="background: #48bb78;">Save Current Scenario</button>
+        <button type="button" id="loadScenarioBtn" class="btn-secondary">Load Saved Scenario</button>
+        <span id="saveStatus" style="color: #22543d; font-weight: 600;"></span>
+    </div>
+</div>
+<?php endif; ?>
 
     <div class="wrap">
         <p style="margin-bottom: 20px;"><a href="../" style="text-decoration: none; color: #1d4ed8;">← Return to home page</a></p>
@@ -407,6 +433,28 @@
 
         // Auto-calculate on page load
         window.addEventListener('load', calculate);
-    </script>
+    id="saveScenarioBtn"
+id="loadScenarioBtn"
+id="saveStatus"
+id="calculatorForm"
+id="required-annual"
+id="desired-annual"
+id="ss-income"
+id="current-age"
+id="life-expectancy"
+id="inflation-rate"
+id="withdrawal-rate"
+id="portfolio-return"
+id="results"
+id="essential-portfolio"
+id="essential-gap"
+id="essential-years"
+id="full-portfolio"
+id="full-gap"
+id="full-years"
+id="comparison-tbody"
+id="balance-chart"
+id="projection-tbody-free"
+</script>
 </body>
 </html>
