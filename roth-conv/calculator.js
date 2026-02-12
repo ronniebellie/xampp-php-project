@@ -546,23 +546,18 @@ function loadScenario() {
             return;
         }
         
-        let message = 'Select a scenario to load (or type "d" + number to delete):
-
-';
+        let message = 'Select a scenario to load (or type "d" + number to delete):\n\n';
         data.scenarios.forEach((s, i) => {
-            message += `${i + 1}. ${s.name} (saved ${new Date(s.updated_at).toLocaleDateString()})
-`;
+            message += `${i + 1}. ${s.name} (saved ${new Date(s.updated_at).toLocaleDateString()})\n`;
         });
-        message += '
-Examples: Enter "1" to load, "d1" to delete';
+        message += '\nExamples: Enter "1" to load, "d1" to delete';
         
-        const choice = prompt(message + '
-
-Enter number or d+number:');
+        const choice = prompt(message + '\n\nEnter number or d+number:');
         if (!choice) return;
         
         if (choice.toLowerCase().startsWith('d')) {
-            const index = parseInt(choice.s            const index = parseInt(choice.s            const scenarios.length) {
+            const index = parseInt(choice.substring(1)) - 1;
+            if (index >= 0 && index < data.scenarios.length) {
                 const scenario = data.scenarios[index];
                 if (confirm(`Delete "${scenario.name}"? This cannot be undone.`)) {
                     fetch('/api/delete_scenario.php', {
