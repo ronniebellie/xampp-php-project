@@ -293,9 +293,14 @@ function displayResults(results, data) {
         }
     });
 
-    const tableData = results.filter(r => r.age >= 73 && (r.age - 73) % 5 === 0);
-    const tableBody = document.getElementById('tableBody');
-    tableBody.innerHTML = tableData.map(r => `
+    // Generate table data based on premium status
+const tableBody = document.getElementById('tableBody');
+let tableHTML = '';
+
+if (typeof isPremiumUser !== 'undefined' && isPremiumUser) {
+    // Premium: Show ALL years from 73 to 100
+    const tableData = results.filter(r => r.age >= 73);
+    tableHTML = tableData.map(r => `
         <tr>
             <td>${r.age}</td>
             <td>${formatCurrency(r.balance)}</td>
@@ -304,6 +309,59 @@ function displayResults(results, data) {
             <td>${r.taxBracket}%</td>
         </tr>
     `).join('');
+} else {
+    // Free: Show first 3 rows (ages 73, 78, 83), then blurred preview
+    const freeData = results.filter(r => r.age >= 73 && (r.age - 73) % 5 === 0).slice(0, 3);
+    tableHTML = freeData.map(r => `
+        <tr>
+            <td>${r.age}</td>
+            <td>${formatCurrency(r.balance)}</td>
+            <td>${formatCurrency(r.rmdAmount)}</td>
+            <td>${formatCurrency(r.totalIncome)}</td>
+            <td>${r.taxBracket}%</td>
+        </tr>
+    `).join('');
+    
+    // Add blurred preview rows
+    tableHTML += `
+        <tr style="filter: blur(4px); user-select: none; pointer-events: none;">
+            <td>88</td>
+            <td>$XXX,XXX</td>
+            <td>$XX,XXX</td>
+            <td>$XX,XXX</td>
+            <td>XX%</td>
+        </tr>
+        <tr style="filter: blur(4px); user-select: none; pointer-events: none;">
+            <td>93</td>
+            <td>$XXX,XXX</td>
+            <td>$XX,XXX</td>
+            <td>$XX,XXX</td>
+            <td>XX%</td>
+        </tr>
+        <tr style="filter: blur(4px); user-select: none; pointer-events: none;">
+            <td>98</td>
+            <td>$XXX,XXX</td>
+            <td>$XX,XXX</td>
+            <td>$XX,XXX</td>
+            <td>XX%</td>
+        </tr>
+    `;
+}
+
+tableBody.innerHTML = tableHTML;
+
+// Add premium upsell banner for free users
+if (typeof isPremiumUser === 'undefined' || !isPremiumUser) {
+    const tableSection = document.querySelector('.table-section');
+    const upsellBanner = document.createElement('div');
+    upsellBanner.style.cssText = 'margin-top: 20px; padding: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; text-align: center;';
+    upsellBanner.innerHTML = `
+        <h3 style="margin: 0 0 12px 0;">🔒 See Your Complete Retirement Timeline</h3>
+        <p style="margin: 0 0 16px 0; opacity: 0.95;">Upgrade to Premium to see year-by-year projections from age 73 to 100, plus save unlimited scenarios.</p>
+        <a href="../premium.html" style="display: inline-block; background: white; color: #667eea; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 700;">Upgrade to Premium</a>
+    `;
+    tableSection.appendChild(upsellBanner);
+}
 
     resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }

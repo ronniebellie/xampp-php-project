@@ -187,6 +187,9 @@ if ($isLoggedIn) {
         }
     }
     </script>
-    <script src="calculator.js"></script>
+    <script>
+    const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
+</script>
+<script src="calculator.js"></script>
 </body>
 </html>
