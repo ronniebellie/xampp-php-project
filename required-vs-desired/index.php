@@ -432,29 +432,122 @@ if ($isLoggedIn) {
         }
 
         // Auto-calculate on page load
+        // Auto-calculate on page load
         window.addEventListener('load', calculate);
-    id="saveScenarioBtn"
-id="loadScenarioBtn"
-id="saveStatus"
-id="calculatorForm"
-id="required-annual"
-id="desired-annual"
-id="ss-income"
-id="current-age"
-id="life-expectancy"
-id="inflation-rate"
-id="withdrawal-rate"
-id="portfolio-return"
-id="results"
-id="essential-portfolio"
-id="essential-gap"
-id="essential-years"
-id="full-portfolio"
-id="full-gap"
-id="full-years"
-id="comparison-tbody"
-id="balance-chart"
-id="projection-tbody-free"
-</script>
+
+        // Premium Save/Load Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const saveBtn = document.getElementById('saveScenarioBtn');
+            const loadBtn = document.getElementById('loadScenarioBtn');
+            
+            if (saveBtn) {
+                saveBtn.addEventListener('click', saveScenario);
+            }
+            
+            if (loadBtn) {
+                loadBtn.addEventListener('click', loadScenario);
+            }
+        });
+
+        function saveScenario() {
+            const scenarioName = prompt('Enter a name for this scenario:', 'My Spending Plan');
+            if (!scenarioName) return;
+            
+            const formData = {
+                requiredAnnual: document.getElementById('required-annual')?.value,
+                desiredAnnual: document.getElementById('desired-annual')?.value,
+                ssIncome: document.getElementById('ss-income')?.value,
+                currentAge: document.getElementById('current-age')?.value,
+                lifeExpectancy: document.getElementById('life-expectancy')?.value,
+                inflationRate: document.getElementById('inflation-rate')?.value,
+                withdrawalRate: document.getElementById('withdrawal-rate')?.value,
+                portfolioReturn: document.getElementById('portfolio-return')?.value
+            };
+            
+            fetch('/api/save_scenario.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    calculator_type: 'required-vs-desired',
+                    scenario_name: scenarioName,
+                    scenario_data: formData
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('saveStatus').textContent = '✓ Saved!';
+                    setTimeout(() => {
+                        document.getElementById('saveStatus').textContent = '';
+                    }, 3000);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
+        }
+
+        function loadScenario() {
+            fetch('/api/load_scenarios.php?calculator_type=required-vs-desired')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+                
+                if (data.scenarios.length === 0) {
+                    alert('No saved scenarios yet. Save your first one!');
+                    return;
+                }
+                
+                let message = 'Select a scenario to load (or type "d" + number to delete):\n\n';
+                data.scenarios.forEach((s, i) => {
+                    message += `${i + 1}. ${s.name} (saved ${new Date(s.updated_at).toLocaleDateString()})\n`;
+                });
+                message += '\nExamples: Enter "1" to load, "d1" to delete';
+                
+                const choice = prompt(message + '\n\nEnter number or d+number:');
+                if (!choice) return;
+                
+                if (choice.toLowerCase().startsWith('d')) {
+                    const index = parseInt(choice.substring(1)) - 1;
+                    if (index >= 0 && index < data.scenarios.length) {
+                        const scenario = data.scenarios[index];
+                        if (confirm(`Delete "${scenario.name}"? This cannot be undone.`)) {
+                            fetch('/api/delete_scenario.php', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({ scenario_id: scenario.id })
+                            })
+                            .then(res => res.json())
+                            .then(result => {
+                                if (result.success) {
+                                    alert('Scenario deleted!');
+                                } else {
+                                    alert('Error: ' + result.error);
+                                }
+                            });
+                        }
+                    }
+                } else {
+                    const index = parseInt(choice) - 1;
+                    if (index >= 0 && index < data.scenarios.length) {
+                        const scenario = data.scenarios[index];
+                        if (scenario.data.requiredAnnual) document.getElementById('required-annual').value = scenario.data.requiredAnnual;
+                        if (scenario.data.desiredAnnual) document.getElementById('desired-annual').value = scenario.data.desiredAnnual;
+                        if (scenario.data.ssIncome) document.getElementById('ss-income').value = scenario.data.ssIncome;
+                        if (scenario.data.currentAge) document.getElementById('current-age').value = scenario.data.currentAge;
+                        if (scenario.data.lifeExpectancy) document.getElementById('life-expectancy').value = scenario.data.lifeExpectancy;
+                        if (scenario.data.inflationRate) document.getElementById('inflation-rate').value = scenario.data.inflationRate;
+                        if (scenario.data.withdrawalRate) document.getElementById('withdrawal-rate').value = scenario.data.withdrawalRate;
+                        if (scenario.data.portfolioReturn) document.getElementById('portfolio-return').value = scenario.data.portfolioReturn;
+                        alert('Scenario loaded! Click Calculate to see results.');
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
 </body>
 </html>
