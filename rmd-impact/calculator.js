@@ -411,23 +411,48 @@ function loadScenario() {
             return;
         }
         
-        // Show list of scenarios
-        let message = 'Select a scenario to load:\n\n';
+        // Show list of scenarios with delete option
+        let message = 'Select a scenario to load (or type "d" + number to delete):\n\n';
         data.scenarios.forEach((s, i) => {
             message += `${i + 1}. ${s.name} (saved ${new Date(s.updated_at).toLocaleDateString()})\n`;
         });
+        message += '\nExamples: Enter "1" to load, "d1" to delete';
         
-        const choice = prompt(message + '\nEnter number:');
-        const index = parseInt(choice) - 1;
+        const choice = prompt(message + '\n\nEnter number or d+number:');
+        if (!choice) return;
         
-        if (index >= 0 && index < data.scenarios.length) {
-            const scenario = data.scenarios[index];
-            // Load data into form
-            Object.keys(scenario.data).forEach(key => {
-                const input = document.getElementById(key);
-                if (input) input.value = scenario.data[key];
-            });
-            alert('Scenario loaded! Click Calculate to see results.');
+        // Check if delete command
+        if (choice.toLowerCase().startsWith('d')) {
+            const index = parseInt(choice.substring(1)) - 1;
+            if (index >= 0 && index < data.scenarios.length) {
+                const scenario = data.scenarios[index];
+                if (confirm(`Delete "${scenario.name}"? This cannot be undone.`)) {
+                    fetch('/api/delete_scenario.php', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ scenario_id: scenario.id })
+                    })
+                    .then(res => res.json())
+                    .then(result => {
+                        if (result.success) {
+                            alert('Scenario deleted!');
+                        } else {
+                            alert('Error: ' + result.error);
+                        }
+                    });
+                }
+            }
+        } else {
+            // Load scenario
+            const index = parseInt(choice) - 1;
+            if (index >= 0 && index < data.scenarios.length) {
+                const scenario = data.scenarios[index];
+                Object.keys(scenario.data).forEach(key => {
+                    const input = document.getElementById(key);
+                    if (input) input.value = scenario.data[key];
+                });
+                alert('Scenario loaded! Click Calculate to see results.');
+            }
         }
     });
 }
