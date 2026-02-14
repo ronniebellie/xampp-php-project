@@ -420,6 +420,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (loadBtn) {
         loadBtn.addEventListener('click', loadScenario);
     }
+        const pdfBtn = document.getElementById('downloadPdfBtn');
+    if (pdfBtn) {
+        pdfBtn.addEventListener('click', downloadPDF);
+    }
 });
 
 function saveScenario() {
@@ -514,12 +518,6 @@ function loadScenario() {
         }
     });
     // PDF Download Functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const pdfBtn = document.getElementById('downloadPdfBtn');
-    if (pdfBtn) {
-        pdfBtn.addEventListener('click', downloadPDF);
-    }
-});
 
 function downloadPDF() {
     // Check if results are calculated
@@ -588,3 +586,4 @@ function downloadPDF() {
         alert('Error generating PDF: ' + error.message);
     });
 }
+
