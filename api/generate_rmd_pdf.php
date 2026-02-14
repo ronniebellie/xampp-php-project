@@ -165,6 +165,30 @@ $summaryHtml = '<table border="0" cellpadding="10">
 $pdf->writeHTML($summaryHtml, true, false, true, false, '');
 $pdf->Ln(8);
 
+// Chart Section
+if (isset($data['chartImage']) && !empty($data['chartImage'])) {
+    $pdf->SetFont('helvetica', 'B', 16);
+    $pdf->SetTextColor(102, 126, 234);
+    $pdf->Cell(0, 8, 'Account Balance & RMD Over Time', 0, 1);
+    $pdf->SetTextColor(0, 0, 0);
+    $pdf->Ln(3);
+    
+    // Decode base64 image
+    $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $data['chartImage']));
+    
+    // Save temporarily
+    $tempFile = tempnam(sys_get_temp_dir(), 'chart_') . '.png';
+    file_put_contents($tempFile, $imageData);
+    
+    // Add image to PDF (centered, 170mm wide)
+    $pdf->Image($tempFile, 20, $pdf->GetY(), 170, 0, 'PNG');
+    
+    // Clean up
+    unlink($tempFile);
+    
+    $pdf->Ln(85); // Space after chart
+}
+
 // What This Means Section
 $pdf->SetFont('helvetica', 'B', 16);
 $pdf->SetTextColor(102, 126, 234);
