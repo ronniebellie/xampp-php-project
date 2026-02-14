@@ -151,31 +151,7 @@ function generateInterpretation(results, data) {
     const firstRMD = results.find(r => r.rmdAmount > 0);
     const age80Data = results.find(r => r.age === 80);
     const age90Data = results.find(r => r.age === 90);
-    // Chart Section
-if (isset($data['chartImage']) && !empty($data['chartImage'])) {
-    $pdf->SetFont('helvetica', 'B', 16);
-    $pdf->SetTextColor(102, 126, 234);
-    $pdf->Cell(0, 8, 'Account Balance & RMD Projection', 0, 1);
-    $pdf->SetTextColor(0, 0, 0);
-    $pdf->Ln(3);
     
-    // Decode base64 image
-    $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $data['chartImage']));
-    
-    // Save temporarily
-    $tempFile = tempnam(sys_get_temp_dir(), 'chart_') . '.png';
-    file_put_contents($tempFile, $imageData);
-    
-    // Add image to PDF (centered, 170mm wide)
-    $pdf->Image($tempFile, 20, $pdf->GetY(), 170, 0, 'PNG');
-    
-    // Clean up
-    unlink($tempFile);
-    
-    $pdf->Ln(10);
-}
-
-// What This Means Section
     let interpretation = '<h3>What This Means For You</h3><ul>';
 
     // Mention if using Joint Life table
