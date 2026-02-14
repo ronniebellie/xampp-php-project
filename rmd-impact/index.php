@@ -45,10 +45,11 @@ if ($isLoggedIn) {
 
 <?php if ($isPremium): ?>
 <div class="premium-features" style="background: #f0fff4; border: 2px solid #48bb78; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
-    <h3 style="margin-top: 0; color: #22543d;">💾 Premium: Save & Load Scenarios</h3>
+    <h3 style="margin-top: 0; color: #22543d;">💾 Premium Features</h3>
     <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
-        <button type="button" id="saveScenarioBtn" class="btn-primary" style="background: #48bb78;">Save Current Scenario</button>
-        <button type="button" id="loadScenarioBtn" class="btn-secondary">Load Saved Scenario</button>
+        <button type="button" id="saveScenarioBtn" class="btn-primary" style="background: #48bb78;">Save Scenario</button>
+        <button type="button" id="loadScenarioBtn" class="btn-secondary">Load Scenario</button>
+        <button type="button" id="downloadPdfBtn" class="btn-primary" style="background: #e53e3e; color: white;">📄 Download PDF</button>
         <span id="saveStatus" style="color: #22543d; font-weight: 600;"></span>
     </div>
 </div>

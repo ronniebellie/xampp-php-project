@@ -513,4 +513,78 @@ function loadScenario() {
             }
         }
     });
+    // PDF Download Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const pdfBtn = document.getElementById('downloadPdfBtn');
+    if (pdfBtn) {
+        pdfBtn.addEventListener('click', downloadPDF);
+    }
+});
+
+function downloadPDF() {
+    // Check if results are calculated
+    const resultsDiv = document.getElementById('results');
+    if (resultsDiv.style.display === 'none') {
+        alert('Please calculate your RMD impact first before downloading the PDF.');
+        return;
+    }
+
+    // Gather all the data
+    const data = {
+        currentAge: parseInt(document.getElementById('currentAge').value),
+        accountBalance: parseFloat(document.getElementById('accountBalance').value),
+        growthRate: parseFloat(document.getElementById('growthRate').value),
+        socialSecurity: parseFloat(document.getElementById('socialSecurity').value) || 0,
+        pension: parseFloat(document.getElementById('pension').value) || 0,
+        otherIncome: parseFloat(document.getElementById('otherIncome').value) || 0,
+        filingStatus: document.getElementById('filingStatus').value,
+        useStandardDeduction: document.getElementById('standardDeduction').value === 'yes',
+        isSpouseBeneficiary: document.getElementById('spouseBeneficiary').value === 'yes',
+        spouseAge: document.getElementById('spouseBeneficiary').value === 'yes' ? 
+            parseInt(document.getElementById('spouseAge').value) : null
+    };
+
+    // Get summary data from the page
+    const summaryCards = document.querySelectorAll('.summary-value');
+    const summary = {
+        firstRMD: parseFloat(summaryCards[0].textContent.replace(/[$,]/g, '')),
+        age80RMD: parseFloat(summaryCards[1].textContent.replace(/[$,]/g, '')),
+        age90RMD: parseFloat(summaryCards[2].textContent.replace(/[$,]/g, '')),
+        peakTaxBracket: parseInt(summaryCards[3].textContent.replace('%', ''))
+    };
+
+    // Recalculate full projection for PDF
+    const results = calculateProjection(data);
+    const projections = results.filter(r => r.age >= 73);
+
+    // Send to PDF API
+    fetch('/api/generate_rmd_pdf.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            ...data,
+            summary: summary,
+            projections: projections
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('PDF generation failed');
+        }
+        return response.blob();
+    })
+    .then(blob => {
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'RMD_Analysis_' + new Date().toISOString().split('T')[0] + '.pdf';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    })
+    .catch(error => {
+        alert('Error generating PDF: ' + error.message);
+    });
 }
