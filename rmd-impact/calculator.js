@@ -294,74 +294,74 @@ function displayResults(results, data) {
     });
 
     // Generate table data based on premium status
-const tableBody = document.getElementById('tableBody');
-let tableHTML = '';
+    const tableBody = document.getElementById('tableBody');
+    let tableHTML = '';
 
-if (typeof isPremiumUser !== 'undefined' && isPremiumUser) {
-    // Premium: Show ALL years from 73 to 100
-    const tableData = results.filter(r => r.age >= 73);
-    tableHTML = tableData.map(r => `
-        <tr>
-            <td>${r.age}</td>
-            <td>${formatCurrency(r.balance)}</td>
-            <td>${formatCurrency(r.rmdAmount)}</td>
-            <td>${formatCurrency(r.totalIncome)}</td>
-            <td>${r.taxBracket}%</td>
-        </tr>
-    `).join('');
-} else {
-    // Free: Show first 3 rows (ages 73, 78, 83), then blurred preview
-    const freeData = results.filter(r => r.age >= 73 && (r.age - 73) % 5 === 0).slice(0, 3);
-    tableHTML = freeData.map(r => `
-        <tr>
-            <td>${r.age}</td>
-            <td>${formatCurrency(r.balance)}</td>
-            <td>${formatCurrency(r.rmdAmount)}</td>
-            <td>${formatCurrency(r.totalIncome)}</td>
-            <td>${r.taxBracket}%</td>
-        </tr>
-    `).join('');
-    
-    // Add blurred preview rows
-    tableHTML += `
-        <tr style="filter: blur(4px); user-select: none; pointer-events: none;">
-            <td>88</td>
-            <td>$XXX,XXX</td>
-            <td>$XX,XXX</td>
-            <td>$XX,XXX</td>
-            <td>XX%</td>
-        </tr>
-        <tr style="filter: blur(4px); user-select: none; pointer-events: none;">
-            <td>93</td>
-            <td>$XXX,XXX</td>
-            <td>$XX,XXX</td>
-            <td>$XX,XXX</td>
-            <td>XX%</td>
-        </tr>
-        <tr style="filter: blur(4px); user-select: none; pointer-events: none;">
-            <td>98</td>
-            <td>$XXX,XXX</td>
-            <td>$XX,XXX</td>
-            <td>$XX,XXX</td>
-            <td>XX%</td>
-        </tr>
-    `;
-}
+    if (typeof isPremiumUser !== 'undefined' && isPremiumUser) {
+        // Premium: Show ALL years from 73 to 100
+        const tableData = results.filter(r => r.age >= 73);
+        tableHTML = tableData.map(r => `
+            <tr>
+                <td>${r.age}</td>
+                <td>${formatCurrency(r.balance)}</td>
+                <td>${formatCurrency(r.rmdAmount)}</td>
+                <td>${formatCurrency(r.totalIncome)}</td>
+                <td>${r.taxBracket}%</td>
+            </tr>
+        `).join('');
+    } else {
+        // Free: Show first 3 rows (ages 73, 78, 83), then blurred preview
+        const freeData = results.filter(r => r.age >= 73 && (r.age - 73) % 5 === 0).slice(0, 3);
+        tableHTML = freeData.map(r => `
+            <tr>
+                <td>${r.age}</td>
+                <td>${formatCurrency(r.balance)}</td>
+                <td>${formatCurrency(r.rmdAmount)}</td>
+                <td>${formatCurrency(r.totalIncome)}</td>
+                <td>${r.taxBracket}%</td>
+            </tr>
+        `).join('');
+        
+        // Add blurred preview rows
+        tableHTML += `
+            <tr style="filter: blur(4px); user-select: none; pointer-events: none;">
+                <td>88</td>
+                <td>$XXX,XXX</td>
+                <td>$XX,XXX</td>
+                <td>$XX,XXX</td>
+                <td>XX%</td>
+            </tr>
+            <tr style="filter: blur(4px); user-select: none; pointer-events: none;">
+                <td>93</td>
+                <td>$XXX,XXX</td>
+                <td>$XX,XXX</td>
+                <td>$XX,XXX</td>
+                <td>XX%</td>
+            </tr>
+            <tr style="filter: blur(4px); user-select: none; pointer-events: none;">
+                <td>98</td>
+                <td>$XXX,XXX</td>
+                <td>$XX,XXX</td>
+                <td>$XX,XXX</td>
+                <td>XX%</td>
+            </tr>
+        `;
+    }
 
-tableBody.innerHTML = tableHTML;
+    tableBody.innerHTML = tableHTML;
 
-// Add premium upsell banner for free users
-if (typeof isPremiumUser === 'undefined' || !isPremiumUser) {
-    const tableSection = document.querySelector('.table-section');
-    const upsellBanner = document.createElement('div');
-    upsellBanner.style.cssText = 'margin-top: 20px; padding: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; text-align: center;';
-    upsellBanner.innerHTML = `
-        <h3 style="margin: 0 0 12px 0;">🔒 See Your Complete Retirement Timeline</h3>
-        <p style="margin: 0 0 16px 0; opacity: 0.95;">Upgrade to Premium to see year-by-year projections from age 73 to 100, plus save unlimited scenarios.</p>
-        <a href="../premium.html" style="display: inline-block; background: white; color: #667eea; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 700;">Upgrade to Premium</a>
-    `;
-    tableSection.appendChild(upsellBanner);
-}
+    // Add premium upsell banner for free users
+    if (typeof isPremiumUser === 'undefined' || !isPremiumUser) {
+        const tableSection = document.querySelector('.table-section');
+        const upsellBanner = document.createElement('div');
+        upsellBanner.style.cssText = 'margin-top: 20px; padding: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; text-align: center;';
+        upsellBanner.innerHTML = `
+            <h3 style="margin: 0 0 12px 0;">🔒 See Your Complete Retirement Timeline</h3>
+            <p style="margin: 0 0 16px 0; opacity: 0.95;">Upgrade to Premium to see year-by-year projections from age 73 to 100, plus save unlimited scenarios.</p>
+            <a href="../premium.html" style="display: inline-block; background: white; color: #667eea; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 700;">Upgrade to Premium</a>
+        `;
+        tableSection.appendChild(upsellBanner);
+    }
 
     resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -408,10 +408,12 @@ document.getElementById('rmdForm').addEventListener('submit', function(e) {
     const results = calculateProjection(data);
     displayResults(results, data);
 });
-// Premium Save/Load Functionality
+
+// Premium Save/Load/PDF Functionality
 document.addEventListener('DOMContentLoaded', function() {
     const saveBtn = document.getElementById('saveScenarioBtn');
     const loadBtn = document.getElementById('loadScenarioBtn');
+    const pdfBtn = document.getElementById('downloadPdfBtn');
     
     if (saveBtn) {
         saveBtn.addEventListener('click', saveScenario);
@@ -420,7 +422,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (loadBtn) {
         loadBtn.addEventListener('click', loadScenario);
     }
-        const pdfBtn = document.getElementById('downloadPdfBtn');
+    
     if (pdfBtn) {
         pdfBtn.addEventListener('click', downloadPDF);
     }
@@ -434,7 +436,14 @@ function saveScenario() {
     const formData = {
         currentAge: document.getElementById('currentAge').value,
         accountBalance: document.getElementById('accountBalance').value,
-        // Add all other input fields here
+        growthRate: document.getElementById('growthRate').value,
+        socialSecurity: document.getElementById('socialSecurity').value,
+        pension: document.getElementById('pension').value,
+        otherIncome: document.getElementById('otherIncome').value,
+        filingStatus: document.getElementById('filingStatus').value,
+        standardDeduction: document.getElementById('standardDeduction').value,
+        spouseBeneficiary: document.getElementById('spouseBeneficiary').value,
+        spouseAge: document.getElementById('spouseAge').value
     };
     
     fetch('/api/save_scenario.php', {
@@ -473,7 +482,6 @@ function loadScenario() {
             return;
         }
         
-        // Show list of scenarios with delete option
         let message = 'Select a scenario to load (or type "d" + number to delete):\n\n';
         data.scenarios.forEach((s, i) => {
             message += `${i + 1}. ${s.name} (saved ${new Date(s.updated_at).toLocaleDateString()})\n`;
@@ -483,7 +491,6 @@ function loadScenario() {
         const choice = prompt(message + '\n\nEnter number or d+number:');
         if (!choice) return;
         
-        // Check if delete command
         if (choice.toLowerCase().startsWith('d')) {
             const index = parseInt(choice.substring(1)) - 1;
             if (index >= 0 && index < data.scenarios.length) {
@@ -505,7 +512,6 @@ function loadScenario() {
                 }
             }
         } else {
-            // Load scenario
             const index = parseInt(choice) - 1;
             if (index >= 0 && index < data.scenarios.length) {
                 const scenario = data.scenarios[index];
@@ -517,17 +523,15 @@ function loadScenario() {
             }
         }
     });
-    // PDF Download Functionality
+}
 
 function downloadPDF() {
-    // Check if results are calculated
     const resultsDiv = document.getElementById('results');
     if (resultsDiv.style.display === 'none') {
         alert('Please calculate your RMD impact first before downloading the PDF.');
         return;
     }
 
-    // Gather all the data
     const data = {
         currentAge: parseInt(document.getElementById('currentAge').value),
         accountBalance: parseFloat(document.getElementById('accountBalance').value),
@@ -542,7 +546,6 @@ function downloadPDF() {
             parseInt(document.getElementById('spouseAge').value) : null
     };
 
-    // Get summary data from the page
     const summaryCards = document.querySelectorAll('.summary-value');
     const summary = {
         firstRMD: parseFloat(summaryCards[0].textContent.replace(/[$,]/g, '')),
@@ -551,11 +554,9 @@ function downloadPDF() {
         peakTaxBracket: parseInt(summaryCards[3].textContent.replace('%', ''))
     };
 
-    // Recalculate full projection for PDF
     const results = calculateProjection(data);
     const projections = results.filter(r => r.age >= 73);
 
-    // Send to PDF API
     fetch('/api/generate_rmd_pdf.php', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -572,7 +573,6 @@ function downloadPDF() {
         return response.blob();
     })
     .then(blob => {
-        // Create download link
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -586,4 +586,3 @@ function downloadPDF() {
         alert('Error generating PDF: ' + error.message);
     });
 }
-
