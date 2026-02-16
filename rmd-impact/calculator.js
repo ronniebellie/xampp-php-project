@@ -573,11 +573,25 @@ function downloadPDF() {
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error('PDF generation failed');
+            return response.text().then(t => {
+                let msg = 'PDF generation failed';
+                try {
+                    const j = JSON.parse(t);
+                    if (j.error) msg = j.error;
+                } catch (_) {}
+                throw new Error(msg);
+            });
+        }
+        const ct = response.headers.get('Content-Type') || '';
+        if (ct.indexOf('application/pdf') === -1) {
+            throw new Error('Server did not return a PDF. You may need to log in again or refresh.');
         }
         return response.blob();
     })
     .then(blob => {
+        if (blob.type && blob.type.indexOf('pdf') === -1) {
+            throw new Error('Download was not a PDF. Try again or check your login.');
+        }
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
