@@ -612,9 +612,10 @@ function downloadPDF() {
 }
 
 function downloadCSV() {
-    // Check if results are displayed
-    const resultsTable = document.getElementById('resultsTable');
-    if (!resultsTable || resultsTable.querySelectorAll('tbody tr').length === 0) {
+    // Check if results are displayed (check for summary cards or chart)
+    const summaryCards = document.querySelectorAll('.summary-value');
+    const chartCanvas = document.getElementById('rmdChart');
+    if (summaryCards.length === 0 && (!chartCanvas || !myChart)) {
         alert('Please calculate your RMD projection first.');
         return;
     }
