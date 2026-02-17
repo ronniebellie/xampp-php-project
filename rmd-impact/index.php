@@ -61,12 +61,12 @@ if ($isLoggedIn) {
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                 <div>
                     <label for="currentAge" style="display: block; margin-bottom: 5px; font-weight: 600;">Your Current Age</label>
-                    <input type="number" id="currentAge" min="50" max="100" value="60" required style="width: 100%;">
+                    <input type="number" id="currentAge" min="50" max="100" value="68" required style="width: 100%;">
                     <small style="color: #666;">Enter your age today</small>
                 </div>
                 <div>
                     <label for="accountBalance" style="display: block; margin-bottom: 5px; font-weight: 600;">Tax-Deferred Account Balance (as of 12/31 last year) ($)</label>
-                    <input type="number" id="accountBalance" min="0" step="1000" value="150000" required style="width: 100%;">
+                    <input type="number" id="accountBalance" min="0" step="1000" value="1100000" required style="width: 100%;">
                     <small style="color: #666;">Traditional IRA, 401(k), etc. - exclude Roth accounts</small>
                 </div>
                 <div>
@@ -81,13 +81,13 @@ if ($isLoggedIn) {
                     <label for="spouseBeneficiary" style="display: block; margin-bottom: 5px; font-weight: 600;">Is your spouse the sole beneficiary?</label>
                     <select id="spouseBeneficiary" onchange="toggleSpouseAge()" style="width: 100%;">
                         <option value="no">No</option>
-                        <option value="yes">Yes</option>
+                        <option value="yes" selected>Yes</option>
                     </select>
                     <small style="color: #666;">Used to determine which IRS life expectancy table applies</small>
                 </div>
-                <div id="spouseAgeGroup" style="display: none;">
+                <div id="spouseAgeGroup" style="display: block;">
                     <label for="spouseAge" style="display: block; margin-bottom: 5px; font-weight: 600;">Spouse's Current Age</label>
-                    <input type="number" id="spouseAge" min="18" max="100" value="55" style="width: 100%;">
+                    <input type="number" id="spouseAge" min="18" max="100" value="68" style="width: 100%;">
                     <small style="color: #666;">Only needed if spouse is more than 10 years younger</small>
                 </div>
             </div>
@@ -96,7 +96,7 @@ if ($isLoggedIn) {
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                 <div>
                     <label for="socialSecurity" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Social Security Benefits ($)</label>
-                    <input type="number" id="socialSecurity" min="0" step="1000" value="30000" style="width: 100%;">
+                    <input type="number" id="socialSecurity" min="0" step="1000" value="55000" style="width: 100%;">
                     <small style="color: #666;">Expected annual amount (0 if not yet claiming)</small>
                 </div>
                 <div>

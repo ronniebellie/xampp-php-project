@@ -620,13 +620,6 @@ function downloadCSV() {
         return;
     }
 
-    // Get chart image if available
-    let chartImage = null;
-    const chartCanvas = document.getElementById('rmdChart');
-    if (chartCanvas && myChart) {
-        chartImage = chartCanvas.toDataURL('image/png');
-    }
-
     // Gather form data (same as PDF)
     const data = {
         currentAge: parseInt(document.getElementById('currentAge').value),
@@ -642,7 +635,6 @@ function downloadCSV() {
             parseInt(document.getElementById('spouseAge').value) : null
     };
 
-    const summaryCards = document.querySelectorAll('.summary-value');
     const summary = {
         firstRMD: parseFloat(summaryCards[0].textContent.replace(/[$,]/g, '')),
         age80RMD: parseFloat(summaryCards[1].textContent.replace(/[$,]/g, '')),
