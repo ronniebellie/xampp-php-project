@@ -49,6 +49,7 @@ if ($isLoggedIn) {
     <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
         <button type="button" id="saveScenarioBtn" class="btn-primary" style="background: #48bb78;">Save Scenario</button>
         <button type="button" id="loadScenarioBtn" class="btn-secondary">Load Scenario</button>
+        <button type="button" id="compareScenariosBtn" class="btn-primary" style="background: #f59e0b; color: white;">⚖️ Compare Scenarios</button>
         <button type="button" id="downloadPdfBtn" class="btn-primary" style="background: #e53e3e; color: white;">📄 Download PDF</button>
         <button type="button" id="downloadCsvBtn" class="btn-primary" style="background: #3182ce; color: white;">📊 Export CSV</button>
         <button type="button" id="downloadCalendarBtn" class="btn-primary" style="background: #805ad5; color: white;">📅 RMD Calendar</button>

@@ -413,6 +413,7 @@ document.getElementById('rmdForm').addEventListener('submit', function(e) {
 document.addEventListener('DOMContentLoaded', function() {
     const saveBtn = document.getElementById('saveScenarioBtn');
     const loadBtn = document.getElementById('loadScenarioBtn');
+    const compareBtn = document.getElementById('compareScenariosBtn');
     const pdfBtn = document.getElementById('downloadPdfBtn');
     const csvBtn = document.getElementById('downloadCsvBtn');
     const calendarBtn = document.getElementById('downloadCalendarBtn');
@@ -423,6 +424,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (loadBtn) {
         loadBtn.addEventListener('click', loadScenario);
+    }
+    
+    if (compareBtn) {
+        compareBtn.addEventListener('click', compareScenarios);
     }
     
     if (pdfBtn) {
@@ -533,6 +538,176 @@ function loadScenario() {
             }
         }
     });
+}
+
+function compareScenarios() {
+    fetch('/api/load_scenarios.php?calculator_type=rmd-impact')
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) {
+            alert('Error: ' + data.error);
+            return;
+        }
+        
+        if (data.scenarios.length < 2) {
+            alert('You need at least 2 saved scenarios to compare. Save more scenarios first!');
+            return;
+        }
+        
+        let message = 'Select TWO scenarios to compare:\n\n';
+        data.scenarios.forEach((s, i) => {
+            message += `${i + 1}. ${s.name}\n`;
+        });
+        message += '\nEnter two numbers separated by comma (e.g., "1,2"):';
+        
+        const choice = prompt(message);
+        if (!choice) return;
+        
+        const parts = choice.split(',').map(s => parseInt(s.trim()) - 1);
+        if (parts.length !== 2 || parts[0] < 0 || parts[0] >= data.scenarios.length ||
+            parts[1] < 0 || parts[1] >= data.scenarios.length || parts[0] === parts[1]) {
+            alert('Invalid selection. Please enter two different numbers (e.g., "1,2").');
+            return;
+        }
+        
+        const scenario1 = data.scenarios[parts[0]];
+        const scenario2 = data.scenarios[parts[1]];
+        
+        // Convert saved data to format needed for calculateProjection
+        const data1 = {
+            currentAge: parseInt(scenario1.data.currentAge),
+            accountBalance: parseFloat(scenario1.data.accountBalance),
+            growthRate: parseFloat(scenario1.data.growthRate),
+            socialSecurity: parseFloat(scenario1.data.socialSecurity) || 0,
+            pension: parseFloat(scenario1.data.pension) || 0,
+            otherIncome: parseFloat(scenario1.data.otherIncome) || 0,
+            filingStatus: scenario1.data.filingStatus,
+            useStandardDeduction: scenario1.data.standardDeduction === 'yes',
+            isSpouseBeneficiary: scenario1.data.spouseBeneficiary === 'yes',
+            spouseAge: scenario1.data.spouseBeneficiary === 'yes' && scenario1.data.spouseAge ? 
+                parseInt(scenario1.data.spouseAge) : null
+        };
+        
+        const data2 = {
+            currentAge: parseInt(scenario2.data.currentAge),
+            accountBalance: parseFloat(scenario2.data.accountBalance),
+            growthRate: parseFloat(scenario2.data.growthRate),
+            socialSecurity: parseFloat(scenario2.data.socialSecurity) || 0,
+            pension: parseFloat(scenario2.data.pension) || 0,
+            otherIncome: parseFloat(scenario2.data.otherIncome) || 0,
+            filingStatus: scenario2.data.filingStatus,
+            useStandardDeduction: scenario2.data.standardDeduction === 'yes',
+            isSpouseBeneficiary: scenario2.data.spouseBeneficiary === 'yes',
+            spouseAge: scenario2.data.spouseBeneficiary === 'yes' && scenario2.data.spouseAge ? 
+                parseInt(scenario2.data.spouseAge) : null
+        };
+        
+        const results1 = calculateProjection(data1);
+        const results2 = calculateProjection(data2);
+        
+        // Show comparison
+        showComparison(scenario1.name, scenario2.name, results1, results2, data1, data2);
+    });
+}
+
+function showComparison(name1, name2, results1, results2, data1, data2) {
+    // Create comparison container
+    const resultsDiv = document.getElementById('results');
+    if (resultsDiv.style.display === 'none') {
+        resultsDiv.style.display = 'block';
+    }
+    
+    // Scroll to results
+    resultsDiv.scrollIntoView({ behavior: 'smooth' });
+    
+    // Create comparison HTML
+    const comparisonHTML = `
+        <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+            <h2 style="margin-top: 0; color: #92400e;">⚖️ Scenario Comparison</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                <div>
+                    <h3 style="color: #667eea; margin-bottom: 10px;">${name1}</h3>
+                    <div style="font-size: 0.9em; color: #666;">
+                        <div>Age: ${data1.currentAge} | Balance: $${data1.accountBalance.toLocaleString()}</div>
+                        <div>Growth: ${data1.growthRate}% | SS: $${data1.socialSecurity.toLocaleString()}</div>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="color: #e53e3e; margin-bottom: 10px;">${name2}</h3>
+                    <div style="font-size: 0.9em; color: #666;">
+                        <div>Age: ${data2.currentAge} | Balance: $${data2.accountBalance.toLocaleString()}</div>
+                        <div>Growth: ${data2.growthRate}% | SS: $${data2.socialSecurity.toLocaleString()}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <h3 style="margin-bottom: 15px;">Key Differences</h3>
+            <div id="comparisonTable"></div>
+        </div>
+    `;
+    
+    // Insert comparison at top of results
+    const resultsContent = resultsDiv.innerHTML;
+    resultsDiv.innerHTML = comparisonHTML + resultsContent;
+    
+    // Build comparison table
+    const firstRMD1 = results1.find(r => r.rmdAmount > 0);
+    const firstRMD2 = results2.find(r => r.rmdAmount > 0);
+    const age80_1 = results1.find(r => r.age === 80) || firstRMD1;
+    const age80_2 = results2.find(r => r.age === 80) || firstRMD2;
+    const age90_1 = results1.find(r => r.age === 90) || age80_1;
+    const age90_2 = results2.find(r => r.age === 90) || age80_2;
+    const peakTax1 = Math.max(...results1.map(r => r.taxBracket));
+    const peakTax2 = Math.max(...results2.map(r => r.taxBracket));
+    
+    const tableHTML = `
+        <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <thead>
+                <tr style="background: #f59e0b; color: white;">
+                    <th style="padding: 10px; text-align: left;">Metric</th>
+                    <th style="padding: 10px; text-align: right;">${name1}</th>
+                    <th style="padding: 10px; text-align: right;">${name2}</th>
+                    <th style="padding: 10px; text-align: right;">Difference</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background: #fff; border-bottom: 1px solid #ddd;">
+                    <td style="padding: 8px; font-weight: 600;">First RMD (Age 73)</td>
+                    <td style="padding: 8px; text-align: right;">$${firstRMD1.rmdAmount.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+                    <td style="padding: 8px; text-align: right;">$${firstRMD2.rmdAmount.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+                    <td style="padding: 8px; text-align: right; font-weight: 600; color: ${firstRMD2.rmdAmount - firstRMD1.rmdAmount >= 0 ? '#e53e3e' : '#10b981'};">
+                        $${(firstRMD2.rmdAmount - firstRMD1.rmdAmount).toLocaleString(undefined, {maximumFractionDigits: 0})}
+                    </td>
+                </tr>
+                <tr style="background: #f9fafb; border-bottom: 1px solid #ddd;">
+                    <td style="padding: 8px; font-weight: 600;">RMD at Age 80</td>
+                    <td style="padding: 8px; text-align: right;">$${age80_1.rmdAmount.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+                    <td style="padding: 8px; text-align: right;">$${age80_2.rmdAmount.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+                    <td style="padding: 8px; text-align: right; font-weight: 600; color: ${age80_2.rmdAmount - age80_1.rmdAmount >= 0 ? '#e53e3e' : '#10b981'};">
+                        $${(age80_2.rmdAmount - age80_1.rmdAmount).toLocaleString(undefined, {maximumFractionDigits: 0})}
+                    </td>
+                </tr>
+                <tr style="background: #fff; border-bottom: 1px solid #ddd;">
+                    <td style="padding: 8px; font-weight: 600;">RMD at Age 90</td>
+                    <td style="padding: 8px; text-align: right;">$${age90_1.rmdAmount.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+                    <td style="padding: 8px; text-align: right;">$${age90_2.rmdAmount.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+                    <td style="padding: 8px; text-align: right; font-weight: 600; color: ${age90_2.rmdAmount - age90_1.rmdAmount >= 0 ? '#e53e3e' : '#10b981'};">
+                        $${(age90_2.rmdAmount - age90_1.rmdAmount).toLocaleString(undefined, {maximumFractionDigits: 0})}
+                    </td>
+                </tr>
+                <tr style="background: #f9fafb; border-bottom: 1px solid #ddd;">
+                    <td style="padding: 8px; font-weight: 600;">Peak Tax Bracket</td>
+                    <td style="padding: 8px; text-align: right;">${peakTax1}%</td>
+                    <td style="padding: 8px; text-align: right;">${peakTax2}%</td>
+                    <td style="padding: 8px; text-align: right; font-weight: 600; color: ${peakTax2 - peakTax1 >= 0 ? '#e53e3e' : '#10b981'};">
+                        ${peakTax2 - peakTax1 >= 0 ? '+' : ''}${peakTax2 - peakTax1}%
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    `;
+    
+    document.getElementById('comparisonTable').innerHTML = tableHTML;
 }
 
 function downloadPDF() {
