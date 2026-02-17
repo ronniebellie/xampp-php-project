@@ -414,6 +414,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const saveBtn = document.getElementById('saveScenarioBtn');
     const loadBtn = document.getElementById('loadScenarioBtn');
     const pdfBtn = document.getElementById('downloadPdfBtn');
+    const csvBtn = document.getElementById('downloadCsvBtn');
     
     if (saveBtn) {
         saveBtn.addEventListener('click', saveScenario);
@@ -425,6 +426,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (pdfBtn) {
         pdfBtn.addEventListener('click', downloadPDF);
+    }
+    
+    if (csvBtn) {
+        csvBtn.addEventListener('click', downloadCSV);
     }
 });
 
@@ -603,5 +608,90 @@ function downloadPDF() {
     })
     .catch(error => {
         alert('Error generating PDF: ' + error.message);
+    });
+}
+
+function downloadCSV() {
+    // Check if results are displayed
+    const resultsTable = document.getElementById('resultsTable');
+    if (!resultsTable || resultsTable.querySelectorAll('tbody tr').length === 0) {
+        alert('Please calculate your RMD projection first.');
+        return;
+    }
+
+    // Get chart image if available
+    let chartImage = null;
+    const chartCanvas = document.getElementById('rmdChart');
+    if (chartCanvas && myChart) {
+        chartImage = chartCanvas.toDataURL('image/png');
+    }
+
+    // Gather form data (same as PDF)
+    const data = {
+        currentAge: parseInt(document.getElementById('currentAge').value),
+        accountBalance: parseFloat(document.getElementById('accountBalance').value),
+        growthRate: parseFloat(document.getElementById('growthRate').value),
+        socialSecurity: parseFloat(document.getElementById('socialSecurity').value) || 0,
+        pension: parseFloat(document.getElementById('pension').value) || 0,
+        otherIncome: parseFloat(document.getElementById('otherIncome').value) || 0,
+        filingStatus: document.getElementById('filingStatus').value,
+        useStandardDeduction: document.getElementById('standardDeduction').value === 'yes',
+        isSpouseBeneficiary: document.getElementById('spouseBeneficiary').value === 'yes',
+        spouseAge: document.getElementById('spouseBeneficiary').value === 'yes' ? 
+            parseInt(document.getElementById('spouseAge').value) : null
+    };
+
+    const summaryCards = document.querySelectorAll('.summary-value');
+    const summary = {
+        firstRMD: parseFloat(summaryCards[0].textContent.replace(/[$,]/g, '')),
+        age80RMD: parseFloat(summaryCards[1].textContent.replace(/[$,]/g, '')),
+        age90RMD: parseFloat(summaryCards[2].textContent.replace(/[$,]/g, '')),
+        peakTaxBracket: parseInt(summaryCards[3].textContent.replace('%', ''))
+    };
+
+    const results = calculateProjection(data);
+    const projections = results.filter(r => r.age >= 73);
+
+    fetch('/api/export_rmd_csv.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            ...data,
+            summary: summary,
+            projections: projections
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(t => {
+                let msg = 'CSV export failed';
+                try {
+                    const j = JSON.parse(t);
+                    if (j.error) msg = j.error;
+                } catch (_) {}
+                throw new Error(msg);
+            });
+        }
+        const ct = response.headers.get('Content-Type') || '';
+        if (ct.indexOf('text/csv') === -1 && ct.indexOf('application/csv') === -1) {
+            throw new Error('Server did not return a CSV. You may need to log in again or refresh.');
+        }
+        return response.blob();
+    })
+    .then(blob => {
+        if (blob.type && blob.type.indexOf('csv') === -1 && blob.type.indexOf('text') === -1) {
+            throw new Error('Download was not a CSV. Try again or check your login.');
+        }
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'RMD_Analysis_' + new Date().toISOString().split('T')[0] + '.csv';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    })
+    .catch(error => {
+        alert('Error exporting CSV: ' + error.message);
     });
 }

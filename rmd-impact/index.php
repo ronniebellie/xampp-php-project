@@ -50,6 +50,7 @@ if ($isLoggedIn) {
         <button type="button" id="saveScenarioBtn" class="btn-primary" style="background: #48bb78;">Save Scenario</button>
         <button type="button" id="loadScenarioBtn" class="btn-secondary">Load Scenario</button>
         <button type="button" id="downloadPdfBtn" class="btn-primary" style="background: #e53e3e; color: white;">📄 Download PDF</button>
+        <button type="button" id="downloadCsvBtn" class="btn-primary" style="background: #3182ce; color: white;">📊 Export CSV</button>
         <span id="saveStatus" style="color: #22543d; font-weight: 600;"></span>
     </div>
 </div>
