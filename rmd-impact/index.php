@@ -51,6 +51,7 @@ if ($isLoggedIn) {
         <button type="button" id="loadScenarioBtn" class="btn-secondary">Load Scenario</button>
         <button type="button" id="downloadPdfBtn" class="btn-primary" style="background: #e53e3e; color: white;">📄 Download PDF</button>
         <button type="button" id="downloadCsvBtn" class="btn-primary" style="background: #3182ce; color: white;">📊 Export CSV</button>
+        <button type="button" id="downloadCalendarBtn" class="btn-primary" style="background: #805ad5; color: white;">📅 RMD Calendar</button>
         <span id="saveStatus" style="color: #22543d; font-weight: 600;"></span>
     </div>
 </div>

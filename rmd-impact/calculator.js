@@ -415,6 +415,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const loadBtn = document.getElementById('loadScenarioBtn');
     const pdfBtn = document.getElementById('downloadPdfBtn');
     const csvBtn = document.getElementById('downloadCsvBtn');
+    const calendarBtn = document.getElementById('downloadCalendarBtn');
     
     if (saveBtn) {
         saveBtn.addEventListener('click', saveScenario);
@@ -430,6 +431,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (csvBtn) {
         csvBtn.addEventListener('click', downloadCSV);
+    }
+    
+    if (calendarBtn) {
+        calendarBtn.addEventListener('click', downloadCalendar);
     }
 });
 
@@ -686,5 +691,75 @@ function downloadCSV() {
     })
     .catch(error => {
         alert('Error exporting CSV: ' + error.message);
+    });
+}
+
+function downloadCalendar() {
+    // Check if results are displayed (check for summary cards or chart)
+    const summaryCards = document.querySelectorAll('.summary-value');
+    const chartCanvas = document.getElementById('rmdChart');
+    if (summaryCards.length === 0 && (!chartCanvas || !myChart)) {
+        alert('Please calculate your RMD projection first.');
+        return;
+    }
+
+    // Gather form data
+    const data = {
+        currentAge: parseInt(document.getElementById('currentAge').value),
+        accountBalance: parseFloat(document.getElementById('accountBalance').value),
+        growthRate: parseFloat(document.getElementById('growthRate').value),
+        socialSecurity: parseFloat(document.getElementById('socialSecurity').value) || 0,
+        pension: parseFloat(document.getElementById('pension').value) || 0,
+        otherIncome: parseFloat(document.getElementById('otherIncome').value) || 0,
+        filingStatus: document.getElementById('filingStatus').value,
+        useStandardDeduction: document.getElementById('standardDeduction').value === 'yes',
+        isSpouseBeneficiary: document.getElementById('spouseBeneficiary').value === 'yes',
+        spouseAge: document.getElementById('spouseBeneficiary').value === 'yes' ? 
+            parseInt(document.getElementById('spouseAge').value) : null
+    };
+
+    const results = calculateProjection(data);
+    const projections = results.filter(r => r.age >= 73);
+
+    fetch('/api/generate_rmd_calendar.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            ...data,
+            projections: projections
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(t => {
+                let msg = 'Calendar generation failed';
+                try {
+                    const j = JSON.parse(t);
+                    if (j.error) msg = j.error;
+                } catch (_) {}
+                throw new Error(msg);
+            });
+        }
+        const ct = response.headers.get('Content-Type') || '';
+        if (ct.indexOf('application/pdf') === -1) {
+            throw new Error('Server did not return a PDF. You may need to log in again or refresh.');
+        }
+        return response.blob();
+    })
+    .then(blob => {
+        if (blob.type && blob.type.indexOf('pdf') === -1) {
+            throw new Error('Download was not a PDF. Try again or check your login.');
+        }
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'RMD_Calendar_' + new Date().toISOString().split('T')[0] + '.pdf';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    })
+    .catch(error => {
+        alert('Error generating calendar: ' + error.message);
     });
 }
