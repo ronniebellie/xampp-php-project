@@ -11,9 +11,11 @@ if ($isLoggedIn) {
     $stmt = $conn->prepare("SELECT subscription_status FROM users WHERE id = ?");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
-    $result = $stmt->get_result();
-    $user = $result->fetch_assoc();
-    $is_premium = ($user['subscription_status'] === 'premium');
+    $sub = null;
+    $stmt->bind_result($sub);
+    $user = $stmt->fetch() ? ['subscription_status' => $sub] : null;
+    $stmt->close();
+    $is_premium = ($user && $user['subscription_status'] === 'premium');
 }
 ?>
 <!DOCTYPE html>
