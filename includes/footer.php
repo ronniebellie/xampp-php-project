@@ -32,9 +32,9 @@
 
   <!-- Bottom Line: Copyright | Message + Donate | Contact -->
   <?php
-  // Check if user is premium - use $is_premium if available, otherwise check session
+  // Check if user is premium - check for both variable name formats ($is_premium or $isPremium)
   $hide_donate = false;
-  if (isset($is_premium) && $is_premium) {
+  if ((isset($is_premium) && $is_premium) || (isset($isPremium) && $isPremium)) {
       $hide_donate = true;
   } elseif (session_status() === PHP_SESSION_ACTIVE && isset($_SESSION['user_id'])) {
       // Only check DB if session is active and user is logged in
@@ -45,10 +45,11 @@
       $stmt = $conn->prepare("SELECT subscription_status FROM users WHERE id = ?");
       $stmt->bind_param("i", $user_id);
       $stmt->execute();
-      $result = $stmt->get_result();
-      $user = $result->fetch_assoc();
-      $hide_donate = ($user && $user['subscription_status'] === 'premium');
+      $sub = null;
+      $stmt->bind_result($sub);
+      $user = $stmt->fetch() ? ['subscription_status' => $sub] : null;
       $stmt->close();
+      $hide_donate = ($user && $user['subscription_status'] === 'premium');
   }
   ?>
   <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0; font-size: 14px; color: #666;">
