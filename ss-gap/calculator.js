@@ -215,12 +215,18 @@ document.getElementById('gapForm').addEventListener('submit', function(e) {
         }
     });
     
-    // Create second chart: Annual withdrawal amounts
-    createAnnualWithdrawalChart(annualGap, rates, withdrawalRate);
-    
-    // Show results
+    // Show results first
     document.getElementById('results').style.display = 'block';
-}
+    
+    // Create second chart: Annual withdrawal amounts (after DOM is visible)
+    setTimeout(() => {
+        createAnnualWithdrawalChart(annualGap, rates, withdrawalRate);
+    }, 100);
+    
+    // Scroll to results
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+// Premium Save/Load Functionality
 
 function createAnnualWithdrawalChart(annualGap, rates, selectedRate) {
     const ctx = document.getElementById('annualWithdrawalChart');
@@ -296,9 +302,7 @@ function createAnnualWithdrawalChart(annualGap, rates, selectedRate) {
             }
         }
     });
-    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
-});
-// Premium Save/Load Functionality
+}
 document.addEventListener('DOMContentLoaded', function() {
     const saveBtn = document.getElementById('saveScenarioBtn');
     const loadBtn = document.getElementById('loadScenarioBtn');
