@@ -105,6 +105,13 @@ if ($isLoggedIn) {
                 </div>
             </div>
 
+            <div class="chart-section">
+                <h3>Annual Withdrawal Amounts by Rate</h3>
+                <div class="chart-wrapper" style="height: 350px;">
+                    <canvas id="annualWithdrawalChart"></canvas>
+                </div>
+            </div>
+
             <div class="info-box info-box-blue" id="interpretation"></div>
 
             <div class="table-section">

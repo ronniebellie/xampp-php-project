@@ -215,8 +215,87 @@ document.getElementById('gapForm').addEventListener('submit', function(e) {
         }
     });
     
+    // Create second chart: Annual withdrawal amounts
+    createAnnualWithdrawalChart(annualGap, rates, withdrawalRate);
+    
     // Show results
     document.getElementById('results').style.display = 'block';
+}
+
+function createAnnualWithdrawalChart(annualGap, rates, selectedRate) {
+    const ctx = document.getElementById('annualWithdrawalChart');
+    if (!ctx) return;
+    
+    if (window.annualWithdrawalChart instanceof Chart) {
+        window.annualWithdrawalChart.destroy();
+    }
+    
+    const portfolios = rates.map(r => calculatePortfolioNeeded(annualGap, r));
+    const annualWithdrawals = portfolios.map((p, i) => p * (rates[i] / 100));
+    
+    window.annualWithdrawalChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: rates.map(r => r.toFixed(1) + '%'),
+            datasets: [{
+                label: 'Annual Withdrawal Amount',
+                data: annualWithdrawals,
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointRadius: rates.map(r => Math.abs(r - selectedRate) < 0.01 ? 6 : 4),
+                pointBackgroundColor: rates.map(r => Math.abs(r - selectedRate) < 0.01 ? '#22c55e' : '#667eea'),
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const rate = rates[context.dataIndex];
+                            const annual = context.parsed.y;
+                            const monthly = annual / 12;
+                            return [
+                                'Annual: ' + formatCurrency(annual),
+                                'Monthly: ' + formatCurrency(monthly),
+                                'Rate: ' + rate.toFixed(1) + '%'
+                            ];
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Withdrawal Rate'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Annual Withdrawal Amount'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return formatCurrency(value);
+                        }
+                    }
+                }
+            }
+        }
+    });
     document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 // Premium Save/Load Functionality

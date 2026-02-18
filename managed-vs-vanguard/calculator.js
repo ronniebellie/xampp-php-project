@@ -102,8 +102,9 @@ function calculate() {
     document.getElementById('insightLostGrowth').textContent = formatCurrency(lostGrowth > 0 ? lostGrowth : opportunityCost);
     document.getElementById('insightBeatBy').textContent = (advisorFee - vanguardFee).toFixed(2) + '%';
     
-    // Create chart
+    // Create charts
     createChart(managedData, vanguardData, years);
+    createFeesChart(managedData, vanguardData, years);
     
     // Show results
     document.getElementById('results').style.display = 'block';
@@ -112,8 +113,9 @@ function calculate() {
     document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// Create chart
+// Create charts
 let chartInstance = null;
+let feesChartInstance = null;
 
 function createChart(managedData, vanguardData, years) {
     const ctx = document.getElementById('growthChart').getContext('2d');
@@ -203,6 +205,115 @@ function createChart(managedData, vanguardData, years) {
                     },
                     grid: {
                         display: false
+                    }
+                }
+            },
+            interaction: {
+                mode: 'nearest',
+                axis: 'x',
+                intersect: false
+            }
+        }
+    });
+}
+
+function createFeesChart(managedData, vanguardData, years) {
+    const ctx = document.getElementById('feesChart');
+    if (!ctx) return;
+    
+    // Destroy existing chart if it exists
+    if (feesChartInstance) {
+        feesChartInstance.destroy();
+    }
+    
+    // Prepare data
+    const labels = managedData.map(d => 'Year ' + d.year);
+    const managedFees = managedData.map(d => d.totalFees);
+    const vanguardFees = vanguardData.map(d => d.totalFees);
+    
+    feesChartInstance = new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Managed Portfolio Fees',
+                    data: managedFees,
+                    borderColor: '#dc2626',
+                    backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Vanguard VTSAX Fees',
+                    data: vanguardFees,
+                    borderColor: '#16a34a',
+                    backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        padding: 15
+                    }
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return formatCurrency(value);
+                        },
+                        font: {
+                            size: 12
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Cumulative Fees Paid'
+                    }
+                },
+                x: {
+                    ticks: {
+                        font: {
+                            size: 11
+                        },
+                        maxRotation: 45,
+                        minRotation: 45
+                    },
+                    grid: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Year'
                     }
                 }
             },

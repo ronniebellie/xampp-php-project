@@ -249,6 +249,13 @@ function displayResults(data) {
             </div>
         </div>
         
+        <div class="chart-section" style="margin-bottom: 30px;">
+            <h3>Account Balances Over Time</h3>
+            <div class="chart-wrapper">
+                <canvas id="accountBalanceChart"></canvas>
+            </div>
+        </div>
+        
         <div class="info-box" style="margin-bottom: 25px;">
             <h3>RMD Impact</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
@@ -348,9 +355,10 @@ function displayResults(data) {
     resultsDiv.style.display = 'block';
     resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     
-    // Create chart after DOM is updated
+    // Create charts after DOM is updated
     setTimeout(() => {
         createCumulativeTaxChart(data);
+        createAccountBalanceChart(data);
     }, 100);
 }
 
@@ -374,11 +382,15 @@ function createCumulativeTaxChart(data) {
     const ctx = document.getElementById('cumulativeTaxChart');
     if (!ctx) return;
     
+    if (window.cumulativeTaxChart instanceof Chart) {
+        window.cumulativeTaxChart.destroy();
+    }
+    
     const ages = data.withConversion.yearlyData.map(d => d.age);
     const withConversionTaxes = data.withConversion.yearlyData.map(d => d.totalTaxesPaid);
     const withoutConversionTaxes = data.withoutConversion.yearlyData.map(d => d.totalTaxesPaid);
     
-    new Chart(ctx, {
+    window.cumulativeTaxChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: ages,
@@ -432,6 +444,100 @@ function createCumulativeTaxChart(data) {
                     ticks: {
                         callback: function(value) {
                             return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function createAccountBalanceChart(data) {
+    const ctx = document.getElementById('accountBalanceChart');
+    if (!ctx) return;
+    
+    if (window.accountBalanceChart instanceof Chart) {
+        window.accountBalanceChart.destroy();
+    }
+    
+    const ages = data.withConversion.yearlyData.map(d => d.age);
+    const traditionalBalances = data.withConversion.yearlyData.map(d => d.traditionalBalance);
+    const rothBalances = data.withConversion.yearlyData.map(d => d.rothBalance);
+    const traditionalBalancesNoConv = data.withoutConversion.yearlyData.map(d => d.traditionalBalance);
+    const rothBalancesNoConv = data.withoutConversion.yearlyData.map(d => d.rothBalance);
+    
+    window.accountBalanceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ages,
+            datasets: [
+                {
+                    label: 'Traditional IRA (With Conversion)',
+                    data: traditionalBalances,
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.1,
+                    fill: true
+                },
+                {
+                    label: 'Roth IRA (With Conversion)',
+                    data: rothBalances,
+                    borderColor: '#059669',
+                    backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                    tension: 0.1,
+                    fill: true
+                },
+                {
+                    label: 'Traditional IRA (No Conversion)',
+                    data: traditionalBalancesNoConv,
+                    borderColor: '#dc2626',
+                    backgroundColor: 'rgba(220, 38, 38, 0.05)',
+                    tension: 0.1,
+                    fill: false,
+                    borderDash: [5, 5]
+                },
+                {
+                    label: 'Roth IRA (No Conversion)',
+                    data: rothBalancesNoConv,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.05)',
+                    tension: 0.1,
+                    fill: false,
+                    borderDash: [5, 5]
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': $' + context.parsed.y.toLocaleString(undefined, {maximumFractionDigits: 0});
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Age'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Account Balance'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + (value/1000).toFixed(0) + 'K';
                         }
                     }
                 }

@@ -201,10 +201,15 @@ document.getElementById('singleForm').addEventListener('submit', function(e) {
     `;
     html += '</div>';
     
-    // Create chart
+    // Create charts
     html += '<div class="chart-section">';
     html += '<h3>Growth Over Time</h3>';
     html += '<div class="chart-wrapper"><canvas id="singleChart"></canvas></div>';
+    html += '</div>';
+    
+    html += '<div class="chart-section">';
+    html += '<h3>Cumulative Interest Earned</h3>';
+    html += '<div class="chart-wrapper"><canvas id="singleInterestChart"></canvas></div>';
     html += '</div>';
     
     // Interpretation
@@ -241,7 +246,7 @@ document.getElementById('singleForm').addEventListener('submit', function(e) {
     document.getElementById('singleResults').innerHTML = html;
     document.getElementById('singleResults').style.display = 'block';
     
-    // Create chart
+    // Create charts
     createGrowthChart('singleChart', 
         growthData.map(d => d.year),
         [{
@@ -249,6 +254,18 @@ document.getElementById('singleForm').addEventListener('submit', function(e) {
             data: growthData.map(d => d.value),
             borderColor: 'rgb(102, 126, 234)',
             backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            fill: true,
+            tension: 0.1
+        }]
+    );
+    
+    createGrowthChart('singleInterestChart',
+        growthData.map(d => d.year),
+        [{
+            label: 'Cumulative Interest Earned',
+            data: growthData.map(d => d.interest),
+            borderColor: 'rgb(34, 197, 94)',
+            backgroundColor: 'rgba(34, 197, 94, 0.1)',
             fill: true,
             tension: 0.1
         }]
@@ -309,6 +326,11 @@ document.getElementById('targetForm').addEventListener('submit', function(e) {
     html += '<div class="chart-wrapper"><canvas id="targetChart"></canvas></div>';
     html += '</div>';
     
+    html += '<div class="chart-section">';
+    html += '<h3>Cumulative Interest Earned</h3>';
+    html += '<div class="chart-wrapper"><canvas id="targetInterestChart"></canvas></div>';
+    html += '</div>';
+    
     html += '<div class="info-box-blue">';
     html += '<h3>What This Means</h3><ul>';
     html += `<li>To reach your goal of <strong>${formatCurrency(targetGoal)}</strong> in ${years} years...</li>`;
@@ -345,6 +367,18 @@ document.getElementById('targetForm').addEventListener('submit', function(e) {
                 tension: 0.1
             }
         ]
+    );
+    
+    createGrowthChart('targetInterestChart',
+        growthData.map(d => d.year),
+        [{
+            label: 'Cumulative Interest Earned',
+            data: growthData.map(d => d.interest),
+            borderColor: 'rgb(139, 92, 246)',
+            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+            fill: true,
+            tension: 0.1
+        }]
     );
     
     document.getElementById('targetResults').scrollIntoView({ behavior: 'smooth' });
@@ -390,6 +424,11 @@ document.getElementById('annuityForm').addEventListener('submit', function(e) {
     html += '<div class="chart-section">';
     html += '<h3>Growth Over Time</h3>';
     html += '<div class="chart-wrapper"><canvas id="annuityChart"></canvas></div>';
+    html += '</div>';
+    
+    html += '<div class="chart-section">';
+    html += '<h3>Cumulative Interest Earned</h3>';
+    html += '<div class="chart-wrapper"><canvas id="annuityInterestChart"></canvas></div>';
     html += '</div>';
     
     html += '<div class="info-box-blue">';
@@ -440,6 +479,18 @@ document.getElementById('annuityForm').addEventListener('submit', function(e) {
                 tension: 0.1
             }
         ]
+    );
+    
+    createGrowthChart('annuityInterestChart',
+        growthData.map(d => d.year),
+        [{
+            label: 'Cumulative Interest Earned',
+            data: growthData.map(d => d.interest),
+            borderColor: 'rgb(251, 191, 36)',
+            backgroundColor: 'rgba(251, 191, 36, 0.1)',
+            fill: true,
+            tension: 0.1
+        }]
     );
     
     document.getElementById('annuityResults').scrollIntoView({ behavior: 'smooth' });

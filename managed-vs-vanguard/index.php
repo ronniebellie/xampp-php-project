@@ -135,10 +135,15 @@ if ($isLoggedIn) {
                     </div>
                 </div>
 
-                <!-- Chart -->
+                <!-- Charts -->
                 <div class="chart-container">
                     <h3>Portfolio Growth Over Time</h3>
                     <canvas id="growthChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h3>Cumulative Fees Paid Over Time</h3>
+                    <canvas id="feesChart"></canvas>
                 </div>
 
                 <!-- Key Insights -->

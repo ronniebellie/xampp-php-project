@@ -152,6 +152,13 @@ if ($isLoggedIn) {
                 </div>
             </div>
 
+            <div class="chart-section">
+                <h3>Annual Withdrawals Over Time</h3>
+                <div class="chart-wrapper">
+                    <canvas id="withdrawal-chart"></canvas>
+                </div>
+            </div>
+
             <div class="table-section">
                 <h3>Year-by-Year Projection</h3>
                 <p style="color: #666; margin-bottom: 20px;">See how your portfolio and expenses change over time with inflation</p>
@@ -205,9 +212,10 @@ if ($isLoggedIn) {
         </footer>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         let balanceChart = null;
+        let withdrawalChart = null;
 
         function formatCurrency(amount) {
             return new Intl.NumberFormat('en-US', {
@@ -274,9 +282,10 @@ if ($isLoggedIn) {
             generateProjection(requiredAnnual, desiredAnnual, ssIncome, currentAge, years, 
                               inflationRate, portfolioReturn, essentialPortfolio, fullPortfolio);
 
-            // Generate chart
+            // Generate charts
             generateChart(requiredAnnual, desiredAnnual, ssIncome, currentAge, years,
                          inflationRate, portfolioReturn, essentialPortfolio, fullPortfolio);
+            generateWithdrawalChart(requiredAnnual, desiredAnnual, ssIncome, currentAge, years, inflationRate);
 
             // Show results
             document.getElementById('results').style.display = 'block';
@@ -419,6 +428,123 @@ if ($isLoggedIn) {
                             title: {
                                 display: true,
                                 text: 'Portfolio Balance'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function generateWithdrawalChart(requiredAnnual, desiredAnnual, ssIncome, currentAge, years, inflationRate) {
+            const labels = [];
+            const essentialWithdrawals = [];
+            const fullWithdrawals = [];
+            const requiredExpenses = [];
+            const desiredExpenses = [];
+
+            for (let i = 0; i <= years; i++) {
+                const age = currentAge + i;
+                labels.push(age);
+                
+                const inflatedRequired = requiredAnnual * Math.pow(1 + inflationRate, i);
+                const inflatedDesired = desiredAnnual * Math.pow(1 + inflationRate, i);
+                const totalExpenses = inflatedRequired + inflatedDesired;
+                
+                const essWithdrawal = Math.max(0, inflatedRequired - ssIncome);
+                const fullWithdrawal = Math.max(0, totalExpenses - ssIncome);
+                
+                essentialWithdrawals.push(essWithdrawal);
+                fullWithdrawals.push(fullWithdrawal);
+                requiredExpenses.push(inflatedRequired);
+                desiredExpenses.push(inflatedDesired);
+            }
+
+            const ctx = document.getElementById('withdrawal-chart');
+            
+            if (withdrawalChart) {
+                withdrawalChart.destroy();
+            }
+
+            withdrawalChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Required Expenses',
+                            data: requiredExpenses,
+                            borderColor: '#f5576c',
+                            backgroundColor: 'rgba(245, 87, 108, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            borderDash: [5, 5]
+                        },
+                        {
+                            label: 'Essential Withdrawals (Required - SS)',
+                            data: essentialWithdrawals,
+                            borderColor: '#e53e3e',
+                            backgroundColor: 'rgba(229, 62, 62, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Total Expenses (Required + Desired)',
+                            data: requiredExpenses.map((r, i) => r + desiredExpenses[i]),
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.05)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            borderDash: [5, 5]
+                        },
+                        {
+                            label: 'Full Withdrawals (Total - SS)',
+                            data: fullWithdrawals,
+                            borderColor: '#4c51bf',
+                            backgroundColor: 'rgba(76, 81, 191, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Annual Spending and Withdrawals Over Time',
+                            font: { size: 16, weight: 'bold' }
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Age'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Annual Amount'
                             },
                             ticks: {
                                 callback: function(value) {
