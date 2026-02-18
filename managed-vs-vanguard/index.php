@@ -180,6 +180,7 @@ if ($isLoggedIn) {
             </div>
         </div>
 
+        <?php if (!$isPremium): ?>
         <footer class="calculator-footer">
             <span class="donate-text">If these tools are useful, please consider supporting future development.</span>
             <a href="https://www.paypal.com/paypalme/rongbelisle" target="_blank" class="donate-btn">
@@ -187,6 +188,7 @@ if ($isLoggedIn) {
                 Donate
             </a>
         </footer>
+        <?php endif; ?>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
