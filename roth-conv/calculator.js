@@ -98,143 +98,114 @@ function calculateRMD(age, balance) {
   return balance / divisor;
 }
 
+/** Get current form values as an object (for save/load and runRothAnalysis). */
+function getRothFormData() {
+  const el = id => document.getElementById(id);
+  return {
+    currentAge: el('currentAge')?.value,
+    retirementAge: el('retirementAge')?.value,
+    lifeExpectancy: el('lifeExpectancy')?.value,
+    filingStatus: el('filingStatus')?.value,
+    traditionalIRA: el('traditionalIRA')?.value,
+    rothIRA: el('rothIRA')?.value,
+    currentIncome: el('currentIncome')?.value,
+    retirementIncome: el('retirementIncome')?.value,
+    conversionAmount: el('conversionAmount')?.value,
+    conversionYears: el('conversionYears')?.value,
+    returnRate: el('returnRate')?.value,
+    inflationRate: el('inflationRate')?.value
+  };
+}
+
+/** Run Roth analysis from a data object (form or loaded scenario). Returns same shape as displayResults expects. */
+function runRothAnalysis(data) {
+  const currentAge = parseInt(data.currentAge, 10);
+  const retirementAge = data.retirementAge ? parseInt(data.retirementAge, 10) : currentAge;
+  const lifeExpectancy = parseInt(data.lifeExpectancy, 10);
+  const filingStatus = data.filingStatus;
+  const traditionalIRA = parseFloat(data.traditionalIRA) || 0;
+  const rothIRA = parseFloat(data.rothIRA) || 0;
+  const currentIncome = parseFloat(data.currentIncome) || 0;
+  const retirementIncome = parseFloat(data.retirementIncome) || 0;
+  const conversionAmount = parseFloat(data.conversionAmount) || 0;
+  const conversionYears = parseInt(data.conversionYears, 10) || 1;
+  const returnRate = (parseFloat(data.returnRate) || 0) / 100;
+  const inflationRate = (parseFloat(data.inflationRate) || 0) / 100;
+  const standardDeduction = STANDARD_DEDUCTION_2026[filingStatus];
+  const conversionStartAge = Math.max(currentAge, retirementAge);
+  const conversionEndAge = conversionStartAge + conversionYears - 1;
+
+  function projectRetirement(doConversion) {
+    let traditionalBalance = traditionalIRA;
+    let rothBalance = rothIRA;
+    let totalTaxesPaid = 0;
+    let totalRMDs = 0;
+    const yearlyData = [];
+    for (let age = currentAge; age <= lifeExpectancy; age++) {
+      const year = age - currentAge + 2026;
+      let income = age >= retirementAge ? retirementIncome : currentIncome;
+      // Apply investment growth at start of year
+      traditionalBalance *= (1 + returnRate);
+      rothBalance *= (1 + returnRate);
+      let rmd = 0, conversion = 0;
+      if (age >= 73 && traditionalBalance > 0) {
+        rmd = calculateRMD(age, traditionalBalance);
+        traditionalBalance -= rmd;
+        totalRMDs += rmd;
+        income += rmd;
+      }
+      if (doConversion && age >= conversionStartAge && age <= conversionEndAge) {
+        conversion = Math.min(conversionAmount, traditionalBalance);
+        traditionalBalance -= conversion;
+        rothBalance += conversion;
+        income += conversion;
+      }
+      const taxableIncome = Math.max(0, income - standardDeduction);
+      const federalTax = calculateFederalTax(taxableIncome, filingStatus);
+      totalTaxesPaid += federalTax;
+      yearlyData.push({
+        age, year, traditionalBalance, rothBalance, conversion, rmd, income, taxableIncome, federalTax, totalTaxesPaid, totalRMDs
+      });
+    }
+    return {
+      totalTaxesPaid, totalRMDs,
+      finalTraditionalBalance: yearlyData[yearlyData.length - 1].traditionalBalance,
+      finalRothBalance: yearlyData[yearlyData.length - 1].rothBalance,
+      yearlyData
+    };
+  }
+
+  const withConversion = projectRetirement(true);
+  const withoutConversion = projectRetirement(false);
+  const taxSavings = withoutConversion.totalTaxesPaid - withConversion.totalTaxesPaid;
+  const rmdReduction = withoutConversion.totalRMDs - withConversion.totalRMDs;
+  let breakEvenAge = null;
+  for (let i = 0; i < withConversion.yearlyData.length; i++) {
+    if (withConversion.yearlyData[i].totalTaxesPaid < withoutConversion.yearlyData[i].totalTaxesPaid) {
+      breakEvenAge = withConversion.yearlyData[i].age;
+      break;
+    }
+  }
+  const taxableIncome = Math.max(0, currentIncome - standardDeduction);
+  const taxWithoutConversion = calculateFederalTax(taxableIncome, filingStatus);
+  const taxWithConversion = calculateFederalTax(taxableIncome + conversionAmount, filingStatus);
+  const conversionTaxCost = taxWithConversion - taxWithoutConversion;
+  const effectiveTaxRate = (conversionTaxCost / conversionAmount) * 100;
+  return {
+    conversionAmount, conversionYears, conversionStartAge, conversionEndAge,
+    conversionTaxCost, effectiveTaxRate,
+    currentMarginalRate: getMarginalRate(taxableIncome, filingStatus),
+    marginalRateWithConversion: getMarginalRate(taxableIncome + conversionAmount, filingStatus),
+    taxableIncome, taxSavings, rmdReduction, netBenefit: taxSavings, breakEvenAge,
+    withConversion, withoutConversion
+  };
+}
+
 function calculate() {
-    // Get input values
-    const currentAge = parseInt(document.getElementById('currentAge').value);
-    const retirementAge = document.getElementById('retirementAge').value 
-        ? parseInt(document.getElementById('retirementAge').value) 
-        : currentAge;
-    const lifeExpectancy = parseInt(document.getElementById('lifeExpectancy').value);
-    const filingStatus = document.getElementById('filingStatus').value;
-    
-    const traditionalIRA = parseFloat(document.getElementById('traditionalIRA').value);
-    const rothIRA = parseFloat(document.getElementById('rothIRA').value);
-    const currentIncome = parseFloat(document.getElementById('currentIncome').value);
-    const retirementIncome = parseFloat(document.getElementById('retirementIncome').value);
-    
-    const conversionAmount = parseFloat(document.getElementById('conversionAmount').value);
-    const conversionYears = parseInt(document.getElementById('conversionYears').value);
-    
-    const returnRate = parseFloat(document.getElementById('returnRate').value) / 100;
-    const inflationRate = parseFloat(document.getElementById('inflationRate').value) / 100;
-    
-    // Calculate standard deduction
-    const standardDeduction = STANDARD_DEDUCTION_2026[filingStatus];
-    
-    // Determine starting age for conversions
-    const conversionStartAge = Math.max(currentAge, retirementAge);
-    const conversionEndAge = conversionStartAge + conversionYears - 1;
-    
-    // Run two scenarios: with conversion and without conversion
-    const withConversion = projectRetirement(true);
-    const withoutConversion = projectRetirement(false);
-    
-    function projectRetirement(doConversion) {
-        let traditionalBalance = traditionalIRA;
-        let rothBalance = rothIRA;
-        let totalTaxesPaid = 0;
-        let totalRMDs = 0;
-        let yearlyData = [];
-        
-        for (let age = currentAge; age <= lifeExpectancy; age++) {
-            const year = age - currentAge + 2026;
-            let income = age >= retirementAge ? retirementIncome : currentIncome;
-            let rmd = 0;
-            let conversion = 0;
-            let taxableIncome = 0;
-            let federalTax = 0;
-            
-            // Apply investment growth at start of year
-            traditionalBalance *= (1 + returnRate);
-            rothBalance *= (1 + returnRate);
-            
-            // Handle RMDs (start at age 73)
-            if (age >= 73 && traditionalBalance > 0) {
-                rmd = calculateRMD(age, traditionalBalance);
-                traditionalBalance -= rmd;
-                totalRMDs += rmd;
-                income += rmd;
-            }
-            
-            // Handle conversions
-            if (doConversion && age >= conversionStartAge && age <= conversionEndAge) {
-                conversion = Math.min(conversionAmount, traditionalBalance);
-                traditionalBalance -= conversion;
-                rothBalance += conversion;
-                income += conversion;
-            }
-            
-            // Calculate taxes
-            taxableIncome = Math.max(0, income - standardDeduction);
-            federalTax = calculateFederalTax(taxableIncome, filingStatus);
-            totalTaxesPaid += federalTax;
-            
-            // Store yearly data
-            yearlyData.push({
-                age: age,
-                year: year,
-                traditionalBalance: traditionalBalance,
-                rothBalance: rothBalance,
-                conversion: conversion,
-                rmd: rmd,
-                income: income,
-                taxableIncome: taxableIncome,
-                federalTax: federalTax,
-                totalTaxesPaid: totalTaxesPaid,
-                totalRMDs: totalRMDs
-            });
-        }
-        
-        return {
-            totalTaxesPaid: totalTaxesPaid,
-            totalRMDs: totalRMDs,
-            finalTraditionalBalance: yearlyData[yearlyData.length - 1].traditionalBalance,
-            finalRothBalance: yearlyData[yearlyData.length - 1].rothBalance,
-            yearlyData: yearlyData
-        };
-    }
-    
-    // Calculate savings
-    const taxSavings = withoutConversion.totalTaxesPaid - withConversion.totalTaxesPaid;
-    const rmdReduction = withoutConversion.totalRMDs - withConversion.totalRMDs;
-    const netBenefit = taxSavings;
-    
-    // Find break-even age
-    let breakEvenAge = null;
-    for (let i = 0; i < withConversion.yearlyData.length; i++) {
-        if (withConversion.yearlyData[i].totalTaxesPaid < withoutConversion.yearlyData[i].totalTaxesPaid) {
-            breakEvenAge = withConversion.yearlyData[i].age;
-            break;
-        }
-    }
-    
-    // Calculate first year conversion details
-    const taxableIncome = Math.max(0, currentIncome - standardDeduction);
-    const taxWithoutConversion = calculateFederalTax(taxableIncome, filingStatus);
-    const taxWithConversion = calculateFederalTax(taxableIncome + conversionAmount, filingStatus);
-    const conversionTaxCost = taxWithConversion - taxWithoutConversion;
-    const effectiveTaxRate = (conversionTaxCost / conversionAmount) * 100;
-    const currentMarginalRate = getMarginalRate(taxableIncome, filingStatus);
-    const marginalRateWithConversion = getMarginalRate(taxableIncome + conversionAmount, filingStatus);
-    
-    // Display results
-    displayResults({
-        conversionAmount,
-        conversionYears,
-        conversionStartAge,
-        conversionEndAge,
-        conversionTaxCost,
-        effectiveTaxRate,
-        currentMarginalRate,
-        marginalRateWithConversion,
-        taxableIncome,
-        taxSavings,
-        rmdReduction,
-        netBenefit,
-        breakEvenAge,
-        withConversion,
-        withoutConversion
-    });
+    const formData = getRothFormData();
+    const result = runRothAnalysis(formData);
+    displayResults(result);
+    window.lastRothResult = result;
 }
 
 function displayResults(data) {
@@ -469,6 +440,14 @@ function createCumulativeTaxChart(data) {
     });
 }
 
+// API base URL so api/... always resolves correctly (works for /roth-conv/ or /xamppfiles/htdocs/roth-conv/)
+const RC_API_BASE = (function() {
+    const path = window.location.pathname;
+    const match = path.match(/^(.*\/)roth-conv\/?/);
+    const basePath = (match ? match[1] : '/').replace(/\/?$/, '/');
+    return window.location.origin + basePath;
+})();
+
 // Event listener
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('rothForm');
@@ -477,40 +456,25 @@ document.addEventListener('DOMContentLoaded', function() {
         calculate();
     });
 });
-// Premium Save/Load Functionality
+// Premium Save/Load/Compare/PDF/CSV
 document.addEventListener('DOMContentLoaded', function() {
     const saveBtn = document.getElementById('saveScenarioBtn');
     const loadBtn = document.getElementById('loadScenarioBtn');
-    
-    if (saveBtn) {
-        saveBtn.addEventListener('click', saveScenario);
-    }
-    
-    if (loadBtn) {
-        loadBtn.addEventListener('click', loadScenario);
-    }
+    const compareBtn = document.getElementById('compareScenariosBtn');
+    const pdfBtn = document.getElementById('downloadPdfBtn');
+    const csvBtn = document.getElementById('downloadCsvBtn');
+    if (saveBtn) saveBtn.addEventListener('click', saveScenario);
+    if (loadBtn) loadBtn.addEventListener('click', loadScenario);
+    if (compareBtn) compareBtn.addEventListener('click', compareScenarios);
+    if (pdfBtn) pdfBtn.addEventListener('click', downloadPDF);
+    if (csvBtn) csvBtn.addEventListener('click', downloadCSV);
 });
 
 function saveScenario() {
     const scenarioName = prompt('Enter a name for this scenario:', 'My Roth Plan');
     if (!scenarioName) return;
-    
-    const formData = {
-        currentAge: document.getElementById('currentAge')?.value,
-        retirementAge: document.getElementById('retirementAge')?.value,
-        lifeExpectancy: document.getElementById('lifeExpectancy')?.value,
-        filingStatus: document.getElementById('filingStatus')?.value,
-        traditionalIRA: document.getElementById('traditionalIRA')?.value,
-        rothIRA: document.getElementById('rothIRA')?.value,
-        currentIncome: document.getElementById('currentIncome')?.value,
-        retirementIncome: document.getElementById('retirementIncome')?.value,
-        conversionAmount: document.getElementById('conversionAmount')?.value,
-        conversionYears: document.getElementById('conversionYears')?.value,
-        returnRate: document.getElementById('returnRate')?.value,
-        inflationRate: document.getElementById('inflationRate')?.value
-    };
-    
-    fetch('/api/save_scenario.php', {
+    const formData = getRothFormData();
+    fetch(RC_API_BASE + 'api/save_scenario.php', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
@@ -519,21 +483,26 @@ function saveScenario() {
             scenario_data: formData
         })
     })
-    .then(res => res.json())
+    .then(res => res.text().then(text => ({ ok: res.ok, status: res.status, text: text })))
+    .then(({ ok, status, text }) => {
+        let data;
+        try { data = JSON.parse(text); } catch (_) { throw new Error(text || 'Server error'); }
+        if (!ok) throw new Error(data.error || 'Save failed');
+        return data;
+    })
     .then(data => {
         if (data.success) {
             document.getElementById('saveStatus').textContent = '✓ Saved!';
-            setTimeout(() => {
-                document.getElementById('saveStatus').textContent = '';
-            }, 3000);
+            setTimeout(() => { document.getElementById('saveStatus').textContent = ''; }, 3000);
         } else {
-            alert('Error: ' + data.error);
+            alert('Error: ' + (data.error || 'Unknown error'));
         }
-    });
+    })
+    .catch(err => alert('Save scenario failed: ' + err.message));
 }
 
 function loadScenario() {
-    fetch('/api/load_scenarios.php?calculator_type=roth-conversion')
+    fetch(RC_API_BASE + 'api/load_scenarios.php?calculator_type=roth-conversion')
     .then(res => res.json())
     .then(data => {
         if (!data.success) {
@@ -560,7 +529,7 @@ function loadScenario() {
             if (index >= 0 && index < data.scenarios.length) {
                 const scenario = data.scenarios[index];
                 if (confirm(`Delete "${scenario.name}"? This cannot be undone.`)) {
-                    fetch('/api/delete_scenario.php', {
+                    fetch(RC_API_BASE + 'api/delete_scenario.php', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({ scenario_id: scenario.id })
@@ -587,4 +556,139 @@ function loadScenario() {
             }
         }
     });
+}
+
+function compareScenarios() {
+    fetch(RC_API_BASE + 'api/load_scenarios.php?calculator_type=roth-conversion')
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) { alert('Error: ' + data.error); return; }
+        if (data.scenarios.length < 2) {
+            alert('You need at least 2 saved scenarios to compare. Save more first!');
+            return;
+        }
+        let message = 'Select TWO scenarios to compare:\n\n';
+        data.scenarios.forEach((s, i) => { message += `${i + 1}. ${s.name}\n`; });
+        message += '\nEnter two numbers separated by comma (e.g., "1,2"):';
+        const choice = prompt(message);
+        if (!choice) return;
+        const parts = choice.split(',').map(s => parseInt(s.trim(), 10) - 1);
+        if (parts.length !== 2 || parts[0] < 0 || parts[0] >= data.scenarios.length ||
+            parts[1] < 0 || parts[1] >= data.scenarios.length || parts[0] === parts[1]) {
+            alert('Invalid selection. Enter two different numbers (e.g., "1,2").');
+            return;
+        }
+        const s1 = data.scenarios[parts[0]];
+        const s2 = data.scenarios[parts[1]];
+        const result1 = runRothAnalysis(s1.data);
+        const result2 = runRothAnalysis(s2.data);
+        showRothComparison(s1.name, s2.name, result1, result2, s1.data, s2.data);
+    })
+    .catch(() => alert('Failed to load scenarios.'));
+}
+
+function showRothComparison(name1, name2, result1, result2, data1, data2) {
+    const resultsDiv = document.getElementById('results');
+    const resultsContent = document.getElementById('resultsContent');
+    if (resultsDiv.style.display === 'none') resultsDiv.style.display = 'block';
+    resultsDiv.scrollIntoView({ behavior: 'smooth' });
+    const safe = (obj) => (obj && (obj.currentAge != null || obj.traditionalIRA != null)) ? obj : {};
+    const d1 = safe(data1), d2 = safe(data2);
+    const comparisonHTML = `
+        <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+            <h2 style="margin-top: 0; color: #92400e;">⚖️ Scenario Comparison</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                <div>
+                    <h3 style="color: #667eea;">${name1}</h3>
+                    <div style="font-size: 0.9em; color: #666;">
+                        Age: ${d1.currentAge || '-'} | Traditional: $${(parseFloat(d1.traditionalIRA) || 0).toLocaleString()} | Conversion: $${(parseFloat(d1.conversionAmount) || 0).toLocaleString()}/yr
+                    </div>
+                    <div style="margin-top: 8px;"><strong>Lifetime tax (with conversion):</strong> $${result1.withConversion.totalTaxesPaid.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+                    <div><strong>Tax savings vs no conversion:</strong> $${result1.taxSavings.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+                </div>
+                <div>
+                    <h3 style="color: #e53e3e;">${name2}</h3>
+                    <div style="font-size: 0.9em; color: #666;">
+                        Age: ${d2.currentAge || '-'} | Traditional: $${(parseFloat(d2.traditionalIRA) || 0).toLocaleString()} | Conversion: $${(parseFloat(d2.conversionAmount) || 0).toLocaleString()}/yr
+                    </div>
+                    <div style="margin-top: 8px;"><strong>Lifetime tax (with conversion):</strong> $${result2.withConversion.totalTaxesPaid.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+                    <div><strong>Tax savings vs no conversion:</strong> $${result2.taxSavings.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+                </div>
+            </div>
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr style="background: #f0f0f0;"><th>Metric</th><th>${name1}</th><th>${name2}</th><th>Difference</th></tr>
+                <tr><td>Lifetime tax (with conversion)</td><td>$${result1.withConversion.totalTaxesPaid.toLocaleString(0)}</td><td>$${result2.withConversion.totalTaxesPaid.toLocaleString(0)}</td><td>$${(result2.withConversion.totalTaxesPaid - result1.withConversion.totalTaxesPaid).toLocaleString(0)}</td></tr>
+                <tr><td>Tax savings</td><td>$${result1.taxSavings.toLocaleString(0)}</td><td>$${result2.taxSavings.toLocaleString(0)}</td><td>$${(result2.taxSavings - result1.taxSavings).toLocaleString(0)}</td></tr>
+                <tr><td>Break-even age</td><td>${result1.breakEvenAge || '-'}</td><td>${result2.breakEvenAge || '-'}</td><td>-</td></tr>
+            </table>
+        </div>
+    `;
+    resultsContent.innerHTML = comparisonHTML + resultsContent.innerHTML;
+}
+
+function downloadPDF() {
+    const res = window.lastRothResult;
+    if (!res) {
+        alert('Please run Calculate first, then download the PDF.');
+        return;
+    }
+    const chartCanvas = document.getElementById('cumulativeTaxChart');
+    const chartImage = chartCanvas && window.Chart ? chartCanvas.toDataURL('image/png') : null;
+    const payload = {
+        ...getRothFormData(),
+        withConversion: res.withConversion,
+        withoutConversion: res.withoutConversion,
+        conversionAmount: res.conversionAmount,
+        conversionYears: res.conversionYears,
+        conversionStartAge: res.conversionStartAge,
+        conversionEndAge: res.conversionEndAge,
+        taxSavings: res.taxSavings,
+        rmdReduction: res.rmdReduction,
+        breakEvenAge: res.breakEvenAge,
+        conversionTaxCost: res.conversionTaxCost,
+        effectiveTaxRate: res.effectiveTaxRate,
+        chartImage: chartImage
+    };
+    fetch(RC_API_BASE + 'api/generate_roth_pdf.php', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) })
+    .then(r => {
+        if (!r.ok) return r.text().then(t => { try { const j = JSON.parse(t); throw new Error(j.error || 'PDF failed'); } catch (e) { throw new Error(t || 'PDF failed'); } });
+        const ct = r.headers.get('Content-Type') || '';
+        if (ct.indexOf('application/pdf') === -1) return r.text().then(t => { throw new Error('Server did not return a PDF.'); });
+        return r.blob();
+    })
+    .then(blob => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'Roth_Conversion_Report_' + new Date().toISOString().split('T')[0] + '.pdf';
+        a.click();
+        URL.revokeObjectURL(a.href);
+    })
+    .catch(e => alert('Download PDF: ' + e.message));
+}
+
+function downloadCSV() {
+    const res = window.lastRothResult;
+    if (!res) {
+        alert('Please run Calculate first, then export CSV.');
+        return;
+    }
+    const payload = {
+        withConversion: res.withConversion,
+        withoutConversion: res.withoutConversion
+    };
+    fetch(RC_API_BASE + 'api/export_roth_csv.php', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) })
+    .then(r => {
+        if (!r.ok) return r.text().then(t => { try { const j = JSON.parse(t); throw new Error(j.error || 'CSV failed'); } catch (e) { throw new Error(t || 'CSV failed'); } });
+        const ct = r.headers.get('Content-Type') || '';
+        if (ct.indexOf('text/csv') === -1 && ct.indexOf('application/csv') === -1) throw new Error('Server did not return CSV.');
+        return r.blob();
+    })
+    .then(blob => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'Roth_Conversion_' + new Date().toISOString().split('T')[0] + '.csv';
+        a.click();
+        URL.revokeObjectURL(a.href);
+    })
+    .catch(e => alert('Export CSV: ' + e.message));
 }

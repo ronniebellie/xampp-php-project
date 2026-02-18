@@ -391,43 +391,61 @@ document.getElementById('ssForm').addEventListener('submit', function(e) {
     }
     document.getElementById('tableBody').innerHTML = tableBodyHTML;
     
+    // Store for premium PDF/CSV/Summary
+    window.lastSSResult = {
+        dataA, dataB, dataC,
+        monthlyA, monthlyB, monthlyC,
+        totalA, totalB, totalC,
+        fra, claimAgeA, claimAgeB, claimAgeC, lifeExpectancy,
+        breakEvenAB, breakEvenBC, breakEvenAC,
+        bestScenario, birthYear, monthlyPIA, colaRate, discountRate
+    };
+    
     // Show results
     document.getElementById('results').style.display = 'block';
     
     // Scroll to results
     document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
-// Premium Save/Load Functionality
+// API base path (works when app is in a subfolder, e.g. /social-security-claiming-analyzer/)
+const SS_API_BASE = (function() {
+    const path = window.location.pathname;
+    return path.indexOf('/social-security-claiming-analyzer') !== -1 ? '..' : '';
+})();
+
+// Premium Save/Load/PDF/CSV/Summary Functionality
 document.addEventListener('DOMContentLoaded', function() {
     const saveBtn = document.getElementById('saveScenarioBtn');
     const loadBtn = document.getElementById('loadScenarioBtn');
+    const compareBtn = document.getElementById('compareScenariosBtn');
+    const pdfBtn = document.getElementById('downloadPdfBtn');
+    const csvBtn = document.getElementById('downloadCsvBtn');
+    const summaryBtn = document.getElementById('downloadSummaryBtn');
     
-    if (saveBtn) {
-        saveBtn.addEventListener('click', saveScenario);
-    }
-    
-    if (loadBtn) {
-        loadBtn.addEventListener('click', loadScenario);
-    }
+    if (saveBtn) saveBtn.addEventListener('click', saveScenario);
+    if (loadBtn) loadBtn.addEventListener('click', loadScenario);
+    if (compareBtn) compareBtn.addEventListener('click', compareScenarios);
+    if (pdfBtn) pdfBtn.addEventListener('click', downloadPDF);
+    if (csvBtn) csvBtn.addEventListener('click', downloadCSV);
+    if (summaryBtn) summaryBtn.addEventListener('click', downloadClaimingSummary);
 });
 
 function saveScenario() {
     const scenarioName = prompt('Enter a name for this scenario:', 'My SS Plan');
     if (!scenarioName) return;
     
-    // Gather all form inputs - you'll need to add all the actual input IDs here
     const formData = {
-    birthDate: document.getElementById('birthDate')?.value,
-    monthlyPIA: document.getElementById('monthlyPIA')?.value,
-    lifeExpectancy: document.getElementById('lifeExpectancy')?.value,
-    claimAgeA: document.getElementById('claimAgeA')?.value,
-    claimAgeB: document.getElementById('claimAgeB')?.value,
-    claimAgeC: document.getElementById('claimAgeC')?.value,
-    colaRate: document.getElementById('colaRate')?.value,
-    discountRate: document.getElementById('discountRate')?.value
-};
+        birthDate: document.getElementById('birthDate')?.value || '',
+        monthlyPIA: document.getElementById('monthlyPIA')?.value,
+        lifeExpectancy: document.getElementById('lifeExpectancy')?.value,
+        claimAgeA: document.getElementById('claimAgeA')?.value,
+        claimAgeB: document.getElementById('claimAgeB')?.value,
+        claimAgeC: document.getElementById('claimAgeC')?.value,
+        colaRate: document.getElementById('colaRate')?.value,
+        discountRate: document.getElementById('discountRate')?.value
+    };
     
-    fetch('/api/save_scenario.php', {
+    fetch(SS_API_BASE + '/api/save_scenario.php', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
@@ -436,23 +454,31 @@ function saveScenario() {
             scenario_data: formData
         })
     })
-    .then(res => res.json())
+    .then(res => {
+        return res.text().then(text => ({ ok: res.ok, status: res.status, text: text }));
+    })
+    .then(({ ok, status, text }) => {
+        let data;
+        try { data = JSON.parse(text); } catch (_) {
+            var snippet = (text || 'Empty response').substring(0, 300).replace(/\s+/g, ' ');
+            throw new Error('Server returned: ' + snippet);
+        }
+        if (!ok) throw new Error(data.error || 'Save failed (' + status + ')');
+        return data;
+    })
     .then(data => {
         if (data.success) {
             document.getElementById('saveStatus').textContent = '✓ Saved!';
-            setTimeout(() => {
-                document.getElementById('saveStatus').textContent = '';
-            }, 3000);
+            setTimeout(() => { document.getElementById('saveStatus').textContent = ''; }, 3000);
         } else {
-            alert('Error: ' + data.error);
+            alert('Error: ' + (data.error || 'Unknown error'));
         }
-    });
+    })
+    .catch(err => alert('Save scenario failed: ' + err.message));
 }
 
 function loadScenario() {
-    const calculatorType = 'CALCULATOR_TYPE_HERE'; // Change this for each calculator
-    
-    fetch(`/api/load_scenarios.php?calculator_type=${calculatorType}`)
+    fetch(SS_API_BASE + '/api/load_scenarios.php?calculator_type=social-security')
     .then(res => res.json())
     .then(data => {
         if (!data.success) {
@@ -479,7 +505,7 @@ function loadScenario() {
             if (index >= 0 && index < data.scenarios.length) {
                 const scenario = data.scenarios[index];
                 if (confirm(`Delete "${scenario.name}"? This cannot be undone.`)) {
-                    fetch('/api/delete_scenario.php', {
+                    fetch(SS_API_BASE + '/api/delete_scenario.php', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({ scenario_id: scenario.id })
@@ -502,8 +528,172 @@ function loadScenario() {
                     const input = document.getElementById(key);
                     if (input) input.value = scenario.data[key];
                 });
-                alert('Scenario loaded! Click Calculate to see results.');
+                alert('Scenario loaded! Click "Compare Scenarios" (the form button) to see results.');
             }
         }
     });
+}
+
+function compareScenarios() {
+    fetch(SS_API_BASE + '/api/load_scenarios.php?calculator_type=social-security')
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) {
+            alert('Error: ' + data.error);
+            return;
+        }
+        if (data.scenarios.length < 2) {
+            alert('You need at least 2 saved scenarios to compare. Save more first!');
+            return;
+        }
+        let message = 'Select TWO scenarios to compare:\n\n';
+        data.scenarios.forEach((s, i) => { message += `${i + 1}. ${s.name}\n`; });
+        const choice = prompt(message + '\nEnter two numbers separated by comma (e.g., "1,2"):');
+        if (!choice) return;
+        const parts = choice.split(',').map(s => parseInt(s.trim()) - 1);
+        if (parts.length !== 2 || parts[0] < 0 || parts[0] >= data.scenarios.length ||
+            parts[1] < 0 || parts[1] >= data.scenarios.length || parts[0] === parts[1]) {
+            alert('Invalid selection. Enter two different numbers (e.g., "1,2").');
+            return;
+        }
+        const s1 = data.scenarios[parts[0]], s2 = data.scenarios[parts[1]];
+        const d1 = s1.data, d2 = s2.data;
+        const birthYear1 = d1.birthDate ? new Date(d1.birthDate).getFullYear() : 1960;
+        const birthYear2 = d2.birthDate ? new Date(d2.birthDate).getFullYear() : 1960;
+        const fra1 = getFRA(birthYear1), fra2 = getFRA(birthYear2);
+        const pia1 = parseFloat(d1.monthlyPIA) || 3000, pia2 = parseFloat(d2.monthlyPIA) || 3000;
+        const life1 = parseInt(d1.lifeExpectancy) || 85, life2 = parseInt(d2.lifeExpectancy) || 85;
+        const a1 = parseInt(d1.claimAgeA) || 62, b1 = parseInt(d1.claimAgeB) || 67, c1 = parseInt(d1.claimAgeC) || 70;
+        const a2 = parseInt(d2.claimAgeA) || 62, b2 = parseInt(d2.claimAgeB) || 67, c2 = parseInt(d2.claimAgeC) || 70;
+        const cola1 = parseFloat(d1.colaRate) || 2.5, cola2 = parseFloat(d2.colaRate) || 2.5;
+        const disc1 = parseFloat(d1.discountRate) || 0, disc2 = parseFloat(d2.discountRate) || 0;
+        const monthlyA1 = calculateMonthlyBenefit(pia1, birthYear1, a1);
+        const monthlyB1 = calculateMonthlyBenefit(pia1, birthYear1, b1);
+        const monthlyC1 = calculateMonthlyBenefit(pia1, birthYear1, c1);
+        const monthlyA2 = calculateMonthlyBenefit(pia2, birthYear2, a2);
+        const monthlyB2 = calculateMonthlyBenefit(pia2, birthYear2, b2);
+        const monthlyC2 = calculateMonthlyBenefit(pia2, birthYear2, c2);
+        const dataA1 = calculateLifetimeBenefits(monthlyA1, a1, life1, cola1, disc1);
+        const dataB1 = calculateLifetimeBenefits(monthlyB1, b1, life1, cola1, disc1);
+        const dataC1 = calculateLifetimeBenefits(monthlyC1, c1, life1, cola1, disc1);
+        const dataA2 = calculateLifetimeBenefits(monthlyA2, a2, life2, cola2, disc2);
+        const dataB2 = calculateLifetimeBenefits(monthlyB2, b2, life2, cola2, disc2);
+        const dataC2 = calculateLifetimeBenefits(monthlyC2, c2, life2, cola2, disc2);
+        const total1 = Math.max(dataA1[dataA1.length-1].cumulativeTotal, dataB1[dataB1.length-1].cumulativeTotal, dataC1[dataC1.length-1].cumulativeTotal);
+        const total2 = Math.max(dataA2[dataA2.length-1].cumulativeTotal, dataB2[dataB2.length-1].cumulativeTotal, dataC2[dataC2.length-1].cumulativeTotal);
+        showComparisonSS(s1.name, s2.name, {
+            fra: fra1, monthlyA: monthlyA1, monthlyB: monthlyB1, monthlyC: monthlyC1,
+            total: total1, life: life1, claimA: a1, claimB: b1, claimC: c1, pia: pia1
+        }, {
+            fra: fra2, monthlyA: monthlyA2, monthlyB: monthlyB2, monthlyC: monthlyC2,
+            total: total2, life: life2, claimA: a2, claimB: b2, claimC: c2, pia: pia2
+        });
+    });
+}
+
+function showComparisonSS(name1, name2, r1, r2) {
+    const resultsDiv = document.getElementById('results');
+    if (resultsDiv.style.display === 'none') resultsDiv.style.display = 'block';
+    const fraStr = (f) => f.years + (f.months > 0 ? ' + ' + f.months + 'mo' : '');
+    const comparisonHTML = `
+        <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+            <h2 style="margin-top: 0; color: #92400e;">⚖️ Scenario Comparison</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <h3 style="color: #667eea;">${name1}</h3>
+                    <div style="font-size: 0.9em; color: #666;">
+                        <div>FRA: ${fraStr(r1.fra)} | PIA: $${r1.pia.toLocaleString()}/mo</div>
+                        <div>Life: ${r1.life} | Best total: ${formatCurrency(r1.total)}</div>
+                        <div>Monthly at ${r1.claimA}/${r1.claimB}/${r1.claimC}: ${formatCurrency(r1.monthlyA)} / ${formatCurrency(r1.monthlyB)} / ${formatCurrency(r1.monthlyC)}</div>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="color: #e53e3e;">${name2}</h3>
+                    <div style="font-size: 0.9em; color: #666;">
+                        <div>FRA: ${fraStr(r2.fra)} | PIA: $${r2.pia.toLocaleString()}/mo</div>
+                        <div>Life: ${r2.life} | Best total: ${formatCurrency(r2.total)}</div>
+                        <div>Monthly at ${r2.claimA}/${r2.claimB}/${r2.claimC}: ${formatCurrency(r2.monthlyA)} / ${formatCurrency(r2.monthlyB)} / ${formatCurrency(r2.monthlyC)}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    resultsDiv.innerHTML = comparisonHTML + resultsDiv.innerHTML;
+    resultsDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function downloadPDF() {
+    const res = window.lastSSResult;
+    if (!res) {
+        alert('Please run "Compare Scenarios" first to see results.');
+        return;
+    }
+    const chartCanvas = document.getElementById('lifetimeBenefitsChart');
+    const chartImage = chartCanvas && window.lifetimeBenefitsChart ? chartCanvas.toDataURL('image/png') : null;
+    const payload = {
+        birthDate: document.getElementById('birthDate').value,
+        monthlyPIA: res.monthlyPIA,
+        lifeExpectancy: res.lifeExpectancy,
+        claimAgeA: res.claimAgeA,
+        claimAgeB: res.claimAgeB,
+        claimAgeC: res.claimAgeC,
+        colaRate: res.colaRate,
+        discountRate: res.discountRate,
+        fra: res.fra,
+        monthlyA: res.monthlyA, monthlyB: res.monthlyB, monthlyC: res.monthlyC,
+        totalA: res.totalA, totalB: res.totalB, totalC: res.totalC,
+        bestScenario: res.bestScenario,
+        breakEvenAB: res.breakEvenAB, breakEvenBC: res.breakEvenBC, breakEvenAC: res.breakEvenAC,
+        dataA: res.dataA, dataB: res.dataB, dataC: res.dataC,
+        chartImage: chartImage
+    };
+    fetch(SS_API_BASE + '/api/generate_ss_pdf.php', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) })
+    .then(r => {
+        if (!r.ok) return r.text().then(t => { try { const j = JSON.parse(t); throw new Error(j.error || 'PDF failed'); } catch(e) { throw new Error(t || 'PDF failed'); } });
+        const ct = r.headers.get('Content-Type') || '';
+        if (ct.indexOf('application/pdf') === -1) return r.text().then(t => { throw new Error('Server did not return a PDF. Log in as premium and try again.'); });
+        return r.blob();
+    })
+    .then(blob => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'SS_Claiming_Report_' + new Date().toISOString().split('T')[0] + '.pdf'; a.click(); URL.revokeObjectURL(a.href); })
+    .catch(e => alert('Download PDF: ' + e.message));
+}
+
+function downloadCSV() {
+    const res = window.lastSSResult;
+    if (!res) {
+        alert('Please run "Compare Scenarios" first to see results.');
+        return;
+    }
+    const payload = {
+        claimAgeA: res.claimAgeA, claimAgeB: res.claimAgeB, claimAgeC: res.claimAgeC,
+        lifeExpectancy: res.lifeExpectancy,
+        dataA: res.dataA, dataB: res.dataB, dataC: res.dataC
+    };
+    fetch(SS_API_BASE + '/api/export_ss_csv.php', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) })
+    .then(r => { if (!r.ok) return r.text().then(t => { try { const j = JSON.parse(t); throw new Error(j.error || 'Failed'); } catch(e) { throw new Error(t || 'Failed'); } }); return r.blob(); })
+    .then(blob => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'SS_Claiming_' + new Date().toISOString().split('T')[0] + '.csv'; a.click(); URL.revokeObjectURL(a.href); })
+    .catch(e => alert('Error: ' + e.message));
+}
+
+function downloadClaimingSummary() {
+    const res = window.lastSSResult;
+    if (!res) {
+        alert('Please run "Compare Scenarios" first to see results.');
+        return;
+    }
+    const payload = {
+        birthDate: document.getElementById('birthDate').value,
+        monthlyPIA: res.monthlyPIA,
+        lifeExpectancy: res.lifeExpectancy,
+        claimAgeA: res.claimAgeA, claimAgeB: res.claimAgeB, claimAgeC: res.claimAgeC,
+        fra: res.fra,
+        monthlyA: res.monthlyA, monthlyB: res.monthlyB, monthlyC: res.monthlyC,
+        totalA: res.totalA, totalB: res.totalB, totalC: res.totalC,
+        bestScenario: res.bestScenario,
+        breakEvenAB: res.breakEvenAB, breakEvenBC: res.breakEvenBC, breakEvenAC: res.breakEvenAC
+    };
+    fetch(SS_API_BASE + '/api/generate_ss_summary_pdf.php', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) })
+    .then(r => { if (!r.ok) return r.text().then(t => { try { const j = JSON.parse(t); throw new Error(j.error || 'Failed'); } catch(e) { throw new Error(t || 'Failed'); } }); return r.blob(); })
+    .then(blob => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'SS_Claiming_Summary_' + new Date().toISOString().split('T')[0] + '.pdf'; a.click(); URL.revokeObjectURL(a.href); })
+    .catch(e => alert('Error: ' + e.message));
 }

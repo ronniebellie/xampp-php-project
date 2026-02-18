@@ -1,5 +1,6 @@
 {
-    "require": {
-        "stripe/stripe-php": "^19.3"
-    }
+  "require": {
+    "stripe/stripe-php": "^19.3",
+    "tecnickcom/tcpdf": "^6.7"
+  }
 }

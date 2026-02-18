@@ -1,8 +1,17 @@
 <?php
-session_start();
-require_once '../includes/db_config.php';
-
+// Ensure we always return JSON on fatal error (no empty response)
 header('Content-Type: application/json');
+register_shutdown_function(function () {
+    if (connection_aborted()) return;
+    $e = error_get_last();
+    if ($e && in_array($e['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
+        if (!headers_sent()) header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'error' => 'Server error: ' . ($e['message'] ?? 'Unknown')]);
+    }
+});
+
+session_start();
+require_once __DIR__ . '/../includes/db_config.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -15,9 +24,15 @@ $user_id = $_SESSION['user_id'];
 $stmt = $conn->prepare("SELECT subscription_status FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
-$result = $stmt->get_result();
-$user = $result->fetch_assoc();
+$subscription_status = null;
+$stmt->bind_result($subscription_status);
+$user = $stmt->fetch() ? ['subscription_status' => $subscription_status] : null;
+$stmt->close();
 
+if (!$user) {
+    echo json_encode(['success' => false, 'error' => 'User not found']);
+    exit;
+}
 if ($user['subscription_status'] !== 'premium') {
     echo json_encode(['success' => false, 'error' => 'Premium subscription required']);
     exit;
@@ -41,6 +56,7 @@ $stmt->bind_param("isss", $user_id, $calculator_type, $scenario_name, $scenario_
 if ($stmt->execute()) {
     echo json_encode(['success' => true, 'scenario_id' => $stmt->insert_id]);
 } else {
-    echo json_encode(['success' => false, 'error' => 'Failed to save scenario']);
+    $dbError = $conn->error;
+    echo json_encode(['success' => false, 'error' => 'Failed to save scenario' . ($dbError ? ': ' . $dbError : '')]);
 }
 ?>

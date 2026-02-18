@@ -27,16 +27,7 @@ if ($isLoggedIn) {
 
     <!-- Premium Banner -->
     <?php include('../includes/premium-banner-include.php'); ?>
-<?php if ($isPremium): ?>
-<div class="premium-features" style="background: #f0fff4; border: 2px solid #48bb78; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
-    <h3 style="margin-top: 0; color: #22543d;">💾 Premium: Save & Load Scenarios</h3>
-    <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
-        <button type="button" id="saveScenarioBtn" class="btn-primary" style="background: #48bb78;">Save Current Scenario</button>
-        <button type="button" id="loadScenarioBtn" class="btn-secondary">Load Saved Scenario</button>
-        <span id="saveStatus" style="color: #22543d; font-weight: 600;"></span>
-    </div>
-</div>
-<?php endif; ?>
+
     <div class="wrap">
         <p style="margin-bottom: 20px;"><a href="../" style="text-decoration: none; color: #1d4ed8;">← Return to home page</a></p>
 
@@ -49,6 +40,24 @@ if ($isLoggedIn) {
             <h2>Understanding Social Security Claiming Decisions</h2>
             <p>You can claim Social Security retirement benefits as early as age 62 or as late as age 70. Claiming early means smaller monthly checks but more total payments. Claiming later means larger monthly checks but fewer total payments. This calculator helps you understand the trade-offs and find the "break-even" age where total lifetime benefits become equal.</p>
         </div>
+
+<?php if ($isPremium): ?>
+        <div class="premium-features" style="background: #f0fff4; border: 2px solid #48bb78; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+            <h3 style="margin-top: 0; color: #22543d;">💾 Premium Features</h3>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+                <button type="button" id="saveScenarioBtn" class="btn-primary" style="background: #48bb78;" title="Store your current inputs and results for later">Save Scenario</button>
+                <button type="button" id="loadScenarioBtn" class="btn-secondary" title="Open a previously saved scenario">Load Scenario</button>
+                <button type="button" id="compareScenariosBtn" class="btn-primary" style="background: #f59e0b; color: white;" title="Side-by-side comparison of two saved scenarios">⚖️ Compare Scenarios</button>
+                <button type="button" id="downloadPdfBtn" class="btn-primary" style="background: #e53e3e; color: white;" title="Full report with charts and year-by-year table (PDF)">📄 Download PDF</button>
+                <button type="button" id="downloadCsvBtn" class="btn-primary" style="background: #3182ce; color: white;" title="Year-by-year benefit data for Excel or spreadsheets">📊 Export CSV</button>
+                <button type="button" id="downloadSummaryBtn" class="btn-primary" style="background: #805ad5; color: white;" title="One-page PDF: FRA, monthly benefits, break-even ages">📋 Claiming Summary</button>
+                <span id="saveStatus" style="color: #22543d; font-weight: 600;"></span>
+            </div>
+            <p style="margin: 12px 0 0 0; font-size: 13px; color: #4a5568; line-height: 1.5;">
+                <strong>Save</strong> / <strong>Load</strong> — Store and recall scenarios. <strong>Compare</strong> — See two scenarios side-by-side. <strong>PDF</strong> — Full report with charts. <strong>CSV</strong> — Spreadsheet data. <strong>Summary</strong> — One-page claiming decision guide.
+            </p>
+        </div>
+<?php endif; ?>
 
         <form id="ssForm">
             <h3>Your Information</h3>
