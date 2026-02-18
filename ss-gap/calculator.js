@@ -1,5 +1,13 @@
 // Social Security + Spending Gap Calculator
 
+// API base URL
+const SSG_API_BASE = (function() {
+    const path = window.location.pathname;
+    const match = path.match(/^(.*\/)ss-gap\/?/);
+    const basePath = (match ? match[1] : '/').replace(/\/?$/, '/');
+    return window.location.origin + basePath;
+})();
+
 // Format currency
 function formatCurrency(amount) {
     return new Intl.NumberFormat('en-US', {
@@ -306,14 +314,14 @@ function createAnnualWithdrawalChart(annualGap, rates, selectedRate) {
 document.addEventListener('DOMContentLoaded', function() {
     const saveBtn = document.getElementById('saveScenarioBtn');
     const loadBtn = document.getElementById('loadScenarioBtn');
-    
-    if (saveBtn) {
-        saveBtn.addEventListener('click', saveScenario);
-    }
-    
-    if (loadBtn) {
-        loadBtn.addEventListener('click', loadScenario);
-    }
+    const compareBtn = document.getElementById('compareScenariosBtn');
+    const pdfBtn = document.getElementById('downloadPdfBtn');
+    const csvBtn = document.getElementById('downloadCsvBtn');
+    if (saveBtn) saveBtn.addEventListener('click', saveScenario);
+    if (loadBtn) loadBtn.addEventListener('click', loadScenario);
+    if (compareBtn) compareBtn.addEventListener('click', compareScenarios);
+    if (pdfBtn) pdfBtn.addEventListener('click', downloadPDF);
+    if (csvBtn) csvBtn.addEventListener('click', downloadCSV);
 });
 
 function saveScenario() {
@@ -328,7 +336,7 @@ function saveScenario() {
         filingStatus: document.getElementById('filingStatus')?.value
     };
     
-    fetch('/api/save_scenario.php', {
+    fetch(SSG_API_BASE + 'api/save_scenario.php', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
@@ -337,21 +345,26 @@ function saveScenario() {
             scenario_data: formData
         })
     })
-    .then(res => res.json())
+    .then(res => res.text().then(text => ({ ok: res.ok, status: res.status, text: text })))
+    .then(({ ok, status, text }) => {
+        let data;
+        try { data = JSON.parse(text); } catch (_) { throw new Error(text || 'Server error'); }
+        if (!ok) throw new Error(data.error || 'Save failed');
+        return data;
+    })
     .then(data => {
         if (data.success) {
             document.getElementById('saveStatus').textContent = '✓ Saved!';
-            setTimeout(() => {
-                document.getElementById('saveStatus').textContent = '';
-            }, 3000);
+            setTimeout(() => { document.getElementById('saveStatus').textContent = ''; }, 3000);
         } else {
-            alert('Error: ' + data.error);
+            alert('Error: ' + (data.error || 'Unknown error'));
         }
-    });
+    })
+    .catch(err => alert('Save scenario failed: ' + err.message));
 }
 
 function loadScenario() {
-    fetch('/api/load_scenarios.php?calculator_type=ss-gap')
+    fetch(SSG_API_BASE + 'api/load_scenarios.php?calculator_type=ss-gap')
     .then(res => res.json())
     .then(data => {
         if (!data.success) {
@@ -378,7 +391,7 @@ function loadScenario() {
             if (index >= 0 && index < data.scenarios.length) {
                 const scenario = data.scenarios[index];
                 if (confirm(`Delete "${scenario.name}"? This cannot be undone.`)) {
-                    fetch('/api/delete_scenario.php', {
+                    fetch(SSG_API_BASE + 'api/delete_scenario.php', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({ scenario_id: scenario.id })
@@ -405,4 +418,26 @@ function loadScenario() {
             }
         }
     });
+}
+
+function compareScenarios() {
+    fetch(SSG_API_BASE + 'api/load_scenarios.php?calculator_type=ss-gap')
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) { alert('Error: ' + data.error); return; }
+        if (data.scenarios.length < 2) {
+            alert('You need at least 2 saved scenarios to compare. Save more first!');
+            return;
+        }
+        alert('Compare feature: Load scenarios individually to see their results side-by-side.');
+    })
+    .catch(() => alert('Failed to load scenarios.'));
+}
+
+function downloadPDF() {
+    alert('PDF download: Please run a calculation first, then use the PDF button.');
+}
+
+function downloadCSV() {
+    alert('CSV export: Please run a calculation first, then use the CSV button.');
 }

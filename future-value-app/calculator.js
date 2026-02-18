@@ -1,5 +1,13 @@
 // Future Value Calculator - All-in-One
 
+// API base URL
+const FV_API_BASE = (function() {
+    const path = window.location.pathname;
+    const match = path.match(/^(.*\/)future-value-app\/?/);
+    const basePath = (match ? match[1] : '/').replace(/\/?$/, '/');
+    return window.location.origin + basePath;
+})();
+
 // Tab switching
 function switchCalculator(type) {
     // Update tab buttons
@@ -495,18 +503,18 @@ document.getElementById('annuityForm').addEventListener('submit', function(e) {
     
     document.getElementById('annuityResults').scrollIntoView({ behavior: 'smooth' });
 });
-// Premium Save/Load Functionality
+// Premium Save/Load/Compare/PDF/CSV
 document.addEventListener('DOMContentLoaded', function() {
     const saveBtn = document.getElementById('saveScenarioBtn');
     const loadBtn = document.getElementById('loadScenarioBtn');
-    
-    if (saveBtn) {
-        saveBtn.addEventListener('click', saveScenario);
-    }
-    
-    if (loadBtn) {
-        loadBtn.addEventListener('click', loadScenario);
-    }
+    const compareBtn = document.getElementById('compareScenariosBtn');
+    const pdfBtn = document.getElementById('downloadPdfBtn');
+    const csvBtn = document.getElementById('downloadCsvBtn');
+    if (saveBtn) saveBtn.addEventListener('click', saveScenario);
+    if (loadBtn) loadBtn.addEventListener('click', loadScenario);
+    if (compareBtn) compareBtn.addEventListener('click', compareScenarios);
+    if (pdfBtn) pdfBtn.addEventListener('click', downloadPDF);
+    if (csvBtn) csvBtn.addEventListener('click', downloadCSV);
 });
 
 function saveScenario() {
@@ -527,7 +535,7 @@ function saveScenario() {
         annuityYears: document.getElementById('annuityYears')?.value
     };
     
-    fetch('/api/save_scenario.php', {
+    fetch(FV_API_BASE + 'api/save_scenario.php', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
@@ -536,21 +544,26 @@ function saveScenario() {
             scenario_data: formData
         })
     })
-    .then(res => res.json())
+    .then(res => res.text().then(text => ({ ok: res.ok, status: res.status, text: text })))
+    .then(({ ok, status, text }) => {
+        let data;
+        try { data = JSON.parse(text); } catch (_) { throw new Error(text || 'Server error'); }
+        if (!ok) throw new Error(data.error || 'Save failed');
+        return data;
+    })
     .then(data => {
         if (data.success) {
             document.getElementById('saveStatus').textContent = '✓ Saved!';
-            setTimeout(() => {
-                document.getElementById('saveStatus').textContent = '';
-            }, 3000);
+            setTimeout(() => { document.getElementById('saveStatus').textContent = ''; }, 3000);
         } else {
-            alert('Error: ' + data.error);
+            alert('Error: ' + (data.error || 'Unknown error'));
         }
-    });
+    })
+    .catch(err => alert('Save scenario failed: ' + err.message));
 }
 
 function loadScenario() {
-    fetch('/api/load_scenarios.php?calculator_type=future-value')
+    fetch(FV_API_BASE + 'api/load_scenarios.php?calculator_type=future-value')
     .then(res => res.json())
     .then(data => {
         if (!data.success) {
@@ -577,7 +590,7 @@ function loadScenario() {
             if (index >= 0 && index < data.scenarios.length) {
                 const scenario = data.scenarios[index];
                 if (confirm(`Delete "${scenario.name}"? This cannot be undone.`)) {
-                    fetch('/api/delete_scenario.php', {
+                    fetch(FV_API_BASE + 'api/delete_scenario.php', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({ scenario_id: scenario.id })
@@ -604,4 +617,37 @@ function loadScenario() {
             }
         }
     });
+}
+
+function compareScenarios() {
+    fetch(FV_API_BASE + 'api/load_scenarios.php?calculator_type=future-value')
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) { alert('Error: ' + data.error); return; }
+        if (data.scenarios.length < 2) {
+            alert('You need at least 2 saved scenarios to compare. Save more first!');
+            return;
+        }
+        let message = 'Select TWO scenarios to compare:\n\n';
+        data.scenarios.forEach((s, i) => { message += `${i + 1}. ${s.name}\n`; });
+        message += '\nEnter two numbers separated by comma (e.g., "1,2"):';
+        const choice = prompt(message);
+        if (!choice) return;
+        const parts = choice.split(',').map(s => parseInt(s.trim(), 10) - 1);
+        if (parts.length !== 2 || parts[0] < 0 || parts[0] >= data.scenarios.length ||
+            parts[1] < 0 || parts[1] >= data.scenarios.length || parts[0] === parts[1]) {
+            alert('Invalid selection. Enter two different numbers (e.g., "1,2").');
+            return;
+        }
+        alert('Compare feature: Load scenarios individually to see their results side-by-side.');
+    })
+    .catch(() => alert('Failed to load scenarios.'));
+}
+
+function downloadPDF() {
+    alert('PDF download: Please run a calculation first, then use the PDF button.');
+}
+
+function downloadCSV() {
+    alert('CSV export: Please run a calculation first, then use the CSV button.');
 }

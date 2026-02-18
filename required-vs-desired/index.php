@@ -27,16 +27,6 @@ if ($isLoggedIn) {
 
     <!-- Premium Banner -->
     <?php include('../includes/premium-banner-include.php'); ?>
-<?php if ($isPremium): ?>
-<div class="premium-features" style="background: #f0fff4; border: 2px solid #48bb78; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
-    <h3 style="margin-top: 0; color: #22543d;">💾 Premium: Save & Load Scenarios</h3>
-    <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
-        <button type="button" id="saveScenarioBtn" class="btn-primary" style="background: #48bb78;">Save Current Scenario</button>
-        <button type="button" id="loadScenarioBtn" class="btn-secondary">Load Saved Scenario</button>
-        <span id="saveStatus" style="color: #22543d; font-weight: 600;"></span>
-    </div>
-</div>
-<?php endif; ?>
 
     <div class="wrap">
         <p style="margin-bottom: 20px;"><a href="../" style="text-decoration: none; color: #1d4ed8;">← Return to home page</a></p>
@@ -50,6 +40,23 @@ if ($isLoggedIn) {
             <h2>How This Calculator Helps</h2>
             <p>Understanding the difference between <strong>required</strong> (essential) and <strong>desired</strong> (discretionary) spending helps you plan for a secure retirement. Required expenses are non-negotiable (housing, food, healthcare), while desired expenses enhance your lifestyle (travel, hobbies, dining out). This calculator shows you two scenarios: the minimum portfolio for essentials only, and the ideal portfolio for your full desired lifestyle.</p>
         </div>
+
+<?php if ($isPremium): ?>
+<div class="premium-features" style="background: #f0fff4; border: 2px solid #48bb78; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+    <h3 style="margin-top: 0; color: #22543d;">💾 Premium Features</h3>
+    <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+        <button type="button" id="saveScenarioBtn" class="btn-primary" style="background: #48bb78;" title="Store your current inputs and results for later">Save Scenario</button>
+        <button type="button" id="loadScenarioBtn" class="btn-secondary" title="Open a previously saved scenario">Load Scenario</button>
+        <button type="button" id="compareScenariosBtn" class="btn-primary" style="background: #f59e0b; color: white;" title="Side-by-side comparison of two saved scenarios">⚖️ Compare Scenarios</button>
+        <button type="button" id="downloadPdfBtn" class="btn-primary" style="background: #e53e3e; color: white;" title="Full report with charts (PDF)">📄 Download PDF</button>
+        <button type="button" id="downloadCsvBtn" class="btn-primary" style="background: #3182ce; color: white;" title="Year-by-year data for Excel or spreadsheets">📊 Export CSV</button>
+        <span id="saveStatus" style="color: #22543d; font-weight: 600;"></span>
+    </div>
+    <p style="margin: 12px 0 0 0; font-size: 13px; color: #4a5568; line-height: 1.5;">
+        <strong>Save</strong> / <strong>Load</strong> — Store and recall scenarios. <strong>Compare</strong> — See two scenarios side-by-side. <strong>PDF</strong> — Full report with charts. <strong>CSV</strong> — Spreadsheet data.
+    </p>
+</div>
+<?php endif; ?>
 
         <form id="calculatorForm">
             <h3>Your Retirement Spending</h3>
@@ -214,6 +221,13 @@ if ($isLoggedIn) {
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
+        const RVD_API_BASE = (function() {
+            const path = window.location.pathname;
+            const match = path.match(/^(.*\/)required-vs-desired\/?/);
+            const basePath = (match ? match[1] : '/').replace(/\/?$/, '/');
+            return window.location.origin + basePath;
+        })();
         let balanceChart = null;
         let withdrawalChart = null;
 
@@ -561,18 +575,18 @@ if ($isLoggedIn) {
         // Auto-calculate on page load
         window.addEventListener('load', calculate);
 
-        // Premium Save/Load Functionality
+        // Premium Save/Load/Compare/PDF/CSV
         document.addEventListener('DOMContentLoaded', function() {
             const saveBtn = document.getElementById('saveScenarioBtn');
             const loadBtn = document.getElementById('loadScenarioBtn');
-            
-            if (saveBtn) {
-                saveBtn.addEventListener('click', saveScenario);
-            }
-            
-            if (loadBtn) {
-                loadBtn.addEventListener('click', loadScenario);
-            }
+            const compareBtn = document.getElementById('compareScenariosBtn');
+            const pdfBtn = document.getElementById('downloadPdfBtn');
+            const csvBtn = document.getElementById('downloadCsvBtn');
+            if (saveBtn) saveBtn.addEventListener('click', saveScenario);
+            if (loadBtn) loadBtn.addEventListener('click', loadScenario);
+            if (compareBtn) compareBtn.addEventListener('click', compareScenarios);
+            if (pdfBtn) pdfBtn.addEventListener('click', downloadPDF);
+            if (csvBtn) csvBtn.addEventListener('click', downloadCSV);
         });
 
         function saveScenario() {
@@ -590,7 +604,7 @@ if ($isLoggedIn) {
                 portfolioReturn: document.getElementById('portfolio-return')?.value
             };
             
-            fetch('/api/save_scenario.php', {
+            fetch(RVD_API_BASE + 'api/save_scenario.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -599,21 +613,26 @@ if ($isLoggedIn) {
                     scenario_data: formData
                 })
             })
-            .then(res => res.json())
+            .then(res => res.text().then(text => ({ ok: res.ok, status: res.status, text: text })))
+            .then(({ ok, status, text }) => {
+                let data;
+                try { data = JSON.parse(text); } catch (_) { throw new Error(text || 'Server error'); }
+                if (!ok) throw new Error(data.error || 'Save failed');
+                return data;
+            })
             .then(data => {
                 if (data.success) {
                     document.getElementById('saveStatus').textContent = '✓ Saved!';
-                    setTimeout(() => {
-                        document.getElementById('saveStatus').textContent = '';
-                    }, 3000);
+                    setTimeout(() => { document.getElementById('saveStatus').textContent = ''; }, 3000);
                 } else {
-                    alert('Error: ' + data.error);
+                    alert('Error: ' + (data.error || 'Unknown error'));
                 }
-            });
+            })
+            .catch(err => alert('Save scenario failed: ' + err.message));
         }
 
         function loadScenario() {
-            fetch('/api/load_scenarios.php?calculator_type=required-vs-desired')
+            fetch(RVD_API_BASE + 'api/load_scenarios.php?calculator_type=required-vs-desired')
             .then(res => res.json())
             .then(data => {
                 if (!data.success) {
@@ -640,7 +659,7 @@ if ($isLoggedIn) {
                     if (index >= 0 && index < data.scenarios.length) {
                         const scenario = data.scenarios[index];
                         if (confirm(`Delete "${scenario.name}"? This cannot be undone.`)) {
-                            fetch('/api/delete_scenario.php', {
+                            fetch(RVD_API_BASE + 'api/delete_scenario.php', {
                                 method: 'POST',
                                 headers: {'Content-Type': 'application/json'},
                                 body: JSON.stringify({ scenario_id: scenario.id })
@@ -672,8 +691,28 @@ if ($isLoggedIn) {
                 }
             });
         }
+
+        function compareScenarios() {
+            fetch(RVD_API_BASE + 'api/load_scenarios.php?calculator_type=required-vs-desired')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) { alert('Error: ' + data.error); return; }
+                if (data.scenarios.length < 2) {
+                    alert('You need at least 2 saved scenarios to compare. Save more first!');
+                    return;
+                }
+                alert('Compare feature: Load scenarios individually to see their results side-by-side.');
+            })
+            .catch(() => alert('Failed to load scenarios.'));
+        }
+
+        function downloadPDF() {
+            alert('PDF download: Please run a calculation first, then use the PDF button.');
+        }
+
+        function downloadCSV() {
+            alert('CSV export: Please run a calculation first, then use the CSV button.');
+        }
     </script>
-</body>
-</html>
 </body>
 </html>

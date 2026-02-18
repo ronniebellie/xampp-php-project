@@ -61,6 +61,88 @@ if ($isLoggedIn) {
     .brand-title{
       font-size:20px;font-weight:850;letter-spacing:-.01em;margin:0;
     }
+    .brand-subtitle{
+      font-size:13px;color:var(--muted);margin:4px 0 0;
+    }
+    .brand-subtitle a{
+      color:var(--accent);text-decoration:none;font-weight:600;
+    }
+    .brand-subtitle a:hover{text-decoration:underline}
+    
+    /* Premium Banner */
+    .premium-banner {
+      background: linear-gradient(135deg, #2c5282 0%, #3182ce 100%);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin-bottom: 20px;
+      color: white;
+      box-shadow: 0 8px 24px rgba(44, 82, 130, 0.25);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .premium-banner-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .premium-banner-text {
+      flex: 1;
+    }
+    .premium-banner h2 {
+      margin: 0 0 8px 0;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .premium-banner p {
+      margin: 0;
+      opacity: 0.95;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+    .premium-banner-features {
+      display: flex;
+      gap: 20px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .premium-feature-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      opacity: 0.95;
+    }
+    .premium-feature-item::before {
+      content: "✓";
+      font-weight: bold;
+      color: #48bb78;
+    }
+    .premium-banner-cta {
+      display: inline-block;
+      background: white;
+      color: #2c5282;
+      padding: 12px 24px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 15px;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .premium-banner-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    }
+    .premium-banner.member {
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    }
+    .premium-banner.member .premium-banner-cta {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: 2px solid white;
+    }
     
     .section{
       margin-top:18px;display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;
@@ -93,6 +175,19 @@ if ($isLoggedIn) {
       background:rgba(29,78,216,.10);color:var(--accent);
     }
     .btn:hover{background:rgba(29,78,216,.14)}
+
+    /* Subscription buttons */
+    .subscribe-btn {
+      color: #059669;
+      font-weight: 700;
+    }
+    .subscribe-btn:hover {
+      text-decoration: underline;
+    }
+    .premium-badge {
+      color: #d97706;
+      font-weight: 700;
+    }
 
     hr.footer-sep {
       border: 0;
@@ -143,6 +238,14 @@ if ($isLoggedIn) {
 
     @media (max-width: 720px) {
       .topbar{flex-direction:column;align-items:flex-start}
+      .premium-banner-content {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .premium-banner-cta {
+        width: 100%;
+        text-align: center;
+      }
       .footer-right {
         width: 100%;
         justify-content: flex-start;
@@ -159,9 +262,71 @@ if ($isLoggedIn) {
         <div class="mark" aria-hidden="true">RB</div>
         <div class="brand-text">
           <h1 class="brand-title">Free web apps for sound financial planning</h1>
+          <?php if ($isLoggedIn): ?>
+            <p class="brand-subtitle">
+              Welcome back, <strong><?php echo htmlspecialchars($userName); ?></strong>! 
+              <a href="auth/logout.php">Log out</a>
+              <?php if (!$is_premium): ?>
+                | <a href="subscribe.php" class="subscribe-btn">Upgrade to Premium</a>
+              <?php else: ?>
+                | <span class="premium-badge">✨ Premium Member</span>
+              <?php endif; ?>
+            </p>
+          <?php else: ?>
+            <p class="brand-subtitle">
+              <a href="auth/login.php">Log in</a> or 
+              <a href="auth/register.php">Sign up</a> for premium features
+            </p>
+          <?php endif; ?>
         </div>
       </div>
     </div>
+
+    <?php if ($is_premium): ?>
+      <!-- Premium Member Banner -->
+      <div class="premium-banner member">
+        <div class="premium-banner-content">
+          <div class="premium-banner-text">
+            <h2>✨ You're a Premium Member!</h2>
+            <p>Enjoy unlimited scenario saving and comparing, PDF and CSV exports, and advanced projections across all calculators.</p>
+          </div>
+          <a href="account.php" class="premium-banner-cta">Manage Account</a>
+        </div>
+      </div>
+    <?php elseif ($isLoggedIn): ?>
+      <!-- Upgrade Prompt for Logged-In Free Users -->
+      <div class="premium-banner">
+        <div class="premium-banner-content">
+          <div class="premium-banner-text">
+            <h2>Unlock Premium Features</h2>
+            <p>Save and compare scenarios, export PDF and CSV reports, and access advanced projections.</p>
+            <div class="premium-banner-features">
+              <div class="premium-feature-item">Save & Compare Scenarios</div>
+              <div class="premium-feature-item">PDF Reports</div>
+              <div class="premium-feature-item">Advanced Projections</div>
+            </div>
+          </div>
+          <a href="premium.html" class="premium-banner-cta">Try Free for 7 Days</a>
+        </div>
+      </div>
+    <?php else: ?>
+      <!-- Premium Promotion for Non-Logged-In Users -->
+      <div class="premium-banner">
+        <div class="premium-banner-content">
+          <div class="premium-banner-text">
+            <h2>Professional Planning Tools, Now with Premium Features</h2>
+            <p>All calculators below are free to use. Upgrade to Premium to save and compare scenarios, export PDF and CSV reports, and access advanced projections.</p>
+            <div class="premium-banner-features">
+              <div class="premium-feature-item">Save Unlimited Scenarios</div>
+              <div class="premium-feature-item">Export PDF Reports</div>
+              <div class="premium-feature-item">10-20 Year Projections</div>
+              <div class="premium-feature-item">Ad-Free Experience</div>
+            </div>
+          </div>
+          <a href="premium.html" class="premium-banner-cta">Learn More</a>
+        </div>
+      </div>
+    <?php endif; ?>
 
     <div class="section" id="apps">
       <h2>Apps</h2>
@@ -216,4 +381,4 @@ if ($isLoggedIn) {
 
   </div>
 </body>
-</html>
+</html>/

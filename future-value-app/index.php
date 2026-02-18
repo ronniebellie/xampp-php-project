@@ -60,16 +60,6 @@ if ($isLoggedIn) {
 
     <!-- Premium Banner -->
     <?php include('../includes/premium-banner-include.php'); ?>
-<?php if ($isPremium): ?>
-<div class="premium-features" style="background: #f0fff4; border: 2px solid #48bb78; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
-    <h3 style="margin-top: 0; color: #22543d;">💾 Premium: Save & Load Scenarios</h3>
-    <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
-        <button type="button" id="saveScenarioBtn" class="btn-primary" style="background: #48bb78;">Save Current Scenario</button>
-        <button type="button" id="loadScenarioBtn" class="btn-secondary">Load Saved Scenario</button>
-        <span id="saveStatus" style="color: #22543d; font-weight: 600;"></span>
-    </div>
-</div>
-<?php endif; ?>
     <div class="wrap">
         <p style="margin-bottom: 20px;"><a href="../" style="text-decoration: none; color: #1d4ed8;">← Return to home page</a></p>
 
@@ -82,6 +72,23 @@ if ($isLoggedIn) {
             <h2>Understanding Time Value of Money</h2>
             <p>The time value of money is a fundamental financial concept: a dollar today is worth more than a dollar tomorrow because of its earning potential. These calculators help you understand how money grows over time through compound interest, and how to plan for future financial goals.</p>
         </div>
+
+<?php if ($isPremium): ?>
+<div class="premium-features" style="background: #f0fff4; border: 2px solid #48bb78; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+    <h3 style="margin-top: 0; color: #22543d;">💾 Premium Features</h3>
+    <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+        <button type="button" id="saveScenarioBtn" class="btn-primary" style="background: #48bb78;" title="Store your current inputs and results for later">Save Scenario</button>
+        <button type="button" id="loadScenarioBtn" class="btn-secondary" title="Open a previously saved scenario">Load Scenario</button>
+        <button type="button" id="compareScenariosBtn" class="btn-primary" style="background: #f59e0b; color: white;" title="Side-by-side comparison of two saved scenarios">⚖️ Compare Scenarios</button>
+        <button type="button" id="downloadPdfBtn" class="btn-primary" style="background: #e53e3e; color: white;" title="Full report with charts (PDF)">📄 Download PDF</button>
+        <button type="button" id="downloadCsvBtn" class="btn-primary" style="background: #3182ce; color: white;" title="Year-by-year data for Excel or spreadsheets">📊 Export CSV</button>
+        <span id="saveStatus" style="color: #22543d; font-weight: 600;"></span>
+    </div>
+    <p style="margin: 12px 0 0 0; font-size: 13px; color: #4a5568; line-height: 1.5;">
+        <strong>Save</strong> / <strong>Load</strong> — Store and recall scenarios. <strong>Compare</strong> — See two scenarios side-by-side. <strong>PDF</strong> — Full report with charts. <strong>CSV</strong> — Spreadsheet data.
+    </p>
+</div>
+<?php endif; ?>
 
         <!-- Calculator Type Tabs -->
         <div class="calculator-tabs">
@@ -217,6 +224,9 @@ if ($isLoggedIn) {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
+    </script>
     <script src="calculator.js"></script>
 </body>
 </html>

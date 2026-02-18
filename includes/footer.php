@@ -31,12 +31,34 @@
   </div>
 
   <!-- Bottom Line: Copyright | Message + Donate | Contact -->
+  <?php
+  // Check if user is premium - use $is_premium if available, otherwise check session
+  $hide_donate = false;
+  if (isset($is_premium) && $is_premium) {
+      $hide_donate = true;
+  } elseif (session_status() === PHP_SESSION_ACTIVE && isset($_SESSION['user_id'])) {
+      // Only check DB if session is active and user is logged in
+      if (!isset($conn)) {
+          require_once __DIR__ . '/../includes/db_config.php';
+      }
+      $user_id = $_SESSION['user_id'];
+      $stmt = $conn->prepare("SELECT subscription_status FROM users WHERE id = ?");
+      $stmt->bind_param("i", $user_id);
+      $stmt->execute();
+      $result = $stmt->get_result();
+      $user = $result->fetch_assoc();
+      $hide_donate = ($user && $user['subscription_status'] === 'premium');
+      $stmt->close();
+  }
+  ?>
   <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0; font-size: 14px; color: #666;">
     <div>© <?php echo date('Y'); ?> Ron Belisle | <a href="mailto:ronbelisle@gmail.com" style="color: #1d4ed8; text-decoration: none; font-weight: 600;">Contact Support</a></div>
+    <?php if (!$hide_donate): ?>
     <div style="display: flex; align-items: center; gap: 10px;">
       <span>If these tools are useful, please support future development.</span>
       <a href="https://paypal.me/rongbelisle" target="_blank" rel="noopener noreferrer" style="padding: 8px 16px; background-color: #0070ba; color: #fff; text-decoration: none; border-radius: 4px; font-weight: 600; white-space: nowrap; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#005ea6'" onmouseout="this.style.backgroundColor='#0070ba'">Donate</a>
     </div>
+    <?php endif; ?>
   </div>
 
   <!-- Mobile Stack -->
