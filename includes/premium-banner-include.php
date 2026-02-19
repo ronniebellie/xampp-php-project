@@ -49,9 +49,9 @@
     <p>You have full access to all premium features including save scenarios, PDF exports, and advanced projections.</p>
 </div>
 <?php else: ?>
-<!-- Free User - Show coming soon -->
+<!-- Free User - Invite to premium -->
 <div class="premium-banner coming-soon">
-    <h3>🎯 New: Premium Features Available Soon</h3>
-    <p>Save your scenarios, export professional reports, and unlock advanced projections. Free tools remain free forever.</p>
+    <h3>✨ Premium Features Available</h3>
+    <p>Save and compare scenarios, export PDF and CSV reports, and access advanced projections. <a href="<?php echo (isset($isLoggedIn) && $isLoggedIn) ? '/subscribe.php' : '/auth/register.php'; ?>" style="color: white; text-decoration: underline; font-weight: 600;"><?php echo (isset($isLoggedIn) && $isLoggedIn) ? 'Upgrade' : 'Sign up'; ?></a> to unlock. Free tools remain free forever.</p>
 </div>
 <?php endif; ?>
