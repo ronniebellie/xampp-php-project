@@ -49,22 +49,28 @@ if ($isLoggedIn) {
     }
     .wrap{max-width:var(--max);margin:0 auto;padding:24px 18px 44px}
     .topbar{
-      display:flex;align-items:center;justify-content:space-between;gap:12px;
-      padding:22px 24px;margin-bottom:14px;border:1px solid var(--border);
-      background:rgba(255,255,255,.92);border-radius:var(--radius);box-shadow:var(--shadow);
+      display:flex;align-items:center;justify-content:space-between;gap:16px;
+      padding:28px 32px;margin-bottom:20px;
+      border:2px solid var(--border);
+      background:linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      border-radius:var(--radius);
+      box-shadow:0 4px 20px rgba(15,23,42,.08), 0 0 0 1px rgba(29,78,216,.06);
     }
-    .brand{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
+    .brand{display:flex;align-items:center;gap:16px;min-width:0;flex:1}
     .mark{
-      width:48px;height:48px;border-radius:16px;border:1px solid var(--border);
-      background:linear-gradient(135deg,rgba(29,78,216,.12),rgba(29,78,216,.05));
-      display:grid;place-items:center;font-weight:850;letter-spacing:-.02em;color:var(--accent);flex:0 0 auto;
+      width:56px;height:56px;border-radius:16px;border:2px solid rgba(29,78,216,.2);
+      background:linear-gradient(135deg,rgba(29,78,216,.15),rgba(29,78,216,.06));
+      display:grid;place-items:center;font-weight:850;letter-spacing:-.02em;color:var(--accent);flex:0 0 auto;font-size:20px;
     }
     .brand-text{flex:1;min-width:0}
     .brand-title{
-      font-size:20px;font-weight:850;letter-spacing:-.01em;margin:0;
+      font-size:24px;font-weight:850;letter-spacing:-.01em;margin:0;color:var(--text);line-height:1.25;
+    }
+    .brand-tagline{
+      font-size:15px;color:var(--muted);margin:8px 0 0;line-height:1.5;max-width:560px;
     }
     .brand-subtitle{
-      font-size:13px;color:var(--muted);margin:4px 0 0;
+      font-size:14px;color:var(--muted);margin:10px 0 0;
     }
     .brand-subtitle a{
       color:var(--accent);text-decoration:none;font-weight:600;
@@ -171,6 +177,50 @@ if ($isLoggedIn) {
       background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='156' height='52' viewBox='0 0 156 52'><path d='M4 40 C20 36, 26 46, 38 38 S62 20, 76 26 S98 42, 112 30 S132 10, 152 14' fill='none' stroke='%231d4ed8' stroke-width='4' stroke-linecap='round'/></svg>");
       background-size:cover;background-repeat:no-repeat;pointer-events:none;
     }
+    .section-heading {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 32px 0 8px 0;
+      letter-spacing: -0.01em;
+    }
+    .section-heading:first-of-type { margin-top: 0; }
+    .section-divider {
+      margin: 48px 0 0;
+      padding: 32px 0 0;
+      border-top: 3px solid var(--border);
+      position: relative;
+    }
+    .section-divider::before {
+      content: "";
+      position: absolute;
+      top: -3px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+      opacity: 0.35;
+      border-radius: 2px;
+    }
+    .card.coming-soon .btn {
+      background: #e2e8f0;
+      color: #64748b;
+      border-color: #cbd5e1;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .card.coming-soon .coming-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-left: 6px;
+    }
     .btn{
       display:inline-block;text-decoration:none;font-weight:750;font-size:14px;
       padding:10px 14px;border-radius:14px;border:1px solid rgba(29,78,216,.28);
@@ -239,7 +289,10 @@ if ($isLoggedIn) {
     }
 
     @media (max-width: 720px) {
-      .topbar{flex-direction:column;align-items:flex-start}
+      .topbar{flex-direction:column;align-items:flex-start;padding:20px}
+      .brand-title{font-size:20px}
+      .brand-tagline{font-size:14px}
+      .section-divider{margin-top:36px;padding-top:24px}
       .premium-banner-content {
         flex-direction: column;
         align-items: flex-start;
@@ -264,6 +317,7 @@ if ($isLoggedIn) {
         <div class="mark" aria-hidden="true">RB</div>
         <div class="brand-text">
           <h1 class="brand-title">Free web apps for sound financial planning</h1>
+          <p class="brand-tagline">Calculators for retirement planning—RMDs, Social Security, Roth conversions, spending gaps—and for building your foundation: debt payoff, emergency fund, and getting on track.</p>
           <?php if ($isLoggedIn): ?>
             <p class="brand-subtitle">
               Welcome back, <strong><?php echo htmlspecialchars($userName); ?></strong>! 
@@ -277,7 +331,7 @@ if ($isLoggedIn) {
           <?php else: ?>
             <p class="brand-subtitle">
               <a href="auth/login.php">Log in</a> or 
-              <a href="auth/register.php">Sign up</a> for premium features
+              <a href="auth/register.php">Sign up</a> for premium features—save scenarios, export PDFs, and compare results across all tools.
             </p>
           <?php endif; ?>
         </div>
@@ -330,12 +384,9 @@ if ($isLoggedIn) {
       </div>
     <?php endif; ?>
 
-    <div class="section" id="apps">
-      <h2>Apps</h2>
-      <p class="hint">Stay tuned for more apps to be added.</p>
-    </div>
-
-    <main class="grid" aria-label="App links">
+    <h2 class="section-heading" id="retirement">For people in or near retirement</h2>
+    <p class="hint">RMDs, Social Security, Roth conversions, and retirement income planning.</p>
+    <main class="grid" aria-label="Retirement app links">
       <section class="card">
         <h3>RMD Impact</h3>
         <p>Estimate how Required Minimum Distributions interact with your portfolio, taxes, and retirement income over time.</p>
@@ -371,7 +422,7 @@ if ($isLoggedIn) {
         <p>Separate essential expenses from discretionary spending to calculate the minimum portfolio needed for security and the ideal portfolio for your full retirement lifestyle.</p>
         <a class="btn" href="required-vs-desired/">Open</a>
       </section>
-      
+
       <section class="card">
         <h3>Managed Portfolio vs Vanguard Index Fund</h3>
         <p>See the true cost of advisor fees - including opportunity cost - compared to low-cost Vanguard index funds.</p>
@@ -379,8 +430,44 @@ if ($isLoggedIn) {
       </section>
     </main>
 
+    <div class="section-divider">
+    <h2 class="section-heading" id="early-career">For people building or strengthening their foundation</h2>
+    <p class="hint">Debt payoff, emergency fund, down payment, and getting on track for retirement—whether you're just starting or catching up.</p>
+    <main class="grid" aria-label="Early career app links">
+      <section class="card">
+        <h3>Debt Payoff Calculator</h3>
+        <p>Compare avalanche vs snowball, see payoff timelines, and see how extra payments shorten your journey and save interest.</p>
+        <a class="btn" href="debt-payoff/">Open</a>
+      </section>
+
+      <section class="card">
+        <h3>Emergency Fund Builder</h3>
+        <p>Set a target (e.g. 3–6 months of expenses) and see how long it takes to get there at your savings rate.</p>
+        <a class="btn" href="emergency-fund/">Open</a>
+      </section>
+
+      <section class="card">
+        <h3>Down Payment / House Savings</h3>
+        <p>See how much to save each month to reach your down payment goal and when you'll get there.</p>
+        <a class="btn" href="down-payment/">Open</a>
+      </section>
+
+      <section class="card">
+        <h3>Student Loan Payoff</h3>
+        <p>Model extra payments, refinancing, and payoff timelines so you can choose a strategy that fits.</p>
+        <a class="btn" href="student-loan-payoff/">Open</a>
+      </section>
+
+      <section class="card">
+        <h3>401(k) / IRA On Track?</h3>
+        <p>See if your current balance and contributions put you on track for retirement by your target age.</p>
+        <a class="btn" href="401k-on-track/">Open</a>
+      </section>
+    </main>
+    </div>
+
     <?php include __DIR__ . '/includes/footer.php'; ?>
 
   </div>
 </body>
-</html>/
+</html>

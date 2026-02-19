@@ -219,6 +219,20 @@
             color: #2d3748;
         }
         
+        .example-chart {
+            margin-top: 15px;
+            max-width: 100%;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #fafafa;
+        }
+        
+        .example-chart figcaption {
+            font-size: 12px;
+            color: #718096;
+            padding: 6px 0 0 0;
+        }
+        
         .pricing-section {
             background: white;
             padding: 40px;
@@ -424,25 +438,25 @@
 
                 <div class="feature-card">
                     <div class="icon">📄</div>
-                    <h3>Professional PDF Reports</h3>
-                    <p>Export clean, professional reports to share with your spouse, financial advisor, or keep for your records.</p>
+                    <h3>PDF & CSV Export</h3>
+                    <p>Export clean reports and raw data: professional PDFs to share or print, and CSV files for your own spreadsheets.</p>
                     <ul>
                         <li>One-click PDF export</li>
-                        <li>Professional formatting</li>
-                        <li>Include all calculations</li>
+                        <li>CSV export for Excel/Sheets</li>
+                        <li>Charts and tables included</li>
                         <li>Print-ready documents</li>
                     </ul>
                 </div>
 
                 <div class="feature-card">
                     <div class="icon">📊</div>
-                    <h3>Advanced Projections</h3>
-                    <p>Access extended features including multi-year projections, detailed analysis, and interactive charts.</p>
+                    <h3>Extended Tables & Charts</h3>
+                    <p>See the full picture: multi-year projection tables, interactive charts, and—where it applies—tax impact (e.g. RMD, Roth).</p>
                     <ul>
-                        <li>10-20 year projection tables</li>
-                        <li>Year-by-year breakdowns</li>
-                        <li>Tax impact analysis</li>
-                        <li>Interactive visualizations</li>
+                        <li>Full year-by-year projection tables</li>
+                        <li>Interactive balance and growth charts</li>
+                        <li>Tax impact in RMD & Roth tools</li>
+                        <li>Compare two scenarios side-by-side</li>
                     </ul>
                 </div>
 
@@ -464,7 +478,7 @@
         <div class="features-section">
             <h2>See What Premium Can Do</h2>
             <p style="text-align: center; margin-bottom: 30px; color: #4a5568;">
-                Real examples of advanced projections available with Premium:
+                Every premium calculator includes <strong>Save</strong>, <strong>Load</strong>, <strong>Compare</strong>, plus <strong>PDF</strong> and <strong>CSV</strong> export. Below are examples of the extra tables and charts you get.
             </p>
 
             <div class="example-section">
@@ -514,7 +528,17 @@
                                 </tr>
                             </tbody>
                         </table>
-                        <p style="margin-top: 15px;"><strong>Plus:</strong> Compare "No Roth Conversions" vs "Convert $50K/year"</p>
+                        <figure class="example-chart">
+                            <svg viewBox="0 0 260 120" width="100%" height="120" style="display: block;" aria-hidden="true">
+                                <defs><linearGradient id="rmdLineGrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#3182ce;stop-opacity:0.3"/><stop offset="100%" style="stop-color:#3182ce;stop-opacity:0"/></linearGradient></defs>
+                                <polyline fill="none" stroke="#3182ce" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="20,95 60,88 100,80 140,72 180,63 220,55 260,46"/>
+                                <polygon fill="url(#rmdLineGrad)" points="20,95 60,88 100,80 140,72 180,63 220,55 260,46 260,120 20,120"/>
+                                <text x="20" y="112" font-size="9" fill="#718096">2026</text><text x="250" y="112" font-size="9" fill="#718096" text-anchor="end">2032</text>
+                                <text x="130" y="15" font-size="10" fill="#2c5282" text-anchor="middle">IRA balance over time</text>
+                            </svg>
+                            <figcaption>Sample chart: balance projection (Premium)</figcaption>
+                        </figure>
+                        <p style="margin-top: 15px;"><strong>Plus:</strong> Compare "No Roth Conversions" vs "Convert $50K/year" · Save/Load · PDF report · CSV export</p>
                     </div>
                 </div>
             </div>
@@ -560,7 +584,22 @@
                                 </tr>
                             </tbody>
                         </table>
-                        <p style="margin-top: 15px;"><strong>Plus:</strong> Interactive charts and spousal coordination strategies</p>
+                        <figure class="example-chart">
+                            <svg viewBox="0 0 260 120" width="100%" height="120" style="display: block;" aria-hidden="true">
+                                <rect x="30" y="50" width="55" height="45" fill="#3182ce" rx="4"/>
+                                <rect x="102" y="25" width="55" height="70" fill="#3182ce" rx="4"/>
+                                <rect x="174" y="5" width="55" height="90" fill="#2c5282" rx="4"/>
+                                <text x="57" y="105" font-size="10" fill="#4a5568" text-anchor="middle">62</text>
+                                <text x="129" y="105" font-size="10" fill="#4a5568" text-anchor="middle">67</text>
+                                <text x="201" y="105" font-size="10" fill="#4a5568" text-anchor="middle">70</text>
+                                <text x="57" y="45" font-size="9" fill="#2c5282" text-anchor="middle">$1.7k</text>
+                                <text x="129" y="20" font-size="9" fill="#2c5282" text-anchor="middle">$2.4k</text>
+                                <text x="201" y="3" font-size="9" fill="#2c5282" text-anchor="middle">$3.0k</text>
+                                <text x="130" y="15" font-size="10" fill="#2c5282" text-anchor="middle">Monthly benefit by claim age</text>
+                            </svg>
+                            <figcaption>Sample chart: benefit by claiming age (Premium)</figcaption>
+                        </figure>
+                        <p style="margin-top: 15px;"><strong>Plus:</strong> Interactive charts, spousal strategies, Save/Load/Compare, PDF & CSV</p>
                     </div>
                 </div>
             </div>
@@ -584,8 +623,8 @@
                     <ul>
                         <li>All premium features</li>
                         <li>Unlimited scenarios</li>
-                        <li>PDF exports</li>
-                        <li>Advanced projections</li>
+                        <li>PDF & CSV exports</li>
+                        <li>Extended tables & charts</li>
                         <li>Priority support</li>
                         <li>Cancel anytime</li>
                     </ul>
@@ -600,8 +639,8 @@
                     <ul>
                         <li>All premium features</li>
                         <li>Unlimited scenarios</li>
-                        <li>PDF exports</li>
-                        <li>Advanced projections</li>
+                        <li>PDF & CSV exports</li>
+                        <li>Extended tables & charts</li>
                         <li>Priority support</li>
                         <li>2 months free!</li>
                     </ul>
