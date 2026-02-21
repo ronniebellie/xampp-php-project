@@ -73,6 +73,21 @@ if ($isLoggedIn) {
                 </div>
             </div>
 
+            <h3 style="margin-top: 30px;">Optional: See How Life Insurance Fills the Gap</h3>
+            <p style="color: #666; margin-bottom: 15px;">Get a whole life insurance quote for a policy with a death benefit roughly equal to the total gap below, then enter the monthly premium to compare.</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                <div>
+                    <label for="insurancePremium" style="display: block; margin-bottom: 5px; font-weight: 600;">Estimated Monthly Insurance Premium ($)</label>
+                    <input type="number" id="insurancePremium" min="0" step="50" value="" placeholder="e.g. 400" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                    <small style="color: #666;">Leave blank to skip the insurance comparison</small>
+                </div>
+                <div>
+                    <label for="yearsPayingPremiums" style="display: block; margin-bottom: 5px; font-weight: 600;">Years You'll Pay Premiums</label>
+                    <input type="number" id="yearsPayingPremiums" min="1" max="40" value="18" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                    <small style="color: #666;">Typically until expected life expectancy</small>
+                </div>
+            </div>
+
             <div style="text-align: center; margin: 30px 0;">
                 <button type="submit" class="button" style="font-size: 1.1em; padding: 12px 30px;">Calculate Survivor Gap</button>
             </div>
@@ -96,6 +111,8 @@ if ($isLoggedIn) {
                     <canvas id="cumulativeGapChart"></canvas>
                 </div>
             </div>
+
+            <div id="insuranceComparison" class="info-box" style="display: none; background: #f0fdf4; border-left: 4px solid #22c55e; padding: 20px; margin: 30px 0; border-radius: 8px;"></div>
 
             <div class="info-box info-box-blue" id="interpretation"></div>
 

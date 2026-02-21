@@ -83,9 +83,24 @@ A PHP site offering **free financial/retirement planning calculators** with an o
 
 ## Deployment Workflow
 
-- **Local:** `/Applications/XAMPP/htdocs/` (Mac development).
-- **Remote:** `/var/www/html/` (Ubuntu server on Digital Ocean).
-- **Pattern:** `git commit` → push → SSH to server → `git pull` → copy/sync files to `/var/www/html/` as needed.
+- **Local (Mac):** `/Applications/XAMPP/htdocs/` — develop here, commit, push to GitHub.
+- **Server:** Git repo lives at **`/var/www/xampp-php-project`**; web root (Apache) is **`/var/www/html`**. After `git pull` in the repo, **copy** updated files into `/var/www/html` so the site serves the new code.
+
+**Typical sequence (iTerm):**
+```bash
+cd /Applications/XAMPP/htdocs
+git add <files>
+git commit -m "Your message"
+git push origin main
+
+ssh root@64.23.181.64
+cd /var/www/xampp-php-project
+git pull
+cp /var/www/xampp-php-project/<path-to-file> /var/www/html/<path-to-file>   # repeat for each changed file
+exit
+```
+
+**Important:** When you change more than one file (e.g. `api/generate_rmd_pdf.php` and `rmd-impact/calculator.js`), copy **all** of them to `/var/www/html`. Otherwise the live site may still run old code for uncopied files. To deploy the whole app in one go: `cp -r /var/www/xampp-php-project/* /var/www/html/` (watch for overwriting local-only files like `includes/db_config.php` on the server).
 
 ---
 
