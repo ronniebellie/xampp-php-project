@@ -394,6 +394,12 @@ if ($isLoggedIn) {
       </section>
 
       <section class="card">
+        <h3>Survivor Gap Calculator</h3>
+        <p>Compare single-life vs joint-life annuity payouts and see how life insurance could fill the gap for your surviving spouse.</p>
+        <a class="btn" href="survivor-gap/">Open</a>
+      </section>
+
+      <section class="card">
         <h3>Future Value Calculator</h3>
         <p>Calculate present value, future value, annuities, and required payments to reach your financial goals.</p>
         <a class="btn" href="future-value-app/">Open</a>
