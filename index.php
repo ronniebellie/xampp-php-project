@@ -430,6 +430,12 @@ if ($isLoggedIn) {
         <p>See the true cost of advisor fees - including opportunity cost - compared to low-cost Vanguard index funds.</p>
         <a class="btn" href="managed-vs-vanguard/">Open</a>
       </section>
+
+      <section class="card">
+        <h3>Survivor Gap Calculator</h3>
+        <p>Compare single-life vs joint-life annuity payouts and see how life insurance could fill the gap for your surviving spouse.</p>
+        <a class="btn" href="survivor-gap/">Open</a>
+      </section>
     </main>
 
     <div class="section-divider">
