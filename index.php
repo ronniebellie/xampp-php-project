@@ -334,6 +334,8 @@ if ($isLoggedIn) {
               <a href="auth/register.php">Sign up</a> for premium features—save scenarios, export PDFs, and compare results across all tools.
             </p>
           <?php endif; ?>
+          <hr style="margin: 14px 0 10px 0; border: 0; border-top: 1px solid var(--border);" />
+          <p class="brand-subtitle">For retirement advisors &amp; planners: we offer these calculators with your own branding — <a href="advisors.html">Click here to learn more</a>.</p>
         </div>
       </div>
     </div>
