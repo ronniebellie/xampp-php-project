@@ -386,7 +386,7 @@ if ($isLoggedIn) {
       </div>
     <?php endif; ?>
 
-    <h2 class="section-heading" id="retirement">For folks in or near retirement</h2>
+    <h2 class="section-heading" id="retirement">For folks in or near retirement (Boomers and Gen X)</h2>
     <p class="hint">RMDs, Social Security, Roth conversions, and retirement income planning.</p>
     <main class="grid" aria-label="Retirement app links">
       <section class="card">
@@ -451,7 +451,7 @@ if ($isLoggedIn) {
     </main>
 
     <div class="section-divider">
-    <h2 class="section-heading" id="early-career">For folks building or strengthening their foundation</h2>
+    <h2 class="section-heading" id="early-career">For folks building or strengthening their foundation (Millennials and Gen Z)</h2>
     <p class="hint">Debt payoff, emergency fund, down payment, and getting on track for retirement—whether you're just starting or catching up.</p>
     <main class="grid" aria-label="Early career app links">
       <section class="card">
