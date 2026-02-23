@@ -620,28 +620,64 @@ function loadScenario() {
 }
 
 function compareScenarios() {
-    fetch(FV_API_BASE + 'api/load_scenarios.php?calculator_type=future-value')
-    .then(res => res.json())
-    .then(data => {
-        if (!data.success) { alert('Error: ' + data.error); return; }
-        if (data.scenarios.length < 2) {
-            alert('You need at least 2 saved scenarios to compare. Save more first!');
-            return;
-        }
-        let message = 'Select TWO scenarios to compare:\n\n';
-        data.scenarios.forEach((s, i) => { message += `${i + 1}. ${s.name}\n`; });
-        message += '\nEnter two numbers separated by comma (e.g., "1,2"):';
-        const choice = prompt(message);
-        if (!choice) return;
-        const parts = choice.split(',').map(s => parseInt(s.trim(), 10) - 1);
-        if (parts.length !== 2 || parts[0] < 0 || parts[0] >= data.scenarios.length ||
-            parts[1] < 0 || parts[1] >= data.scenarios.length || parts[0] === parts[1]) {
-            alert('Invalid selection. Enter two different numbers (e.g., "1,2").');
-            return;
-        }
-        alert('Compare feature: Load scenarios individually to see their results side-by-side.');
-    })
-    .catch(() => alert('Failed to load scenarios.'));
+    if (typeof CompareScenariosModal === 'undefined') {
+        alert('Compare feature failed to load. Please refresh the page.');
+        return;
+    }
+    CompareScenariosModal.open(FV_API_BASE, 'future-value', function (selected) {
+        showFVComparison(selected);
+    }, { maxScenarios: 3 });
+}
+
+function showFVComparison(selected) {
+    const container = document.querySelector('.wrap');
+    let comparisonEl = document.getElementById('fvComparePanel');
+    if (comparisonEl) comparisonEl.remove();
+
+    comparisonEl = document.createElement('div');
+    comparisonEl.id = 'fvComparePanel';
+    comparisonEl.style.cssText = 'background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 20px; margin-bottom: 30px;';
+    const cols = selected.length;
+    const labels = ['Amount / Goal / Payment', 'Rate (%)', 'Years', 'Type / Mode'];
+    const getRow = (d) => {
+        const single = d.singleAmount || d.singleYears;
+        const target = d.targetGoal || d.targetYears;
+        const annuity = d.annuityPayment || d.annuityYears;
+        if (single !== undefined) return [d.singleAmount, d.singleRate, d.singleYears, (d.singleType === 'fv' ? 'Future Value' : 'Present Value')];
+        if (target !== undefined) return [d.targetGoal, d.targetRate, d.targetYears, 'Target FV'];
+        if (annuity !== undefined) return [d.annuityPayment, d.annuityRate, d.annuityYears, 'Annuity'];
+        return ['—', '—', '—', '—'];
+    };
+
+    let table = '<h2 style="margin:0 0 15px 0; color: #92400e;">⚖️ Scenario comparison</h2><table style="width:100%; border-collapse: collapse;"><thead><tr style="background: #f59e0b; color: white;"><th style="padding: 8px; text-align: left;">Input</th>';
+    selected.forEach(function (s) {
+        table += '<th style="padding: 8px; text-align: right;">' + escapeHtml(s.name) + '</th>';
+    });
+    table += '</tr></thead><tbody>';
+    const rowLabels = ['Amount / Goal / Payment', 'Rate (%)', 'Years', 'Mode'];
+    [0, 1, 2, 3].forEach(function (i) {
+        table += '<tr style="border-bottom: 1px solid #e5e7eb;"><td style="padding: 8px; font-weight: 600;">' + rowLabels[i] + '</td>';
+        selected.forEach(function (s) {
+            const row = getRow(s.data || {});
+            table += '<td style="padding: 8px; text-align: right;">' + escapeHtml(String(row[i] != null ? row[i] : '—')) + '</td>';
+        });
+        table += '</tr>';
+    });
+    table += '</tbody></table><p style="margin: 12px 0 0 0; font-size: 0.9rem; color: #92400e;">Load a scenario from the dropdown above and click Calculate to see its full results.</p>';
+    comparisonEl.innerHTML = table;
+    const firstForm = document.querySelector('form');
+    if (firstForm && firstForm.parentNode) {
+        firstForm.parentNode.insertBefore(comparisonEl, firstForm);
+    } else if (container) {
+        container.insertBefore(comparisonEl, container.firstChild);
+    }
+    comparisonEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
 }
 
 function downloadPDF() {

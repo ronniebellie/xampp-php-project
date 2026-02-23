@@ -142,6 +142,7 @@ if ($isLoggedIn) {
         </div>
 
         <?php if (!$isPremium): ?>
+        <?php include('../includes/premium-upsell-banner.php'); ?>
         <footer class="site-footer">
             <span class="donate-text">If these tools are useful, please consider supporting future development.</span>
             <a href="https://www.paypal.com/paypalme/rongbelisle" target="_blank" class="donate-btn">
@@ -153,6 +154,7 @@ if ($isLoggedIn) {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../js/compare-scenarios-modal.js"></script>
     <script>
     const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
     </script>

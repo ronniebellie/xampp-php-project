@@ -421,17 +421,41 @@ function loadScenario() {
 }
 
 function compareScenarios() {
-    fetch(SSG_API_BASE + 'api/load_scenarios.php?calculator_type=ss-gap')
-    .then(res => res.json())
-    .then(data => {
-        if (!data.success) { alert('Error: ' + data.error); return; }
-        if (data.scenarios.length < 2) {
-            alert('You need at least 2 saved scenarios to compare. Save more first!');
-            return;
-        }
-        alert('Compare feature: Load scenarios individually to see their results side-by-side.');
-    })
-    .catch(() => alert('Failed to load scenarios.'));
+    if (typeof CompareScenariosModal === 'undefined') {
+        alert('Compare feature failed to load. Please refresh the page.');
+        return;
+    }
+    CompareScenariosModal.open(SSG_API_BASE, 'ss-gap', function (selected) {
+        showSSGapComparison(selected);
+    }, { maxScenarios: 3 });
+}
+
+function showSSGapComparison(selected) {
+    const wrap = document.querySelector('.wrap');
+    let panel = document.getElementById('ssGapComparePanel');
+    if (panel) panel.remove();
+    panel = document.createElement('div');
+    panel.id = 'ssGapComparePanel';
+    panel.style.cssText = 'background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 20px; margin-bottom: 30px;';
+    const labels = ['Target spending ($/yr)', 'SS income ($/yr)', 'Other income ($/yr)', 'Withdrawal rate (%)', 'Filing status'];
+    const keys = ['targetSpending', 'ssIncome', 'otherIncome', 'withdrawalRate', 'filingStatus'];
+    let html = '<h2 style="margin:0 0 15px 0; color: #92400e;">⚖️ Scenario comparison</h2><table style="width:100%; border-collapse: collapse;"><thead><tr style="background: #f59e0b; color: white;"><th style="padding: 8px; text-align: left;">Input</th>';
+    selected.forEach(function (s) { html += '<th style="padding: 8px; text-align: right;">' + (s.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</th>'; });
+    html += '</tr></thead><tbody>';
+    keys.forEach(function (key, i) {
+        html += '<tr style="border-bottom: 1px solid #e5e7eb;"><td style="padding: 8px; font-weight: 600;">' + labels[i] + '</td>';
+        selected.forEach(function (s) {
+            const v = (s.data && s.data[key]) != null ? String(s.data[key]) : '—';
+            html += '<td style="padding: 8px; text-align: right;">' + v.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</td>';
+        });
+        html += '</tr>';
+    });
+    html += '</tbody></table><p style="margin: 12px 0 0 0; font-size: 0.9rem; color: #92400e;">Load a scenario to see its full results and chart.</p>';
+    panel.innerHTML = html;
+    const firstForm = document.querySelector('form');
+    if (firstForm && firstForm.parentNode) firstForm.parentNode.insertBefore(panel, firstForm);
+    else if (wrap) wrap.insertBefore(panel, wrap.firstChild);
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function downloadPDF() {

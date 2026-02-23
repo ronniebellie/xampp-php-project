@@ -350,19 +350,6 @@ function displayResults(results, data) {
 
     tableBody.innerHTML = tableHTML;
 
-    // Add premium upsell banner for free users
-    if (typeof isPremiumUser === 'undefined' || !isPremiumUser) {
-        const tableSection = document.querySelector('.table-section');
-        const upsellBanner = document.createElement('div');
-        upsellBanner.style.cssText = 'margin-top: 20px; padding: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; text-align: center;';
-        upsellBanner.innerHTML = `
-            <h3 style="margin: 0 0 12px 0;">🔒 See Your Complete Retirement Timeline</h3>
-            <p style="margin: 0 0 16px 0; opacity: 0.95;">Upgrade to Premium to see year-by-year projections from age 73 to 100, plus save unlimited scenarios.</p>
-            <a href="../premium.html" style="display: inline-block; background: white; color: #667eea; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 700;">Upgrade to Premium</a>
-        `;
-        tableSection.appendChild(upsellBanner);
-    }
-
     resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -540,74 +527,40 @@ function loadScenario() {
     });
 }
 
+function scenarioToProjectionData(s) {
+    const d = s.data || {};
+    return {
+        currentAge: parseInt(d.currentAge, 10),
+        accountBalance: parseFloat(d.accountBalance) || 0,
+        growthRate: parseFloat(d.growthRate) || 0,
+        socialSecurity: parseFloat(d.socialSecurity) || 0,
+        pension: parseFloat(d.pension) || 0,
+        otherIncome: parseFloat(d.otherIncome) || 0,
+        filingStatus: d.filingStatus || 'single',
+        useStandardDeduction: d.standardDeduction === 'yes',
+        isSpouseBeneficiary: d.spouseBeneficiary === 'yes',
+        spouseAge: d.spouseBeneficiary === 'yes' && d.spouseAge ? parseInt(d.spouseAge, 10) : null
+    };
+}
+
 function compareScenarios() {
-    fetch('/api/load_scenarios.php?calculator_type=rmd-impact')
-    .then(res => res.json())
-    .then(data => {
-        if (!data.success) {
-            alert('Error: ' + data.error);
-            return;
-        }
-        
-        if (data.scenarios.length < 2) {
-            alert('You need at least 2 saved scenarios to compare. Save more scenarios first!');
-            return;
-        }
-        
-        let message = 'Select TWO scenarios to compare:\n\n';
-        data.scenarios.forEach((s, i) => {
-            message += `${i + 1}. ${s.name}\n`;
-        });
-        message += '\nEnter two numbers separated by comma (e.g., "1,2"):';
-        
-        const choice = prompt(message);
-        if (!choice) return;
-        
-        const parts = choice.split(',').map(s => parseInt(s.trim()) - 1);
-        if (parts.length !== 2 || parts[0] < 0 || parts[0] >= data.scenarios.length ||
-            parts[1] < 0 || parts[1] >= data.scenarios.length || parts[0] === parts[1]) {
-            alert('Invalid selection. Please enter two different numbers (e.g., "1,2").');
-            return;
-        }
-        
-        const scenario1 = data.scenarios[parts[0]];
-        const scenario2 = data.scenarios[parts[1]];
-        
-        // Convert saved data to format needed for calculateProjection
-        const data1 = {
-            currentAge: parseInt(scenario1.data.currentAge),
-            accountBalance: parseFloat(scenario1.data.accountBalance),
-            growthRate: parseFloat(scenario1.data.growthRate),
-            socialSecurity: parseFloat(scenario1.data.socialSecurity) || 0,
-            pension: parseFloat(scenario1.data.pension) || 0,
-            otherIncome: parseFloat(scenario1.data.otherIncome) || 0,
-            filingStatus: scenario1.data.filingStatus,
-            useStandardDeduction: scenario1.data.standardDeduction === 'yes',
-            isSpouseBeneficiary: scenario1.data.spouseBeneficiary === 'yes',
-            spouseAge: scenario1.data.spouseBeneficiary === 'yes' && scenario1.data.spouseAge ? 
-                parseInt(scenario1.data.spouseAge) : null
-        };
-        
-        const data2 = {
-            currentAge: parseInt(scenario2.data.currentAge),
-            accountBalance: parseFloat(scenario2.data.accountBalance),
-            growthRate: parseFloat(scenario2.data.growthRate),
-            socialSecurity: parseFloat(scenario2.data.socialSecurity) || 0,
-            pension: parseFloat(scenario2.data.pension) || 0,
-            otherIncome: parseFloat(scenario2.data.otherIncome) || 0,
-            filingStatus: scenario2.data.filingStatus,
-            useStandardDeduction: scenario2.data.standardDeduction === 'yes',
-            isSpouseBeneficiary: scenario2.data.spouseBeneficiary === 'yes',
-            spouseAge: scenario2.data.spouseBeneficiary === 'yes' && scenario2.data.spouseAge ? 
-                parseInt(scenario2.data.spouseAge) : null
-        };
-        
+    if (typeof CompareScenariosModal === 'undefined') {
+        alert('Compare feature failed to load. Please refresh the page.');
+        return;
+    }
+    CompareScenariosModal.open('/', 'rmd-impact', function (selected) {
+        const data1 = scenarioToProjectionData(selected[0]);
+        const data2 = scenarioToProjectionData(selected[1]);
         const results1 = calculateProjection(data1);
         const results2 = calculateProjection(data2);
-        
-        // Show comparison
-        showComparison(scenario1.name, scenario2.name, results1, results2, data1, data2);
-    });
+        if (selected.length >= 3) {
+            const data3 = scenarioToProjectionData(selected[2]);
+            const results3 = calculateProjection(data3);
+            showComparisonThree(selected[0].name, selected[1].name, selected[2].name, results1, results2, results3, data1, data2, data3);
+        } else {
+            showComparison(selected[0].name, selected[1].name, results1, results2, data1, data2);
+        }
+    }, { maxScenarios: 3 });
 }
 
 function showComparison(name1, name2, results1, results2, data1, data2) {
@@ -708,6 +661,70 @@ function showComparison(name1, name2, results1, results2, data1, data2) {
     `;
     
     document.getElementById('comparisonTable').innerHTML = tableHTML;
+}
+
+function showComparisonThree(name1, name2, name3, results1, results2, results3, data1, data2, data3) {
+    const resultsDiv = document.getElementById('results');
+    if (resultsDiv.style.display === 'none') resultsDiv.style.display = 'block';
+    resultsDiv.scrollIntoView({ behavior: 'smooth' });
+
+    const firstRMD = (r) => r.find(x => x.rmdAmount > 0);
+    const atAge = (r, age) => r.find(x => x.age === age) || firstRMD(r);
+    const peakTax = (r) => Math.max(...r.map(x => x.taxBracket));
+    const fmt = (n) => (n == null ? '—' : '$' + Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 }));
+    const pct = (n) => (n == null ? '—' : n + '%');
+
+    const comparisonHTML = `
+        <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+            <h2 style="margin-top: 0; color: #92400e;">⚖️ Scenario Comparison (3 scenarios)</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                <div><h3 style="color: #667eea; margin-bottom: 8px; font-size: 1rem;">${escapeHtml(name1)}</h3><div style="font-size: 0.85em; color: #666;">Age ${data1.currentAge} | $${data1.accountBalance.toLocaleString()} | ${data1.growthRate}%</div></div>
+                <div><h3 style="color: #e53e3e; margin-bottom: 8px; font-size: 1rem;">${escapeHtml(name2)}</h3><div style="font-size: 0.85em; color: #666;">Age ${data2.currentAge} | $${data2.accountBalance.toLocaleString()} | ${data2.growthRate}%</div></div>
+                <div><h3 style="color: #059669; margin-bottom: 8px; font-size: 1rem;">${escapeHtml(name3)}</h3><div style="font-size: 0.85em; color: #666;">Age ${data3.currentAge} | $${data3.accountBalance.toLocaleString()} | ${data3.growthRate}%</div></div>
+            </div>
+            <h3 style="margin-bottom: 10px;">Key metrics</h3>
+            <div id="comparisonTableThree"></div>
+        </div>
+    `;
+    const resultsContent = resultsDiv.innerHTML;
+    resultsDiv.innerHTML = comparisonHTML + resultsContent;
+
+    const r80_1 = atAge(results1, 80);
+    const r80_2 = atAge(results2, 80);
+    const r80_3 = atAge(results3, 80);
+    const r90_1 = atAge(results1, 90);
+    const r90_2 = atAge(results2, 90);
+    const r90_3 = atAge(results3, 90);
+    const first1 = firstRMD(results1);
+    const first2 = firstRMD(results2);
+    const first3 = firstRMD(results3);
+
+    const tableHTML = `
+        <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <thead>
+                <tr style="background: #f59e0b; color: white;">
+                    <th style="padding: 10px; text-align: left;">Metric</th>
+                    <th style="padding: 10px; text-align: right;">${escapeHtml(name1)}</th>
+                    <th style="padding: 10px; text-align: right;">${escapeHtml(name2)}</th>
+                    <th style="padding: 10px; text-align: right;">${escapeHtml(name3)}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background: #fff; border-bottom: 1px solid #ddd;"><td style="padding: 8px; font-weight: 600;">First RMD (Age 73)</td><td style="padding: 8px; text-align: right;">${fmt(first1 && first1.rmdAmount)}</td><td style="padding: 8px; text-align: right;">${fmt(first2 && first2.rmdAmount)}</td><td style="padding: 8px; text-align: right;">${fmt(first3 && first3.rmdAmount)}</td></tr>
+                <tr style="background: #f9fafb; border-bottom: 1px solid #ddd;"><td style="padding: 8px; font-weight: 600;">RMD at Age 80</td><td style="padding: 8px; text-align: right;">${fmt(r80_1 && r80_1.rmdAmount)}</td><td style="padding: 8px; text-align: right;">${fmt(r80_2 && r80_2.rmdAmount)}</td><td style="padding: 8px; text-align: right;">${fmt(r80_3 && r80_3.rmdAmount)}</td></tr>
+                <tr style="background: #fff; border-bottom: 1px solid #ddd;"><td style="padding: 8px; font-weight: 600;">RMD at Age 90</td><td style="padding: 8px; text-align: right;">${fmt(r90_1 && r90_1.rmdAmount)}</td><td style="padding: 8px; text-align: right;">${fmt(r90_2 && r90_2.rmdAmount)}</td><td style="padding: 8px; text-align: right;">${fmt(r90_3 && r90_3.rmdAmount)}</td></tr>
+                <tr style="background: #f9fafb;"><td style="padding: 8px; font-weight: 600;">Peak Tax Bracket</td><td style="padding: 8px; text-align: right;">${pct(peakTax(results1))}</td><td style="padding: 8px; text-align: right;">${pct(peakTax(results2))}</td><td style="padding: 8px; text-align: right;">${pct(peakTax(results3))}</td></tr>
+            </tbody>
+        </table>
+    `;
+    const el = document.getElementById('comparisonTableThree');
+    if (el) el.innerHTML = tableHTML;
+}
+
+function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
 }
 
 function downloadPDF() {

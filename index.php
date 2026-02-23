@@ -436,6 +436,18 @@ if ($isLoggedIn) {
         <p>Compare single-life vs joint-life annuity payouts and see how life insurance could fill the gap for your surviving spouse.</p>
         <a class="btn" href="survivor-gap/">Open</a>
       </section>
+
+      <section class="card">
+        <h3>Pension vs. Lump Sum</h3>
+        <p>See how many years it takes for the pension to “pay back” the lump sum and how your life expectancy affects the choice.</p>
+        <a class="btn" href="pension-vs-lump-sum/">Open</a>
+      </section>
+
+      <section class="card">
+        <h3>Plan Success (Monte Carlo)</h3>
+        <p>See the probability your portfolio lasts through retirement using random market return simulations.</p>
+        <a class="btn" href="plan-success/">Open</a>
+      </section>
     </main>
 
     <div class="section-divider">
