@@ -7,7 +7,7 @@
     <div style="font-size: 13px; line-height: 1.6; color: #92400e;">
       <strong style="display: block; margin-bottom: 8px;">⚠️ Important Disclaimer</strong>
       These calculators are provided for educational and informational purposes only. Results are estimates based on the information you provide and assumptions about future conditions, tax laws, and Social Security rules. Your actual results may vary. This site does not provide financial, tax, investment, or legal advice. Always consult with qualified professionals before making important financial decisions.
-      <a href="disclaimer.php" style="color: #92400e; text-decoration: underline; font-weight: 600; margin-left: 5px;">Read full disclaimer</a>
+      <a href="about.php" style="color: #1d4ed8; text-decoration: none; font-weight: 600;">About · How we calculate</a> · <a href="disclaimer.php" style="color: #92400e; text-decoration: underline; font-weight: 600;">Read full disclaimer</a>
     </div>
   </div>
 
