@@ -39,6 +39,28 @@ function suggestedAnnualContribution(currentBalance, target, annualReturnPct, ye
 
 let growthChart = null;
 
+function buildShareUrlFromOnTrackForm() {
+  const params = new URLSearchParams();
+  const ids = [
+    'currentAge',
+    'retirementAge',
+    'currentBalance',
+    'annualContribution',
+    'expectedReturn',
+    'targetBalance',
+    'desiredIncome',
+    'withdrawalRate'
+  ];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.value !== '') {
+      params.set(id, el.value);
+    }
+  });
+  const qs = params.toString();
+  return window.location.origin + window.location.pathname + (qs ? '?' + qs : '');
+}
+
 document.getElementById('setTargetFromIncome').addEventListener('click', function() {
   const income = parseFloat(document.getElementById('desiredIncome').value) || 0;
   const rate = parseFloat(document.getElementById('withdrawalRate').value) || 4;
@@ -182,10 +204,47 @@ document.getElementById('onTrackForm').addEventListener('submit', function(e) {
   document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   window.lastOnTrackResult = result;
+
+  // Set share URL so that "Share" actions can reproduce this scenario/results
+  const shareEl = document.getElementById('shareResults');
+  if (shareEl) {
+    const url = buildShareUrlFromOnTrackForm();
+    shareEl.setAttribute('data-share-url', url);
+  }
 });
 
-// Premium stubs
+// Premium stubs + load-from-URL for sharing results
 document.addEventListener('DOMContentLoaded', function() {
+  // If URL contains scenario parameters, pre-fill the form and auto-run the calculation
+  (function applyScenarioFromUrl() {
+    const params = new URLSearchParams(window.location.search || '');
+    if (!params.has('currentAge') && !params.has('currentBalance')) return;
+    const ids = [
+      'currentAge',
+      'retirementAge',
+      'currentBalance',
+      'annualContribution',
+      'expectedReturn',
+      'targetBalance',
+      'desiredIncome',
+      'withdrawalRate'
+    ];
+    let any = false;
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && params.has(id)) {
+        el.value = params.get(id);
+        any = true;
+      }
+    });
+    if (any) {
+      const form = document.getElementById('onTrackForm');
+      if (form) {
+        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      }
+    }
+  })();
+
   if (typeof isPremiumUser === 'undefined' || !isPremiumUser) return;
   const saveBtn = document.getElementById('saveScenarioBtn');
   const loadBtn = document.getElementById('loadScenarioBtn');

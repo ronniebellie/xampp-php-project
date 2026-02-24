@@ -394,6 +394,66 @@ document.getElementById('rmdForm').addEventListener('submit', function(e) {
 
     const results = calculateProjection(data);
     displayResults(results, data);
+
+    // Set share URL so that "Share" actions can reproduce this scenario/results
+    const shareEl = document.getElementById('shareResults');
+    if (shareEl) {
+        const params = new URLSearchParams();
+        params.set('currentAge', String(data.currentAge));
+        params.set('accountBalance', String(data.accountBalance));
+        params.set('growthRate', String(data.growthRate));
+        params.set('socialSecurity', String(data.socialSecurity));
+        params.set('pension', String(data.pension));
+        params.set('otherIncome', String(data.otherIncome));
+        params.set('filingStatus', data.filingStatus);
+        params.set('standardDeduction', data.useStandardDeduction ? 'yes' : 'no');
+        params.set('spouseBeneficiary', data.isSpouseBeneficiary ? 'yes' : 'no');
+        if (data.spouseAge) {
+            params.set('spouseAge', String(data.spouseAge));
+        }
+        const url = window.location.origin + window.location.pathname + '?' + params.toString();
+        shareEl.setAttribute('data-share-url', url);
+    }
+});
+
+// If URL contains scenario parameters, pre-fill the form and auto-run the calculation
+document.addEventListener('DOMContentLoaded', function () {
+    const params = new URLSearchParams(window.location.search || '');
+    if (!params.has('currentAge') || !params.has('accountBalance')) {
+        return;
+    }
+
+    function setValue(id, key) {
+        const el = document.getElementById(id);
+        if (el && params.has(key)) {
+            el.value = params.get(key);
+        }
+    }
+
+    setValue('currentAge', 'currentAge');
+    setValue('accountBalance', 'accountBalance');
+    setValue('growthRate', 'growthRate');
+    setValue('socialSecurity', 'socialSecurity');
+    setValue('pension', 'pension');
+    setValue('otherIncome', 'otherIncome');
+    setValue('filingStatus', 'filingStatus');
+    if (params.has('standardDeduction')) {
+        setValue('standardDeduction', 'standardDeduction');
+    }
+    if (params.has('spouseBeneficiary')) {
+        setValue('spouseBeneficiary', 'spouseBeneficiary');
+        if (typeof toggleSpouseAge === 'function') {
+            toggleSpouseAge();
+        }
+    }
+    if (params.has('spouseAge')) {
+        setValue('spouseAge', 'spouseAge');
+    }
+
+    const form = document.getElementById('rmdForm');
+    if (form) {
+        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    }
 });
 
 // Premium Save/Load/PDF Functionality
