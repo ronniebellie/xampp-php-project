@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once('../db_config.php');
+require_once __DIR__ . '/../includes/db_config.php';
 
 $error = '';
 
@@ -11,7 +11,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($email) || empty($password)) {
         $error = 'Email and password are required';
     } else {
-        $conn = getDBConnection();
         $stmt = $conn->prepare("SELECT id, email, password_hash, full_name, subscription_status FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();

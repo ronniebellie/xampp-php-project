@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once('../db_config.php');
+require_once __DIR__ . '/../includes/db_config.php';
 
 $error = '';
 $success = '';
@@ -21,8 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($password !== $confirm_password) {
         $error = 'Passwords do not match';
     } else {
-        // Check if email already exists
-        $conn = getDBConnection();
+        // Check if email already exists ($conn from includes/db_config.php)
         $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
