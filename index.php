@@ -169,10 +169,7 @@ if ($isLoggedIn) {
         gap: 8px;
       }
       .mark {
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        font-size: 18px;
+        display: none;
       }
       .brand-title {
         font-size: 20px;
