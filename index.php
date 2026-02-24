@@ -152,6 +152,45 @@ if ($isLoggedIn) {
       border: 2px solid white;
     }
     
+    /* Mobile tweaks for header & premium banner */
+    @media (max-width: 640px) {
+      .wrap {
+        padding: 18px 14px 32px;
+      }
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px 18px;
+        gap: 12px;
+      }
+      .mark {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        font-size: 18px;
+      }
+      .brand-title {
+        font-size: 20px;
+      }
+      .brand-tagline {
+        font-size: 14px;
+        max-width: none;
+      }
+      .premium-banner {
+        padding: 20px 18px;
+      }
+      .premium-banner-content {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .premium-banner-cta {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+        display: inline-flex;
+      }
+    }
+    
     .section{
       margin-top:18px;display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;
       padding:6px 4px 0;
