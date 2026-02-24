@@ -120,6 +120,7 @@ if ($isLoggedIn) {
                 <h3 style="color: #92400e; margin-top: 0;">Disclaimer</h3>
                 <p style="margin: 0; color: #78350f; line-height: 1.6;">This tool is for educational purposes only and does not constitute financial, tax, or insurance advice. Annuity payout amounts vary by provider and depend on your age, your spouse's age, and current rates. Life insurance costs depend on age, health, and policy type. Consult a qualified professional before making decisions about annuities or life insurance.</p>
             </div>
+            <?php $share_title = 'Survivor Gap Calculator'; $share_text = 'Check out the Survivor Gap calculator at ronbelisle.com — see how much income your survivor would need and ways to fill the gap.'; include(__DIR__ . '/../includes/share-results-block.php'); ?>
         </div>
 
         <?php if (!$isPremium): ?>
@@ -135,6 +136,7 @@ if ($isLoggedIn) {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../js/share-results.js"></script>
     <script>
     const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
     </script>

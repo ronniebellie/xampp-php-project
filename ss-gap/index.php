@@ -139,6 +139,7 @@ if ($isLoggedIn) {
                 </div>
                 <p style="font-size: 0.9em; color: #666; margin-top: 10px;">*Historical success rate over 30 years based on historical data (approximate)</p>
             </div>
+            <?php $share_title = 'Spending Gap (SS Gap) Calculator'; $share_text = 'Check out the Spending Gap calculator at ronbelisle.com — see how much portfolio you need to fill the gap between Social Security and expenses.'; include(__DIR__ . '/../includes/share-results-block.php'); ?>
         </div>
 
         <?php if (!$isPremium): ?>
@@ -154,6 +155,7 @@ if ($isLoggedIn) {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../js/share-results.js"></script>
     <script src="../js/compare-scenarios-modal.js"></script>
     <script>
     const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;

@@ -139,6 +139,7 @@ if ($isLoggedIn) {
           </table>
         </div>
       </div>
+      <?php $share_title = 'Emergency Fund Calculator'; $share_text = 'Check out the Emergency Fund calculator at ronbelisle.com — plan how long to build your emergency fund.'; include(__DIR__ . '/../includes/share-results-block.php'); ?>
     </div>
 
     <?php if (!$isPremium): ?>
@@ -154,6 +155,7 @@ if ($isLoggedIn) {
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="../js/share-results.js"></script>
   <script>const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;</script>
   <script src="calculator.js"></script>
 </body>

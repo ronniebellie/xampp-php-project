@@ -208,6 +208,7 @@ if ($isLoggedIn) {
                     </div>
                 </div>
             </div>
+            <?php $share_title = 'Required vs. Desired Portfolio Calculator'; $share_text = 'Check out the Required vs. Desired calculator at ronbelisle.com — see how much portfolio you need for essential needs vs. full lifestyle.'; include(__DIR__ . '/../includes/share-results-block.php'); ?>
         </div>
 
         <?php if (!$isPremium): ?>
@@ -223,6 +224,7 @@ if ($isLoggedIn) {
     </div>
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="../js/share-results.js"></script>
     <script>
         const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
         const RVD_API_BASE = (function() {

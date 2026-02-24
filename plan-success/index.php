@@ -107,6 +107,7 @@ if ($isLoggedIn) {
         <h3 style="color: #92400e; margin-top: 0;">Disclaimer</h3>
         <p style="margin: 0; color: #78350f; line-height: 1.6;">This tool is for education only. Past performance and Monte Carlo results do not guarantee future outcomes. Returns and volatility are uncertain. Consider consulting a financial professional.</p>
       </div>
+      <?php $share_title = 'Plan Success (Monte Carlo) Calculator'; $share_text = 'Check out the Plan Success Monte Carlo calculator at ronbelisle.com — see the probability your plan will last through retirement.'; include(__DIR__ . '/../includes/share-results-block.php'); ?>
     </div>
 
     <?php if (!$isPremium): ?>
@@ -122,6 +123,7 @@ if ($isLoggedIn) {
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="../js/share-results.js"></script>
   <script>
   const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
   </script>

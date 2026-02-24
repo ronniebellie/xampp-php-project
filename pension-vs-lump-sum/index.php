@@ -119,6 +119,7 @@ if ($isLoggedIn) {
         <h3 style="color: #92400e; margin-top: 0;">Disclaimer</h3>
         <p style="margin: 0; color: #78350f; line-height: 1.6;">This tool is for educational purposes only and does not constitute financial or tax advice. Pension and lump sum amounts vary by plan and assumptions. Investment returns are uncertain. Consider inflation, taxes, and your health and family situation. Consult a qualified professional before making this decision.</p>
       </div>
+      <?php $share_title = 'Pension vs. Lump Sum Calculator'; $share_text = 'Check out the Pension vs. Lump Sum Calculator at ronbelisle.com — compare pension income to lump sum growth over time.'; include(__DIR__ . '/../includes/share-results-block.php'); ?>
     </div>
 
     <?php if (!$isPremium): ?>
@@ -134,6 +135,7 @@ if ($isLoggedIn) {
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="../js/share-results.js"></script>
   <script>
   const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
   </script>

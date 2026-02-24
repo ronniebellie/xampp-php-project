@@ -171,6 +171,8 @@ if ($isLoggedIn) {
                     </table>
                 </div>
             </div>
+
+            <?php $share_title = 'RMD Impact Calculator'; $share_text = 'Check out the RMD Impact Calculator at ronbelisle.com — see how RMDs interact with your taxes and income.'; include(__DIR__ . '/../includes/share-results-block.php'); ?>
         </div>
 
         <?php if (!$isPremium): ?>
@@ -186,6 +188,7 @@ if ($isLoggedIn) {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../js/share-results.js"></script>
     <script>
     function toggleSpouseAge() {
         const spouseBeneficiary = document.getElementById('spouseBeneficiary').value;

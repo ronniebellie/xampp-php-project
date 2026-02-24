@@ -214,6 +214,8 @@ if ($isLoggedIn) {
             </div>
         </div>
 
+        <?php $share_title = 'Future Value Calculator'; $share_text = 'Check out the Future Value calculator at ronbelisle.com — present value, future value, annuities, and required payments.'; include(__DIR__ . '/../includes/share-results-block.php'); ?>
+
         <?php if (!$isPremium): ?>
         <?php include(__DIR__ . '/../includes/premium-upsell-banner.php'); ?>
         <footer class="site-footer">
@@ -227,6 +229,7 @@ if ($isLoggedIn) {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../js/share-results.js"></script>
     <script src="../js/compare-scenarios-modal.js"></script>
     <script>
     const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;

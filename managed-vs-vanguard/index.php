@@ -177,6 +177,7 @@ if ($isLoggedIn) {
                         </div>
                     </div>
                 </div>
+                <?php $share_title = 'Managed vs. Vanguard Calculator'; $share_text = 'Check out the Managed vs. Vanguard calculator at ronbelisle.com — see the true cost of advisor fees.'; include(__DIR__ . '/../includes/share-results-block.php'); ?>
             </div>
         </div>
 
@@ -193,6 +194,7 @@ if ($isLoggedIn) {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../js/share-results.js"></script>
     <script>
     const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
     </script>

@@ -152,6 +152,7 @@ if ($isLoggedIn) {
           </table>
         </div>
       </div>
+      <?php $share_title = '401(k) On Track Calculator'; $share_text = 'Check out the 401(k) On Track calculator at ronbelisle.com — see if you\'re on track for retirement.'; include(__DIR__ . '/../includes/share-results-block.php'); ?>
     </div>
 
     <?php if (!$isPremium): ?>
@@ -167,6 +168,7 @@ if ($isLoggedIn) {
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="../js/share-results.js"></script>
   <script>const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;</script>
   <script src="calculator.js"></script>
 </body>

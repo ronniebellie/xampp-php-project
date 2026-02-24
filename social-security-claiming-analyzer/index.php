@@ -149,6 +149,7 @@ if ($isLoggedIn) {
                     </table>
                 </div>
             </div>
+            <?php $share_title = 'Social Security Claiming Analyzer'; $share_text = 'Check out the Social Security Claiming Analyzer at ronbelisle.com — compare claiming ages and see lifetime benefits.'; include(__DIR__ . '/../includes/share-results-block.php'); ?>
         </div>
 
         <?php if (!$isPremium): ?>
@@ -164,6 +165,7 @@ if ($isLoggedIn) {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../js/share-results.js"></script>
     <script src="calculator.js"></script>
 </body>
 </html>
