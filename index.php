@@ -163,6 +163,11 @@ if ($isLoggedIn) {
         padding: 20px 18px;
         gap: 12px;
       }
+      .brand {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
       .mark {
         width: 44px;
         height: 44px;
