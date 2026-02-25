@@ -408,23 +408,6 @@ if ($isLoggedIn) {
           <a href="premium.html" class="premium-banner-cta">Try Free for 7 Days</a>
         </div>
       </div>
-    <?php else: ?>
-      <!-- Premium Promotion for Non-Logged-In Users -->
-      <div class="premium-banner">
-        <div class="premium-banner-content">
-          <div class="premium-banner-text">
-            <h2>Professional Planning Tools, Now with Premium Features</h2>
-            <p>All calculators below are free to use. Upgrade to Premium to save and compare scenarios, export PDF and CSV reports, and access advanced projections.</p>
-            <div class="premium-banner-features">
-              <div class="premium-feature-item">Save Unlimited Scenarios</div>
-              <div class="premium-feature-item">Export PDF Reports</div>
-              <div class="premium-feature-item">10-20 Year Projections</div>
-              <div class="premium-feature-item">Ad-Free Experience</div>
-            </div>
-          </div>
-          <a href="premium.html" class="premium-banner-cta">Learn More</a>
-        </div>
-      </div>
     <?php endif; ?>
 
     <h2 class="section-heading" id="retirement">For folks in or near retirement (Boomers and Gen X)</h2>
@@ -526,6 +509,25 @@ if ($isLoggedIn) {
       </section>
     </main>
     </div>
+
+    <?php if (!$isLoggedIn): ?>
+      <!-- Premium Promotion for Non-Logged-In Users (after they've seen the calculators) -->
+      <div class="premium-banner">
+        <div class="premium-banner-content">
+          <div class="premium-banner-text">
+            <h2>Professional Planning Tools, Now with Premium Features</h2>
+            <p>All calculators above are free to use. Upgrade to Premium to save and compare scenarios, export PDF and CSV reports, and access advanced projections.</p>
+            <div class="premium-banner-features">
+              <div class="premium-feature-item">Save Unlimited Scenarios</div>
+              <div class="premium-feature-item">Export PDF Reports</div>
+              <div class="premium-feature-item">10-20 Year Projections</div>
+              <div class="premium-feature-item">Ad-Free Experience</div>
+            </div>
+          </div>
+          <a href="premium.html" class="premium-banner-cta">Learn More</a>
+        </div>
+      </div>
+    <?php endif; ?>
 
     <?php include __DIR__ . '/includes/footer.php'; ?>
 
