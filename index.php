@@ -371,12 +371,11 @@ if ($isLoggedIn) {
             </p>
           <?php else: ?>
             <p class="brand-subtitle">
-              <a href="auth/login.php">Log in</a> or 
-              <a href="auth/register.php">Sign up</a> for premium features—save scenarios, export PDFs, and compare results across all tools.
+              All calculators are free to use—no account needed. <a href="auth/login.php">Log in</a> or <a href="auth/register.php">Sign up</a> for premium features: save scenarios, export PDFs, and compare results across all tools.
             </p>
           <?php endif; ?>
           <hr style="margin: 14px 0 10px 0; border: 0; border-top: 1px solid var(--border);" />
-          <p class="brand-subtitle">For retirement advisors &amp; planners: we offer these calculators with your own branding — <a href="https://calcforadvisors.com" target="_blank" rel="noopener">Click here to learn more</a>.</p>
+          <p class="brand-subtitle">For retirement advisors &amp; planners: we offer these calculators with your own branding — <a href="https://calcforadvisors.com" target="_blank" rel="noopener">Click here to learn more</a>. · <a href="about-me.php">About RB</a></p>
         </div>
       </div>
     </div>
