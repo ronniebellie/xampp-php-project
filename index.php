@@ -486,7 +486,7 @@ if ($isLoggedIn) {
 
       <section class="card">
         <h3>Plan Success (Monte Carlo)</h3>
-        <p>See the probability your portfolio lasts through retirement using random market return simulations.</p>
+        <p>See the probability of your portfolio lasting through retirement using random market return simulations.</p>
         <a class="btn" href="plan-success/">Open</a>
       </section>
     </main>

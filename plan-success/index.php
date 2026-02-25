@@ -61,7 +61,12 @@ if ($isLoggedIn) {
         <div>
           <label for="withdrawal" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Withdrawal ($)</label>
           <input type="number" id="withdrawal" min="0" step="1000" value="40000" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
-          <small style="color: #666;">Amount you take out each year (inflation not modeled here)</small>
+          <small style="color: #666;">First-year withdrawal amount. You can optionally grow this with inflation below.</small>
+        </div>
+        <div>
+          <label for="inflationRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Inflation Rate for Withdrawals (%)</label>
+          <input type="number" id="inflationRate" min="0" max="10" step="0.1" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+          <small style="color: #666;">Set to 0 for flat withdrawals. Average U.S. inflation over the last few decades has been around 3% per year.</small>
         </div>
         <div>
           <label for="years" style="display: block; margin-bottom: 5px; font-weight: 600;">Years to Model</label>

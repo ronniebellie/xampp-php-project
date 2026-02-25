@@ -18,15 +18,16 @@ if ($isLoggedIn) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <?php include('../includes/analytics.php'); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Managed Portfolio vs Vanguard Index Fund</title>
-    <?php include('../includes/analytics.php'); ?>
+    <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <?php include('../includes/premium-banner-include.php'); ?>
-    <div class="container">
+    <div class="wrap">
         <p style="margin-bottom: 20px;"><a href="../" style="text-decoration: none; color: #1d4ed8;">← Return to home page</a></p>
 
         <header>
@@ -182,7 +183,11 @@ if ($isLoggedIn) {
         </div>
 
         <?php if (!$isPremium): ?>
-        <?php include(__DIR__ . '/../includes/premium-upsell-banner.php'); ?>
+        <?php
+        $premium_upsell_headline = 'Unlock Premium Features';
+        $premium_upsell_text = 'Upgrade to Premium to save and compare scenarios, export PDF and CSV reports, and access your fee comparison across devices.';
+        include(__DIR__ . '/../includes/premium-upsell-banner.php');
+        ?>
         <footer class="calculator-footer">
             <span class="donate-text">If these tools are useful, please consider supporting future development.</span>
             <a href="https://www.paypal.com/paypalme/rongbelisle" target="_blank" class="donate-btn">

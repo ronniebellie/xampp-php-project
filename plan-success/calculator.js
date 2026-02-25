@@ -21,9 +21,11 @@
     var expectedReturnPct = parseFloat(document.getElementById('expectedReturn').value) || 6;
     var volatilityPct = parseFloat(document.getElementById('volatility').value) || 12;
     var numSims = parseInt(document.getElementById('simulations').value, 10) || 1000;
+    var inflationRatePct = parseFloat(document.getElementById('inflationRate').value) || 0;
 
     var mean = expectedReturnPct / 100;
     var stdDev = volatilityPct / 100;
+    var infl = inflationRatePct / 100;
 
     var successCount = 0;
     var endingBalances = [];
@@ -33,7 +35,11 @@
       var failed = false;
       for (var y = 0; y < years; y++) {
         var ret = normalRandom(mean, stdDev);
-        bal = (bal - withdrawal) * (1 + ret);
+        var withdrawalThisYear = withdrawal;
+        if (infl > 0) {
+          withdrawalThisYear = withdrawal * Math.pow(1 + infl, y);
+        }
+        bal = (bal - withdrawalThisYear) * (1 + ret);
         if (bal <= 0) {
           failed = true;
           endingBalances.push(bal);

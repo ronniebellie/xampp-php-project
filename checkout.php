@@ -25,6 +25,11 @@ $user = $result->fetch_assoc();
 // Initialize Stripe
 \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
 
+// Use current domain for redirects (works on ronbelisle.com, localhost, etc.)
+$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$base_url = $scheme . '://' . $host;
+
 try {
     // Create Stripe Checkout Session
     $checkout_session = \Stripe\Checkout\Session::create([
@@ -34,8 +39,8 @@ try {
             'quantity' => 1,
         ]],
         'mode' => 'subscription',
-        'success_url' => 'http://localhost/success.php?session_id={CHECKOUT_SESSION_ID}',
-        'cancel_url' => 'http://localhost/subscribe.php?canceled=true',
+        'success_url' => $base_url . '/success.php?session_id={CHECKOUT_SESSION_ID}',
+        'cancel_url' => $base_url . '/subscribe.php?canceled=true',
         'customer_email' => $user['email'],
         'client_reference_id' => $user_id,
         'metadata' => [

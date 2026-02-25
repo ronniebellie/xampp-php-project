@@ -156,7 +156,11 @@ if ($isLoggedIn) {
     </div>
 
     <?php if (!$isPremium): ?>
-    <?php include(__DIR__ . '/../includes/premium-upsell-banner.php'); ?>
+    <?php
+    $premium_upsell_headline = 'Unlock Premium Features';
+    $premium_upsell_text = 'Upgrade to Premium to save and compare 401(k) on-track scenarios and export PDF and CSV reports.';
+    include(__DIR__ . '/../includes/premium-upsell-banner.php');
+    ?>
     <footer class="site-footer">
       <span class="donate-text">If these tools are useful, please consider supporting future development.</span>
       <a href="https://www.paypal.com/paypalme/rongbelisle" target="_blank" class="donate-btn">

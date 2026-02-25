@@ -217,7 +217,11 @@ if ($isLoggedIn) {
         <?php $share_title = 'Future Value Calculator'; $share_text = 'Check out the Future Value calculator at ronbelisle.com — present value, future value, annuities, and required payments.'; include(__DIR__ . '/../includes/share-results-block.php'); ?>
 
         <?php if (!$isPremium): ?>
-        <?php include(__DIR__ . '/../includes/premium-upsell-banner.php'); ?>
+        <?php
+        $premium_upsell_headline = 'Unlock Premium Features';
+        $premium_upsell_text = 'Upgrade to Premium to save and compare scenarios and export PDF and CSV reports.';
+        include(__DIR__ . '/../includes/premium-upsell-banner.php');
+        ?>
         <footer class="site-footer">
             <span class="donate-text">If these tools are useful, please consider supporting future development.</span>
             <a href="https://www.paypal.com/paypalme/rongbelisle" target="_blank" class="donate-btn">

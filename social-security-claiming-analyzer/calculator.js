@@ -528,6 +528,9 @@ function loadScenario() {
                     const input = document.getElementById(key);
                     if (input) input.value = scenario.data[key];
                 });
+                if (scenario.data.birthDate && typeof window.setBirthDateFromString === 'function') {
+                    window.setBirthDateFromString(scenario.data.birthDate);
+                }
                 alert('Scenario loaded! Click "Compare Scenarios" (the form button) to see results.');
             }
         }

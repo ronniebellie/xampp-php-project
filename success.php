@@ -18,20 +18,73 @@ if (!$session_id) {
     exit;
 }
 
+// Base URL for links in email (same domain as current request)
+$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$host = $_SERVER['HTTP_HOST'] ?? 'ronbelisle.com';
+$base_url = $scheme . '://' . $host;
+
 // Initialize Stripe
 \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
+
+$error_message = null;
 
 try {
     // Retrieve the checkout session
     $checkout_session = \Stripe\Checkout\Session::retrieve($session_id);
     
-    // Update user subscription status in database
     $user_id = $checkout_session->client_reference_id;
     $subscription_id = $checkout_session->subscription;
     
+    // Get current user info (to detect first-time upgrade and to email them)
+    $stmt = $conn->prepare("SELECT email, full_name, subscription_status FROM users WHERE id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    $stmt->close();
+    
+    if (!$user) {
+        throw new Exception('User not found');
+    }
+    
+    $was_already_premium = ($user['subscription_status'] === 'premium');
+    
+    // Update user subscription status in database
     $stmt = $conn->prepare("UPDATE users SET subscription_status = 'premium', stripe_subscription_id = ? WHERE id = ?");
     $stmt->bind_param("si", $subscription_id, $user_id);
     $stmt->execute();
+    $stmt->close();
+    
+    // Send welcome email only on first successful subscription (not on page refresh)
+    if (!$was_already_premium) {
+        $to = $user['email'];
+        $first_name = !empty($user['full_name']) ? trim(explode(' ', $user['full_name'])[0]) : 'there';
+        $subject = "Thanks for subscribing – Ron Belisle Financial Calculators";
+        
+        $message = "Hi " . $first_name . ",\n\n";
+        $message .= "Thank you for subscribing to Premium at Ron Belisle Financial Calculators. Your subscription is now active.\n\n";
+        $message .= "You now have full access to:\n";
+        $message .= "• Save and compare scenarios across all calculators\n";
+        $message .= "• Export PDF and CSV reports\n";
+        $message .= "• Advanced projections (e.g., 10–20 year outlooks)\n";
+        $message .= "• All premium retirement and planning tools on the site\n\n";
+        $message .= "Get started:\n";
+        $message .= "• Visit the site: " . $base_url . "\n";
+        $message .= "• Manage your account: " . $base_url . "/account.php\n";
+        $message .= "• Review your premium benefits and how to cancel: " . $base_url . "/premium.html\n\n";
+        $message .= "If you have any questions, just reply to this email.\n\n";
+        $message .= "Ron Belisle\n";
+        $message .= "Ron Belisle Financial Calculators\n";
+        $message .= $base_url . "\n";
+        
+        $headers = [
+            'From: Ron Belisle Financial Calculators <noreply@ronbelisle.com>',
+            'Reply-To: ronbelisle@ronbelisle.com',
+            'X-Mailer: PHP/' . phpversion(),
+            'Content-Type: text/plain; charset=UTF-8',
+        ];
+        @mail($to, $subject, $message, implode("\r\n", $headers));
+    }
     
 } catch (Exception $e) {
     $error_message = $e->getMessage();

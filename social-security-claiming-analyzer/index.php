@@ -63,9 +63,26 @@ if ($isLoggedIn) {
             <h3>Your Information</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                 <div>
-                    <label for="birthDate" style="display: block; margin-bottom: 5px; font-weight: 600;">Your Birth Date</label>
-                    <input type="date" id="birthDate" required style="width: 100%;">
-                    <small style="color: #666;">Used to calculate your Full Retirement Age (FRA)</small>
+                    <label for="birthDateMonth" style="display: block; margin-bottom: 5px; font-weight: 600;">Your Birth Date</label>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <select id="birthDateMonth" style="flex: 1; min-width: 80px; padding: 8px;">
+                            <?php for ($m = 1; $m <= 12; $m++): ?>
+                            <option value="<?php echo $m; ?>"<?php echo $m === 1 ? ' selected' : ''; ?>><?php echo date('F', mktime(0, 0, 0, $m, 1)); ?></option>
+                            <?php endfor; ?>
+                        </select>
+                        <select id="birthDateDay" style="flex: 1; min-width: 60px; padding: 8px;">
+                            <?php for ($d = 1; $d <= 31; $d++): ?>
+                            <option value="<?php echo $d; ?>"<?php echo $d === 15 ? ' selected' : ''; ?>><?php echo $d; ?></option>
+                            <?php endfor; ?>
+                        </select>
+                        <select id="birthDateYear" style="flex: 1; min-width: 80px; padding: 8px;">
+                            <?php for ($y = (int)date('Y'); $y >= 1920; $y--): ?>
+                            <option value="<?php echo $y; ?>"<?php echo $y === 1960 ? ' selected' : ''; ?>><?php echo $y; ?></option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
+                    <input type="hidden" id="birthDate" value="1960-01-15" required>
+                    <small style="color: #666;">Used to calculate your Full Retirement Age (FRA). Pick month, day, and year—no scrolling.</small>
                 </div>
                 <div>
                     <label for="monthlyPIA" style="display: block; margin-bottom: 5px; font-weight: 600;">Monthly Benefit at Full Retirement Age ($)</label>
@@ -170,6 +187,43 @@ if ($isLoggedIn) {
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="../js/share-results.js"></script>
+    <script>
+    (function() {
+        var month = document.getElementById('birthDateMonth');
+        var day = document.getElementById('birthDateDay');
+        var year = document.getElementById('birthDateYear');
+        var hidden = document.getElementById('birthDate');
+        function daysInMonth(m, y) {
+            return new Date(parseInt(y, 10), parseInt(m, 10), 0).getDate();
+        }
+        function syncBirthDate() {
+            var m = month.value;
+            var y = year.value;
+            var maxDay = daysInMonth(m, y);
+            var d = Math.min(parseInt(day.value, 10), maxDay);
+            if (parseInt(day.value, 10) > maxDay) day.value = d;
+            hidden.value = y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+        }
+        if (month && day && year && hidden) {
+            month.addEventListener('change', syncBirthDate);
+            day.addEventListener('change', syncBirthDate);
+            year.addEventListener('change', syncBirthDate);
+            syncBirthDate();
+        }
+        window.setBirthDateFromString = function(yyyyMmDd) {
+            if (!yyyyMmDd || !month || !day || !year) return;
+            var parts = String(yyyyMmDd).substr(0, 10).split('-');
+            if (parts.length !== 3) return;
+            var y = parseInt(parts[0], 10), m = parseInt(parts[1], 10), d = parseInt(parts[2], 10);
+            if (!y || !m || !d) return;
+            year.value = y;
+            month.value = m;
+            var maxDay = new Date(y, m, 0).getDate();
+            day.value = Math.min(d, maxDay);
+            syncBirthDate();
+        };
+    })();
+    </script>
     <script src="calculator.js"></script>
 </body>
 </html>

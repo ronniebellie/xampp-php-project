@@ -168,7 +168,7 @@ if ($isLoggedIn) {
 
             <div class="table-section">
                 <h3>Year-by-Year Projection</h3>
-                <p style="color: #666; margin-bottom: 20px;">See how your portfolio and expenses change over time with inflation</p>
+                <p style="color: #666; margin-bottom: 20px;">See how your portfolio and expenses change over time with inflation.</p>
                 
                 <div class="table-wrapper">
                     <table class="data-table">
@@ -188,24 +188,6 @@ if ($isLoggedIn) {
                         <tbody id="projection-tbody-free">
                         </tbody>
                     </table>
-                </div>
-
-                <div style="position: relative; margin-top: 30px;">
-                    <div style="filter: blur(4px); pointer-events: none; user-select: none;">
-                        <table class="data-table">
-                            <tbody>
-                                <tr><td>Year 6</td><td>70</td><td>$XX,XXX</td><td>$XX,XXX</td><td>$XX,XXX</td><td>$XX,XXX</td><td>$XX,XXX</td><td>$XXX,XXX</td><td>$XXX,XXX</td></tr>
-                                <tr><td>Year 7</td><td>71</td><td>$XX,XXX</td><td>$XX,XXX</td><td>$XX,XXX</td><td>$XX,XXX</td><td>$XX,XXX</td><td>$XXX,XXX</td><td>$XXX,XXX</td></tr>
-                                <tr><td>Year 8</td><td>72</td><td>$XX,XXX</td><td>$XX,XXX</td><td>$XX,XXX</td><td>$XX,XXX</td><td>$XX,XXX</td><td>$XXX,XXX</td><td>$XXX,XXX</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px 40px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); text-align: center; max-width: 500px;">
-                        <h3 style="margin: 0 0 15px 0; color: #2c5282; font-size: 24px;">🔒 Premium Feature</h3>
-                        <p style="margin: 0 0 20px 0; color: #4a5568; line-height: 1.6;">Upgrade to Premium to see complete year-by-year projections through your entire retirement, plus save scenarios and export PDF reports.</p>
-                        <a href="../premium.html" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 16px;">Upgrade to Premium</a>
-                    </div>
                 </div>
             </div>
             <?php $share_title = 'Required vs. Desired Portfolio Calculator'; $share_text = 'Check out the Required vs. Desired calculator at ronbelisle.com — see how much portfolio you need for essential needs vs. full lifestyle.'; include(__DIR__ . '/../includes/share-results-block.php'); ?>
@@ -319,10 +301,11 @@ if ($isLoggedIn) {
             let essBalance = essentialPortfolio;
             let fullBalance = fullPortfolio;
 
-            // Show first 5 years for free users
+            const isPremium = (typeof isPremiumUser !== 'undefined' && isPremiumUser);
             const freeYears = Math.min(5, years);
+            const rowsToShow = isPremium ? years : freeYears;
 
-            for (let i = 0; i < freeYears; i++) {
+            for (let i = 0; i < rowsToShow; i++) {
                 const year = i + 1;
                 const age = currentAge + i;
                 
@@ -357,6 +340,45 @@ if ($isLoggedIn) {
                     </tr>
                 `;
                 tbody.innerHTML += row;
+            }
+
+            // For non-premium users, add a blurred preview hinting at the full projection
+            if (!isPremium && years > freeYears) {
+                tbody.innerHTML += `
+                    <tr style="filter: blur(4px); user-select: none; pointer-events: none;">
+                        <td>Year 6</td>
+                        <td>${currentAge + 5}</td>
+                        <td>$XX,XXX</td>
+                        <td>$XX,XXX</td>
+                        <td>$XX,XXX</td>
+                        <td>$XX,XXX</td>
+                        <td>$XX,XXX</td>
+                        <td>$XXX,XXX</td>
+                        <td>$XXX,XXX</td>
+                    </tr>
+                    <tr style="filter: blur(4px); user-select: none; pointer-events: none;">
+                        <td>Year 7</td>
+                        <td>${currentAge + 6}</td>
+                        <td>$XX,XXX</td>
+                        <td>$XX,XXX</td>
+                        <td>$XX,XXX</td>
+                        <td>$XX,XXX</td>
+                        <td>$XX,XXX</td>
+                        <td>$XXX,XXX</td>
+                        <td>$XXX,XXX</td>
+                    </tr>
+                    <tr style="filter: blur(4px); user-select: none; pointer-events: none;">
+                        <td>Year 8</td>
+                        <td>${currentAge + 7}</td>
+                        <td>$XX,XXX</td>
+                        <td>$XX,XXX</td>
+                        <td>$XX,XXX</td>
+                        <td>$XX,XXX</td>
+                        <td>$XX,XXX</td>
+                        <td>$XXX,XXX</td>
+                        <td>$XXX,XXX</td>
+                    </tr>
+                `;
             }
         }
 
@@ -575,10 +597,6 @@ if ($isLoggedIn) {
                 }
             });
         }
-
-        // Auto-calculate on page load
-        // Auto-calculate on page load
-        window.addEventListener('load', calculate);
 
         // Premium Save/Load/Compare/PDF/CSV
         document.addEventListener('DOMContentLoaded', function() {
