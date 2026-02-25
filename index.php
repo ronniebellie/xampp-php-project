@@ -375,8 +375,6 @@ if ($isLoggedIn) {
             </p>
           <?php endif; ?>
           <hr style="margin: 14px 0 10px 0; border: 0; border-top: 1px solid var(--border);" />
-          <p class="brand-subtitle" style="text-align: center;"><a href="about-me.php">About RB</a></p>
-          <hr style="margin: 10px 0 10px 0; border: 0; border-top: 1px solid var(--border);" />
           <p class="brand-subtitle">For retirement advisors &amp; planners: we offer these calculators with your own branding — <a href="https://calcforadvisors.com" target="_blank" rel="noopener">Click here to learn more</a>.</p>
         </div>
       </div>

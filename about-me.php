@@ -38,7 +38,7 @@ if ($isLoggedIn) {
     <p style="margin-bottom: 20px;"><a href="/" class="back">← Return to home page</a></p>
     <h1>About RB</h1>
     <div class="prose">
-      <p>My name is Ron B. I’m not with a big fintech company—just a retired university teacher who saw a need for straightforward, no-nonsense online retirement tools, so I decided to build some myself. My background isn’t technical; I have a BA in History and an MA in Applied Linguistics. Before teaching, I was a life insurance agent with Northwestern Mutual Life, and that experience taught me a lot about long-term planning.</p>
+      <p>My name is Ron B. I’m not with a big fintech company—just a retired university teacher who saw a need for straightforward, no-nonsense online retirement tools, so I decided to build some myself. My background isn’t technical; I have a BA in History and an MA in Applied Linguistics. Prior to my 40-year teaching career, I was a life insurance agent, and that experience taught me a lot about the importance of long-term planning.</p>
       <p>When teaching others about tech and financial matters, I have a reputation for using simple, easy-to-understand English. That was one of my goals in creating these calculators: plain English and useful tools—all free. Even though the core tools are free, Premium adds saving scenarios, PDF exports, and longer projections if you want them. I hope you find them useful.</p>
     </div>
   </div>

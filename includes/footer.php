@@ -53,7 +53,7 @@
   }
   ?>
   <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0; font-size: 14px; color: #666;">
-    <div>© <?php echo date('Y'); ?> Ron Belisle | <a href="mailto:ronbelisle@gmail.com" style="color: #1d4ed8; text-decoration: none; font-weight: 600;">Contact Support</a></div>
+    <div>© <?php echo date('Y'); ?> Ron Belisle | <a href="mailto:ronbelisle@gmail.com" style="color: #1d4ed8; text-decoration: none; font-weight: 600;">Contact Support</a> | <a href="/about-me.php" style="color: #1d4ed8; text-decoration: none; font-weight: 600;">About Ron</a></div>
     <?php if (!$hide_donate): ?>
     <div style="display: flex; align-items: center; gap: 10px;">
       <span>If these tools are useful, please support future development.</span>
