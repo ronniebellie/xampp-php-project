@@ -419,6 +419,12 @@ if ($isLoggedIn) {
       </section>
 
       <section class="card">
+        <h3>Retirement Spending &amp; On-Track Checkup</h3>
+        <p>Estimate a retirement budget from your current spending, factor in guaranteed income, and see whether your savings look on track using a simple withdrawal-rate rule of thumb.</p>
+        <a class="btn" href="retirement-spending-checkup/">Open</a>
+      </section>
+
+      <section class="card">
         <h3>Future Value Calculator</h3>
         <p>Calculate present value, future value, annuities, and required payments to reach your financial goals.</p>
         <a class="btn" href="future-value-app/">Open</a>
