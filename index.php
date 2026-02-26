@@ -64,7 +64,7 @@ if ($isLoggedIn) {
     }
     .brand-text{flex:1;min-width:0}
     .brand-title{
-      font-size:24px;font-weight:850;letter-spacing:-.01em;margin:0;color:var(--text);line-height:1.25;
+      font-size:24px;font-weight:850;letter-spacing:-.01em;margin:0;color:var(--accent);line-height:1.25;
     }
     .brand-tagline{
       font-size:15px;color:var(--muted);margin:8px 0 0;line-height:1.5;max-width:560px;
@@ -251,93 +251,6 @@ if ($isLoggedIn) {
       pointer-events: none;
     }
 
-    /* Where do you rank? Social Security widget */
-    .ss-rank-widget {
-      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-      border: 2px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px 28px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 20px rgba(15,23,42,.08);
-    }
-    .ss-rank-widget .widget-title {
-      margin: 0 0 8px 0;
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: -0.01em;
-      color: var(--text);
-    }
-    .ss-rank-widget .widget-intro {
-      margin: 0 0 18px 0;
-      font-size: 15px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-    .ss-rank-widget .widget-form {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: flex-end;
-      gap: 12px;
-      margin-top: 20px;
-      margin-bottom: 16px;
-    }
-    .ss-rank-widget .widget-form label {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      font-weight: 600;
-      font-size: 14px;
-    }
-    .ss-rank-widget .widget-form input {
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      font-size: 16px;
-      width: 180px;
-    }
-    .ss-rank-widget .widget-form button {
-      padding: 10px 20px;
-      border-radius: 10px;
-      border: none;
-      background: var(--accent);
-      color: white;
-      font-weight: 700;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    .ss-rank-widget .widget-form button:hover {
-      background: #1e40af;
-    }
-    .ss-rank-widget .widget-result {
-      display: none;
-      margin: 16px 0 0 0;
-      padding: 14px 18px;
-      background: #eff6ff;
-      border: 1px solid #93c5fd;
-      border-radius: 10px;
-      font-size: 15px;
-      line-height: 1.5;
-      color: #1e3a8a;
-    }
-    .ss-rank-widget .widget-result.visible { display: block; }
-    .ss-rank-widget .widget-disclaimer {
-      margin: 12px 0 0 0;
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .ss-rank-widget .widget-cta {
-      margin: 14px 0 0 0;
-    }
-    .ss-rank-widget .widget-cta a {
-      color: var(--accent);
-      font-weight: 600;
-      text-decoration: none;
-    }
-    .ss-rank-widget .widget-cta a:hover { text-decoration: underline; }
-    @media (max-width: 640px) {
-      .ss-rank-widget { padding: 18px; }
-      .ss-rank-widget .widget-form input { width: 100%; }
-    }
     .card.coming-soon .coming-badge {
       display: inline-block;
       background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
@@ -356,23 +269,6 @@ if ($isLoggedIn) {
       background:rgba(29,78,216,.10);color:var(--accent);
     }
     .btn:hover{background:rgba(29,78,216,.14)}
-
-    .section-jump {
-      margin: 24px 0 20px 0;
-      padding: 12px 16px;
-      background: rgba(29, 78, 216, 0.06);
-      border: 1px solid rgba(29, 78, 216, 0.2);
-      border-radius: 10px;
-      font-size: 14px;
-      color: var(--muted);
-    }
-    .section-jump a {
-      color: var(--accent);
-      font-weight: 600;
-      text-decoration: none;
-    }
-    .section-jump a:hover { text-decoration: underline; }
-    .section-jump span { margin: 0 8px; color: var(--border); }
 
     /* Subscription buttons */
     .subscribe-btn {
@@ -514,64 +410,8 @@ if ($isLoggedIn) {
       </div>
     <?php endif; ?>
 
-    <nav class="section-jump" aria-label="Jump to calculator groups">
-      Jump to: <a href="#retirement">Near retirement (Boomers &amp; Gen X)</a><span>|</span><a href="#early-career">Building foundation (Millennials &amp; Gen Z)</a>
-    </nav>
-
     <h2 class="section-heading" id="retirement">For folks in or near retirement (Boomers and Gen X)</h2>
     <p class="hint">RMDs, Social Security, Roth conversions, and retirement income planning.</p>
-
-    <div class="ss-rank-widget" id="ssRankWidget">
-      <h3 class="widget-title">Where do you rank? Social Security benefit</h3>
-      <p class="widget-intro">Do you know how your Social Security benefit stacks up to the average retiree? Data below is based on SSA-style distribution for illustration.</p>
-      <p class="widget-disclaimer">Based on SSA-style benefit distribution; for illustration only. Not official SSA data.</p>
-      <p class="widget-cta"><a href="social-security-claiming-analyzer/">See how claiming age changes your benefit → Social Security Claiming Analyzer</a></p>
-      <form class="widget-form" id="ssRankForm">
-        <label>
-          Monthly benefit ($)
-          <input type="number" id="ssRankInput" min="0" step="50" placeholder="e.g. 2200" inputmode="numeric">
-        </label>
-        <button type="submit">See my rank</button>
-      </form>
-      <div class="widget-result" id="ssRankResult" aria-live="polite"></div>
-    </div>
-
-    <script>
-    (function() {
-      var form = document.getElementById('ssRankForm');
-      var input = document.getElementById('ssRankInput');
-      var resultEl = document.getElementById('ssRankResult');
-      if (!form || !input || !resultEl) return;
-
-      function getRankMessage(monthly) {
-        var n = Number(monthly);
-        if (!isFinite(n) || n < 0) return null;
-        if (n < 900) return 'You\'re in the <strong>bottom 10%</strong> of beneficiaries. Consider delaying claiming or checking your earnings record to see if you can increase your benefit.';
-        if (n < 1200) return 'You\'re in the <strong>bottom 20%</strong> of beneficiaries. Delaying claiming past full retirement age (up to 70) can raise your monthly benefit.';
-        if (n < 1400) return 'You\'re in the <strong>bottom 30%</strong>. Over half of beneficiaries receive between about $1,100 and $2,400 per month.';
-        if (n < 1900) return 'You\'re <strong>below the median</strong> (around $1,900/month). Waiting until full retirement age or later can help.';
-        if (n <= 2400) return 'You\'re <strong>right around average</strong>—over half of beneficiaries receive between $1,100 and $2,400 per month.';
-        if (n < 3200) return 'You\'re <strong>above average</strong>. About a third of beneficiaries receive more than $2,400/month.';
-        if (n < 3700) return 'You\'re in the <strong>top 10%</strong> of beneficiaries ($3,200+ per month).';
-        if (n < 4700) return 'You\'re in the <strong>top 5%</strong> ($3,700+ per month).';
-        return 'You\'re in the <strong>top 1%</strong> ($4,700+ per month).';
-      }
-
-      form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        var msg = getRankMessage(input.value);
-        if (msg) {
-          resultEl.innerHTML = msg;
-          resultEl.classList.add('visible');
-          resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        } else {
-          resultEl.classList.remove('visible');
-          resultEl.innerHTML = '';
-        }
-      });
-    })();
-    </script>
-
     <main class="grid" aria-label="Retirement app links">
       <section class="card">
         <h3>RMD Impact</h3>
