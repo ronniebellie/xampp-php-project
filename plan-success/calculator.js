@@ -14,14 +14,54 @@
     return mean + stdDev * z;
   }
 
+  var LIMITS = {
+    portfolio: { min: 0, max: 500000000 },
+    withdrawal: { min: 0, max: 5000000 },
+    years: { min: 5, max: 50 },
+    expectedReturn: { min: 0, max: 20 },
+    volatility: { min: 0, max: 50 },
+    simulations: { min: 100, max: 10000 },
+    inflationRate: { min: 0, max: 10 }
+  };
+
+  function validateInputs() {
+    var portfolio = parseFloat(document.getElementById('portfolio').value);
+    var withdrawal = parseFloat(document.getElementById('withdrawal').value);
+    var years = parseInt(document.getElementById('years').value, 10);
+    var expectedReturnPct = parseFloat(document.getElementById('expectedReturn').value);
+    var volatilityPct = parseFloat(document.getElementById('volatility').value);
+    var numSims = parseInt(document.getElementById('simulations').value, 10);
+    var inflationRatePct = parseFloat(document.getElementById('inflationRate').value);
+    var err = [];
+    if (isNaN(portfolio) || portfolio < LIMITS.portfolio.min || portfolio > LIMITS.portfolio.max) err.push('Starting portfolio: $0 to $500,000,000');
+    if (isNaN(withdrawal) || withdrawal < LIMITS.withdrawal.min || withdrawal > LIMITS.withdrawal.max) err.push('Annual withdrawal: $0 to $5,000,000');
+    if (isNaN(years) || years < LIMITS.years.min || years > LIMITS.years.max) err.push('Years to model: 5 to 50');
+    if (isNaN(expectedReturnPct) || expectedReturnPct < LIMITS.expectedReturn.min || expectedReturnPct > LIMITS.expectedReturn.max) err.push('Expected return: 0% to 20%');
+    if (isNaN(volatilityPct) || volatilityPct < LIMITS.volatility.min || volatilityPct > LIMITS.volatility.max) err.push('Volatility: 0% to 50%');
+    if (isNaN(numSims) || numSims < LIMITS.simulations.min || numSims > LIMITS.simulations.max) err.push('Simulations: 100 to 10,000');
+    if (isNaN(inflationRatePct) || inflationRatePct < LIMITS.inflationRate.min || inflationRatePct > LIMITS.inflationRate.max) err.push('Inflation rate: 0% to 10%');
+    return { err: err, portfolio: portfolio, withdrawal: withdrawal, years: years, expectedReturnPct: expectedReturnPct, volatilityPct: volatilityPct, numSims: numSims, inflationRatePct: inflationRatePct };
+  }
+
   function runMonteCarlo() {
-    var portfolio = parseFloat(document.getElementById('portfolio').value) || 0;
-    var withdrawal = parseFloat(document.getElementById('withdrawal').value) || 0;
-    var years = parseInt(document.getElementById('years').value, 10) || 30;
-    var expectedReturnPct = parseFloat(document.getElementById('expectedReturn').value) || 6;
-    var volatilityPct = parseFloat(document.getElementById('volatility').value) || 12;
-    var numSims = parseInt(document.getElementById('simulations').value, 10) || 1000;
-    var inflationRatePct = parseFloat(document.getElementById('inflationRate').value) || 0;
+    var validationEl = document.getElementById('validationError');
+    var v = validateInputs();
+    if (v.err.length > 0) {
+      if (validationEl) {
+        validationEl.style.display = 'block';
+        validationEl.textContent = 'Please keep inputs in these ranges: ' + v.err.join('; ') + '.';
+      }
+      return;
+    }
+    if (validationEl) validationEl.style.display = 'none';
+
+    var portfolio = v.portfolio;
+    var withdrawal = v.withdrawal;
+    var years = v.years;
+    var expectedReturnPct = v.expectedReturnPct;
+    var volatilityPct = v.volatilityPct;
+    var numSims = v.numSims;
+    var inflationRatePct = v.inflationRatePct;
 
     var mean = expectedReturnPct / 100;
     var stdDev = volatilityPct / 100;
@@ -124,6 +164,7 @@
         }]
       },
       options: {
+        indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
@@ -136,12 +177,12 @@
         },
         scales: {
           x: {
-            title: { display: true, text: 'Ending portfolio' },
-            ticks: { maxRotation: 45, maxTicksLimit: 15 }
-          },
-          y: {
             beginAtZero: true,
             title: { display: true, text: 'Number of simulations' }
+          },
+          y: {
+            title: { display: true, text: 'Ending portfolio' },
+            ticks: { maxTicksLimit: 20 }
           }
         }
       }

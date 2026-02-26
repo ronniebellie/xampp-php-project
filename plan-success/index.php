@@ -52,41 +52,42 @@ if ($isLoggedIn) {
 
     <form id="planForm">
       <h3>Your Plan</h3>
+      <div id="validationError" role="alert" style="display: none; margin-bottom: 15px; padding: 12px 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #b91c1c; font-size: 14px;"></div>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
         <div>
           <label for="portfolio" style="display: block; margin-bottom: 5px; font-weight: 600;">Starting Portfolio ($)</label>
-          <input type="number" id="portfolio" min="0" step="10000" value="1000000" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
-          <small style="color: #666;">Today’s portfolio value</small>
+          <input type="number" id="portfolio" min="0" max="500000000" step="10000" value="1000000" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+          <small style="color: #666;">Today’s portfolio value (max $500M)</small>
         </div>
         <div>
           <label for="withdrawal" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Withdrawal ($)</label>
-          <input type="number" id="withdrawal" min="0" step="1000" value="40000" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
-          <small style="color: #666;">First-year withdrawal amount. You can optionally grow this with inflation below.</small>
+          <input type="number" id="withdrawal" min="0" max="5000000" step="1000" value="40000" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+          <small style="color: #666;">First-year withdrawal (max $5M). You can optionally grow this with inflation below.</small>
         </div>
         <div>
           <label for="inflationRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Inflation Rate for Withdrawals (%)</label>
           <input type="number" id="inflationRate" min="0" max="10" step="0.1" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
-          <small style="color: #666;">Set to 0 for flat withdrawals. Average U.S. inflation over the last few decades has been around 3% per year.</small>
+          <small style="color: #666;">0–10%. Set to 0 for flat withdrawals. Typical long-term U.S. inflation ~3%.</small>
         </div>
         <div>
           <label for="years" style="display: block; margin-bottom: 5px; font-weight: 600;">Years to Model</label>
           <input type="number" id="years" min="5" max="50" value="30" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
-          <small style="color: #666;">e.g. 30 for a 30-year retirement</small>
+          <small style="color: #666;">5–50 years (e.g. 30 for a 30-year retirement)</small>
         </div>
         <div>
           <label for="expectedReturn" style="display: block; margin-bottom: 5px; font-weight: 600;">Expected Annual Return (%)</label>
           <input type="number" id="expectedReturn" min="0" max="20" step="0.25" value="6" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
-          <small style="color: #666;">Long-term average return assumption</small>
+          <small style="color: #666;">0–20%. Long-term average return assumption</small>
         </div>
         <div>
           <label for="volatility" style="display: block; margin-bottom: 5px; font-weight: 600;">Volatility / Std Dev (%)</label>
           <input type="number" id="volatility" min="0" max="50" step="0.5" value="12" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
-          <small style="color: #666;">Typical stock portfolio: ~10–15%</small>
+          <small style="color: #666;">0–50%. Typical stock portfolio: ~10–15%</small>
         </div>
         <div>
           <label for="simulations" style="display: block; margin-bottom: 5px; font-weight: 600;">Number of Simulations</label>
           <input type="number" id="simulations" min="100" max="10000" step="100" value="1000" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
-          <small style="color: #666;">More = smoother result, slower run</small>
+          <small style="color: #666;">100–10,000. More = smoother result, slower run</small>
         </div>
       </div>
 
@@ -102,7 +103,7 @@ if ($isLoggedIn) {
 
       <div class="chart-section">
         <h3>Ending Portfolio Distribution</h3>
-        <p style="color: #666; margin-bottom: 10px;">How often each ending balance occurred across simulations (negative = ran out of money).</p>
+        <p style="color: #666; margin-bottom: 10px;">Vertical axis = ending portfolio (dollar outcome). Horizontal axis = how many simulations landed in that range. Negative = ran out of money.</p>
         <div class="chart-wrapper" style="height: 320px;">
           <canvas id="distributionChart"></canvas>
         </div>
