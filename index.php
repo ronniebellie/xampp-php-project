@@ -508,6 +508,12 @@ if ($isLoggedIn) {
       </section>
 
       <section class="card">
+        <h3>How Much Do I Need? Nest Egg Target</h3>
+        <p>Get a rule-of-thumb target for how much to have saved by retirement. Enter the income you want, subtract Social Security and pensions, and see the nest egg you’re aiming for.</p>
+        <a class="btn" href="nest-egg-target/">Open</a>
+      </section>
+
+      <section class="card">
         <h3>401(k) / IRA On Track?</h3>
         <p>See if your current balance and contributions put you on track for retirement by your target age.</p>
         <a class="btn" href="401k-on-track/">Open</a>
