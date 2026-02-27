@@ -480,6 +480,12 @@ if ($isLoggedIn) {
       </section>
 
       <section class="card">
+        <h3>Retirement Timeline &amp; Checklist</h3>
+        <p>Turn your target retirement date into a simple, phased checklist of tasks—from early prep to your last day at work and first year in retirement.</p>
+        <a class="btn" href="retirement-timeline/">Open</a>
+      </section>
+
+      <section class="card">
         <h3>Plan Success (Monte Carlo)</h3>
         <p>See the probability of your portfolio lasting through retirement using random market return simulations.</p>
         <a class="btn" href="plan-success/">Open</a>
