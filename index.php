@@ -497,6 +497,12 @@ if ($isLoggedIn) {
       </section>
 
       <section class="card">
+        <h3>Debt vs Saving: Which First?</h3>
+        <p>Compare putting extra cash toward high-interest debt versus investing it for retirement and see which leaves you with higher net worth over time.</p>
+        <a class="btn" href="debt-vs-saving/">Open</a>
+      </section>
+
+      <section class="card">
         <h3>Emergency Fund Builder</h3>
         <p>Set a target (e.g. 3–6 months of expenses) and see how long it takes to get there at your savings rate.</p>
         <a class="btn" href="emergency-fund/">Open</a>
@@ -512,6 +518,12 @@ if ($isLoggedIn) {
         <h3>Student Loan Payoff</h3>
         <p>Model extra payments, refinancing, and payoff timelines so you can choose a strategy that fits.</p>
         <a class="btn" href="student-loan-payoff/">Open</a>
+      </section>
+
+      <section class="card">
+        <h3>Retirement Trade-Off Explorer</h3>
+        <p>See how retiring later, saving more each year, or spending less (or adding part-time income) changes whether you look on track for your retirement income goal.</p>
+        <a class="btn" href="trade-off-explorer/">Open</a>
       </section>
 
       <section class="card">
