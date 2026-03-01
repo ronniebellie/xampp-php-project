@@ -38,8 +38,10 @@ if ($isLoggedIn) {
     <p style="margin-bottom: 20px;"><a href="/" class="back">← Return to home page</a></p>
     <h1>About RB</h1>
     <div class="prose">
-      <p>My name is Ron B. I’m not with a big fintech company—just a retired university teacher who saw a need for straightforward, no-nonsense online retirement tools, so I decided to build some myself. My background isn’t technical; I have a BA in History and an MA in Applied Linguistics. Prior to my 40-year teaching career, I was a life insurance agent, and that experience taught me a lot about the importance of long-term financial planning.</p>
-      <p>When teaching others about tech and financial matters, I have a reputation for using simple, easy-to-understand English. That was one of my goals in creating these calculators: plain English and useful tools—all free. Even though the core tools are free, Premium adds saving scenarios, PDF exports, and longer projections if you want them. I hope you find them useful.</p>
+      <p>My name is Ron B. I'm not backed by a big fintech company—I'm a retired university teacher who saw a need for straightforward, no-nonsense retirement tools and decided to build them myself.</p>
+      <p>My degrees are in History (BA) and Applied Linguistics (MA), both from Washington State University—not computer science. But I bring something more relevant to this project: four decades of explaining complex topics in plain English, plus real-world experience in financial planning.</p>
+      <p>I spent most of my 40-year teaching career at a Japanese university, some in Japan, but primarily at their branch campus in Washington state. Before that, I spent six years as a life insurance agent with Northwestern Mutual Life, starting on a college agent's contract at WSU. In 1983, I ranked in the top 10 in national sales among all Northwestern Mutual college agents—out of roughly 300 to 400. That experience gave me a lasting foundation in long-term financial planning and in helping people think clearly about their goals.</p>
+      <p>Throughout my career, I've built a reputation for making complicated things simple. That's exactly what I set out to do with these calculators: useful tools, plain English, no jargon—and free to use. A Premium option adds the ability to save scenarios, export PDFs, and run longer projections, but the core tools cost nothing. I hope you find them valuable.</p>
     </div>
   </div>
   <?php include __DIR__ . '/includes/footer.php'; ?>
