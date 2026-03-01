@@ -375,15 +375,11 @@ if ($isLoggedIn) {
               All calculators are free to use—no account needed. <a href="auth/login.php">Log in</a> or <a href="auth/register.php">Sign up</a> for premium features: save scenarios, export PDFs, and compare results across all tools.
             </p>
           <?php endif; ?>
-          <hr style="margin: 14px 0 10px 0; border: 0; border-top: 1px solid rgba(15,23,42,.35);" />
-          <p class="brand-subtitle">
-            For retirement advisors &amp; planners: we offer these calculators with your own branding —
-            <a href="https://calcforadvisors.com" target="_blank" rel="noopener">Click here to learn more</a>.
-          </p>
-          <p class="brand-subtitle">
-            For estate &amp; legacy planning tools <strong>for advisors</strong>, visit the
-            <a href="estate-planning/">Estate &amp; Legacy Planning Suite</a>.
-          </p>
+          <div class="brand-subtitle" style="margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(15,23,42,.35);">
+            <p style="margin: 0;">
+              For retirement professionals, including estate &amp; legacy advisors, we offer these calculators with your own branding. — <a href="https://calcforadvisors.com" target="_blank" rel="noopener">Click here to learn more</a>.
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -427,15 +423,15 @@ if ($isLoggedIn) {
       </section>
 
       <section class="card">
-        <h3>Retirement Spending &amp; On-Track Checkup</h3>
-        <p>Estimate a retirement budget from your current spending, factor in guaranteed income, and see whether your savings look on track using a simple withdrawal-rate rule of thumb.</p>
-        <a class="btn" href="retirement-spending-checkup/">Open</a>
+        <h3>Estate &amp; Legacy Planning Suite</h3>
+        <p>Model inherited IRA taxes under the 10-year rule, compare Roth conversion strategies across generations, and explore SECURE Act planning tools.</p>
+        <a class="btn" href="/estate-planning/">Open</a>
       </section>
 
       <section class="card">
-        <h3>Future Value Calculator</h3>
-        <p>Calculate present value, future value, annuities, and required payments to reach your financial goals.</p>
-        <a class="btn" href="future-value-app/">Open</a>
+        <h3>Managed Portfolio vs Vanguard Index Fund</h3>
+        <p>See the true cost of advisor fees - including opportunity cost - compared to low-cost Vanguard index funds.</p>
+        <a class="btn" href="managed-vs-vanguard/">Open</a>
       </section>
 
       <section class="card">
@@ -445,9 +441,9 @@ if ($isLoggedIn) {
       </section>
 
       <section class="card">
-        <h3>Social Security + Spending Gap Calculator</h3>
-        <p>See how Social Security reduces the portfolio you need by identifying your real retirement spending gap.</p>
-        <a class="btn" href="ss-gap/">Open</a>
+        <h3>Retirement Timeline &amp; Checklist</h3>
+        <p>Turn your target retirement date into a simple, phased checklist of tasks—from early prep to your last day at work and first year in retirement.</p>
+        <a class="btn" href="retirement-timeline/">Open</a>
       </section>
 
       <section class="card">
@@ -463,9 +459,21 @@ if ($isLoggedIn) {
       </section>
 
       <section class="card">
-        <h3>Managed Portfolio vs Vanguard Index Fund</h3>
-        <p>See the true cost of advisor fees - including opportunity cost - compared to low-cost Vanguard index funds.</p>
-        <a class="btn" href="managed-vs-vanguard/">Open</a>
+        <h3>Retirement Spending &amp; On-Track Checkup</h3>
+        <p>Estimate a retirement budget from your current spending, factor in guaranteed income, and see whether your savings look on track using a simple withdrawal-rate rule of thumb.</p>
+        <a class="btn" href="retirement-spending-checkup/">Open</a>
+      </section>
+
+      <section class="card">
+        <h3>Future Value Calculator</h3>
+        <p>Calculate present value, future value, annuities, and required payments to reach your financial goals.</p>
+        <a class="btn" href="future-value-app/">Open</a>
+      </section>
+
+      <section class="card">
+        <h3>Social Security + Spending Gap Calculator</h3>
+        <p>See how Social Security reduces the portfolio you need by identifying your real retirement spending gap.</p>
+        <a class="btn" href="ss-gap/">Open</a>
       </section>
 
       <section class="card">
@@ -484,12 +492,6 @@ if ($isLoggedIn) {
         <h3>Pension vs. Lump Sum</h3>
         <p>See how many years it takes for the pension to “pay back” the lump sum and how your life expectancy affects the choice.</p>
         <a class="btn" href="pension-vs-lump-sum/">Open</a>
-      </section>
-
-      <section class="card">
-        <h3>Retirement Timeline &amp; Checklist</h3>
-        <p>Turn your target retirement date into a simple, phased checklist of tasks—from early prep to your last day at work and first year in retirement.</p>
-        <a class="btn" href="retirement-timeline/">Open</a>
       </section>
 
       <section class="card">
