@@ -375,8 +375,15 @@ if ($isLoggedIn) {
               All calculators are free to use—no account needed. <a href="auth/login.php">Log in</a> or <a href="auth/register.php">Sign up</a> for premium features: save scenarios, export PDFs, and compare results across all tools.
             </p>
           <?php endif; ?>
-          <hr style="margin: 14px 0 10px 0; border: 0; border-top: 1px solid var(--border);" />
-          <p class="brand-subtitle">For retirement advisors &amp; planners: we offer these calculators with your own branding — <a href="https://calcforadvisors.com" target="_blank" rel="noopener">Click here to learn more</a>.</p>
+          <hr style="margin: 14px 0 10px 0; border: 0; border-top: 1px solid rgba(15,23,42,.35);" />
+          <p class="brand-subtitle">
+            For retirement advisors &amp; planners: we offer these calculators with your own branding —
+            <a href="https://calcforadvisors.com" target="_blank" rel="noopener">Click here to learn more</a>.
+          </p>
+          <p class="brand-subtitle">
+            For estate &amp; legacy planning tools <strong>for advisors</strong>, visit the
+            <a href="estate-planning/">Estate &amp; Legacy Planning Suite</a>.
+          </p>
         </div>
       </div>
     </div>
