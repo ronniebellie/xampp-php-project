@@ -30,6 +30,14 @@
             gap: 14px;
             align-items: center;
         }
+        .nav-links {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+        .nav-links a {
+            opacity: 0.9;
+        }
         header a {
             font-size: 13px;
             color: #cbd5f5;
@@ -39,14 +47,6 @@
         main {
             flex: 1;
             padding: 36px 20px 40px;
-        }
-        .nav-links {
-            display: flex;
-            gap: 14px;
-            align-items: center;
-        }
-        .nav-links a {
-            opacity: 0.85;
         }
         .container {
             max-width: 920px;
@@ -72,6 +72,12 @@
             font-size: 17px;
             max-width: 620px;
             color: #cbd5f5;
+            margin-bottom: 18px;
+        }
+        .hero-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
             margin-bottom: 26px;
         }
         .pill-row {
@@ -190,14 +196,13 @@
                 </div>
                 <h1 class="hero-title">A quiet, data-first guide to investing on your own.</h1>
                 <p class="hero-lede">
-                    Simple explanations, transparent math, and calculators you can see and control yourself.
+                    Simple explanations, transparent math, and calculators you can see and control yourself—focused on
+                    low-cost index investing, retirement planning math, advisor-fee impact, and evidence-based strategies.
                     No product pitches, no assets under management.
                 </p>
-                <div class="pill-row">
-                    <div class="pill">Low-cost index investing</div>
-                    <div class="pill">Retirement planning math</div>
-                    <div class="pill">Advisor-fee impact</div>
-                    <div class="pill">Evidence-based strategies</div>
+                <div class="hero-links">
+                    <a href="/invest-guidance.ronbelisle.com/advisor-fees.html" class="cta primary">Advisor fees vs. DIY</a>
+                    <a href="/invest-guidance.ronbelisle.com/how-to-use-calculators.html" class="cta primary">How to use the calculators</a>
                 </div>
                 <div class="grid">
                     <section class="card">
@@ -214,7 +219,7 @@
                         </p>
                         <div class="cta-row">
                             <a href="https://ronbelisle.com" class="cta primary">Explore the calculators</a>
-                            <a href="mailto:ronbelisle@gmail.com" class="cta secondary">Share feedback or ideas</a>
+                            <a href="mailto:ronbelisle@gmail.com" class="cta primary">Share feedback or ideas</a>
                         </div>
                     </section>
                     <aside class="sidebar">
