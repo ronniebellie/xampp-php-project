@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advisor Fees vs. Low-Cost Index Funds</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #020617;
+            color: #e2e8f0;
+            line-height: 1.7;
+        }
+        .shell {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(148,163,184,.35);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .brand-links {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+        header a {
+            font-size: 13px;
+            color: #cbd5f5;
+            text-decoration: none;
+        }
+        header a:hover { text-decoration: underline; }
+        .nav-links {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+        .nav-links a {
+            opacity: 0.85;
+        }
+        main {
+            flex: 1;
+            padding: 32px 20px 40px;
+        }
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: clamp(26px, 3.2vw, 32px);
+            font-weight: 650;
+            letter-spacing: -0.02em;
+            margin-bottom: 10px;
+        }
+        .lede {
+            font-size: 15px;
+            color: #c7d2fe;
+            max-width: 600px;
+            margin-bottom: 26px;
+        }
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.4fr);
+            gap: 24px;
+        }
+        @media (max-width: 860px) {
+            .layout { grid-template-columns: minmax(0, 1fr); }
+        }
+        .panel {
+            background: #020617;
+            border-radius: 16px;
+            padding: 22px 22px 20px;
+            border: 1px solid rgba(148,163,184,.5);
+            box-shadow: 0 18px 45px rgba(15,23,42,.65);
+        }
+        .panel h2 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        .panel p {
+            font-size: 14px;
+            color: #cbd5f5;
+            margin-bottom: 10px;
+        }
+        .panel p:last-child { margin-bottom: 0; }
+        form {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 12px 16px;
+            margin-top: 10px;
+        }
+        @media (max-width: 640px) {
+            form { grid-template-columns: minmax(0, 1fr); }
+        }
+        label {
+            font-size: 13px;
+            color: #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        input[type="number"] {
+            padding: 7px 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(148,163,184,.6);
+            background: rgba(15,23,42,.9);
+            color: #e5e7eb;
+            font-size: 14px;
+        }
+        input[type="number"]::placeholder {
+            color: #64748b;
+        }
+        input[type="number"]:focus {
+            outline: 2px solid #38bdf8;
+            outline-offset: 1px;
+            border-color: transparent;
+        }
+        .full-row {
+            grid-column: 1 / -1;
+        }
+        .actions {
+            margin-top: 6px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        button {
+            border: none;
+            border-radius: 999px;
+            padding: 9px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .primary {
+            background: #38bdf8;
+            color: #020617;
+        }
+        .primary:hover { background: #0ea5e9; }
+        .ghost {
+            background: transparent;
+            color: #e5e7eb;
+            border: 1px solid rgba(148,163,184,.6);
+        }
+        .ghost:hover {
+            background: rgba(15,23,42,.9);
+        }
+        .hint {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+        .results {
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(148,163,184,.4);
+            font-size: 14px;
+        }
+        .results strong { color: #bfdbfe; }
+        .results p { margin-bottom: 6px; }
+        .results p:last-child { margin-bottom: 0; }
+        .note {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 10px;
+        }
+        footer {
+            padding: 14px 20px 22px;
+            font-size: 12px;
+            color: #64748b;
+            text-align: center;
+        }
+        footer a { color: #bae6fd; text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <header>
+            <div class="brand-links">
+                <a href="/">← Back to ronbelisle.com</a>
+                <a href="/invest-guidance.ronbelisle.com/index.html">Overview</a>
+            </div>
+            <nav class="nav-links">
+                <a href="/invest-guidance.ronbelisle.com/advisor-fees.html">Advisor fees vs. DIY</a>
+                <a href="/invest-guidance.ronbelisle.com/how-to-use-calculators.html">How to use the calculators</a>
+            </nav>
+        </header>
+        <main>
+            <div class="container">
+                <h1>How much do advisor fees really cost?</h1>
+                <p class="lede">
+                    When markets are strong, a 1% advisory fee can hide in good returns. Over decades,
+                    that same 1% can quietly claim a large share of your ending portfolio.
+                </p>
+                <div class="layout">
+                    <section class="panel">
+                        <h2>Compare advisor vs. low‑cost index investing</h2>
+                        <p>
+                            This calculator isolates the effect of annual fees. It assumes the same before‑fee market
+                            return for both paths; the only difference is what you pay in ongoing fees.
+                        </p>
+                        <form id="fee-form">
+                            <label>
+                                Starting portfolio balance
+                                <input type="number" id="start" min="0" step="1000" placeholder="e.g. 250000">
+                            </label>
+                            <label>
+                                Annual contribution
+                                <input type="number" id="contrib" min="0" step="1000" placeholder="e.g. 12000">
+                                <span class="hint">Leave blank or 0 if you&apos;re not adding new money (for example, already retired).</span>
+                            </label>
+                            <label>
+                                Years
+                                <input type="number" id="years" min="1" step="1" placeholder="e.g. 25">
+                            </label>
+                            <label>
+                                Expected market return (before fees, %)
+                                <input type="number" id="return" step="0.1" placeholder="e.g. 7">
+                            </label>
+                            <label>
+                                Advisor fee (% of assets per year)
+                                <input type="number" id="advisorFee" step="0.05" placeholder="e.g. 1.0">
+                                <span class="hint">Around 1% per year is common for full‑service advisors.</span>
+                            </label>
+                            <label>
+                                Index fund cost (% per year)
+                                <input type="number" id="indexFee" step="0.01" placeholder="e.g. 0.05">
+                                <span class="hint">Many broad Vanguard index funds are around 0.05% or less.</span>
+                            </label>
+                            <div class="full-row actions">
+                                <button type="button" class="primary" id="run-btn">Run comparison</button>
+                                <button type="button" class="ghost" id="preset-btn">Fill in a sample scenario</button>
+                            </div>
+                        </form>
+                        <div class="results" id="results" aria-live="polite"></div>
+                        <p class="note">
+                            Educational only. Real‑world returns, taxes, trading costs, and advisor behavior will differ.
+                            This shows fee drag in isolation, not the full value (or cost) of advice.
+                        </p>
+                    </section>
+                    <aside class="panel">
+                        <h2>How to read this</h2>
+                        <p>
+                            The key question isn’t “Did my portfolio grow?”&mdash;it’s “How much of that growth am I
+                            keeping after fees?” When you compare a 1% advisory fee plus fund costs against a low‑cost
+                            index fund, the percentage gap is small, but it applies to the entire balance every year.
+                        </p>
+                        <p>
+                            Use this tool to get a feel for:
+                        </p>
+                        <p>
+                            &bull; How much more you might have with a lower‑fee approach if markets do reasonably well.<br>
+                            &bull; How sensitive the gap is to your starting balance, contributions, and time horizon.<br>
+                            &bull; Whether ongoing fees feel worth it given the planning and behavioral help you receive.
+                        </p>
+                        <p>
+                            Some people gladly pay for a human advisor; others prefer a low‑cost robo‑advisor or a
+                            simple, do‑it‑yourself plan. The goal here is not to tell you what to do, but to make the
+                            trade‑offs visible so you can decide deliberately.
+                        </p>
+                    </aside>
+                </div>
+            </div>
+        </main>
+        <footer>
+            For education only, not personalized financial, tax, or legal advice.
+            See the disclaimer at <a href="https://ronbelisle.com/disclaimer.php">ronbelisle.com</a>.
+        </footer>
+    </div>
+    <script>
+      (function() {
+        function formatMoney(value) {
+          if (!isFinite(value)) return '';
+          return '$' + value.toLocaleString(undefined, { maximumFractionDigits: 0 });
+        }
+
+        function run() {
+          var start = parseFloat(document.getElementById('start').value) || 0;
+          var contrib = parseFloat(document.getElementById('contrib').value) || 0;
+          var years = parseInt(document.getElementById('years').value, 10) || 0;
+          var gross = (parseFloat(document.getElementById('return').value) || 0) / 100;
+          var advisorFee = (parseFloat(document.getElementById('advisorFee').value) || 0) / 100;
+          var indexFee = (parseFloat(document.getElementById('indexFee').value) || 0) / 100;
+
+          if (years <= 0 || gross <= 0) {
+            document.getElementById('results').innerHTML = '<p>Please enter at least a positive number of years and an expected market return.</p>';
+            return;
+          }
+
+          var netAdvisor = Math.max(gross - advisorFee - indexFee, -0.99);
+          var netDIY = Math.max(gross - indexFee, -0.99);
+
+          var balAdvisor = start;
+          var balDIY = start;
+
+          for (var y = 0; y < years; y++) {
+            balAdvisor = (balAdvisor + contrib) * (1 + netAdvisor);
+            balDIY = (balDIY + contrib) * (1 + netDIY);
+          }
+
+          var diff = balDIY - balAdvisor;
+          var pct = balAdvisor > 0 ? (diff / balAdvisor) * 100 : 0;
+
+          var html = '';
+          html += '<p><strong>With advisor + fund fees:</strong> ' + formatMoney(balAdvisor) + '</p>';
+          html += '<p><strong>With low‑cost index funds only:</strong> ' + formatMoney(balDIY) + '</p>';
+          html += '<p><strong>Extra you keep by avoiding the advisory fee:</strong> ' + formatMoney(diff) +
+                  (balAdvisor > 0 ? ' (' + pct.toFixed(1) + '% more than the advisor path)' : '') + '</p>';
+
+          document.getElementById('results').innerHTML = html;
+        }
+
+        document.getElementById('run-btn').addEventListener('click', run);
+
+        document.getElementById('preset-btn').addEventListener('click', function() {
+          document.getElementById('start').value = '500000';
+          document.getElementById('contrib').value = '12000';
+          document.getElementById('years').value = '25';
+          document.getElementById('return').value = '7';
+          document.getElementById('advisorFee').value = '1.0';
+          document.getElementById('indexFee').value = '0.05';
+          run();
+        });
+      })();
+    </script>
+</body>
+</html>
+

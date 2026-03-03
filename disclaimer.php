@@ -129,7 +129,6 @@
         <div class="disclaimer-content">
             <div class="warning-box">
                 <strong>⚠️ Please Read Carefully</strong>
-                <p>By using any calculator on this website, you acknowledge that you have read, understood, and agree to be bound by this disclaimer.</p>
             </div>
 
             <h2>Educational and Informational Purposes Only</h2>

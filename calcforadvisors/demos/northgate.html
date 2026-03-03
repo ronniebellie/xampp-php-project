@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Northgate Retirement Planning | calcforadvisors.com</title>
+    <script src="banners/banner-data.js"></script>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+        .skip-back {
+            position: fixed;
+            top: 16px;
+            left: 20px;
+            z-index: 20;
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 16px;
+            background: rgba(0,0,0,.35);
+            color: #fff;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 8px;
+            backdrop-filter: blur(8px);
+        }
+        .skip-back:hover { background: rgba(0,0,0,.5); color: #fff; }
+        .hero {
+            min-height: 200px;
+            background-color: #1e3a5f;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .page {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 48px 24px 64px;
+        }
+        .intro {
+            font-size: 17px;
+            color: #475569;
+            margin-bottom: 32px;
+            max-width: 56ch;
+        }
+        .intro a {
+            color: #1e3a5f;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .intro a:hover { text-decoration: underline; }
+        .tools-head {
+            font-size: 22px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 20px;
+        }
+        .tools-embed {
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,.08), 0 2px 4px -2px rgba(0,0,0,.06);
+            border: 1px solid #e2e8f0;
+        }
+        .tools-embed iframe {
+            display: block;
+            width: 100%;
+            height: 640px;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="skip-back">← Back to calcforadvisors.com</a>
+    <header class="hero" id="hero" role="banner" aria-label="Northgate Retirement Planning"></header>
+    <div class="page">
+        <p class="intro">Northgate offers straightforward calculators for retirement income, RMDs, Social Security, and legacy planning. Use them on your own or bring your results to your next meeting with us. All tools are free—no account needed. <a href="mailto:info@example.com">Contact Northgate</a> for more information.</p>
+        <h2 class="tools-head">Calculators</h2>
+        <div class="tools-embed">
+            <iframe id="calc-iframe" title="Retirement and financial calculators"></iframe>
+        </div>
+    </div>
+    <script>
+      (function() {
+        var hero = document.getElementById('hero');
+        if (hero && typeof window.NORTHGATE_BANNER_DATA_URI === 'string') {
+          hero.style.backgroundImage = 'url(' + window.NORTHGATE_BANNER_DATA_URI + ')';
+        }
+        var embedUrl = window.location.hostname === 'localhost'
+          ? (window.location.protocol + '//' + window.location.host + '/?embed=1')
+          : 'https://ronbelisle.com/?embed=1';
+        document.getElementById('calc-iframe').src = embedUrl;
+      })();
+    </script>
+</body>
+</html>

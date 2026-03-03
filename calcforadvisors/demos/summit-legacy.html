@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sample site: Summit Legacy Advisors | calcforadvisors.com</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; flex-direction: column; }
+        .banner-wrap {
+            flex-shrink: 0;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 0 18px;
+            height: 140px;
+            background: #1a365d;
+            overflow: hidden;
+        }
+        .banner-wrap img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+        .back-link {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 9999;
+            font-size: 13px;
+            color: #2c5282;
+            background: rgba(255,255,255,0.95);
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+        }
+        .back-link:hover { text-decoration: underline; }
+        .iframe-wrap { flex: 1; min-height: 0; width: 100%; }
+        .iframe-wrap iframe { display: block; width: 100%; height: 100%; border: none; min-height: 500px; }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-link">← Back to calcforadvisors.com</a>
+    <div class="banner-wrap">
+        <img src="banners/summit-legacy-banner.png" alt="Summit Legacy Advisors">
+    </div>
+    <div class="iframe-wrap">
+        <iframe id="calc-iframe" title="Retirement and financial calculators"></iframe>
+    </div>
+    <script>
+      (function() {
+        var iframe = document.getElementById('calc-iframe');
+        iframe.src = window.location.hostname === 'localhost'
+          ? (window.location.protocol + '//' + window.location.host + '/?embed=1')
+          : 'https://ronbelisle.com/?embed=1';
+      })();
+    </script>
+</body>
+</html>

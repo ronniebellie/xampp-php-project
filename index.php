@@ -17,6 +17,10 @@ if ($isLoggedIn) {
     $stmt->close();
     $is_premium = ($user && $user['subscription_status'] === 'premium');
 }
+
+// Hide site header when embedded in calcforadvisors.com demos (white-label preview)
+$hide_site_header = isset($_GET['embed'])
+    || (!empty($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'calcforadvisors.com') !== false);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -354,6 +358,7 @@ if ($isLoggedIn) {
 <body>
   <div class="wrap">
 
+    <?php if (!$hide_site_header): ?>
     <div class="topbar" role="banner">
       <div class="brand">
         <div class="mark" aria-hidden="true">RB</div>
@@ -383,6 +388,7 @@ if ($isLoggedIn) {
         </div>
       </div>
     </div>
+    <?php endif; ?>
 
     <?php if ($is_premium): ?>
       <!-- Premium Member Banner -->
@@ -413,7 +419,7 @@ if ($isLoggedIn) {
       </div>
     <?php endif; ?>
 
-    <h2 class="section-heading" id="retirement">For folks in or near retirement (Boomers and Gen X)</h2>
+    <?php if (!$hide_site_header): ?><h2 class="section-heading" id="retirement">For folks in or near retirement (Boomers and Gen X)</h2><?php endif; ?>
     <main class="grid" aria-label="Retirement app links">
       <section class="card">
         <h3>RMD Impact</h3>
@@ -500,6 +506,7 @@ if ($isLoggedIn) {
       </section>
     </main>
 
+    <?php if (!$hide_site_header): ?>
     <div class="section-divider">
     <h2 class="section-heading" id="early-career">For folks building or strengthening their foundation (Millennials and Gen Z)</h2>
     <main class="grid" aria-label="Early career app links">
@@ -552,8 +559,9 @@ if ($isLoggedIn) {
       </section>
     </main>
     </div>
+    <?php endif; ?>
 
-    <?php if (!$isLoggedIn): ?>
+    <?php if (!$isLoggedIn && !$hide_site_header): ?>
       <!-- Premium Promotion for Non-Logged-In Users (after they've seen the calculators) -->
       <div class="premium-banner">
         <div class="premium-banner-content">
@@ -572,7 +580,19 @@ if ($isLoggedIn) {
       </div>
     <?php endif; ?>
 
-    <?php include __DIR__ . '/includes/footer.php'; ?>
+    <?php if (!$hide_site_header): ?>
+      <div class="brand-subtitle" style="margin: 24px auto 0; padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(148,163,184,.45); background: #f1f5f9; max-width: 960px;">
+        <p style="margin: 0 0 4px; font-weight: 600; color: #0f172a;">New: Investing guidance site</p>
+        <p style="margin: 0 0 6px; font-size: 14px; color: #334155;">
+          A small companion site with plain‑English explanations, fee impact examples, and a guide to using these calculators to make better decisions.
+        </p>
+        <p style="margin: 0; font-size: 14px; color: #1f2937;">
+          <a href="https://ronbelisle.com/invest-guidance.ronbelisle.com/" style="color: #1d4ed8; text-decoration: underline;">Go to the investing guidance site</a>
+        </p>
+      </div>
+    <?php endif; ?>
+
+    <?php if (!$hide_site_header) include __DIR__ . '/includes/footer.php'; ?>
 
   </div>
 </body>
