@@ -584,7 +584,7 @@ $hide_site_header = isset($_GET['embed'])
       <div class="brand-subtitle" style="margin: 24px auto 0; padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(148,163,184,.45); background: #f1f5f9; max-width: 960px;">
         <p style="margin: 0 0 4px; font-weight: 600; color: #0f172a;">New: Investing guidance site</p>
         <p style="margin: 0 0 6px; font-size: 14px; color: #334155;">
-          A small companion site with plain‑English explanations, fee impact examples, and a guide to using these calculators to make better decisions.
+          A small companion site with plain‑English explanations, advisor fee impact examples, and a guide to using these calculators to make better decisions.
         </p>
         <p style="margin: 0; font-size: 14px; color: #1f2937;">
           <a href="https://ronbelisle.com/invest-guidance.ronbelisle.com/" style="color: #1d4ed8; text-decoration: underline;">Go to the investing guidance site</a>
