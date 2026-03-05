@@ -53,7 +53,7 @@ if ($isLoggedIn) {
         <span id="saveStatus" style="color: #22543d; font-weight: 600;"></span>
     </div>
     <p style="margin: 12px 0 0 0; font-size: 13px; color: #4a5568; line-height: 1.5;">
-        <strong>Save</strong> / <strong>Load</strong> — Store and recall scenarios. <strong>Compare</strong> — See two scenarios side-by-side. <strong>PDF</strong> — Full report with charts. <strong>CSV</strong> — Spreadsheet data.
+        <strong>Save</strong> / <strong>Load</strong> — Store and recall scenarios. <strong>Compare</strong> — See two scenarios side-by-side. <strong>PDF</strong> — Full report with charts. <strong>CSV</strong> — Spreadsheet data. <strong>Explain</strong> — AI explains your results in plain language.
     </p>
 </div>
 <?php endif; ?>
