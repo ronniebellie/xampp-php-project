@@ -595,7 +595,8 @@ function explainResults() {
         btn.textContent = 'Loading…';
     }
 
-    fetch(MV_API_BASE + 'api/explain_results.php', {
+    const explainUrl = (window.location.origin || '') + '/api/explain_results.php';
+    fetch(explainUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

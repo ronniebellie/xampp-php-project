@@ -607,7 +607,8 @@ function explainResults() {
     const origText = btn ? btn.textContent : '';
     if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
 
-    fetch(RC_API_BASE + 'api/explain_results.php', {
+    const explainUrl = (window.location.origin || '') + '/api/explain_results.php';
+    fetch(explainUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
