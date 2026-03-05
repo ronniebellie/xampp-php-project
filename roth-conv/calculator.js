@@ -569,12 +569,88 @@ document.addEventListener('DOMContentLoaded', function() {
     const compareBtn = document.getElementById('compareScenariosBtn');
     const pdfBtn = document.getElementById('downloadPdfBtn');
     const csvBtn = document.getElementById('downloadCsvBtn');
+    const explainBtn = document.getElementById('explainResultsBtnInResults');
     if (saveBtn) saveBtn.addEventListener('click', saveScenario);
     if (loadBtn) loadBtn.addEventListener('click', loadScenario);
     if (compareBtn) compareBtn.addEventListener('click', compareScenarios);
     if (pdfBtn) pdfBtn.addEventListener('click', downloadPDF);
     if (csvBtn) csvBtn.addEventListener('click', downloadCSV);
+    if (explainBtn) explainBtn.addEventListener('click', explainResults);
 });
+
+function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+}
+
+function explainResults() {
+    const r = window.lastRothResult;
+    if (!r) {
+        alert('Please run the calculation first to see results.');
+        return;
+    }
+    const fmt = (n) => '$' + (n || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
+    let summary = 'Roth Conversion Analysis.\n\n';
+    summary += 'Converting $' + r.conversionAmount.toLocaleString() + ' per year for ' + r.conversionYears + ' years (ages ' + r.conversionStartAge + ' to ' + r.conversionEndAge + '). ';
+    summary += 'Current taxable income: ' + fmt(r.taxableIncome) + '. ';
+    summary += 'Current marginal tax rate: ' + (r.currentMarginalRate * 100).toFixed(0) + '%. ';
+    summary += 'Marginal rate with conversion: ' + (r.marginalRateWithConversion * 100).toFixed(0) + '%.\n\n';
+    summary += 'First-year conversion tax cost: ' + fmt(r.conversionTaxCost) + ' (effective rate ' + r.effectiveTaxRate.toFixed(1) + '%). ';
+    summary += 'Lifetime taxes without conversion: ' + fmt(r.withoutConversion.totalTaxesPaid) + '. ';
+    summary += 'Lifetime taxes with conversion: ' + fmt(r.withConversion.totalTaxesPaid) + '. ';
+    summary += 'Lifetime tax ' + (r.netBenefit > 0 ? 'savings: ' + fmt(r.netBenefit) : 'cost: ' + fmt(-r.netBenefit)) + '. ';
+    summary += 'RMD reduction from conversion: ' + fmt(r.rmdReduction) + '. ';
+    if (r.breakEvenAge) summary += 'Break-even age: ' + r.breakEvenAge + '.';
+
+    const btn = document.getElementById('explainResultsBtnInResults');
+    const origText = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+
+    fetch(RC_API_BASE + 'api/explain_results.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ calculator_type: 'roth-conversion', results_summary: summary })
+    })
+    .then(r => r.text())
+    .then(text => {
+        if (btn) { btn.disabled = false; btn.textContent = origText; }
+        let data;
+        try { data = JSON.parse(text); } catch (e) {
+            throw new Error('Server returned an unexpected response. Try logging out and back in.');
+        }
+        if (data.error) throw new Error(data.error);
+        showExplainModal(data.explanation);
+    })
+    .catch(err => {
+        if (btn) { btn.disabled = false; btn.textContent = origText; }
+        alert('Explain results: ' + err.message);
+    });
+}
+
+function showExplainModal(explanation) {
+    let overlay = document.getElementById('explainResultsModalOverlay');
+    if (overlay) overlay.remove();
+    overlay = document.createElement('div');
+    overlay.id = 'explainResultsModalOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px;';
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+    const box = document.createElement('div');
+    box.style.cssText = 'background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:560px;width:100%;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;';
+    box.addEventListener('click', function(e) { e.stopPropagation(); });
+    box.innerHTML = '<div style="padding:24px 24px 16px;">' +
+        '<h2 style="margin:0 0 16px 0;font-size:1.25rem;color:#1f2937;">🤖 AI Explanation</h2>' +
+        '<div style="color:#374151;line-height:1.7;white-space:pre-wrap;overflow-y:auto;max-height:50vh;">' + escapeHtml(explanation) + '</div>' +
+        '</div>' +
+        '<div style="padding:16px 24px;border-top:1px solid #e5e7eb;background:#f9fafb;">' +
+        '<p style="margin:0 0 12px 0;font-size:12px;color:#6b7280;">This is an AI-generated explanation for educational purposes. Not financial or legal advice.</p>' +
+        '<button type="button" id="explainModalCloseBtn" style="padding:10px 24px;border:none;border-radius:8px;background:#0d9488;color:#fff;cursor:pointer;font-weight:600;">Close</button>' +
+        '</div>';
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    document.getElementById('explainModalCloseBtn').addEventListener('click', function() { overlay.remove(); });
+}
 
 function saveScenario() {
     const scenarioName = prompt('Enter a name for this scenario:', 'My Roth Plan');

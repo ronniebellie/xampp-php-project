@@ -421,6 +421,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const pdfBtn = document.getElementById('downloadPdfBtn');
     const csvBtn = document.getElementById('downloadCsvBtn');
     const summaryBtn = document.getElementById('downloadSummaryBtn');
+    const explainBtn = document.getElementById('explainResultsBtnInResults');
     
     if (saveBtn) saveBtn.addEventListener('click', saveScenario);
     if (loadBtn) loadBtn.addEventListener('click', loadScenario);
@@ -428,6 +429,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (pdfBtn) pdfBtn.addEventListener('click', downloadPDF);
     if (csvBtn) csvBtn.addEventListener('click', downloadCSV);
     if (summaryBtn) summaryBtn.addEventListener('click', downloadClaimingSummary);
+    if (explainBtn) explainBtn.addEventListener('click', explainResults);
 });
 
 function saveScenario() {
@@ -699,4 +701,84 @@ function downloadClaimingSummary() {
     .then(r => { if (!r.ok) return r.text().then(t => { try { const j = JSON.parse(t); throw new Error(j.error || 'Failed'); } catch(e) { throw new Error(t || 'Failed'); } }); return r.blob(); })
     .then(blob => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'SS_Claiming_Summary_' + new Date().toISOString().split('T')[0] + '.pdf'; a.click(); URL.revokeObjectURL(a.href); })
     .catch(e => alert('Error: ' + e.message));
+}
+
+function explainResults() {
+    const res = window.lastSSResult;
+    if (!res) {
+        alert('Please run "Compare Scenarios" first to see results.');
+        return;
+    }
+    const fra = res.fra;
+    const fraStr = fra.years + (fra.months > 0 ? ' and ' + fra.months + ' months' : '');
+    let summary = 'Social Security Claiming Comparison.\n\n';
+    summary += 'Full Retirement Age: ' + fraStr + '. Monthly benefit at FRA: ' + formatCurrency(res.monthlyPIA) + '.\n\n';
+    summary += 'Scenarios: Claim at age ' + res.claimAgeA + ' (monthly ' + formatCurrency(res.monthlyA) + '), age ' + res.claimAgeB + ' (monthly ' + formatCurrency(res.monthlyB) + '), age ' + res.claimAgeC + ' (monthly ' + formatCurrency(res.monthlyC) + ').\n\n';
+    summary += 'If the user lives to age ' + res.lifeExpectancy + ', the best option is claiming at age ' + res.bestScenario.age + ' (lifetime total ' + formatCurrency(res.bestScenario.total) + ').\n\n';
+    if (res.breakEvenAB) summary += 'Break-even between age ' + res.claimAgeA + ' and ' + res.claimAgeB + ': age ' + res.breakEvenAB + '. ';
+    if (res.breakEvenBC) summary += 'Break-even between age ' + res.claimAgeB + ' and ' + res.claimAgeC + ': age ' + res.breakEvenBC + '. ';
+    if (res.colaRate > 0) summary += 'COLA: ' + res.colaRate + '% annually. ';
+    if (res.discountRate > 0) summary += 'Discount rate: ' + res.discountRate + '% (present value).';
+
+    const btn = document.getElementById('explainResultsBtnInResults');
+    const origText = btn ? btn.textContent : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Loading…';
+    }
+
+    fetch(SS_API_BASE + '/api/explain_results.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+            calculator_type: 'social-security',
+            results_summary: summary
+        })
+    })
+    .then(r => r.text())
+    .then(text => {
+        if (btn) { btn.disabled = false; btn.textContent = origText; }
+        let data;
+        try { data = JSON.parse(text); } catch (e) {
+            throw new Error('Server returned an unexpected response. Try logging out and back in.');
+        }
+        if (data.error) throw new Error(data.error);
+        showExplainModal(data.explanation);
+    })
+    .catch(err => {
+        if (btn) { btn.disabled = false; btn.textContent = origText; }
+        alert('Explain results: ' + err.message);
+    });
+}
+
+function showExplainModal(explanation) {
+    let overlay = document.getElementById('explainResultsModalOverlay');
+    if (overlay) overlay.remove();
+    overlay = document.createElement('div');
+    overlay.id = 'explainResultsModalOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px;';
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) { overlay.remove(); }
+    });
+    const box = document.createElement('div');
+    box.style.cssText = 'background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:560px;width:100%;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;';
+    box.addEventListener('click', function(e) { e.stopPropagation(); });
+    box.innerHTML = '<div style="padding:24px 24px 16px;">' +
+        '<h2 style="margin:0 0 16px 0;font-size:1.25rem;color:#1f2937;">🤖 AI Explanation</h2>' +
+        '<div style="color:#374151;line-height:1.7;white-space:pre-wrap;overflow-y:auto;max-height:50vh;">' + escapeHtml(explanation) + '</div>' +
+        '</div>' +
+        '<div style="padding:16px 24px;border-top:1px solid #e5e7eb;background:#f9fafb;">' +
+        '<p style="margin:0 0 12px 0;font-size:12px;color:#6b7280;">This is an AI-generated explanation for educational purposes. Not financial or legal advice.</p>' +
+        '<button type="button" id="explainModalCloseBtn" style="padding:10px 24px;border:none;border-radius:8px;background:#0d9488;color:#fff;cursor:pointer;font-weight:600;">Close</button>' +
+        '</div>';
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    document.getElementById('explainModalCloseBtn').addEventListener('click', function() { overlay.remove(); });
+}
+
+function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
 }

@@ -376,11 +376,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const compareBtn = document.getElementById('compareScenariosBtn');
     const pdfBtn = document.getElementById('downloadPdfBtn');
     const csvBtn = document.getElementById('downloadCsvBtn');
+    const explainBtn = document.getElementById('explainResultsBtnInResults');
     if (saveBtn) saveBtn.addEventListener('click', saveScenario);
     if (loadBtn) loadBtn.addEventListener('click', loadScenario);
     if (compareBtn) compareBtn.addEventListener('click', compareScenarios);
     if (pdfBtn) pdfBtn.addEventListener('click', downloadPDF);
     if (csvBtn) csvBtn.addEventListener('click', downloadCSV);
+    if (explainBtn) explainBtn.addEventListener('click', explainResults);
 });
 
 function saveScenario() {
@@ -562,6 +564,85 @@ function showMVComparison(name1, name2, m1, m2, v1, v2, d1, d2, opp1, opp2) {
     `;
     const existingContent = resultsDiv.innerHTML;
     resultsDiv.innerHTML = comparisonHTML + existingContent;
+}
+
+function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+}
+
+function explainResults() {
+    const res = window.lastMVResult;
+    if (!res) {
+        alert('Please run "Calculate True Cost" first to see results.');
+        return;
+    }
+    let summary = 'Managed Portfolio vs Vanguard Index Fund comparison.\n\n';
+    summary += 'Portfolio value: ' + formatCurrency(res.portfolioValue) + '. Advisor fee: ' + res.advisorFee + '%. Vanguard fee: ' + res.vanguardFee + '%. ';
+    summary += 'Timeline: ' + res.years + ' years. Expected annual return (before fees): ' + res.returnRate + '%.\n\n';
+    summary += 'Opportunity cost over ' + res.years + ' years: ' + formatCurrency(res.opportunityCost) + ' (amount lost by using managed portfolio vs Vanguard). ';
+    summary += 'Direct fee difference: ' + formatCurrency(res.directFeeDiff) + ' more in advisor fees. ';
+    summary += 'Lost growth (compounding of those fees): ' + formatCurrency(res.lostGrowth > 0 ? res.lostGrowth : res.opportunityCost) + '.\n\n';
+    summary += 'Final portfolio: Managed ' + formatCurrency(res.managedFinal) + ' vs Vanguard ' + formatCurrency(res.vanguardFinal) + '. ';
+    summary += 'Total fees paid: Managed ' + formatCurrency(res.managedTotalFees) + ' vs Vanguard ' + formatCurrency(res.vanguardTotalFees) + '. ';
+    summary += 'Advisor must beat Vanguard by ' + (res.advisorFee - res.vanguardFee).toFixed(2) + '% annually to justify their fee. Most do not.';
+
+    const btn = document.getElementById('explainResultsBtnInResults');
+    const origText = btn ? btn.textContent : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Loading…';
+    }
+
+    fetch(MV_API_BASE + 'api/explain_results.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+            calculator_type: 'managed-vs-vanguard',
+            results_summary: summary
+        })
+    })
+    .then(r => r.text())
+    .then(text => {
+        if (btn) { btn.disabled = false; btn.textContent = origText; }
+        let resp;
+        try { resp = JSON.parse(text); } catch (e) {
+            throw new Error('Server returned an unexpected response. Try logging out and back in.');
+        }
+        if (resp.error) throw new Error(resp.error);
+        showExplainModal(resp.explanation);
+    })
+    .catch(err => {
+        if (btn) { btn.disabled = false; btn.textContent = origText; }
+        alert('Explain results: ' + err.message);
+    });
+}
+
+function showExplainModal(explanation) {
+    let overlay = document.getElementById('explainResultsModalOverlay');
+    if (overlay) overlay.remove();
+    overlay = document.createElement('div');
+    overlay.id = 'explainResultsModalOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px;';
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) overlay.remove();
+    });
+    const box = document.createElement('div');
+    box.style.cssText = 'background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:560px;width:100%;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;';
+    box.addEventListener('click', function(e) { e.stopPropagation(); });
+    box.innerHTML = '<div style="padding:24px 24px 16px;">' +
+        '<h2 style="margin:0 0 16px 0;font-size:1.25rem;color:#1f2937;">🤖 AI Explanation</h2>' +
+        '<div style="color:#374151;line-height:1.7;white-space:pre-wrap;overflow-y:auto;max-height:50vh;">' + escapeHtml(explanation) + '</div>' +
+        '</div>' +
+        '<div style="padding:16px 24px;border-top:1px solid #e5e7eb;background:#f9fafb;">' +
+        '<p style="margin:0 0 12px 0;font-size:12px;color:#6b7280;">This is an AI-generated explanation for educational purposes. Not financial or legal advice.</p>' +
+        '<button type="button" id="explainModalCloseBtn" style="padding:10px 24px;border:none;border-radius:8px;background:#0d9488;color:#fff;cursor:pointer;font-weight:600;">Close</button>' +
+        '</div>';
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    document.getElementById('explainModalCloseBtn').addEventListener('click', function() { overlay.remove(); });
 }
 
 function downloadPDF() {
