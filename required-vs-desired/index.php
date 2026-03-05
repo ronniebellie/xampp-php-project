@@ -190,11 +190,19 @@ if ($isLoggedIn) {
                     </table>
                 </div>
             </div>
+
+            <?php if ($isPremium): ?>
+            <div class="explain-results-block" style="margin: 24px 0; padding: 24px; background: #f0fdf4; border: 2px solid #0d9488; border-radius: 12px;">
+                <button type="button" id="explainResultsBtnInResults" class="btn-primary" style="background: #0d9488; color: white; font-size: 16px; padding: 14px 28px; font-weight: 700;">🤖 Explain my results</button>
+                <p style="margin: 12px 0 0 0; font-size: 15px; color: #166534; line-height: 1.5;">Get AI-generated plain-language explanations of your specific results.</p>
+            </div>
+            <?php endif; ?>
+
             <?php $share_title = 'Required vs. Desired Portfolio Calculator'; $share_text = 'Check out the Required vs. Desired calculator at ronbelisle.com — see how much portfolio you need for essential needs vs. full lifestyle.'; include(__DIR__ . '/../includes/share-results-block.php'); ?>
         </div>
 
         <?php if (!$isPremium): ?>
-        <?php include(__DIR__ . '/../includes/premium-upsell-banner.php'); ?>
+        <?php $premium_upsell_text = 'Upgrade to Premium to save and compare scenarios, export PDFs and CSVs, get AI-generated plain-language explanations of your specific results, and more across all calculators.'; include(__DIR__ . '/../includes/premium-upsell-banner.php'); ?>
         <footer class="site-footer">
             <span class="donate-text">If these tools are useful, please consider supporting future development.</span>
             <a href="https://www.paypal.com/paypalme/rongbelisle" target="_blank" class="donate-btn">
@@ -287,6 +295,13 @@ if ($isLoggedIn) {
             generateChart(requiredAnnual, desiredAnnual, ssIncome, currentAge, years,
                          inflationRate, portfolioReturn, essentialPortfolio, fullPortfolio);
             generateWithdrawalChart(requiredAnnual, desiredAnnual, ssIncome, currentAge, years, inflationRate);
+
+            // Store for Explain
+            window.lastRVDResult = {
+                requiredAnnual, desiredAnnual, ssIncome, currentAge, lifeExpectancy,
+                years, inflationRate, withdrawalRate, portfolioReturn,
+                essentialGap, fullGap, essentialPortfolio, fullPortfolio
+            };
 
             // Show results
             document.getElementById('results').style.display = 'block';
@@ -605,12 +620,75 @@ if ($isLoggedIn) {
             const compareBtn = document.getElementById('compareScenariosBtn');
             const pdfBtn = document.getElementById('downloadPdfBtn');
             const csvBtn = document.getElementById('downloadCsvBtn');
+            const explainBtn = document.getElementById('explainResultsBtnInResults');
             if (saveBtn) saveBtn.addEventListener('click', saveScenario);
             if (loadBtn) loadBtn.addEventListener('click', loadScenario);
             if (compareBtn) compareBtn.addEventListener('click', compareScenarios);
             if (pdfBtn) pdfBtn.addEventListener('click', downloadPDF);
             if (csvBtn) csvBtn.addEventListener('click', downloadCSV);
+            if (explainBtn) explainBtn.addEventListener('click', explainResults);
         });
+
+        function escapeHtml(s) {
+            const div = document.createElement('div');
+            div.textContent = s;
+            return div.innerHTML;
+        }
+
+        function explainResults() {
+            const res = window.lastRVDResult;
+            if (!res) {
+                alert('Please run "Calculate Portfolio Needs" first.');
+                return;
+            }
+            let summary = 'Required vs. Desired Spending Calculator.\n\n';
+            summary += 'Annual required expenses: ' + formatCurrency(res.requiredAnnual) + '. Desired expenses: ' + formatCurrency(res.desiredAnnual) + '. ';
+            summary += 'Total spending: ' + formatCurrency(res.requiredAnnual + res.desiredAnnual) + '. Social Security: ' + formatCurrency(res.ssIncome) + '/year.\n\n';
+            summary += 'Current age: ' + res.currentAge + '. Life expectancy: ' + res.lifeExpectancy + '. Planning for ' + res.years + ' years. ';
+            summary += 'Inflation: ' + (res.inflationRate * 100).toFixed(1) + '%. Withdrawal rate: ' + (res.withdrawalRate * 100).toFixed(1) + '%. ';
+            summary += 'Portfolio return: ' + (res.portfolioReturn * 100).toFixed(1) + '%.\n\n';
+            summary += 'Essential needs only: annual gap ' + formatCurrency(res.essentialGap) + ', portfolio needed ' + formatCurrency(res.essentialPortfolio) + '. ';
+            summary += 'Full lifestyle: annual gap ' + formatCurrency(res.fullGap) + ', portfolio needed ' + formatCurrency(res.fullPortfolio) + '. ';
+            summary += 'Difference (discretionary lifestyle) = ' + formatCurrency(res.fullPortfolio - res.essentialPortfolio) + '.';
+
+            const btn = document.getElementById('explainResultsBtnInResults');
+            const origText = btn ? btn.textContent : '';
+            if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+            fetch(RVD_API_BASE + 'api/explain_results.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    calculator_type: 'required-vs-desired',
+                    results_summary: summary
+                })
+            })
+            .then(r => r.json())
+            .then(resp => {
+                if (btn) { btn.disabled = false; btn.textContent = origText; }
+                if (resp.error) throw new Error(resp.error);
+                showExplainModal(resp.explanation);
+            })
+            .catch(err => {
+                if (btn) { btn.disabled = false; btn.textContent = origText; }
+                alert('Explain results: ' + err.message);
+            });
+        }
+
+        function showExplainModal(explanation) {
+            let overlay = document.getElementById('explainResultsModalOverlay');
+            if (overlay) overlay.remove();
+            overlay = document.createElement('div');
+            overlay.id = 'explainResultsModalOverlay';
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px;';
+            overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+            const box = document.createElement('div');
+            box.style.cssText = 'background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:560px;width:100%;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;';
+            box.addEventListener('click', function(e) { e.stopPropagation(); });
+            box.innerHTML = '<div style="padding:24px 24px 16px;"><h2 style="margin:0 0 16px 0;font-size:1.25rem;color:#1f2937;">🤖 AI Explanation</h2><div style="color:#374151;line-height:1.7;white-space:pre-wrap;overflow-y:auto;max-height:50vh;">' + escapeHtml(explanation) + '</div></div><div style="padding:16px 24px;border-top:1px solid #e5e7eb;background:#f9fafb;"><p style="margin:0 0 12px 0;font-size:12px;color:#6b7280;">This is an AI-generated explanation for educational purposes. Not financial or legal advice.</p><button type="button" id="explainModalCloseBtn" style="padding:10px 24px;border:none;border-radius:8px;background:#0d9488;color:#fff;cursor:pointer;font-weight:600;">Close</button></div>';
+            overlay.appendChild(box);
+            document.body.appendChild(overlay);
+            document.getElementById('explainModalCloseBtn').addEventListener('click', function() { overlay.remove(); });
+        }
 
         function saveScenario() {
             const scenarioName = prompt('Enter a name for this scenario:', 'My Spending Plan');
