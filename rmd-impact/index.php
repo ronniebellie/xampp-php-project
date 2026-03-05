@@ -56,7 +56,7 @@ if ($isLoggedIn) {
         <span id="saveStatus" style="color: #22543d; font-weight: 600;"></span>
     </div>
     <p style="margin: 12px 0 0 0; font-size: 13px; color: #4a5568; line-height: 1.5;">
-        <strong>Save</strong> / <strong>Load</strong> — Store and recall scenarios. <strong>Compare</strong> — See two scenarios side-by-side. <strong>PDF</strong> — Full report with chart. <strong>CSV</strong> — Spreadsheet data. <strong>Calendar</strong> — One-page RMD due dates.
+        <strong>Save</strong> / <strong>Load</strong> — Store and recall scenarios. <strong>Compare</strong> — See two scenarios side-by-side. <strong>PDF</strong> — Full report with chart. <strong>CSV</strong> — Spreadsheet data. <strong>Calendar</strong> — One-page RMD due dates. <strong>Explain</strong> — AI explains your results in plain language.
     </p>
 </div>
 <?php endif; ?>
@@ -154,6 +154,13 @@ if ($isLoggedIn) {
 
             <div class="info-box info-box-blue" id="interpretation"></div>
 
+            <?php if ($isPremium): ?>
+            <div class="explain-results-block" style="margin: 24px 0; padding: 24px; background: #f0fdf4; border: 2px solid #0d9488; border-radius: 12px;">
+                <button type="button" id="explainResultsBtnInResults" class="btn-primary" style="background: #0d9488; color: white; font-size: 16px; padding: 14px 28px; font-weight: 700;">🤖 Explain my results</button>
+                <p style="margin: 12px 0 0 0; font-size: 15px; color: #166534; line-height: 1.5;">Get AI-generated plain-language explanations of your specific results.</p>
+            </div>
+            <?php endif; ?>
+
             <div class="table-section">
                 <h3>Year-by-Year Breakdown</h3>
                 <div class="table-wrapper">
@@ -176,7 +183,7 @@ if ($isLoggedIn) {
         </div>
 
         <?php if (!$isPremium): ?>
-        <?php include(__DIR__ . '/../includes/premium-upsell-banner.php'); ?>
+        <?php $premium_upsell_text = 'Upgrade to Premium to save and compare scenarios, export PDF and CSV, and get AI-generated plain-language explanations of your specific results.'; include(__DIR__ . '/../includes/premium-upsell-banner.php'); ?>
         <footer class="site-footer">
             <span class="donate-text">If these tools are useful, please consider supporting future development.</span>
             <a href="https://www.paypal.com/paypalme/rongbelisle" target="_blank" class="donate-btn">

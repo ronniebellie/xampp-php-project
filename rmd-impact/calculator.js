@@ -194,6 +194,9 @@ function generateInterpretation(results, data) {
 }
 
 function displayResults(results, data) {
+    window.lastRMDResult = results;
+    window.lastRMDData = data;
+
     const resultsDiv = document.getElementById('results');
     resultsDiv.style.display = 'block';
 
@@ -464,30 +467,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const pdfBtn = document.getElementById('downloadPdfBtn');
     const csvBtn = document.getElementById('downloadCsvBtn');
     const calendarBtn = document.getElementById('downloadCalendarBtn');
-    
-    if (saveBtn) {
-        saveBtn.addEventListener('click', saveScenario);
-    }
-    
-    if (loadBtn) {
-        loadBtn.addEventListener('click', loadScenario);
-    }
-    
-    if (compareBtn) {
-        compareBtn.addEventListener('click', compareScenarios);
-    }
-    
-    if (pdfBtn) {
-        pdfBtn.addEventListener('click', downloadPDF);
-    }
-    
-    if (csvBtn) {
-        csvBtn.addEventListener('click', downloadCSV);
-    }
-    
-    if (calendarBtn) {
-        calendarBtn.addEventListener('click', downloadCalendar);
-    }
+    const explainBtn = document.getElementById('explainResultsBtnInResults');
+
+    if (saveBtn) saveBtn.addEventListener('click', saveScenario);
+    if (loadBtn) loadBtn.addEventListener('click', loadScenario);
+    if (compareBtn) compareBtn.addEventListener('click', compareScenarios);
+    if (pdfBtn) pdfBtn.addEventListener('click', downloadPDF);
+    if (csvBtn) csvBtn.addEventListener('click', downloadCSV);
+    if (calendarBtn) calendarBtn.addEventListener('click', downloadCalendar);
+    if (explainBtn) explainBtn.addEventListener('click', explainResults);
 });
 
 function saveScenario() {
@@ -785,6 +773,82 @@ function escapeHtml(s) {
     const div = document.createElement('div');
     div.textContent = s;
     return div.innerHTML;
+}
+
+function explainResults() {
+    const results = window.lastRMDResult;
+    const data = window.lastRMDData;
+    if (!results || !data) {
+        alert('Please run "Calculate RMD Impact" first to see results.');
+        return;
+    }
+    const firstRMD = results.find(r => r.rmdAmount > 0);
+    const age80Data = results.find(r => r.age === 80) || firstRMD;
+    const age90Data = results.find(r => r.age === 90) || age80Data;
+    const peakTax = Math.max(...results.map(r => r.taxBracket));
+
+    let summary = 'RMD Impact Projection.\n\n';
+    summary += 'Current age: ' + data.currentAge + '. Tax-deferred account balance: ' + formatCurrency(data.accountBalance) + '. Expected growth rate: ' + data.growthRate + '%.\n\n';
+    summary += 'Other income: Social Security ' + formatCurrency(data.socialSecurity) + '/year, Pension ' + formatCurrency(data.pension) + '/year, Other ' + formatCurrency(data.otherIncome) + '/year. ';
+    summary += 'Filing status: ' + data.filingStatus + '. ' + (data.useStandardDeduction ? 'Standard deduction.' : 'Itemizing.') + '\n\n';
+    if (data.isSpouseBeneficiary && data.spouseAge) {
+        summary += 'Spouse is sole beneficiary, age ' + data.spouseAge + '. ';
+    }
+    summary += 'First RMD at age 73: ' + formatCurrency(firstRMD.rmdAmount) + '. ';
+    summary += 'RMD at age 80: ' + formatCurrency(age80Data.rmdAmount) + '. ';
+    summary += 'RMD at age 90: ' + formatCurrency(age90Data.rmdAmount) + '. ';
+    summary += 'Peak estimated tax bracket: ' + peakTax + '%.';
+
+    const btn = document.getElementById('explainResultsBtnInResults');
+    const origText = btn ? btn.textContent : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Loading…';
+    }
+
+    fetch('/api/explain_results.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            calculator_type: 'rmd-impact',
+            results_summary: summary
+        })
+    })
+    .then(r => r.json())
+    .then(resp => {
+        if (btn) { btn.disabled = false; btn.textContent = origText; }
+        if (resp.error) throw new Error(resp.error);
+        showExplainModal(resp.explanation);
+    })
+    .catch(err => {
+        if (btn) { btn.disabled = false; btn.textContent = origText; }
+        alert('Explain results: ' + err.message);
+    });
+}
+
+function showExplainModal(explanation) {
+    let overlay = document.getElementById('explainResultsModalOverlay');
+    if (overlay) overlay.remove();
+    overlay = document.createElement('div');
+    overlay.id = 'explainResultsModalOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px;';
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) overlay.remove();
+    });
+    const box = document.createElement('div');
+    box.style.cssText = 'background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:560px;width:100%;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;';
+    box.addEventListener('click', function(e) { e.stopPropagation(); });
+    box.innerHTML = '<div style="padding:24px 24px 16px;">' +
+        '<h2 style="margin:0 0 16px 0;font-size:1.25rem;color:#1f2937;">🤖 AI Explanation</h2>' +
+        '<div style="color:#374151;line-height:1.7;white-space:pre-wrap;overflow-y:auto;max-height:50vh;">' + escapeHtml(explanation) + '</div>' +
+        '</div>' +
+        '<div style="padding:16px 24px;border-top:1px solid #e5e7eb;background:#f9fafb;">' +
+        '<p style="margin:0 0 12px 0;font-size:12px;color:#6b7280;">This is an AI-generated explanation for educational purposes. Not financial or legal advice.</p>' +
+        '<button type="button" id="explainModalCloseBtn" style="padding:10px 24px;border:none;border-radius:8px;background:#0d9488;color:#fff;cursor:pointer;font-weight:600;">Close</button>' +
+        '</div>';
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    document.getElementById('explainModalCloseBtn').addEventListener('click', function() { overlay.remove(); });
 }
 
 function downloadPDF() {
