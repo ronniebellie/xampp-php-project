@@ -66,6 +66,7 @@ try {
         $message .= "You now have full access to:\n";
         $message .= "• Save and compare scenarios across all calculators\n";
         $message .= "• Export PDF and CSV reports\n";
+        $message .= "• AI-generated plain-language explanations of your specific results\n";
         $message .= "• Advanced projections (e.g., 10–20 year outlooks)\n";
         $message .= "• All premium retirement and planning tools on the site\n\n";
         $message .= "Get started:\n";

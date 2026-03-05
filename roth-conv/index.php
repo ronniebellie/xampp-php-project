@@ -53,7 +53,7 @@ if ($isLoggedIn) {
         <span id="saveStatus" style="color: #22543d; font-weight: 600;"></span>
     </div>
     <p style="margin: 12px 0 0 0; font-size: 13px; color: #4a5568; line-height: 1.5;">
-        <strong>Save</strong> / <strong>Load</strong> — Store and recall scenarios. <strong>Compare</strong> — See two scenarios side-by-side. <strong>PDF</strong> — Full report with chart. <strong>CSV</strong> — Spreadsheet data.
+        <strong>Save</strong> / <strong>Load</strong> — Store and recall scenarios. <strong>Compare</strong> — See two scenarios side-by-side. <strong>PDF</strong> — Full report with chart. <strong>CSV</strong> — Spreadsheet data. <strong>Explain</strong> — AI explains your results in plain language.
     </p>
 </div>
 <?php endif; ?>
@@ -145,13 +145,19 @@ if ($isLoggedIn) {
         <div id="results" class="results-container" style="display: none;">
             <h2>Conversion Analysis</h2>
             <div id="resultsContent"></div>
+            <?php if ($isPremium): ?>
+            <div class="explain-results-block" style="margin: 24px 0; padding: 24px; background: #f0fdf4; border: 2px solid #0d9488; border-radius: 12px;">
+                <button type="button" id="explainResultsBtnInResults" class="btn-primary" style="background: #0d9488; color: white; font-size: 16px; padding: 14px 28px; font-weight: 700;">🤖 Explain my results</button>
+                <p style="margin: 12px 0 0 0; font-size: 15px; color: #166534; line-height: 1.5;">Get AI-generated plain-language explanations of your specific results.</p>
+            </div>
+            <?php endif; ?>
             <?php $share_title = 'Roth Conversion Calculator'; $share_text = 'Check out the Roth Conversion calculator at ronbelisle.com — analyze when and how much to convert.'; include(__DIR__ . '/../includes/share-results-block.php'); ?>
         </div>
 
         <?php if (!$isPremium): ?>
         <?php
         $premium_upsell_headline = 'Unlock Premium Features';
-        $premium_upsell_text = 'Upgrade to Premium to save and compare scenarios, export PDF and CSV reports, and access your conversion analysis across devices.';
+        $premium_upsell_text = 'Upgrade to Premium to save and compare scenarios, export PDF and CSV reports, get AI-generated plain-language explanations of your specific results, and access your conversion analysis across devices.';
         include(__DIR__ . '/../includes/premium-upsell-banner.php');
         ?>
         <footer class="site-footer">

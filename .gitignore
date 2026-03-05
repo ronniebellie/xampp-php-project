@@ -13,3 +13,4 @@ composer.lock
 includes/stripe_config.php
 includes/db_config.php
 Do-not-upload-to-server/
+includes/openai_config.php

@@ -129,6 +129,13 @@ if ($isLoggedIn) {
         </p>
       </div>
 
+      <?php if ($isPremium): ?>
+      <div class="explain-results-block" style="margin: 24px 0; padding: 24px; background: #f0fdf4; border: 2px solid #0d9488; border-radius: 12px;">
+        <button type="button" id="explainResultsBtnInResults" class="btn-primary" style="background: #0d9488; color: white; font-size: 16px; padding: 14px 28px; font-weight: 700;">🤖 Explain my results</button>
+        <p style="margin: 12px 0 0 0; font-size: 15px; color: #166534; line-height: 1.5;">Get AI-generated plain-language explanations of your specific timeline.</p>
+      </div>
+      <?php endif; ?>
+
       <?php
         $share_title = 'Retirement Timeline & Checklist';
         $share_text  = 'Try this Retirement Timeline & Checklist at ronbelisle.com — turn your retirement date into a simple, phased checklist.';
@@ -139,7 +146,7 @@ if ($isLoggedIn) {
     <?php if (!$isPremium): ?>
     <?php
       $premium_upsell_headline = 'Save and print your retirement timeline';
-      $premium_upsell_text = 'Upgrade to Premium to save multiple timelines, export PDFs, and compare with other scenarios.';
+      $premium_upsell_text = 'Upgrade to Premium to save multiple timelines, export PDFs, compare scenarios, and get AI-generated plain-language explanations of your specific results.';
       include(__DIR__ . '/../includes/premium-upsell-banner.php');
     ?>
     <footer class="site-footer">

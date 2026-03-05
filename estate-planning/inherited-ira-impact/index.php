@@ -156,7 +156,7 @@ if ($isLoggedIn) {
         <?php if (!$isPremium): ?>
             <?php
             $premium_upsell_headline = 'Unlock Premium for This Calculator';
-            $premium_upsell_text = 'Save and compare scenarios, export PDF and CSV, and access full year-by-year tables.';
+            $premium_upsell_text = 'Save and compare scenarios, export PDF and CSV, get AI-generated plain-language explanations of your specific results, and access full year-by-year tables.';
             $premium_upsell_link = '../../premium.html';
             include(__DIR__ . '/../../includes/premium-upsell-banner.php');
             ?>

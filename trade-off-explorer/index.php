@@ -316,7 +316,7 @@ if ($isLoggedIn) {
     <?php if (!$isPremium): ?>
     <?php
       $premium_upsell_headline = 'Save and compare retirement trade-offs';
-      $premium_upsell_text = 'Upgrade to Premium to save multiple trade-off scenarios, export PDFs and CSVs, and compare them across calculators.';
+      $premium_upsell_text = 'Upgrade to Premium to save multiple trade-off scenarios, export PDFs and CSVs, get AI-generated plain-language explanations of your specific results, and compare them across calculators.';
       include(__DIR__ . '/../includes/premium-upsell-banner.php');
     ?>
     <footer class="site-footer">

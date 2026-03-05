@@ -113,7 +113,7 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
     <?php if ($is_premium): ?>
     <div class="premium-banner premium-active" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; padding: 20px; text-align: center; margin-bottom: 30px; border-radius: 8px;">
         <h3 style="margin: 0 0 10px 0; font-size: 24px;">✓ Premium Active</h3>
-        <p style="margin: 0; opacity: 0.95;">You have full access to all premium features.</p>
+        <p style="margin: 0; opacity: 0.95;">You have full access to all Premium features listed below.</p>
     </div>
     <?php else: ?>
     <?php include('includes/premium-banner-include.php'); ?>

@@ -178,6 +178,14 @@ if ($isLoggedIn) {
                         </div>
                     </div>
                 </div>
+
+                <?php if ($isPremium): ?>
+                <div class="explain-results-block" style="margin: 24px 0; padding: 24px; background: #f0fdf4; border: 2px solid #0d9488; border-radius: 12px;">
+                    <button type="button" id="explainResultsBtnInResults" class="btn-primary" style="background: #0d9488; color: white; font-size: 16px; padding: 14px 28px; font-weight: 700;">🤖 Explain my results</button>
+                    <p style="margin: 12px 0 0 0; font-size: 15px; color: #166534; line-height: 1.5;">Get AI-generated plain-language explanations of your specific results.</p>
+                </div>
+                <?php endif; ?>
+
                 <?php $share_title = 'Managed vs. Vanguard Calculator'; $share_text = 'Check out the Managed vs. Vanguard calculator at ronbelisle.com — see the true cost of advisor fees.'; include(__DIR__ . '/../includes/share-results-block.php'); ?>
             </div>
         </div>
@@ -185,7 +193,7 @@ if ($isLoggedIn) {
         <?php if (!$isPremium): ?>
         <?php
         $premium_upsell_headline = 'Unlock Premium Features';
-        $premium_upsell_text = 'Upgrade to Premium to save and compare scenarios, export PDF and CSV reports, and access your fee comparison across devices.';
+        $premium_upsell_text = 'Upgrade to Premium to save and compare scenarios, export PDF and CSV reports, get AI-generated plain-language explanations of your specific results, and access your fee comparison across devices.';
         include(__DIR__ . '/../includes/premium-upsell-banner.php');
         ?>
         <footer class="calculator-footer">

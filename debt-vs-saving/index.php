@@ -200,7 +200,7 @@ if ($isLoggedIn) {
     <?php if (!$isPremium): ?>
     <?php
       $premium_upsell_headline = 'Save and compare payoff vs investing plans';
-      $premium_upsell_text = 'Upgrade to Premium to save multiple debt vs saving scenarios, export PDFs and CSVs, and compare them with your other calculators.';
+      $premium_upsell_text = 'Upgrade to Premium to save multiple debt vs saving scenarios, export PDFs and CSVs, get AI-generated plain-language explanations of your specific results, and compare them with your other calculators.';
       include(__DIR__ . '/../includes/premium-upsell-banner.php');
     ?>
     <footer class="site-footer">

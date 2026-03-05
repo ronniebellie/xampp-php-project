@@ -145,7 +145,7 @@ if ($isLoggedIn) {
     <?php if (!$isPremium): ?>
     <?php
     $premium_upsell_headline = 'Unlock Premium Features';
-    $premium_upsell_text = 'Upgrade to Premium to save and compare down payment scenarios and export PDF and CSV reports.';
+    $premium_upsell_text = 'Upgrade to Premium to save and compare down payment scenarios, export PDF and CSV reports, and get AI-generated plain-language explanations of your specific results.';
     include(__DIR__ . '/../includes/premium-upsell-banner.php');
     ?>
     <footer class="site-footer">

@@ -99,7 +99,7 @@ if ($isLoggedIn) {
                     or reach out directly from that page.
                 </p>
                 <p style="margin: 0; font-size: 0.9em; color: #4b5563;">
-                    Existing Premium members can continue using these tools on ronbelisle.com as part of their subscription.
+                    Existing Premium members can continue using these tools (including Save, PDF, AI Explain, and more) on ronbelisle.com as part of their subscription.
                 </p>
             </div>
         </section>
@@ -109,7 +109,7 @@ if ($isLoggedIn) {
                 <h3>Optional: create a free account</h3>
                 <p>
                     No account is required to use these tools. Creating a free login lets you upgrade to Premium,
-                    which unlocks scenario saving, comparisons, and PDF/CSV exports across the full calculator suite.
+                    which unlocks scenario saving, comparisons, PDF/CSV exports, AI Explain, and more across the full calculator suite.
                 </p>
                 <p style="margin-top: 8px;">
                     <a href="../auth/register.php" class="button">Sign up</a>

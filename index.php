@@ -377,7 +377,7 @@ $hide_site_header = isset($_GET['embed'])
             </p>
           <?php else: ?>
             <p class="brand-subtitle">
-              All calculators are free to use—no account needed. <a href="auth/login.php">Log in</a> or <a href="auth/register.php">Sign up</a> for premium features: save scenarios, export PDFs, and compare results across all tools.
+              All calculators are free to use—no account needed. <a href="auth/login.php">Log in</a> or <a href="auth/register.php">Sign up</a> for <a href="#premium">Premium</a> features.
             </p>
           <?php endif; ?>
           <div class="brand-subtitle" style="margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(15,23,42,.35);">
@@ -395,8 +395,8 @@ $hide_site_header = isset($_GET['embed'])
       <div class="premium-banner member">
         <div class="premium-banner-content">
           <div class="premium-banner-text">
-            <h2>✨ You're a Premium Member!</h2>
-            <p>Enjoy unlimited scenario saving and comparing, PDF and CSV exports, and advanced projections across all calculators.</p>
+            <h2>✓ Premium Active</h2>
+            <p>You have full access to all Premium features listed below.</p>
           </div>
           <a href="account.php" class="premium-banner-cta">Manage Account</a>
         </div>
@@ -407,10 +407,11 @@ $hide_site_header = isset($_GET['embed'])
         <div class="premium-banner-content">
           <div class="premium-banner-text">
             <h2>Unlock Premium Features</h2>
-            <p>Save and compare scenarios, export PDF and CSV reports, and access advanced projections.</p>
+            <p>Save and compare scenarios, export PDF and CSV reports, AI-generated plain-language explanations of your specific results, and advanced projections.</p>
             <div class="premium-banner-features">
               <div class="premium-feature-item">Save & Compare Scenarios</div>
               <div class="premium-feature-item">PDF Reports</div>
+              <div class="premium-feature-item">AI Explain</div>
               <div class="premium-feature-item">Advanced Projections</div>
             </div>
           </div>
@@ -563,16 +564,17 @@ $hide_site_header = isset($_GET['embed'])
 
     <?php if (!$isLoggedIn && !$hide_site_header): ?>
       <!-- Premium Promotion for Non-Logged-In Users (after they've seen the calculators) -->
-      <div class="premium-banner">
+      <div class="premium-banner" id="premium">
         <div class="premium-banner-content">
           <div class="premium-banner-text">
             <h2>Professional Planning Tools, Now with Premium Features</h2>
-            <p>All calculators above are free to use. Upgrade to Premium to save and compare scenarios, export PDF and CSV reports, and access advanced projections.</p>
+            <p>All calculators above are free to use. Upgrade to Premium for the following features:</p>
             <div class="premium-banner-features">
-              <div class="premium-feature-item">Save Unlimited Scenarios</div>
-              <div class="premium-feature-item">Export PDF Reports</div>
-              <div class="premium-feature-item">10-20 Year Projections</div>
-              <div class="premium-feature-item">Ad-Free Experience</div>
+              <div class="premium-feature-item">Save and compare scenarios</div>
+              <div class="premium-feature-item">Export PDF and CSV reports</div>
+              <div class="premium-feature-item">AI-generated plain-language explanations of your specific results</div>
+              <div class="premium-feature-item">Advanced projections (10–20 year)</div>
+              <div class="premium-feature-item">Ad-free experience</div>
             </div>
           </div>
           <a href="premium.html" class="premium-banner-cta">Learn More</a>

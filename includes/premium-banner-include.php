@@ -46,12 +46,12 @@
 <!-- Premium User - Show active status -->
 <div class="premium-banner premium-active">
     <h3>✓ Premium Active</h3>
-    <p>You have full access to all premium features including save scenarios, PDF exports, and advanced projections.</p>
+    <p>You have full access to all Premium features listed below.</p>
 </div>
 <?php else: ?>
 <!-- Free User - Invite to premium -->
 <div class="premium-banner coming-soon">
     <h3>✨ Premium Features Available</h3>
-    <p>Save and compare scenarios, export PDF and CSV reports, and access advanced projections. <a href="<?php echo (isset($isLoggedIn) && $isLoggedIn) ? '/subscribe.php' : '/auth/register.php'; ?>" style="color: white; text-decoration: underline; font-weight: 600;"><?php echo (isset($isLoggedIn) && $isLoggedIn) ? 'Upgrade' : 'Sign up'; ?></a> to unlock. Free tools remain free forever.</p>
+    <p>Save and compare scenarios, export PDF and CSV reports, AI-generated plain-language explanations of your specific results, and advanced projections. <a href="<?php echo (isset($isLoggedIn) && $isLoggedIn) ? '/subscribe.php' : '/auth/register.php'; ?>" style="color: white; text-decoration: underline; font-weight: 600;"><?php echo (isset($isLoggedIn) && $isLoggedIn) ? 'Upgrade' : 'Sign up'; ?></a> to unlock. Free tools remain free forever.</p>
 </div>
 <?php endif; ?>

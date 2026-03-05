@@ -782,7 +782,7 @@ function explainResults() {
         alert('Please run "Calculate RMD Impact" first to see results.');
         return;
     }
-    const firstRMD = results.find(r => r.rmdAmount > 0);
+    const firstRMD = results.find(r => r.rmdAmount > 0) || results[results.length - 1];
     const age80Data = results.find(r => r.age === 80) || firstRMD;
     const age90Data = results.find(r => r.age === 90) || age80Data;
     const peakTax = Math.max(...results.map(r => r.taxBracket));
@@ -806,10 +806,11 @@ function explainResults() {
         btn.textContent = 'Loading…';
     }
 
-    fetch('/api/explain_results.php', {
+    const apiUrl = (window.location.origin || '') + '/api/explain_results.php';
+    fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
+        credentials: 'include',
         body: JSON.stringify({
             calculator_type: 'rmd-impact',
             results_summary: summary
