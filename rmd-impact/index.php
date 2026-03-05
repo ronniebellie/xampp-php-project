@@ -20,7 +20,9 @@ if ($isLoggedIn) {
   <?php include("../includes/analytics.php"); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="See how required minimum distributions (RMDs) affect your retirement income and taxes. Model RMD schedules and Roth conversions.">
     <title>RMD Impact Calculator</title>
+    <?php $og_title = $ld_name = 'RMD Impact Calculator'; $og_description = $ld_description = 'See how required minimum distributions (RMDs) affect your retirement income and taxes. Model RMD schedules and Roth conversions.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
     <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>

@@ -21,7 +21,9 @@ if ($isLoggedIn) {
   <?php include("../includes/analytics.php"); ?>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="How much do you need to save for retirement? Use the 4% rule to estimate your nest egg target from desired income and guaranteed sources.">
   <title>How Much Do I Need? Nest Egg Target</title>
+  <?php $og_title = $ld_name = 'How Much Do I Need? Nest Egg Target'; $og_description = $ld_description = 'How much do you need to save for retirement? Use the 4% rule to estimate your nest egg target from desired income and guaranteed sources.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
   <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>

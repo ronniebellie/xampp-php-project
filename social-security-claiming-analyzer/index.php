@@ -20,7 +20,9 @@ if ($isLoggedIn) {
   <?php include("../includes/analytics.php"); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Compare Social Security claiming strategies. See how filing at 62 vs 70 affects lifetime benefits and break-even ages.">
     <title>Social Security Claiming Analyzer</title>
+    <?php $og_title = $ld_name = 'Social Security Claiming Analyzer'; $og_description = $ld_description = 'Compare Social Security claiming strategies. See how filing at 62 vs 70 affects lifetime benefits and break-even ages.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
     <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>

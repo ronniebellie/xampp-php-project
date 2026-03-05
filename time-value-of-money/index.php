@@ -17,9 +17,11 @@ if ($isLoggedIn) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Time Value of Money Calculators</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Time value of money calculators: present value, future value, annuities, loan payments, and interest rates. Finance fundamentals.">
+  <title>Time Value of Money Calculators</title>
+  <?php $og_title = $ld_name = 'Time Value of Money Calculators'; $og_description = $ld_description = 'Time value of money calculators: present value, future value, annuities, loan payments, and interest rates. Finance fundamentals.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
     <link rel="stylesheet" href="/css/styles.css" />
 </head>
 <body>

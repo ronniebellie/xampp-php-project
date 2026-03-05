@@ -70,7 +70,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Calculate loan payment for mortgages, car loans, or any amortizing loan. Monthly payment from principal, rate, and term.">
     <title>Loan Payment</title>
+    <?php $og_title = $ld_name = 'Loan Payment Calculator'; $og_description = $ld_description = 'Calculate loan payment for mortgages, car loans, or any amortizing loan. Monthly payment from principal, rate, and term.'; include(__DIR__ . '/../../includes/og-twitter-meta.php'); include(__DIR__ . '/../../includes/json-ld-softwareapp.php'); ?>
     <link rel="stylesheet" href="/css/styles.css" />
 </head>
 <body>

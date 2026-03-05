@@ -58,7 +58,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Calculate present value of a future amount. Discount future cash flows with compound interest to get today's value.">
     <title>Present Value (Single Amount)</title>
+    <?php $og_title = $ld_name = 'Present Value (Single Amount)'; $og_description = $ld_description = "Calculate present value of a future amount. Discount future cash flows with compound interest to get today's value."; include(__DIR__ . '/../../includes/og-twitter-meta.php'); include(__DIR__ . '/../../includes/json-ld-softwareapp.php'); ?>
     <link rel="stylesheet" href="/css/styles.css" />
 </head>
 <body>

@@ -21,7 +21,9 @@ if ($isLoggedIn) {
   <?php include("../includes/analytics.php"); ?>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Debt vs saving: which comes first? Compare paying off debt vs building emergency fund with different interest rate scenarios.">
   <title>Debt vs Saving: Which First?</title>
+  <?php $og_title = $ld_name = 'Debt vs Saving: Which First?'; $og_description = $ld_description = 'Debt vs saving: which comes first? Compare paying off debt vs building emergency fund with different interest rate scenarios.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
   <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>

@@ -21,7 +21,9 @@ if ($isLoggedIn) {
     <?php include('../includes/analytics.php'); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Compare managed portfolio fees to Vanguard index funds. See how advisory fees and expense ratios add up over time.">
     <title>Managed Portfolio vs Vanguard Index Fund</title>
+    <?php $og_title = $ld_name = 'Managed Portfolio vs Vanguard Index Fund'; $og_description = $ld_description = 'Compare managed portfolio fees to Vanguard index funds. See how advisory fees and expense ratios add up over time.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="styles.css">
 </head>

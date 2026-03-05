@@ -93,7 +93,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Solve for number of periods. How long until you reach a financial goal at a given rate and payment?">
     <title>Number of Periods</title>
+    <?php $ld_name = 'Number of Periods Calculator'; $ld_description = 'Solve for number of periods. How long until you reach a financial goal at a given rate and payment?'; include(__DIR__ . '/../../includes/json-ld-softwareapp.php'); ?>
     <link rel="stylesheet" href="/css/styles.css" />
 </head>
 <body>

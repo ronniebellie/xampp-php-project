@@ -19,7 +19,9 @@ if ($isLoggedIn) {
     <?php include(__DIR__ . '/../includes/analytics.php'); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Estate and legacy planning calculators. Model inherited IRA tax impact and Roth conversions across two generations under the SECURE Act.">
     <title>Estate &amp; Legacy Planning Suite</title>
+    <?php $og_title = $ld_name = 'Estate & Legacy Planning Suite'; $og_description = $ld_description = 'Estate and legacy planning calculators. Model inherited IRA tax impact and Roth conversions across two generations under the SECURE Act.'; include(__DIR__ . '/../../includes/og-twitter-meta.php'); include(__DIR__ . '/../../includes/json-ld-softwareapp.php'); ?>
     <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>

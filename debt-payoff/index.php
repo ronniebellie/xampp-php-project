@@ -21,7 +21,9 @@ if ($isLoggedIn) {
   <?php include("../includes/analytics.php"); ?>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Pay off debt faster. Compare avalanche vs snowball, see payoff timeline, and how extra payments reduce interest and months.">
   <title>Debt Payoff Calculator</title>
+  <?php $og_title = $ld_name = 'Debt Payoff Calculator'; $og_description = $ld_description = 'Pay off debt faster. Compare avalanche vs snowball, see payoff timeline, and how extra payments reduce interest and months.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
   <link rel="stylesheet" href="../css/styles.css">
   <style>
     @media (max-width: 700px) {

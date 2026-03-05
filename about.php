@@ -4,7 +4,9 @@
   <?php include("includes/analytics.php"); ?>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="How calculations are done. Methodology for tax brackets, RMDs, Social Security, and other formulas used in the calculators.">
   <title>About — How calculations are done | Ron Belisle Financial Calculators</title>
+  <?php $og_title = 'About — How calculations are done'; $og_description = 'How calculations are done. Methodology for tax brackets, RMDs, Social Security, and other formulas used in the calculators.'; include(__DIR__ . '/includes/og-twitter-meta.php'); ?>
   <link rel="stylesheet" href="css/styles.css">
   <style>
     .about-content p { margin-bottom: 15px; color: #4a5568; line-height: 1.8; }

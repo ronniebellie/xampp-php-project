@@ -107,7 +107,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Growing Annuity (PV or FV)</title>
+    <meta name="description" content="Solve for interest rate in time value of money. Implied rate from present value, future value, and number of periods.">
+    <title>Interest Rate Solver</title>
+    <?php $ld_name = 'Interest Rate Solver'; $ld_description = 'Solve for interest rate in time value of money. Implied rate from present value, future value, and number of periods.'; include(__DIR__ . '/../../includes/json-ld-softwareapp.php'); ?>
     <link rel="stylesheet" href="/css/styles.css" />
 </head>
 <body>

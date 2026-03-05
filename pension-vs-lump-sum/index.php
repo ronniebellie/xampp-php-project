@@ -17,10 +17,12 @@ if ($isLoggedIn) {
 <html lang="en">
 <head>
   <?php include("../includes/analytics.php"); ?>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pension vs. Lump Sum Calculator</title>
-  <link rel="stylesheet" href="../css/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Compare pension vs lump sum. See break-even age and how many years of payments match the lump sum if invested.">
+    <title>Pension vs. Lump Sum Calculator</title>
+    <?php $og_title = $ld_name = 'Pension vs. Lump Sum Calculator'; $og_description = $ld_description = 'Compare pension vs lump sum. See break-even age and how many years of payments match the lump sum if invested.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
+    <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
 

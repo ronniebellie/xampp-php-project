@@ -37,7 +37,9 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
     <?php include("includes/analytics.php"); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Manage your Ron Belisle account. View subscription, saved scenarios, and premium status.">
     <title>Account Management - Ron Belisle</title>
+    <?php $og_title = 'Account Management - Ron Belisle'; $og_description = 'Manage your Ron Belisle account. View subscription, saved scenarios, and premium status.'; include(__DIR__ . '/includes/og-twitter-meta.php'); ?>
     <link rel="stylesheet" href="css/styles.css">
     <style>
         .account-container {
@@ -113,7 +115,7 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
     <?php if ($is_premium): ?>
     <div class="premium-banner premium-active" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; padding: 20px; text-align: center; margin-bottom: 30px; border-radius: 8px;">
         <h3 style="margin: 0 0 10px 0; font-size: 24px;">✓ Premium Active</h3>
-        <p style="margin: 0; opacity: 0.95;">You have full access to all Premium features listed below.</p>
+        <p style="margin: 0; opacity: 0.95;">You have full access to all Premium features across the site.</p>
     </div>
     <?php else: ?>
     <?php include('includes/premium-banner-include.php'); ?>

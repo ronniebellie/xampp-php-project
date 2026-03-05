@@ -21,7 +21,9 @@ if ($isLoggedIn) {
   <?php include("../includes/analytics.php"); ?>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="See if your 401(k) and IRA are on track for retirement. Enter your balance, contributions, and target to get a projection and suggested savings rate.">
   <title>401(k) / IRA On Track? Calculator</title>
+  <?php $og_title = $ld_name = '401(k) / IRA On Track? Calculator'; $og_description = $ld_description = 'See if your 401(k) and IRA are on track for retirement. Enter your balance, contributions, and target to get a projection and suggested savings rate.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
   <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>

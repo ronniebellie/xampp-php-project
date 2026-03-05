@@ -21,6 +21,12 @@ if ($isLoggedIn) {
 // Hide site header when embedded in calcforadvisors.com demos (white-label preview)
 $hide_site_header = isset($_GET['embed'])
     || (!empty($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'calcforadvisors.com') !== false);
+
+// SEO: homepage
+$seo_title = "Ron Belisle Financial Calculators | Retirement & Planning Tools";
+$seo_description = "Free retirement and financial calculators: 401(k) on track, Roth conversion, Social Security claiming, RMD impact, pension vs lump sum, and more. Plan your retirement with confidence.";
+$seo_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'ronbelisle.com') . '/';
+$seo_site_name = "Ron Belisle Financial Calculators";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -28,7 +34,19 @@ $hide_site_header = isset($_GET['embed'])
   <?php include("includes/analytics.php"); ?>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ron's Homepage</title>
+  <meta name="description" content="<?php echo htmlspecialchars($seo_description); ?>">
+  <title><?php echo htmlspecialchars($seo_title); ?></title>
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="<?php echo htmlspecialchars($seo_url); ?>">
+  <meta property="og:title" content="<?php echo htmlspecialchars($seo_title); ?>">
+  <meta property="og:description" content="<?php echo htmlspecialchars($seo_description); ?>">
+  <meta property="og:site_name" content="<?php echo htmlspecialchars($seo_site_name); ?>">
+  <meta property="og:locale" content="en_US">
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="<?php echo htmlspecialchars($seo_title); ?>">
+  <meta name="twitter:description" content="<?php echo htmlspecialchars($seo_description); ?>">
   <style>
     :root{
       --max: 980px;
@@ -396,7 +414,7 @@ $hide_site_header = isset($_GET['embed'])
         <div class="premium-banner-content">
           <div class="premium-banner-text">
             <h2>✓ Premium Active</h2>
-            <p>You have full access to all Premium features listed below.</p>
+            <p>You have full access to all Premium features across the site.</p>
           </div>
           <a href="account.php" class="premium-banner-cta">Manage Account</a>
         </div>

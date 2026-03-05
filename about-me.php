@@ -21,7 +21,9 @@ if ($isLoggedIn) {
   <?php include __DIR__ . '/includes/analytics.php'; ?>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="About Ron Belisle. Financial calculators for retirement planning, Social Security, Roth conversions, and more.">
   <title>About RB – Ron Belisle Financial Calculators</title>
+  <?php $og_title = 'About RB – Ron Belisle Financial Calculators'; $og_description = 'About Ron Belisle. Financial calculators for retirement planning, Social Security, Roth conversions, and more.'; include(__DIR__ . '/includes/og-twitter-meta.php'); ?>
   <link rel="stylesheet" href="css/styles.css">
   <style>
     .about-wrap { max-width: 680px; margin: 0 auto; padding: 28px 18px 40px; }

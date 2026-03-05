@@ -19,7 +19,9 @@ if ($isLoggedIn) {
     <?php include(__DIR__ . '/../../includes/analytics.php'); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Model inherited IRA tax impact across two generations. Compare no-conversion vs Roth conversion under the SECURE Act 10-year rule.">
     <title>Inherited IRA &amp; Legacy Tax Impact Calculator</title>
+    <?php $og_title = $ld_name = 'Inherited IRA & Legacy Tax Impact Calculator'; $og_description = $ld_description = 'Model inherited IRA tax impact across two generations. Compare no-conversion vs Roth conversion under the SECURE Act 10-year rule.'; include(__DIR__ . '/../../includes/og-twitter-meta.php'); include(__DIR__ . '/../../includes/json-ld-softwareapp.php'); ?>
     <link rel="stylesheet" href="../../css/styles.css">
     <style>
         .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }

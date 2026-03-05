@@ -21,7 +21,9 @@ if ($isLoggedIn) {
   <?php include("../includes/analytics.php"); ?>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Explore retirement trade-offs: retire earlier vs save more, higher spending vs longer work. Model how choices affect your plan.">
   <title>Retirement Trade-Off Explorer</title>
+  <?php $og_title = $ld_name = 'Retirement Trade-Off Explorer'; $og_description = $ld_description = 'Explore retirement trade-offs: retire earlier vs save more, higher spending vs longer work. Model how choices affect your plan.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
   <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>

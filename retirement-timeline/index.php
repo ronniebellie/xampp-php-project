@@ -21,7 +21,9 @@ if ($isLoggedIn) {
   <?php include("../includes/analytics.php"); ?>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Retirement timeline and checklist. Plan key milestones: Medicare, Social Security, RMDs, and financial readiness by age.">
   <title>Retirement Timeline &amp; Checklist</title>
+  <?php $og_title = $ld_name = 'Retirement Timeline & Checklist'; $og_description = $ld_description = 'Retirement timeline and checklist. Plan key milestones: Medicare, Social Security, RMDs, and financial readiness by age.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
   <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>

@@ -20,7 +20,9 @@ if ($isLoggedIn) {
   <?php include("../includes/analytics.php"); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Separate required vs desired spending in retirement. See how much you need for essentials and what's left for discretionary goals.">
     <title>Required vs. Desired Spending Calculator</title>
+    <?php $og_title = $ld_name = 'Required vs. Desired Spending Calculator'; $og_description = $ld_description = "Separate required vs desired spending in retirement. See how much you need for essentials and what's left for discretionary goals."; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
     <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>

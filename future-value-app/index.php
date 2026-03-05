@@ -20,7 +20,9 @@ if ($isLoggedIn) {
   <?php include("../includes/analytics.php"); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Calculate present value, future value, annuities, and required payments. Lump sum growth, monthly savings to goal, and compound interest.">
     <title>Future Value Calculator</title>
+    <?php $og_title = $ld_name = 'Future Value Calculator'; $og_description = $ld_description = 'Calculate present value, future value, annuities, and required payments. Lump sum growth, monthly savings to goal, and compound interest.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
     <link rel="stylesheet" href="../css/styles.css">
     <style>
         .calculator-tabs {

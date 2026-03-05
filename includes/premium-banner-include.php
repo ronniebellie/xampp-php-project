@@ -46,7 +46,7 @@
 <!-- Premium User - Show active status -->
 <div class="premium-banner premium-active">
     <h3>✓ Premium Active</h3>
-    <p>You have full access to all Premium features listed below.</p>
+    <p>You have full access to all Premium features across the site.</p>
 </div>
 <?php else: ?>
 <!-- Free User - Invite to premium -->

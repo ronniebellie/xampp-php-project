@@ -29,7 +29,9 @@ if ($user['subscription_status'] === 'premium') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Subscribe to Premium. Save scenarios, compare plans, export PDF/CSV, and get AI explanations across all calculators.">
     <title>Subscribe to Premium - Ron Belisle Financial Planning</title>
+    <?php $og_title = 'Subscribe to Premium - Ron Belisle Financial Planning'; $og_description = 'Subscribe to Premium. Save scenarios, compare plans, export PDF/CSV, and get AI explanations across all calculators.'; include(__DIR__ . '/includes/og-twitter-meta.php'); ?>
     <link rel="stylesheet" href="css/shared-styles.css">
     <script src="https://js.stripe.com/v3/"></script>
     <style>

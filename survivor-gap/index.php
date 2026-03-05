@@ -19,7 +19,9 @@ if ($isLoggedIn) {
   <?php include("../includes/analytics.php"); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Compare single-life vs joint-life annuity payouts. See the survivor gap cost and how life insurance could fill it for your spouse.">
     <title>Survivor Gap Calculator</title>
+    <?php $og_title = $ld_name = 'Survivor Gap Calculator'; $og_description = $ld_description = 'Compare single-life vs joint-life annuity payouts. See the survivor gap cost and how life insurance could fill it for your spouse.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
     <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>

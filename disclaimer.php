@@ -4,7 +4,9 @@
   <?php include("includes/analytics.php"); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Disclaimer and terms of use for Ron Belisle financial calculators. Educational purposes only, not financial advice.">
     <title>Disclaimer - Ron Belisle Financial Calculators</title>
+    <?php $og_title = 'Disclaimer - Ron Belisle Financial Calculators'; $og_description = 'Disclaimer and terms of use for Ron Belisle financial calculators. Educational purposes only, not financial advice.'; include(__DIR__ . '/includes/og-twitter-meta.php'); ?>
     <link rel="stylesheet" href="css/styles.css">
     <style>
         .disclaimer-page {
