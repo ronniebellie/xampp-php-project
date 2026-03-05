@@ -203,7 +203,8 @@ document.getElementById('onTrackForm').addEventListener('submit', function(e) {
   document.getElementById('results').style.display = 'block';
   document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  window.lastOnTrackResult = result;
+  const summary = '401(k) On Track. Age ' + currentAge + ', retirement age ' + retirementAge + ', ' + years + ' years to retirement. Current balance ' + formatCurrency(currentBalance) + ', annual contribution ' + formatCurrency(annualContribution) + ', expected return ' + expectedReturn + '%. Projected balance at retirement: ' + formatCurrency(result.projected) + '. Target: ' + formatCurrency(targetBalance) + '. ' + (onTrack ? 'On track.' : 'Shortfall: ' + formatCurrency(shortfall) + (result.suggestedContribution ? '. Suggested contribution to be on track: ' + formatCurrency(Math.round(result.suggestedContribution)) + '/year.' : '.'));
+  window.lastOnTrackResult = { result, currentAge, retirementAge, onTrack, shortfall, summary };
 
   // Set share URL so that "Share" actions can reproduce this scenario/results
   const shareEl = document.getElementById('shareResults');
@@ -245,6 +246,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   })();
 
+  const explainBtn = document.getElementById('explainResultsBtnInResults');
+  if (explainBtn) explainBtn.addEventListener('click', explainResults);
+
   if (typeof isPremiumUser === 'undefined' || !isPremiumUser) return;
   const saveBtn = document.getElementById('saveScenarioBtn');
   const loadBtn = document.getElementById('loadScenarioBtn');
@@ -257,3 +261,62 @@ document.addEventListener('DOMContentLoaded', function() {
   if (pdfBtn) pdfBtn.addEventListener('click', function() { alert('PDF export: coming soon.'); });
   if (csvBtn) csvBtn.addEventListener('click', function() { alert('CSV export: coming soon.'); });
 });
+
+function escapeHtml(s) {
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+function explainResults() {
+  const r = window.lastOnTrackResult;
+  if (!r || !r.summary) {
+    alert('Please run the calculation first to see results.');
+    return;
+  }
+  const btn = document.getElementById('explainResultsBtnInResults');
+  const origText = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+  const explainUrl = (window.location.origin || '') + '/api/explain_results.php';
+  fetch(explainUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ calculator_type: '401k-on-track', results_summary: r.summary })
+  })
+  .then(res => res.text())
+  .then(text => {
+    if (btn) { btn.disabled = false; btn.textContent = origText; }
+    let data;
+    try { data = JSON.parse(text); } catch (e) { throw new Error('Server returned an unexpected response. Try logging out and back in.'); }
+    if (data.error) throw new Error(data.error);
+    showExplainModal(data.explanation);
+  })
+  .catch(err => {
+    if (btn) { btn.disabled = false; btn.textContent = origText; }
+    alert('Explain results: ' + err.message);
+  });
+}
+
+function showExplainModal(explanation) {
+  let overlay = document.getElementById('explainResultsModalOverlay');
+  if (overlay) overlay.remove();
+  overlay = document.createElement('div');
+  overlay.id = 'explainResultsModalOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px;';
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:560px;width:100%;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;';
+  box.addEventListener('click', function(e) { e.stopPropagation(); });
+  box.innerHTML = '<div style="padding:24px 24px 16px;">' +
+    '<h2 style="margin:0 0 16px 0;font-size:1.25rem;color:#1f2937;">🤖 AI Explanation</h2>' +
+    '<div style="color:#374151;line-height:1.7;white-space:pre-wrap;overflow-y:auto;max-height:50vh;">' + escapeHtml(explanation) + '</div>' +
+    '</div>' +
+    '<div style="padding:16px 24px;border-top:1px solid #e5e7eb;background:#f9fafb;">' +
+    '<p style="margin:0 0 12px 0;font-size:12px;color:#6b7280;">This is an AI-generated explanation for educational purposes. Not financial or legal advice.</p>' +
+    '<button type="button" id="explainModalCloseBtn" style="padding:10px 24px;border:none;border-radius:8px;background:#0d9488;color:#fff;cursor:pointer;font-weight:600;">Close</button>' +
+    '</div>';
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+  document.getElementById('explainModalCloseBtn').addEventListener('click', function() { overlay.remove(); });
+}

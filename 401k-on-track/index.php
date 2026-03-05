@@ -50,7 +50,7 @@ if ($isLoggedIn) {
     <button type="button" id="downloadCsvBtn" class="btn-primary" style="background: #3182ce; color: white;">📊 CSV</button>
     <span id="saveStatus" style="color: #22543d; font-weight: 600;"></span>
   </div>
-  <p style="margin: 12px 0 0 0; font-size: 13px; color: #4a5568;">Save / Load / Compare / PDF / CSV</p>
+  <p style="margin: 12px 0 0 0; font-size: 13px; color: #4a5568;">Save / Load / Compare / PDF / CSV. <strong>Explain</strong> — AI explains your results in plain language.</p>
 </div>
 <?php endif; ?>
 
@@ -152,6 +152,14 @@ if ($isLoggedIn) {
           </table>
         </div>
       </div>
+
+      <?php if ($isPremium): ?>
+      <div class="explain-results-block" style="margin: 24px 0; padding: 24px; background: #f0fdf4; border: 2px solid #0d9488; border-radius: 12px;">
+        <button type="button" id="explainResultsBtnInResults" class="btn-primary" style="background: #0d9488; color: white; font-size: 16px; padding: 14px 28px; font-weight: 700;">🤖 Explain my results</button>
+        <p style="margin: 12px 0 0 0; font-size: 15px; color: #166534; line-height: 1.5;">Get AI-generated plain-language explanations of your specific results.</p>
+      </div>
+      <?php endif; ?>
+
       <?php $share_title = '401(k) On Track Calculator'; $share_text = 'Check out the 401(k) On Track calculator at ronbelisle.com — see if you\'re on track for retirement.'; include(__DIR__ . '/../includes/share-results-block.php'); ?>
     </div>
 

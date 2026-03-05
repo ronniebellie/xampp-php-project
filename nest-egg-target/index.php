@@ -196,6 +196,13 @@ if ($isLoggedIn) {
         </p>
       </div>
 
+      <?php if ($isPremium): ?>
+      <div class="explain-results-block" style="margin: 24px 0; padding: 24px; background: #f0fdf4; border: 2px solid #0d9488; border-radius: 12px;">
+        <button type="button" id="explainResultsBtnInResults" class="btn-primary" style="background: #0d9488; color: white; font-size: 16px; padding: 14px 28px; font-weight: 700;">🤖 Explain my results</button>
+        <p style="margin: 12px 0 0 0; font-size: 15px; color: #166534; line-height: 1.5;">Get AI-generated plain-language explanations of your specific results.</p>
+      </div>
+      <?php endif; ?>
+
       <?php
         $share_title = 'How Much Do I Need? Nest Egg Target';
         $share_text  = 'Check out the Nest Egg Target calculator at ronbelisle.com — get a rule-of-thumb number for how much to save for retirement.';
