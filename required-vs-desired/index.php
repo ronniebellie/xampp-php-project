@@ -657,14 +657,19 @@ if ($isLoggedIn) {
             fetch(RVD_API_BASE + 'api/explain_results.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
                 body: JSON.stringify({
                     calculator_type: 'required-vs-desired',
                     results_summary: summary
                 })
             })
-            .then(r => r.json())
-            .then(resp => {
+            .then(r => r.text())
+            .then(text => {
                 if (btn) { btn.disabled = false; btn.textContent = origText; }
+                let resp;
+                try { resp = JSON.parse(text); } catch (e) {
+                    throw new Error('Server returned an unexpected response. The AI Explain feature may not be configured on this server, or try logging out and back in.');
+                }
                 if (resp.error) throw new Error(resp.error);
                 showExplainModal(resp.explanation);
             })
