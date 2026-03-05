@@ -92,14 +92,28 @@ if ($isLoggedIn) {
 
         <!-- Calculator Type Tabs -->
         <div class="calculator-tabs">
-            <button class="tab-button active" onclick="switchCalculator('single')">Single Amount</button>
+            <button class="tab-button active" onclick="switchCalculator('guided')">Guided Mode</button>
+            <button class="tab-button" onclick="switchCalculator('single')">Single Amount</button>
             <button class="tab-button" onclick="switchCalculator('target')">Target Future Value</button>
             <button class="tab-button" onclick="switchCalculator('annuity')">Annuity Future Value</button>
-            <button class="tab-button" onclick="switchCalculator('guided')">Guided Mode</button>
+        </div>
+
+        <!-- Guided Calculator (shown first) -->
+        <div id="guided-calculator" class="calculator-content active">
+            <h3>Guided Mode</h3>
+            <div class="info-box-blue">
+                <p><strong>Not sure which calculator to use?</strong> Answer these questions:</p>
+                <ol style="margin-left: 20px; line-height: 1.8;">
+                    <li><strong>Do you have a lump sum today?</strong> → Use <em>Single Amount (FV)</em></li>
+                    <li><strong>Do you need to know what to invest today for a future goal?</strong> → Use <em>Single Amount (PV)</em></li>
+                    <li><strong>Are you making regular monthly contributions?</strong> → Use <em>Annuity Future Value</em></li>
+                    <li><strong>Do you have a specific goal and want to know monthly payments?</strong> → Use <em>Target Future Value</em></li>
+                </ol>
+            </div>
         </div>
 
         <!-- Single Amount Calculator -->
-        <div id="single-calculator" class="calculator-content active">
+        <div id="single-calculator" class="calculator-content">
             <h3>Single Amount (Present Value ⇄ Future Value)</h3>
             <p>Calculate what a lump sum will be worth in the future, or what you need to invest today to reach a future goal.</p>
             
@@ -198,20 +212,6 @@ if ($isLoggedIn) {
                 </div>
             </form>
             <div id="annuityResults" style="display: none;"></div>
-        </div>
-
-        <!-- Guided Calculator -->
-        <div id="guided-calculator" class="calculator-content">
-            <h3>Guided Mode</h3>
-            <div class="info-box-blue">
-                <p><strong>Not sure which calculator to use?</strong> Answer these questions:</p>
-                <ol style="margin-left: 20px; line-height: 1.8;">
-                    <li><strong>Do you have a lump sum today?</strong> → Use <em>Single Amount (FV)</em></li>
-                    <li><strong>Do you need to know what to invest today for a future goal?</strong> → Use <em>Single Amount (PV)</em></li>
-                    <li><strong>Are you making regular monthly contributions?</strong> → Use <em>Annuity Future Value</em></li>
-                    <li><strong>Do you have a specific goal and want to know monthly payments?</strong> → Use <em>Target Future Value</em></li>
-                </ol>
-            </div>
         </div>
 
         <?php $share_title = 'Future Value Calculator'; $share_text = 'Check out the Future Value calculator at ronbelisle.com — present value, future value, annuities, and required payments.'; include(__DIR__ . '/../includes/share-results-block.php'); ?>
