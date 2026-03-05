@@ -42,6 +42,7 @@ if ($isLoggedIn) {
 <?php if ($isPremium): ?>
 <div class="premium-features" style="background: #f0fff4; border: 2px solid #48bb78; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
   <h3 style="margin-top: 0; color: #22543d;">💾 Premium Features</h3>
+  <p style="margin: 0 0 12px 0; font-size: 14px; color: #22543d;">Save / Load — Store and recall scenarios. <strong>Explain</strong> — AI explains your results in plain language.</p>
   <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
     <button type="button" id="saveScenarioBtn" class="btn-primary" style="background: #48bb78;">Save Scenario</button>
     <button type="button" id="loadScenarioBtn" class="btn-secondary">Load Scenario</button>
@@ -108,6 +109,13 @@ if ($isLoggedIn) {
           <canvas id="distributionChart"></canvas>
         </div>
       </div>
+
+      <?php if ($isPremium): ?>
+      <div class="explain-results-block" style="margin: 24px 0; padding: 24px; background: #f0fdf4; border: 2px solid #0d9488; border-radius: 12px;">
+        <button type="button" id="explainResultsBtnInResults" class="btn-primary" style="background: #0d9488; color: white; font-size: 16px; padding: 14px 28px; font-weight: 700;">🤖 Explain my results</button>
+        <p style="margin: 12px 0 0 0; font-size: 15px; color: #166534; line-height: 1.5;">Get AI-generated plain-language explanations of your specific results.</p>
+      </div>
+      <?php endif; ?>
 
       <div class="info-box" style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; margin: 30px 0; border-radius: 8px;">
         <h3 style="color: #92400e; margin-top: 0;">Disclaimer</h3>

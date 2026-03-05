@@ -105,7 +105,7 @@ if ($isLoggedIn) {
                 <div class="opportunity-cost-banner">
                     <div class="cost-label">Total Opportunity Cost Over <span id="resultYears"></span> Years:</div>
                     <div class="cost-amount" id="opportunityCost">$0</div>
-<div class="cost-explanation">This is the amount of money you are loosing by not having your money in a Vanguard index fund</div>                </div>
+<div class="cost-explanation">This is the amount of money you are losing by not having your money in a Vanguard index fund</div>                </div>
 
                 <!-- Comparison Table -->
                 <div class="comparison-table">

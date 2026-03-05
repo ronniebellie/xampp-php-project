@@ -284,6 +284,17 @@ function displayResults(result) {
   const d = r.formData;
   const betterWithConversion = r.savings > 0;
 
+  const summary = 'Inherited IRA Legacy Tax Impact. ' +
+    (betterWithConversion
+      ? 'Converting reduces total tax by about ' + formatCurrency(r.savings) + '. '
+      : 'Converting increases total tax by about ' + formatCurrency(-r.savings) + '. ') +
+    'No conversions total tax (you + heirs): ' + formatCurrency(r.noConv.totalCrossGeneration) + '. ' +
+    'With conversions total tax: ' + formatCurrency(r.withConv.totalCrossGeneration) + '. ' +
+    'Traditional IRA $' + d.traditionalIRA.toLocaleString() + ', Roth $' + d.rothIRA.toLocaleString() + '. ' +
+    'Conversion $' + d.conversionAmount.toLocaleString() + '/yr for ' + d.conversionYears + ' years. ' +
+    d.heirs.length + ' heir(s).';
+  window.lastInheritedIRAResult = { result: r, formData: d, summary };
+
   let html = `
     <div class="info-box ${betterWithConversion ? 'info-box-blue' : ''}" style="margin-bottom: 24px;">
       <h3>Recommendation</h3>
@@ -423,3 +434,70 @@ document.getElementById('inheritedIRAForm').addEventListener('submit', function(
   const result = runAnalysis();
   if (result) displayResults(result);
 });
+
+var explainBtn = document.getElementById('explainResultsBtnInResults');
+if (explainBtn) explainBtn.addEventListener('click', explainResults);
+
+function escapeHtml(s) {
+  var div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+function explainResults() {
+  var r = window.lastInheritedIRAResult;
+  if (!r) {
+    alert('Please run the calculation first to see results.');
+    return;
+  }
+  var summary = r.summary;
+
+  var btn = document.getElementById('explainResultsBtnInResults');
+  var origText = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+
+  var explainUrl = (window.location.origin || '') + '/api/explain_results.php';
+  fetch(explainUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ calculator_type: 'inherited-ira-impact', results_summary: summary })
+  })
+  .then(function(res) { return res.text(); })
+  .then(function(text) {
+    if (btn) { btn.disabled = false; btn.textContent = origText; }
+    var data;
+    try { data = JSON.parse(text); } catch (e) {
+      throw new Error('Server returned an unexpected response. Try logging out and back in.');
+    }
+    if (data.error) throw new Error(data.error);
+    showExplainModal(data.explanation);
+  })
+  .catch(function(err) {
+    if (btn) { btn.disabled = false; btn.textContent = origText; }
+    alert('Explain results: ' + err.message);
+  });
+}
+
+function showExplainModal(explanation) {
+  var overlay = document.getElementById('explainResultsModalOverlay');
+  if (overlay) overlay.remove();
+  overlay = document.createElement('div');
+  overlay.id = 'explainResultsModalOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px;';
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+  var box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:560px;width:100%;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;';
+  box.addEventListener('click', function(e) { e.stopPropagation(); });
+  box.innerHTML = '<div style="padding:24px 24px 16px;">' +
+    '<h2 style="margin:0 0 16px 0;font-size:1.25rem;color:#1f2937;">🤖 AI Explanation</h2>' +
+    '<div style="color:#374151;line-height:1.7;white-space:pre-wrap;overflow-y:auto;max-height:50vh;">' + escapeHtml(explanation) + '</div>' +
+    '</div>' +
+    '<div style="padding:16px 24px;border-top:1px solid #e5e7eb;background:#f9fafb;">' +
+    '<p style="margin:0 0 12px 0;font-size:12px;color:#6b7280;">This is an AI-generated explanation for educational purposes. Not financial or legal advice.</p>' +
+    '<button type="button" id="explainModalCloseBtn" style="padding:10px 24px;border:none;border-radius:8px;background:#0d9488;color:#fff;cursor:pointer;font-weight:600;">Close</button>' +
+    '</div>';
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+  document.getElementById('explainModalCloseBtn').addEventListener('click', function() { overlay.remove(); });
+}
