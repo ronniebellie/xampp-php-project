@@ -83,13 +83,18 @@ switch ($event->type) {
             }
         }
 
-        if (!$priceId || !isCalcforadvisorsPrice($priceId)) {
-            error_log('calcforadvisors webhook: skipping - priceId=' . ($priceId ?? 'null') . ', monthly=' . (defined('CALCFORADVISORS_PRICE_MONTHLY') ? CALCFORADVISORS_PRICE_MONTHLY : 'undef') . ', annual=' . (defined('CALCFORADVISORS_PRICE_ANNUAL') ? CALCFORADVISORS_PRICE_ANNUAL : 'undef'));
+        $isCalcforadvisors = $priceId && isCalcforadvisorsPrice($priceId);
+        if (!$isCalcforadvisors) {
+            $successUrl = $session->success_url ?? '';
+            $isCalcforadvisors = (strpos($successUrl, 'calcforadvisors.com') !== false);
+        }
+        if (!$isCalcforadvisors) {
+            error_log('calcforadvisors webhook: skipping - priceId=' . ($priceId ?? 'null') . ', success_url=' . ($session->success_url ?? ''));
             http_response_code(200);
             exit;
         }
 
-        $plan = planFromPriceId($priceId);
+        $plan = ($priceId && isCalcforadvisorsPrice($priceId)) ? planFromPriceId($priceId) : 'monthly';
         $customerIdStr = is_string($customerId) ? $customerId : ($customerId ?? '');
 
         $stmt = $conn->prepare(
