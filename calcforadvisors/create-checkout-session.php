@@ -9,8 +9,11 @@
  *
  * For sandbox testing, use sk_test_... and pk_test_... in stripe_config.php
  */
-require_once __DIR__ . '/../includes/stripe_config.php';
-require_once __DIR__ . '/../vendor/autoload.php';
+$root = dirname(__DIR__);
+$includes = file_exists($root . '/includes/stripe_config.php') ? $root . '/includes' : $root . '/html/includes';
+$vendor = file_exists($root . '/vendor/autoload.php') ? $root . '/vendor' : $root . '/html/vendor';
+require_once $includes . '/stripe_config.php';
+require_once $vendor . '/autoload.php';
 
 // Plan: monthly or annual
 $plan = $_GET['plan'] ?? 'monthly';

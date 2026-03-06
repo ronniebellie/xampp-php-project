@@ -3,8 +3,11 @@
  * Post-checkout success page for calcforadvisors.
  * Verifies the Stripe session and displays a thank-you message.
  */
-require_once __DIR__ . '/../includes/stripe_config.php';
-require_once __DIR__ . '/../vendor/autoload.php';
+$root = dirname(__DIR__);
+$includes = file_exists($root . '/includes/stripe_config.php') ? $root . '/includes' : $root . '/html/includes';
+$vendor = file_exists($root . '/vendor/autoload.php') ? $root . '/vendor' : $root . '/html/vendor';
+require_once $includes . '/stripe_config.php';
+require_once $vendor . '/autoload.php';
 
 $session_id = $_GET['session_id'] ?? null;
 
