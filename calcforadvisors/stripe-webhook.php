@@ -107,6 +107,26 @@ switch ($event->type) {
         $stmt->close();
         error_log('calcforadvisors webhook: inserted subscriber ' . $email);
 
+        // Send welcome/set-password email
+        if (defined('CALCFORADVISORS_AUTH_SECRET') && CALCFORADVISORS_AUTH_SECRET !== 'replace-with-random-secret-32chars'
+            && defined('CALCFORADVISORS_BASE_URL')) {
+            $expiry = time() + (60 * 60 * 24); // 24 hours
+            $payload = base64_encode($email) . '.' . base64_encode((string)$expiry);
+            $sig = hash_hmac('sha256', $payload, CALCFORADVISORS_AUTH_SECRET);
+            $token = $payload . '.' . $sig;
+            $url = rtrim(CALCFORADVISORS_BASE_URL, '/') . '/set-password.php?token=' . urlencode($token);
+
+            $subject = 'Welcome to calcforadvisors.com – set up your account';
+            $body = "Hi,\n\nThank you for subscribing to calcforadvisors.com. Set your password to access your account, manage billing, and get your white-label calculators:\n\n$url\n\nThis link expires in 24 hours. If you didn't subscribe, you can ignore this email.\n\n— calcforadvisors.com";
+            $headers = "From: noreply@calcforadvisors.com\r\nReply-To: support@calcforadvisors.com\r\nContent-Type: text/plain; charset=UTF-8";
+
+            if (@mail($email, $subject, $body, $headers)) {
+                error_log('calcforadvisors webhook: sent welcome email to ' . $email);
+            } else {
+                error_log('calcforadvisors webhook: failed to send welcome email to ' . $email);
+            }
+        }
+
         break;
 
     case 'customer.subscription.deleted':

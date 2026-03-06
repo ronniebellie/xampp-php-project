@@ -83,8 +83,10 @@ try {
         <?php else: ?>
             <div class="icon">✓</div>
             <h1>Thank you for subscribing</h1>
-            <p>Your calcforadvisors subscription is now active. We'll be in touch shortly to set up your branded calculator suite.</p>
-            <a href="index.html" class="cta">Return to calcforadvisors.com</a>
+            <p>Your calcforadvisors subscription is now active.</p>
+            <p>Set up your account to access your subscriber dashboard, manage billing, and get your white-label calculators.</p>
+            <a href="request-set-password.php" class="cta">Set up your account</a>
+            <p style="margin-top: 16px; font-size: 14px;"><a href="index.html" style="color: #2c5282;">Return to calcforadvisors.com</a></p>
         <?php endif; ?>
     </div>
 </body>
