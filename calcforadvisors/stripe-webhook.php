@@ -65,6 +65,7 @@ switch ($event->type) {
         $email = $session->customer_details->email ?? $session->customer_email ?? '';
 
         if (!$subscriptionId || !$email) {
+            error_log('calcforadvisors webhook: skipping - no subscriptionId or email');
             http_response_code(200);
             exit;
         }
@@ -83,6 +84,7 @@ switch ($event->type) {
         }
 
         if (!$priceId || !isCalcforadvisorsPrice($priceId)) {
+            error_log('calcforadvisors webhook: skipping - priceId=' . ($priceId ?? 'null') . ', monthly=' . (defined('CALCFORADVISORS_PRICE_MONTHLY') ? CALCFORADVISORS_PRICE_MONTHLY : 'undef') . ', annual=' . (defined('CALCFORADVISORS_PRICE_ANNUAL') ? CALCFORADVISORS_PRICE_ANNUAL : 'undef'));
             http_response_code(200);
             exit;
         }
@@ -98,6 +100,7 @@ switch ($event->type) {
         $stmt->bind_param('sssss', $customerIdStr, $subscriptionId, $email, $plan, $status);
         $stmt->execute();
         $stmt->close();
+        error_log('calcforadvisors webhook: inserted subscriber ' . $email);
 
         break;
 
