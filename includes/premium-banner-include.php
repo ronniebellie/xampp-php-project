@@ -42,6 +42,12 @@
 }
 </style>
 
+<?php
+if (!function_exists('get_premium_upsell_url')) {
+    require_once __DIR__ . '/has_premium_access.php';
+}
+$premiumUpsellUrl = get_premium_upsell_url(isset($isLoggedIn) && $isLoggedIn);
+?>
 <?php if (isset($isPremium) && $isPremium): ?>
 <!-- Premium User - Show active status -->
 <div class="premium-banner premium-active">
@@ -52,6 +58,6 @@
 <!-- Free User - Invite to premium -->
 <div class="premium-banner coming-soon">
     <h3>✨ Premium Features Available</h3>
-    <p>Save and compare scenarios, export PDF and CSV reports, AI-generated plain-language explanations of your specific results, and advanced projections. <a href="<?php echo (isset($isLoggedIn) && $isLoggedIn) ? '/subscribe.php' : '/auth/register.php'; ?>" style="color: white; text-decoration: underline; font-weight: 600;"><?php echo (isset($isLoggedIn) && $isLoggedIn) ? 'Upgrade' : 'Sign up'; ?></a> to unlock. Free tools remain free forever.</p>
+    <p>Save and compare scenarios, export PDF and CSV reports, AI-generated plain-language explanations of your specific results, and advanced projections. <a href="<?php echo htmlspecialchars($premiumUpsellUrl); ?>" style="color: white; text-decoration: underline; font-weight: 600;"><?php echo (isset($isLoggedIn) && $isLoggedIn) || !empty($_SESSION['calcforadvisors_subscriber_id']) ? 'Upgrade' : 'Sign up'; ?></a> to unlock. Free tools remain free forever.</p>
 </div>
 <?php endif; ?>

@@ -108,8 +108,9 @@ if ($billingError) {
 
         <div class="card">
             <h2>Resources</h2>
-            <p>Access your white-label calculators and demos from the main site.</p>
-            <a href="index.html#demos" class="btn">View demos</a>
+            <p>Access calculators at ronbelisle.com. Free accounts get core tools only; paid plans include save, export, AI explain, and extended projections.</p>
+            <a href="get-calc-bridge-token.php" class="btn">Access calculators</a>
+            <a href="index.html#samples" class="btn" style="margin-left: 8px; background: transparent; color: #2c5282; border: 2px solid #2c5282;">View demos</a>
         </div>
     </div>
 </body>

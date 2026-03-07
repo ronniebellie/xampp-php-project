@@ -6,21 +6,8 @@ session_start();
 require_once __DIR__ . '/../includes/db_config.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
-if (!isset($_SESSION['user_id'])) {
-    header('Content-Type: application/json');
-    http_response_code(401);
-    die(json_encode(['error' => 'Not logged in']));
-}
-
-$user_id = $_SESSION['user_id'];
-$stmt = $conn->prepare("SELECT subscription_status FROM users WHERE id = ?");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$sub = null;
-$stmt->bind_result($sub);
-$user = $stmt->fetch() ? ['subscription_status' => $sub] : null;
-$stmt->close();
-if (!$user || $user['subscription_status'] !== 'premium') {
+require_once __DIR__ . '/../includes/has_premium_access.php';
+if (!has_premium_access()) {
     header('Content-Type: application/json');
     http_response_code(403);
     die(json_encode(['error' => 'Premium subscription required']));

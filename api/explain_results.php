@@ -24,23 +24,9 @@ if (!defined('OPENAI_API_KEY') || OPENAI_API_KEY === '' || strpos(OPENAI_API_KEY
     die(json_encode(['error' => 'AI Explain feature is not configured on this server']));
 }
 
-// Auth: must be logged in
-if (!isset($_SESSION['user_id'])) {
-    header('Content-Type: application/json');
-    http_response_code(401);
-    die(json_encode(['error' => 'Please log in to use this feature']));
-}
-
-$user_id = (int) $_SESSION['user_id'];
-$stmt = $conn->prepare("SELECT subscription_status FROM users WHERE id = ?");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$sub = null;
-$stmt->bind_result($sub);
-$user = $stmt->fetch() ? ['subscription_status' => $sub] : null;
-$stmt->close();
-
-if (!$user || $user['subscription_status'] !== 'premium') {
+// Auth: must have Premium access (ronbelisle or calcforadvisors paid)
+require_once __DIR__ . '/../includes/has_premium_access.php';
+if (!has_premium_access()) {
     header('Content-Type: application/json');
     http_response_code(403);
     die(json_encode(['error' => 'Premium subscription required to use AI Explain']));
