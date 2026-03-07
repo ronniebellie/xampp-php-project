@@ -1,6 +1,7 @@
 <?php
 /**
- * calcforadvisors subscriber login.
+ * Free sign-up for calcforadvisors (no Stripe).
+ * Creates subscriber with plan='free', no Stripe IDs.
  */
 session_start();
 require_once __DIR__ . '/includes/init.php';
@@ -10,42 +11,60 @@ $error = '';
 $msg = $_GET['msg'] ?? '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = filter_var($_POST['email'] ?? '', FILTER_SANITIZE_EMAIL);
+    $email = filter_var(trim($_POST['email'] ?? ''), FILTER_SANITIZE_EMAIL);
     $password = $_POST['password'] ?? '';
+    $password_confirm = $_POST['password_confirm'] ?? '';
 
-    if (empty($email) || empty($password)) {
-        $error = 'Email and password are required.';
+    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = 'Please enter a valid email address.';
+    } elseif (strlen($password) < 8) {
+        $error = 'Password must be at least 8 characters.';
+    } elseif ($password !== $password_confirm) {
+        $error = 'Passwords do not match.';
     } else {
-        $stmt = $conn->prepare('SELECT id, email, password_hash, plan, status FROM calcforadvisors_subscribers WHERE email = ? AND status = ?');
+        // Check if email already exists
+        $stmt = $conn->prepare('SELECT id, password_hash, stripe_customer_id FROM calcforadvisors_subscribers WHERE email = ? AND status = ?');
         $status = 'active';
         $stmt->bind_param('ss', $email, $status);
         $stmt->execute();
         $result = $stmt->get_result();
 
         if ($result->num_rows >= 1) {
-            $user = $result->fetch_assoc();
-
-            if (empty($user['password_hash'])) {
-                $error = 'Your account is not set up yet. <a href="request-set-password.php">Request a password setup link</a> to get started.';
-            } elseif (password_verify($password, $user['password_hash'])) {
-                $_SESSION['calcforadvisors_subscriber_id'] = $user['id'];
-                $_SESSION['calcforadvisors_subscriber_email'] = $user['email'];
-                $_SESSION['calcforadvisors_subscriber_plan'] = $user['plan'];
-                $_SESSION['calcforadvisors_subscriber_status'] = $user['status'];
-
-                $redirect = $_SESSION['calcforadvisors_redirect_after_login'] ?? 'account.php';
-                unset($_SESSION['calcforadvisors_redirect_after_login']);
-                header('Location: ' . $redirect);
-                exit;
+            $existing = $result->fetch_assoc();
+            $stmt->close();
+            if (!empty($existing['password_hash'])) {
+                $error = 'An account with this email already exists. <a href="login.php">Log in</a> instead.';
             } else {
-                $error = 'Invalid email or password.';
+                $error = 'This email is already registered. <a href="request-set-password.php">Request a password setup link</a> to get started.';
             }
         } else {
-            $error = 'Invalid email or password.';
+            $stmt->close();
+
+            $hash = password_hash($password, PASSWORD_DEFAULT);
+            $plan = 'free';
+
+            $stmt = $conn->prepare('INSERT INTO calcforadvisors_subscribers (email, plan, status, stripe_customer_id, stripe_subscription_id, password_hash) VALUES (?, ?, ?, NULL, NULL, ?)');
+            $stmt->bind_param('ssss', $email, $plan, $status, $hash);
+
+            if ($stmt->execute()) {
+                $newId = (int) $conn->insert_id;
+                $stmt->close();
+                $conn->close();
+
+                $_SESSION['calcforadvisors_subscriber_id'] = $newId;
+                $_SESSION['calcforadvisors_subscriber_email'] = $email;
+                $_SESSION['calcforadvisors_subscriber_plan'] = 'free';
+                $_SESSION['calcforadvisors_subscriber_status'] = 'active';
+
+                header('Location: account.php?msg=welcome');
+                exit;
+            } else {
+                $stmt->close();
+                $error = 'Could not create account. Please try again or contact support.';
+            }
         }
-        $stmt->close();
+        $conn->close();
     }
-    $conn->close();
 }
 ?>
 <!DOCTYPE html>
@@ -53,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log In - calcforadvisors.com</title>
+    <title>Sign Up Free - calcforadvisors.com</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -116,12 +135,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="auth-container">
         <a href="index.html" class="home-link">← Back to calcforadvisors.com</a>
         <div class="logo">
-            <h1>Subscriber Login</h1>
-            <p>Log in to access your account</p>
+            <h1>Sign Up Free</h1>
+            <p>Create an account—no credit card required</p>
         </div>
-        <?php if ($msg === 'password_set'): ?>
-            <div class="message" style="background:#d1fae5;color:#065f46;padding:12px;border-radius:8px;margin-bottom:18px;font-size:14px;">Your password has been set. Log in below.</div>
-        <?php endif; ?>
         <?php if ($error): ?>
             <div class="error"><?php echo $error; ?></div>
         <?php endif; ?>
@@ -132,12 +148,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
+                <input type="password" id="password" name="password" required minlength="8" placeholder="At least 8 characters">
             </div>
-            <button type="submit" class="btn">Log In</button>
+            <div class="form-group">
+                <label for="password_confirm">Confirm Password</label>
+                <input type="password" id="password_confirm" name="password_confirm" required minlength="8">
+            </div>
+            <button type="submit" class="btn">Create Account</button>
         </form>
         <div class="footer-links">
-            First time? <a href="register-free.php">Sign up free</a> · <a href="request-set-password.php">Set up password</a>
+            Already have an account? <a href="login.php">Log in</a>
         </div>
     </div>
 </body>

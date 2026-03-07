@@ -82,6 +82,12 @@ if ($billingError) {
             </nav>
         </header>
 
+        <?php if ($msg === 'welcome'): ?>
+            <div class="message">Welcome! Your free account is ready.</div>
+        <?php endif; ?>
+        <?php if ($msg === 'no_billing'): ?>
+            <div class="message">Billing management is for paid subscribers. <a href="index.html#pricing">Upgrade</a> to manage your subscription.</div>
+        <?php endif; ?>
         <?php if ($billingError): ?>
             <div class="error">Billing error: <?php echo htmlspecialchars($billingError); ?></div>
         <?php endif; ?>
@@ -93,8 +99,10 @@ if ($billingError) {
                 <strong>Plan:</strong> <?php echo htmlspecialchars($sub['plan']); ?><br>
                 <strong>Status:</strong> <span class="status <?php echo $sub['status'] === 'canceled' ? 'canceled' : ''; ?>"><?php echo htmlspecialchars($sub['status']); ?></span>
             </p>
-            <?php if ($sub['status'] === 'active'): ?>
+            <?php if ($sub['status'] === 'active' && $sub['plan'] !== 'free'): ?>
                 <a href="billing-portal.php" class="btn">Manage subscription & billing</a>
+            <?php elseif ($sub['plan'] === 'free'): ?>
+                <a href="index.html#pricing" class="btn">Upgrade to paid</a>
             <?php endif; ?>
         </div>
 
