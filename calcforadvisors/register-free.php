@@ -136,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <a href="index.html" class="home-link">← Back to calcforadvisors.com</a>
         <div class="logo">
             <h1>Sign Up Free</h1>
-            <p>Create an account—no credit card required</p>
+            <p>Try core calculators without Premium features (save, export, extended projections). No credit card required.</p>
         </div>
         <?php if ($error): ?>
             <div class="error"><?php echo $error; ?></div>
