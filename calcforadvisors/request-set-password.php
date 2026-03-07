@@ -25,7 +25,7 @@ if (!defined('CALCFORADVISORS_AUTH_SECRET') || CALCFORADVISORS_AUTH_SECRET === '
         $stmt->execute();
         $result = $stmt->get_result();
 
-        if ($result->num_rows === 1) {
+        if ($result->num_rows >= 1) {
             $user = $result->fetch_assoc();
             $stmt->close();
             error_log('request-set-password: found user ' . $user['email']);
