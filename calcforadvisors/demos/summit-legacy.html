@@ -1,62 +1,332 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sample site: Summit Legacy Advisors | calcforadvisors.com</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { height: 100%; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; flex-direction: column; }
-        .banner-wrap {
-            flex-shrink: 0;
-            max-width: 980px;
-            margin: 0 auto;
-            padding: 0 18px;
-            height: 140px;
-            background: #1a365d;
-            overflow: hidden;
-        }
-        .banner-wrap img {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center;
-        }
-        .back-link {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            z-index: 9999;
-            font-size: 13px;
-            color: #2c5282;
-            background: rgba(255,255,255,0.95);
-            padding: 6px 12px;
-            border-radius: 6px;
-            text-decoration: none;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.15);
-        }
-        .back-link:hover { text-decoration: underline; }
-        .iframe-wrap { flex: 1; min-height: 0; width: 100%; }
-        .iframe-wrap iframe { display: block; width: 100%; height: 100%; border: none; min-height: 500px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <title>Sample site: Summit Legacy Advisors | calcforadvisors.com</title>
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f1f5f9;
+      color: #1e293b;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .hero {
+      width: 100%;
+      background: #1a365d;
+      line-height: 0;
+      font-size: 0;
+    }
+
+    .hero img {
+      display: block;
+      width: 100%;
+      height: auto;
+      vertical-align: top;
+    }
+
+    .intro {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px 24px 28px;
+    }
+
+    .intro-box {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 28px 32px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      font-size: 1.05rem;
+      color: #334155;
+      line-height: 1.75;
+    }
+
+    .intro-box a {
+      color: #0369a1;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .intro-box a:hover {
+      text-decoration: underline;
+    }
+
+    .calculators-section {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 24px 40px;
+    }
+
+    .calculators-section h2 {
+      font-size: 1.55rem;
+      font-weight: 700;
+      color: #0c4a6e;
+      margin-bottom: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    @media (max-width: 860px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 540px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 22px 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .card:hover {
+      box-shadow: 0 4px 14px rgba(3,105,161,0.12);
+      transform: translateY(-2px);
+    }
+
+    .card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #0c4a6e;
+      margin-bottom: 8px;
+      line-height: 1.35;
+    }
+
+    .card p {
+      font-size: 0.9rem;
+      color: #475569;
+      line-height: 1.6;
+      flex: 1;
+      margin-bottom: 12px;
+    }
+
+    .card .click-link {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #0369a1;
+      cursor: default;
+    }
+
+    .demo-note {
+      margin-top: 28px;
+      font-size: 0.82rem;
+      color: #94a3b8;
+      text-align: center;
+      line-height: 1.55;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    footer {
+      text-align: center;
+      padding: 24px 16px 28px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+
+    .skip-back {
+      position: fixed;
+      top: 16px;
+      left: 20px;
+      z-index: 20;
+      display: inline-flex;
+      align-items: center;
+      padding: 10px 16px;
+      background: rgba(0,0,0,.35);
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 8px;
+      backdrop-filter: blur(8px);
+    }
+    .skip-back:hover { background: rgba(0,0,0,.5); color: #fff; }
+
+    .hero-mobile-text {
+      display: none;
+    }
+    @media (max-width: 540px) {
+      .skip-back {
+        position: static;
+        display: block;
+        width: 100%;
+        text-align: center;
+        border-radius: 0;
+        padding: 12px 16px;
+      }
+      .hero {
+        line-height: 1.4;
+        font-size: 1rem;
+      }
+      .hero picture {
+        display: none !important;
+      }
+      .hero-mobile-text {
+        display: block;
+        padding: 32px 24px 36px;
+        text-align: left;
+        line-height: 1.4;
+        font-size: 1rem;
+      }
+      .hero-mobile-text .hero-title {
+        display: block;
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 8px;
+        line-height: 1.25;
+      }
+      .hero-mobile-text .hero-tagline {
+        display: block;
+        font-size: 1rem;
+        color: rgba(255,255,255,0.95);
+        font-weight: 500;
+        line-height: 1.4;
+      }
+    }
+  </style>
 </head>
 <body>
-    <a href="../index.html" class="back-link">← Back to calcforadvisors.com</a>
-    <div class="banner-wrap">
-        <img src="banners/summit-legacy-banner.png" alt="Summit Legacy Advisors">
+
+  <a href="../index.html" class="skip-back">← Back to calcforadvisors.com</a>
+
+  <div class="hero">
+    <div class="hero-mobile-text">
+      <span class="hero-title">Summit Legacy Advisors</span>
+      <span class="hero-tagline">Estate and legacy planning for individuals and families</span>
     </div>
-    <div class="iframe-wrap">
-        <iframe id="calc-iframe" title="Retirement and financial calculators"></iframe>
+    <picture>
+      <img src="banners/summit-legacy-banner.png" alt="Summit Legacy Advisors">
+    </picture>
+  </div>
+
+  <section class="intro">
+    <div class="intro-box">
+      Summit Legacy Advisors offers retirement and estate planning calculators for retirement income, RMDs, Social Security, and legacy planning. Use them on your own or bring your results to your next meeting with us. All tools are free—no account needed. Contact Summit Legacy for more information.
     </div>
-    <script>
-      (function() {
-        var iframe = document.getElementById('calc-iframe');
-        iframe.src = window.location.hostname === 'localhost'
-          ? (window.location.protocol + '//' + window.location.host + '/?embed=1')
-          : 'https://ronbelisle.com/?embed=1';
-      })();
-    </script>
+  </section>
+
+  <section class="calculators-section">
+    <h2>Retirement calculators</h2>
+
+    <div class="grid">
+      <div class="card">
+        <h3>RMD Impact</h3>
+        <p>Estimate how Required Minimum Distributions interact with your portfolio, taxes, and retirement income over time.</p>
+        <span class="click-link">Click here</span>
+      </div>
+
+      <div class="card">
+        <h3>Estate &amp; Legacy Planning Suite</h3>
+        <p>Model inherited IRA taxes under the 10&#8209;year rule, compare Roth conversion strategies across generations, and explore SECURE Act planning tools.</p>
+        <span class="click-link">Click here</span>
+      </div>
+
+      <div class="card">
+        <h3>Managed Portfolio vs Vanguard Index Fund</h3>
+        <p>See the true cost of advisor fees&#8212;including opportunity cost&#8212;compared to low&#8209;cost Vanguard index funds.</p>
+        <span class="click-link">Click here</span>
+      </div>
+
+      <div class="card">
+        <h3>Social Security Claiming Analyzer</h3>
+        <p>Compare claiming ages and see how lifetime Social Security benefits change over time.</p>
+        <span class="click-link">Click here</span>
+      </div>
+
+      <div class="card">
+        <h3>Retirement Timeline &amp; Checklist</h3>
+        <p>Turn your target retirement date into a simple, phased checklist of tasks&#8212;from early prep to your last day at work and first year in retirement.</p>
+        <span class="click-link">Click here</span>
+      </div>
+
+      <div class="card">
+        <h3>Roth Conversion Calculator</h3>
+        <p>Analyze the benefits of converting traditional IRA funds to Roth, considering current vs future tax brackets, RMDs, and Medicare IRMAA thresholds.</p>
+        <span class="click-link">Click here</span>
+      </div>
+
+      <div class="card">
+        <h3>Required vs. Desired Spending</h3>
+        <p>Separate essential expenses from discretionary spending to calculate the minimum portfolio needed for security and the ideal portfolio for your full retirement lifestyle.</p>
+        <span class="click-link">Click here</span>
+      </div>
+
+      <div class="card">
+        <h3>Retirement Spending &amp; On&#8209;Track Checkup</h3>
+        <p>Estimate a retirement budget from your current spending, factor in guaranteed income, and see whether your savings look on track using a simple withdrawal&#8209;rate rule of thumb.</p>
+        <span class="click-link">Click here</span>
+      </div>
+
+      <div class="card">
+        <h3>Future Value Calculator</h3>
+        <p>Calculate present value, future value, annuities, and required payments to reach your financial goals.</p>
+        <span class="click-link">Click here</span>
+      </div>
+
+      <div class="card">
+        <h3>Social Security + Spending Gap</h3>
+        <p>See how Social Security reduces the portfolio you need by identifying your real retirement spending gap.</p>
+        <span class="click-link">Click here</span>
+      </div>
+
+      <div class="card">
+        <h3>Survivor Gap Calculator</h3>
+        <p>Compare single&#8209;life vs joint&#8209;life annuity payouts and see how life insurance could fill the gap for your surviving spouse.</p>
+        <span class="click-link">Click here</span>
+      </div>
+
+      <div class="card">
+        <h3>Debt Payoff Calculator</h3>
+        <p>Pay down debt before retirement&#8212;compare avalanche vs snowball, see payoff timelines, and how extra payments save interest.</p>
+        <span class="click-link">Click here</span>
+      </div>
+
+      <div class="card">
+        <h3>Pension vs. Lump Sum</h3>
+        <p>See how many years it takes for the pension to &#8220;pay back&#8221; the lump sum and how your life expectancy affects the choice.</p>
+        <span class="click-link">Click here</span>
+      </div>
+
+      <div class="card">
+        <h3>Plan Success (Monte Carlo)</h3>
+        <p>See the probability of your portfolio lasting through retirement using random market return simulations.</p>
+        <span class="click-link">Click here</span>
+      </div>
+    </div>
+
+    <p class="demo-note">These example tiles show how your firm&#8217;s branding can sit alongside the calculators your clients would use. &#8220;Click here&#8221; labels are for layout only in this demo.</p>
+  </section>
+
+  <footer>
+    This is a sample layout for demonstration only&#8212;Summit Legacy Advisors is a fictional firm.
+  </footer>
+
 </body>
 </html>
