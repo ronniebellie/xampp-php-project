@@ -3,6 +3,7 @@
  * Free sign-up for calcforadvisors (no Stripe).
  * Creates subscriber with plan='free', no Stripe IDs.
  */
+ob_start();
 session_start();
 require_once __DIR__ . '/includes/init.php';
 require_once CALCFORADVISORS_INCLUDES . '/db_config.php';
@@ -56,9 +57,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['calcforadvisors_subscriber_plan'] = 'free';
                 $_SESSION['calcforadvisors_subscriber_status'] = 'active';
 
+                ob_end_clean();
                 header('Location: account.php?msg=welcome');
                 exit;
             } else {
+                error_log('calcforadvisors register-free INSERT failed: ' . $stmt->error . ' (errno: ' . $stmt->errno . ')');
                 $stmt->close();
                 $error = 'Could not create account. Please try again or contact support.';
             }
