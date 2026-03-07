@@ -28,7 +28,6 @@ if (!defined('CALCFORADVISORS_AUTH_SECRET') || CALCFORADVISORS_AUTH_SECRET === '
         if ($result->num_rows >= 1) {
             $user = $result->fetch_assoc();
             $stmt->close();
-            error_log('request-set-password: found user ' . $user['email']);
 
             $expiry = time() + (60 * 60 * 24); // 24 hours
             $payload = base64_encode($user['email']) . '.' . base64_encode((string)$expiry);
@@ -45,7 +44,6 @@ if (!defined('CALCFORADVISORS_AUTH_SECRET') || CALCFORADVISORS_AUTH_SECRET === '
             $body = "Hi,\n\nClick the link below to set your password and access your calcforadvisors account:\n\n$url\n\nThis link expires in 24 hours. If you didn't request this, you can ignore this email.\n\n— calcforadvisors.com";
 
             $sendOk = send_email_smtp($user['email'], $subject, $body);
-            error_log('request-set-password: send_result=' . ($sendOk ? 'ok' : 'fail') . ' for ' . $user['email']);
             if ($sendOk) {
                 $message = 'If that email is in our system, we\'ve sent you a link to set your password. Check your inbox (and spam folder).';
             } else {
@@ -53,7 +51,6 @@ if (!defined('CALCFORADVISORS_AUTH_SECRET') || CALCFORADVISORS_AUTH_SECRET === '
             }
         } else {
             $stmt->close();
-            error_log('request-set-password: user not found or inactive, email=' . $email);
             // Don't reveal whether the email exists
             $message = 'If that email is in our system, we\'ve sent you a link to set your password. Check your inbox (and spam folder).';
         }
