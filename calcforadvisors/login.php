@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute();
         $result = $stmt->get_result();
 
-        if ($result->num_rows === 1) {
+        if ($result->num_rows >= 1) {
             $user = $result->fetch_assoc();
 
             if (empty($user['password_hash'])) {
