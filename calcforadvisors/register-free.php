@@ -58,6 +58,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt->execute()) {
                 $newId = (int) $conn->insert_id;
                 $stmt->close();
+
+                // One-time token for redirect (works in Safari Private mode when cookies are blocked)
+                $token = bin2hex(random_bytes(24));
+                $expires = date('Y-m-d H:i:s', time() + 300); // 5 min
+                $upd = $conn->prepare('UPDATE calcforadvisors_subscribers SET trial_login_token = ?, trial_login_token_expires = ? WHERE id = ?');
+                $upd->bind_param('ssi', $token, $expires, $newId);
+                $upd->execute();
+                $upd->close();
                 $conn->close();
 
                 $_SESSION['calcforadvisors_subscriber_id'] = $newId;
@@ -66,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['calcforadvisors_subscriber_status'] = 'active';
 
                 ob_end_clean();
-                header('Location: trial-setup.php?msg=welcome');
+                header('Location: trial-setup.php?token=' . urlencode($token) . '&msg=welcome');
                 exit;
             } else {
                 error_log('calcforadvisors register-free INSERT failed: ' . $stmt->error . ' (errno: ' . $stmt->errno . ')');

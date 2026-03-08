@@ -20,9 +20,35 @@ require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/auth_helpers.php';
 require_once CALCFORADVISORS_INCLUDES . '/db_config.php';
 
-calcforadvisors_require_login();
-$sub = calcforadvisors_get_subscriber();
+// One-time token login (Safari Private mode: cookies may be blocked on redirect)
+$token = trim($_GET['token'] ?? '');
+if (!empty($token)) {
+    $stmt = $conn->prepare('SELECT id, email, plan, status FROM calcforadvisors_subscribers WHERE trial_login_token = ? AND trial_login_token_expires > NOW() AND status = ?');
+    $status = 'active';
+    $stmt->bind_param('ss', $token, $status);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    if ($res && $res->num_rows === 1) {
+        $row = $res->fetch_assoc();
+        $stmt->close();
+        $clear = $conn->prepare('UPDATE calcforadvisors_subscribers SET trial_login_token = NULL, trial_login_token_expires = NULL WHERE id = ?');
+        $clear->bind_param('i', $row['id']);
+        $clear->execute();
+        $clear->close();
+        $_SESSION['calcforadvisors_subscriber_id'] = (int) $row['id'];
+        $_SESSION['calcforadvisors_subscriber_email'] = $row['email'];
+        $_SESSION['calcforadvisors_subscriber_plan'] = $row['plan'];
+        $_SESSION['calcforadvisors_subscriber_status'] = $row['status'];
+        // Don't redirect - render page in same request (Safari Private may block cookie on redirect)
+    } else {
+        $stmt->close();
+    }
+}
+if (empty($_SESSION['calcforadvisors_subscriber_id'])) {
+    calcforadvisors_require_login();
+}
 
+$sub = calcforadvisors_get_subscriber();
 if ($sub['plan'] !== 'free') {
     header('Location: account.php');
     exit;
