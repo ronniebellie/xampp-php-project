@@ -10,7 +10,8 @@ if (session_status() === PHP_SESSION_NONE) {
 function calcforadvisors_require_login() {
     if (empty($_SESSION['calcforadvisors_subscriber_id'])) {
         $_SESSION['calcforadvisors_redirect_after_login'] = $_SERVER['REQUEST_URI'] ?? 'account.php';
-        header('Location: login.php');
+        $debug = isset($_GET['debug']) ? '?debug=1' : '';
+        header('Location: login.php' . $debug);
         exit;
     }
 }
