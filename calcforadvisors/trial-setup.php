@@ -3,8 +3,8 @@
  * Trial setup for free subscribers: firm name, logo URL.
  * Generates shareable trial page link (30-day white-label trial).
  */
-// Temporary: surface PHP errors (remove after fixing blank-page issue)
-if (isset($_GET['debug'])) {
+// Surface PHP errors when token present (debugging Safari blank page)
+if (isset($_GET['debug']) || !empty($_GET['token'])) {
     ini_set('display_errors', 1);
     error_reporting(E_ALL);
 }
