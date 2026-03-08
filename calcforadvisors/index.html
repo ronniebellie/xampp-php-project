@@ -177,18 +177,55 @@
             margin-bottom: 30px;
         }
         
-        .pricing-cards {
+        .pricing-trial-row {
+            margin-bottom: 30px;
+        }
+        
+        .pricing-trial-row .pricing-card {
+            max-width: 520px;
+            margin: 0 auto;
+        }
+        
+        .pricing-paid-cards {
             display: flex;
             justify-content: center;
-            gap: 30px;
-            margin-top: 20px;
+            gap: 24px;
             flex-wrap: wrap;
         }
         
+        .pricing-paid-cards .pricing-card {
+            flex: 0 1 260px;
+            max-width: 260px;
+            min-width: 260px;
+            padding: 24px;
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .pricing-paid-cards .pricing-card.featured {
+            border-color: #e2e8f0;
+            box-shadow: none;
+        }
+        
+        .pricing-paid-cards .pricing-card.featured:hover {
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        
+        @media (max-width: 580px) {
+            .pricing-paid-cards .pricing-card {
+                flex: 1 1 100%;
+                max-width: 100%;
+                min-width: 0;
+                min-height: 0;
+            }
+        }
+        
+        .pricing-cards {
+            margin-top: 20px;
+        }
+        
         .pricing-card {
-            flex: 1;
-            max-width: 300px;
-            min-width: 250px;
             padding: 30px;
             border: 2px solid #e2e8f0;
             border-radius: 8px;
@@ -324,7 +361,7 @@
 <body>
     <div class="hero">
         <div class="container">
-            <p style="text-align: right; margin-bottom: 0; font-size: 14px; opacity: 0.9;"><a href="register-free.php" style="color: white; text-decoration: underline;">Sign up free</a> · <a href="login.php" style="color: white; text-decoration: underline;">Log in</a></p>
+            <p style="text-align: right; margin-bottom: 0; font-size: 14px; opacity: 0.9;"><a href="register-free.php" style="color: white; text-decoration: underline;">Try free for 30 days</a> · <a href="login.php" style="color: white; text-decoration: underline;">Log in</a></p>
             <h1>Your Brand. Your Clients. Our Calculators.</h1>
             <p>Offer our premium retirement and financial planning calculators under your own branding—so your clients see you, not a third-party site.</p>
         </div>
@@ -400,7 +437,7 @@
             <p style="text-align: center; margin-bottom: 24px; color: #4a5568;">Sample sites with fictional firm branding and the real Boomers &amp; Gen X calculators. Click to open a live demo.</p>
             <div style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;">
                 <a href="demos/northgate.html" target="_blank" rel="noopener" class="cta-button secondary" style="border-color: #2c5282; color: #2c5282;">Northgate Retirement Planning</a>
-                <a href="demos/summit-legacy.html" target="_blank" rel="noopener" class="cta-button secondary" style="border-color: #2c5282; color: #2c5282;">Summit Legacy Advisors</a>
+                <a href="trial.php?s=93e0c3cf00d114e0" target="_blank" rel="noopener" class="cta-button secondary" style="border-color: #2c5282; color: #2c5282;">Coastal Wealth Retirement Planning</a>
             </div>
             <p style="text-align: center; margin-top: 12px; font-size: 14px; color: #718096;">Sample firms only · not real clients</p>
         </div>
@@ -410,28 +447,30 @@
             <p>Choose monthly or save with annual billing.</p>
             
             <div class="pricing-cards">
-                <div class="pricing-card">
-                    <h3>Free</h3>
-                    <div class="price">$0</div>
-                    <div class="price-sub">forever</div>
-                    <p style="color: #4a5568; margin-bottom: 20px; font-size: 15px;">Try core calculators without Premium features (save scenarios, PDF/CSV export, extended projections, plain English AI explanations). No credit card required.</p>
-                    <a href="register-free.php" class="cta-button secondary" style="border-color: #2c5282; color: #2c5282;">Sign up free</a>
+                <div class="pricing-trial-row">
+                    <div class="pricing-card">
+                        <h3>30-Day Trial</h3>
+                        <div class="price">$0</div>
+                        <div class="price-sub">for 30 days</div>
+                        <p style="color: #4a5568; margin-bottom: 20px; font-size: 15px;">Try the white-label experience free—your logo and firm name on a shareable page with 14 retirement calculators. Core tools without <a href="https://ronbelisle.com/premium.html" target="_blank" rel="noopener">Premium</a> features. No credit card required.</p>
+                        <a href="register-free.php" class="cta-button secondary" style="border-color: #2c5282; color: #2c5282;">Try free for 30 days</a>
+                    </div>
                 </div>
-                <div class="pricing-card">
-                    <h3>Monthly</h3>
-                    <div class="price">$29</div>
-                    <div class="price-sub">per month</div>
-                    <p style="color: #4a5568; margin-bottom: 20px; font-size: 15px;">Cancel anytime. Your branding, full calculator access.</p>
-                    <a href="create-checkout-session.php?plan=monthly" class="cta-button">Subscribe</a>
-                </div>
-
-                <div class="pricing-card featured">
-                    <span class="badge">Best value</span>
-                    <h3>Annual</h3>
-                    <div class="price">$290</div>
-                    <div class="price-sub">per year (save $58)</div>
-                    <p style="color: #4a5568; margin-bottom: 20px; font-size: 15px;">Two months free. Same features, lower cost.</p>
-                    <a href="create-checkout-session.php?plan=annual" class="cta-button">Subscribe</a>
+                <div class="pricing-paid-cards">
+                    <div class="pricing-card">
+                        <h3>Monthly</h3>
+                        <div class="price">$29</div>
+                        <div class="price-sub">per month</div>
+                        <p style="color: #4a5568; margin-bottom: 20px; font-size: 15px;">Cancel anytime. Your branding, full calculator access.</p>
+                        <a href="create-checkout-session.php?plan=monthly" class="cta-button">Subscribe</a>
+                    </div>
+                    <div class="pricing-card">
+                        <h3>Annual</h3>
+                        <div class="price">$290</div>
+                        <div class="price-sub">per year (save $58)</div>
+                        <p style="color: #4a5568; margin-bottom: 20px; font-size: 15px;">Best value. Two months free. Same features, lower cost. Cancel anytime.</p>
+                        <a href="create-checkout-session.php?plan=annual" class="cta-button">Subscribe</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -461,14 +500,14 @@
 
             <div class="faq-item">
                 <h3>How do I get started?</h3>
-                <p><a href="register-free.php">Sign up free</a> to try core calculators without Premium features (save, export, extended projections, plain English AI explanations)—no credit card required. For full access and white-label branding, <a href="#pricing">subscribe</a> to a monthly or annual plan. For pilots or custom setups, <a href="mailto:ronbelisle@gmail.com?subject=calcforadvisors.com%20inquiry">get in touch</a>.</p>
+                <p><a href="register-free.php">Try free for 30 days</a>—your logo, firm name, and a shareable page with 14 retirement calculators. No credit card required. For full access and ongoing white-label branding, <a href="#pricing">subscribe</a> to a monthly or annual plan. For pilots or custom setups, <a href="mailto:ronbelisle@gmail.com?subject=calcforadvisors.com%20inquiry">get in touch</a>.</p>
             </div>
         </div>
 
         <div id="contact" style="text-align: center; padding: 40px 0;">
             <h2 style="margin-bottom: 20px; color: #2c5282;">Ready to Offer These Tools Under Your Brand?</h2>
-            <p style="margin-bottom: 30px; color: #4a5568;">Sign up free to try, subscribe for full access, or get in touch for pilots and custom setups.</p>
-            <a href="register-free.php" class="cta-button secondary" style="border-color: #2c5282; color: #2c5282; margin-right: 12px;">Sign up free</a>
+            <p style="margin-bottom: 30px; color: #4a5568;">Try free for 30 days, subscribe for full access, or get in touch for pilots and custom setups.</p>
+            <a href="register-free.php" class="cta-button secondary" style="border-color: #2c5282; color: #2c5282; margin-right: 12px;">Try free for 30 days</a>
             <a href="mailto:ronbelisle@gmail.com?subject=calcforadvisors.com%20inquiry" class="cta-button">Get in touch</a>
         </div>
     </div>

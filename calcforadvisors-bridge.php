@@ -7,7 +7,7 @@ session_start();
 require_once __DIR__ . '/includes/db_config.php';
 
 $token = $_GET['token'] ?? '';
-$redirect = $_GET['redirect'] ?? '/';
+$redirect = $_GET['redirect'] ?? '/rmd-impact/';
 
 if (empty($token)) {
     header('Location: https://calcforadvisors.com/login.php?msg=bridge_missing');
@@ -60,6 +60,6 @@ $stmt->close();
 $_SESSION['calcforadvisors_subscriber_id'] = $id;
 $_SESSION['calcforadvisors_plan'] = $plan;
 
-$target = (strpos($redirect, '/') === 0) ? $redirect : '/';
+$target = (strpos($redirect, '/') === 0) ? $redirect : '/rmd-impact/';
 header('Location: ' . $target);
 exit;

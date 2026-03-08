@@ -14,6 +14,23 @@ $billingError = $_SESSION['billing_portal_error'] ?? null;
 if ($billingError) {
     unset($_SESSION['billing_portal_error']);
 }
+
+$trialSlug = '';
+$trialUrl = '';
+$trialExpired = false;
+if ($sub['plan'] === 'free') {
+    $stmt = $conn->prepare('SELECT trial_slug, created_at FROM calcforadvisors_subscribers WHERE id = ?');
+    $stmt->bind_param('i', $sub['id']);
+    $stmt->execute();
+    $stmt->bind_result($trialSlug, $createdAt);
+    $stmt->fetch();
+    $stmt->close();
+    $baseUrl = defined('CALCFORADVISORS_BASE_URL') ? CALCFORADVISORS_BASE_URL : 'https://calcforadvisors.com';
+    $trialUrl = $trialSlug ? $baseUrl . '/trial.php?s=' . $trialSlug : '';
+    $created = $createdAt ? strtotime($createdAt) : time();
+    $trialExpired = time() > ($created + (30 * 86400));
+}
+$conn->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -83,10 +100,13 @@ if ($billingError) {
         </header>
 
         <?php if ($msg === 'welcome'): ?>
-            <div class="message">Welcome! Your free account is ready.</div>
+            <div class="message">Welcome! Your 30-day trial has started.</div>
         <?php endif; ?>
         <?php if ($msg === 'no_billing'): ?>
             <div class="message">Billing management is for paid subscribers. <a href="index.html#pricing">Upgrade</a> to manage your subscription.</div>
+        <?php endif; ?>
+        <?php if ($msg === 'trial_updated'): ?>
+            <div class="message">Your trial page has been updated.</div>
         <?php endif; ?>
         <?php if ($billingError): ?>
             <div class="error">Billing error: <?php echo htmlspecialchars($billingError); ?></div>
@@ -106,9 +126,25 @@ if ($billingError) {
             <?php endif; ?>
         </div>
 
+        <?php if ($sub['plan'] === 'free'): ?>
+        <div class="card">
+            <h2>30-Day White-Label Trial</h2>
+            <p>Add your firm name and logo to get a shareable branded page with links to 14 retirement calculators. Valid for 30 days from sign-up.</p>
+            <?php if ($trialExpired): ?>
+                <p style="color: #dc2626; font-weight: 600;">Your trial has ended. Upgrade for ongoing white-label access.</p>
+                <a href="index.html#pricing" class="btn">Upgrade to paid</a>
+            <?php else: ?>
+                <a href="trial-setup.php" class="btn"><?php echo $trialSlug ? 'Manage trial page' : 'Set up trial page'; ?></a>
+                <?php if ($trialUrl): ?>
+                    <p style="margin-top: 16px; font-size: 14px;">Your trial page: <a href="<?php echo htmlspecialchars($trialUrl); ?>" target="_blank" rel="noopener"><?php echo htmlspecialchars($trialUrl); ?></a></p>
+                <?php endif; ?>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
+
         <div class="card">
             <h2>Resources</h2>
-            <p>Access calculators at ronbelisle.com. Free accounts get core tools only; paid plans include save, export, AI explain, and extended projections.</p>
+            <p>Access calculators at ronbelisle.com. Trial accounts get core tools only; paid plans include save, export, AI explain, and extended projections.</p>
             <a href="get-calc-bridge-token.php" class="btn">Access calculators</a>
             <a href="index.html#samples" class="btn" style="margin-left: 8px; background: transparent; color: #2c5282; border: 2px solid #2c5282;">View demos</a>
         </div>

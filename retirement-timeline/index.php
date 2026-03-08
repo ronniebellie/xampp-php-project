@@ -19,9 +19,7 @@ $isPremium = has_premium_access();
 <body>
   <?php include('../includes/premium-banner-include.php'); ?>
   <div class="wrap">
-    <p style="margin-bottom: 20px;">
-      <a href="../" style="text-decoration: none; color: #1d4ed8;">← Return to home page</a>
-    </p>
+    <?php include(__DIR__ . '/../includes/back-link-include.php'); ?>
 
     <header>
       <h1>Retirement Timeline &amp; Checklist</h1>

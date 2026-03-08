@@ -16,6 +16,7 @@ $vendor = file_exists($root . '/vendor/autoload.php') ? $root . '/vendor' : $roo
 
 require_once $includes . '/stripe_config.php';
 require_once $includes . '/db_config.php';
+require_once $includes . '/send_email.php';
 require_once $vendor . '/autoload.php';
 
 \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
@@ -118,9 +119,8 @@ switch ($event->type) {
 
             $subject = 'Welcome to calcforadvisors.com – set up your account';
             $body = "Hi,\n\nThank you for subscribing to calcforadvisors.com. Set your password to access your account, manage billing, and get your white-label calculators:\n\n$url\n\nThis link expires in 24 hours. If you didn't subscribe, you can ignore this email.\n\n— calcforadvisors.com";
-            $headers = "From: noreply@calcforadvisors.com\r\nReply-To: support@calcforadvisors.com\r\nContent-Type: text/plain; charset=UTF-8";
 
-            if (@mail($email, $subject, $body, $headers)) {
+            if (send_email_smtp($email, $subject, $body)) {
                 error_log('calcforadvisors webhook: sent welcome email to ' . $email);
             } else {
                 error_log('calcforadvisors webhook: failed to send welcome email to ' . $email);

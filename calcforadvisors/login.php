@@ -137,7 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button type="submit" class="btn">Log In</button>
         </form>
         <div class="footer-links">
-            First time? <a href="register-free.php">Sign up free</a> · <a href="request-set-password.php">Set up password</a>
+            First time? <a href="register-free.php">Try free for 30 days</a> · <a href="request-set-password.php">Set up password</a>
         </div>
     </div>
 </body>

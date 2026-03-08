@@ -20,9 +20,7 @@ $isPremium = has_premium_access();
     <?php include(__DIR__ . '/../includes/premium-banner-include.php'); ?>
 
     <div class="wrap">
-        <p style="margin-bottom: 20px;">
-            <a href="../" style="text-decoration: none; color: #1d4ed8;">← Back to main calculators</a>
-        </p>
+        <?php $back_link_default_text = '← Back to main calculators'; include(__DIR__ . '/../includes/back-link-include.php'); ?>
 
         <header>
             <h1>Estate &amp; Legacy Planning Suite</h1>

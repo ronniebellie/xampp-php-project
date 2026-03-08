@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['calcforadvisors_subscriber_status'] = 'active';
 
                 ob_end_clean();
-                header('Location: account.php?msg=welcome');
+                header('Location: trial-setup.php?msg=welcome');
                 exit;
             } else {
                 error_log('calcforadvisors register-free INSERT failed: ' . $stmt->error . ' (errno: ' . $stmt->errno . ')');
@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up Free - calcforadvisors.com</title>
+    <title>Try Free for 30 Days - calcforadvisors.com</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -138,8 +138,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="auth-container">
         <a href="index.html" class="home-link">← Back to calcforadvisors.com</a>
         <div class="logo">
-            <h1>Sign Up Free</h1>
-            <p>Try core calculators without Premium features (save, export, extended projections, plain English AI explanations). No credit card required.</p>
+            <h1>Try Free for 30 Days</h1>
+            <p>Your logo and firm name on a shareable page with 14 retirement calculators. Core tools without <a href="https://ronbelisle.com/premium.html" target="_blank" rel="noopener">Premium</a> features. No credit card required.</p>
         </div>
         <?php if ($error): ?>
             <div class="error"><?php echo $error; ?></div>

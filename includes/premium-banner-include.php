@@ -48,16 +48,21 @@ if (!function_exists('get_premium_upsell_url')) {
 }
 $premiumUpsellUrl = get_premium_upsell_url(isset($isLoggedIn) && $isLoggedIn);
 ?>
-<?php if (isset($isPremium) && $isPremium): ?>
+<?php
+$isEmbed = isset($_GET['embed']) && $_GET['embed'];
+if ($isEmbed) {
+    // Don't show Premium banner when embedded in white-label trial/demo
+    echo '<!-- Premium banner hidden in embed mode -->';
+} elseif (isset($isPremium) && $isPremium) { ?>
 <!-- Premium User - Show active status -->
 <div class="premium-banner premium-active">
     <h3>✓ Premium Active</h3>
     <p>You have full access to all Premium features across the site.</p>
 </div>
-<?php else: ?>
+<?php } else { ?>
 <!-- Free User - Invite to premium -->
 <div class="premium-banner coming-soon">
     <h3>✨ Premium Features Available</h3>
     <p>Save and compare scenarios, export PDF and CSV reports, AI-generated plain-language explanations of your specific results, and advanced projections. <a href="<?php echo htmlspecialchars($premiumUpsellUrl); ?>" style="color: white; text-decoration: underline; font-weight: 600;"><?php echo (isset($isLoggedIn) && $isLoggedIn) || !empty($_SESSION['calcforadvisors_subscriber_id']) ? 'Upgrade' : 'Sign up'; ?></a> to unlock. Free tools remain free forever.</p>
 </div>
-<?php endif; ?>
+<?php } ?>
