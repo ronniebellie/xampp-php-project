@@ -28,6 +28,8 @@
 
     .hero {
       width: 100%;
+      aspect-ratio: 2000 / 327;
+      overflow: hidden;
       background: #1a365d;
       line-height: 0;
       font-size: 0;
@@ -36,7 +38,9 @@
     .hero img {
       display: block;
       width: 100%;
-      height: auto;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
       vertical-align: top;
     }
 
@@ -181,6 +185,8 @@
         padding: 12px 16px;
       }
       .hero {
+        aspect-ratio: auto;
+        overflow: visible;
         line-height: 1.4;
         font-size: 1rem;
       }
