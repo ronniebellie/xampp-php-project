@@ -108,7 +108,7 @@ switch ($event->type) {
         $stmt->close();
         error_log('calcforadvisors webhook: inserted subscriber ' . $email);
 
-        // Send welcome/set-password email
+        // Send welcome/set-password email to subscriber
         if (defined('CALCFORADVISORS_AUTH_SECRET') && CALCFORADVISORS_AUTH_SECRET !== 'replace-with-random-secret-32chars'
             && defined('CALCFORADVISORS_BASE_URL')) {
             $expiry = time() + (60 * 60 * 24); // 24 hours
@@ -125,6 +125,21 @@ switch ($event->type) {
             } else {
                 error_log('calcforadvisors webhook: failed to send welcome email to ' . $email);
             }
+        }
+
+        // Notify site owner about new subscription
+        $adminEmail = 'ronbelisle@gmail.com';
+        $adminSubject = 'New calcforadvisors subscription (' . ucfirst($plan) . ')';
+        $adminBody = "A new calcforadvisors subscription was created.\n\n"
+            . "Subscriber email: {$email}\n"
+            . "Plan: {$plan}\n"
+            . "Stripe subscription ID: {$subscriptionId}\n"
+            . "Stripe customer ID: {$customerIdStr}\n"
+            . "Event type: {$event->type}\n"
+            . "Time (UTC): " . gmdate('Y-m-d H:i:s') . "\n";
+
+        if (!send_email_smtp($adminEmail, $adminSubject, $adminBody)) {
+            error_log('calcforadvisors webhook: failed to send admin notification for ' . $email);
         }
 
         break;
