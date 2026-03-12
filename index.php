@@ -1,8 +1,22 @@
 <?php
 session_start();
 
-// Serve jp-business mini-site when using that subdomain
+// Serve jp-business mini-site when using that subdomain (clean URLs: /npv-irr/, /breakeven-profit/)
 if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'jp-business.ronbelisle.com') {
+    $uri = isset($_SERVER['REQUEST_URI']) ? strtok($_SERVER['REQUEST_URI'], '?') : '';
+    $uri = rtrim($uri, '/');
+    if ($uri === '/npv-irr' || $uri === '') {
+        if ($uri === '/npv-irr') {
+            require __DIR__ . '/jp-business.ronbelisle.com/npv-irr/index.php';
+        } else {
+            require __DIR__ . '/jp-business.ronbelisle.com/index.php';
+        }
+        exit;
+    }
+    if ($uri === '/breakeven-profit') {
+        require __DIR__ . '/jp-business.ronbelisle.com/breakeven-profit/index.php';
+        exit;
+    }
     require __DIR__ . '/jp-business.ronbelisle.com/index.php';
     exit;
 }
