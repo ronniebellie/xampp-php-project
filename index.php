@@ -1,5 +1,12 @@
 <?php
 session_start();
+
+// Redirect jp-business subdomain to the dedicated mini-site folder
+if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'jp-business.ronbelisle.com') {
+    header('Location: /jp-business.ronbelisle.com/');
+    exit;
+}
+
 require_once 'includes/db_config.php';
 $isLoggedIn = isset($_SESSION['user_id']);
 $userName = $isLoggedIn ? $_SESSION['user_name'] : '';
