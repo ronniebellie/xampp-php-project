@@ -616,10 +616,15 @@ function compareScenarios() {
         const results1 = calculateProjection(data1);
         const results2 = calculateProjection(data2);
 
-        // Use the first selected scenario as the basis for "Explain my results"
-        // so the AI feature still works after running a comparison.
-        window.lastRMDResult = results1;
-        window.lastRMDData = data1;
+        // Store comparison context for AI explanations in compare mode
+        window.lastRMDCompare = {
+            name1: selected[0].name,
+            name2: selected[1].name,
+            data1,
+            data2,
+            results1,
+            results2
+        };
 
         if (selected.length >= 3) {
             const data3 = scenarioToProjectionData(selected[2]);
@@ -808,28 +813,68 @@ function escapeHtml(s) {
 }
 
 function explainResults() {
-    const results = window.lastRMDResult;
-    const data = window.lastRMDData;
-    if (!results || !data) {
-        alert('Please run "Calculate RMD Impact" first to see results.');
-        return;
-    }
-    const firstRMD = results.find(r => r.rmdAmount > 0) || results[results.length - 1];
-    const age80Data = results.find(r => r.age === 80) || firstRMD;
-    const age90Data = results.find(r => r.age === 90) || age80Data;
-    const peakTax = Math.max(...results.map(r => r.taxBracket));
+    let summary = '';
 
-    let summary = 'RMD Impact Projection.\n\n';
-    summary += 'Current age: ' + data.currentAge + '. Tax-deferred account balance: ' + formatCurrency(data.accountBalance) + '. Expected growth rate: ' + data.growthRate + '%.\n\n';
-    summary += 'Other income: Social Security ' + formatCurrency(data.socialSecurity) + '/year, Pension ' + formatCurrency(data.pension) + '/year, Other ' + formatCurrency(data.otherIncome) + '/year. ';
-    summary += 'Filing status: ' + data.filingStatus + '. ' + (data.useStandardDeduction ? 'Standard deduction.' : 'Itemizing.') + '\n\n';
-    if (data.isSpouseBeneficiary && data.spouseAge) {
-        summary += 'Spouse is sole beneficiary, age ' + data.spouseAge + '. ';
+    // If a recent comparison exists, build a true comparison explanation
+    if (window.lastRMDCompare && window.lastRMDCompare.results1 && window.lastRMDCompare.results2) {
+        const c = window.lastRMDCompare;
+        const r1 = c.results1;
+        const r2 = c.results2;
+        const d1 = c.data1;
+        const d2 = c.data2;
+
+        const first1 = r1.find(r => r.rmdAmount > 0) || r1[r1.length - 1];
+        const first2 = r2.find(r => r.rmdAmount > 0) || r2[r2.length - 1];
+        const age80_1 = r1.find(r => r.age === 80) || first1;
+        const age80_2 = r2.find(r => r.age === 80) || first2;
+        const age90_1 = r1.find(r => r.age === 90) || age80_1;
+        const age90_2 = r2.find(r => r.age === 90) || age80_2;
+        const peakTax1 = Math.max(...r1.map(r => r.taxBracket));
+        const peakTax2 = Math.max(...r2.map(r => r.taxBracket));
+
+        summary += 'RMD Impact Comparison for two scenarios.\n\n';
+        summary += 'Scenario 1 – ' + c.name1 + ': starting balance ' + formatCurrency(d1.accountBalance) +
+                   ', current age ' + d1.currentAge + ', expected growth ' + d1.growthRate + '%. ';
+        summary += 'Scenario 2 – ' + c.name2 + ': starting balance ' + formatCurrency(d2.accountBalance) +
+                   ', current age ' + d2.currentAge + ', expected growth ' + d2.growthRate + '%. ';
+        summary += 'Both scenarios assume Social Security of ' + formatCurrency(d1.socialSecurity) + ' per year and the same tax filing details.\n\n';
+
+        summary += 'At age 73, the first RMD in Scenario 1 is ' + formatCurrency(first1.rmdAmount) +
+                   ' versus ' + formatCurrency(first2.rmdAmount) + ' in Scenario 2. ';
+        summary += 'By age 80 the RMDs grow to ' + formatCurrency(age80_1.rmdAmount) + ' vs ' +
+                   formatCurrency(age80_2.rmdAmount) + ', and by age 90 they reach ' +
+                   formatCurrency(age90_1.rmdAmount) + ' vs ' + formatCurrency(age90_2.rmdAmount) + '. ';
+        summary += 'Peak estimated tax brackets are around ' + peakTax1 + '% for Scenario 1 and ' +
+                   peakTax2 + '% for Scenario 2.\n\n';
+
+        summary += 'In plain terms, the larger-balance scenario produces higher RMDs and slightly higher peak tax brackets, ';
+        summary += 'while the smaller-balance scenario keeps required withdrawals and taxable income lower. ';
+        summary += 'The trade-off is that higher RMDs mean more taxable income but also more money coming out of tax-deferred accounts each year.\n';
+    } else {
+        // Fallback: single-scenario explanation (original behavior)
+        const results = window.lastRMDResult;
+        const data = window.lastRMDData;
+        if (!results || !data) {
+            alert('Please run "Calculate RMD Impact" first to see results.');
+            return;
+        }
+        const firstRMD = results.find(r => r.rmdAmount > 0) || results[results.length - 1];
+        const age80Data = results.find(r => r.age === 80) || firstRMD;
+        const age90Data = results.find(r => r.age === 90) || age80Data;
+        const peakTax = Math.max(...results.map(r => r.taxBracket));
+
+        summary += 'RMD Impact Projection.\n\n';
+        summary += 'Current age: ' + data.currentAge + '. Tax-deferred account balance: ' + formatCurrency(data.accountBalance) + '. Expected growth rate: ' + data.growthRate + '%.\n\n';
+        summary += 'Other income: Social Security ' + formatCurrency(data.socialSecurity) + '/year, Pension ' + formatCurrency(data.pension) + '/year, Other ' + formatCurrency(data.otherIncome) + '/year. ';
+        summary += 'Filing status: ' + data.filingStatus + '. ' + (data.useStandardDeduction ? 'Standard deduction.' : 'Itemizing.') + '\n\n';
+        if (data.isSpouseBeneficiary && data.spouseAge) {
+            summary += 'Spouse is sole beneficiary, age ' + data.spouseAge + '. ';
+        }
+        summary += 'First RMD at age 73: ' + formatCurrency(firstRMD.rmdAmount) + '. ';
+        summary += 'RMD at age 80: ' + formatCurrency(age80Data.rmdAmount) + '. ';
+        summary += 'RMD at age 90: ' + formatCurrency(age90Data.rmdAmount) + '. ';
+        summary += 'Peak estimated tax bracket: ' + peakTax + '%.';
     }
-    summary += 'First RMD at age 73: ' + formatCurrency(firstRMD.rmdAmount) + '. ';
-    summary += 'RMD at age 80: ' + formatCurrency(age80Data.rmdAmount) + '. ';
-    summary += 'RMD at age 90: ' + formatCurrency(age90Data.rmdAmount) + '. ';
-    summary += 'Peak estimated tax bracket: ' + peakTax + '%.';
 
     const btn = document.getElementById('explainResultsBtnInResults');
     const origText = btn ? btn.textContent : '';
