@@ -155,7 +155,7 @@
           <h2>Accounting – Break-even Point and Profit (Cost-Volume-Profit)</h2>
           <p>Find how many units you must sell to break even (no profit, no loss) and see profit or loss at your expected sales. Good for cafés, online shops, and other small business examples.</p>
           <small>Useful for financial accounting and managerial accounting.</small>
-          <a class="button" href="breakeven-profit/">Open calculator</a>
+          <a class="button" href="/jp-business.ronbelisle.com/breakeven-profit/">Open calculator</a>
         </article>
       </div>
     </div>
