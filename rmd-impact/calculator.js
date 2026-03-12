@@ -478,6 +478,20 @@ document.addEventListener('DOMContentLoaded', function() {
     if (explainBtn) explainBtn.addEventListener('click', explainResults);
 });
 
+// Global delegated handler so Explain works even after DOM replacements
+document.addEventListener('click', function (event) {
+    const target = event.target && event.target.closest ? event.target.closest('#explainResultsBtnInResults') : null;
+    if (!target) return;
+    event.preventDefault();
+    try {
+        if (typeof explainResults === 'function') {
+            explainResults();
+        }
+    } catch (e) {
+        console.error('Explain results handler error:', e);
+    }
+});
+
 function saveScenario() {
     const scenarioName = prompt('Enter a name for this scenario:', 'My RMD Plan');
     if (!scenarioName) return;
