@@ -222,7 +222,7 @@
       <h1>Break-even Point and Profit (For Small Business)</h1>
       <p>This calculator shows how many units you need to sell to break even (no profit, no loss).</p>
       <p>It also shows profit or loss at your expected sales volume.</p>
-      <small>Useful for cafés, online shops, and other small businesses.</small>
+      <small>Useful for coffee shops, cafés, online shops, and other small businesses.</small>
     </header>
 
     <div class="info-box">
