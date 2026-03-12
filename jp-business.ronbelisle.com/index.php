@@ -155,21 +155,21 @@
           <h2>Finance – Net Present Value (NPV) and Internal Rate of Return (IRR)</h2>
           <p>Check if an investment project adds value. Enter the cost today and the cash you expect to receive in future years. The calculator shows NPV and IRR in simple language.</p>
           <small>Useful for corporate finance and investment decisions.</small>
-          <a class="button" href="/jp-business.ronbelisle.com/npv-irr/">Open calculator</a>
+          <a class="button" href="npv-irr/">Open calculator</a>
         </article>
 
         <article class="card">
           <h2>Accounting – Break-even Point and Profit (Cost-Volume-Profit)</h2>
           <p>Find how many units you must sell to break even (no profit, no loss) and see profit or loss at your expected sales. Good for cafés, online shops, and other small business examples.</p>
           <small>Useful for financial accounting and managerial accounting.</small>
-          <a class="button" href="/jp-business.ronbelisle.com/breakeven-profit/">Open calculator</a>
+          <a class="button" href="breakeven-profit/">Open calculator</a>
         </article>
 
         <article class="card">
           <h2>Microeconomics – Supply and Demand Equilibrium</h2>
           <p>Find the equilibrium price and quantity where quantity demanded equals quantity supplied. You enter simple linear demand and supply equations; the tool solves the intersection.</p>
           <small>Useful for introductory microeconomics and market analysis.</small>
-          <a class="button" href="/jp-business.ronbelisle.com/supply-demand/">Open calculator</a>
+          <a class="button" href="supply-demand/">Open calculator</a>
         </article>
       </div>
     </div>

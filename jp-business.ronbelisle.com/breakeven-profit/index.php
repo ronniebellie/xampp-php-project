@@ -208,7 +208,7 @@
 </head>
 <body>
   <div class="wrap">
-    <a href="/jp-business.ronbelisle.com/" class="back-link">← Back to Business Calculators for Japanese Students</a>
+    <a href="/" class="back-link">← Back to Business Calculators for Japanese Students</a>
 
     <header>
       <h1>Break-even Point and Profit (For Small Business)</h1>

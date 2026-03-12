@@ -1,9 +1,9 @@
 <?php
 session_start();
 
-// Redirect jp-business subdomain to the dedicated mini-site folder
+// Serve jp-business mini-site when using that subdomain
 if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'jp-business.ronbelisle.com') {
-    header('Location: /jp-business.ronbelisle.com/');
+    require __DIR__ . '/jp-business.ronbelisle.com/index.php';
     exit;
 }
 
