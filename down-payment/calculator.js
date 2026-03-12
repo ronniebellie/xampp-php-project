@@ -1,4 +1,4 @@
-// Down Payment / House Savings Calculator
+// Down Payment / House Savings — live slider updates
 function formatCurrency(amount) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
 }
@@ -36,36 +36,38 @@ function runProjection(target, currentSavings, monthlyContribution, annualRatePe
 let savingsChart = null;
 let progressChart = null;
 
-// If house price and down % are set, update target field
-document.getElementById('housePrice').addEventListener('input', syncTargetFromHouse);
-document.getElementById('downPct').addEventListener('input', syncTargetFromHouse);
-function syncTargetFromHouse() {
+function updateDownPayment() {
   const housePrice = parseFloat(document.getElementById('housePrice').value) || 0;
-  const pct = parseFloat(document.getElementById('downPct').value) || 20;
-  if (housePrice > 0) {
-    document.getElementById('targetAmount').value = Math.round(housePrice * (pct / 100));
-  }
-}
-
-document.getElementById('dpForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  let target = parseFloat(document.getElementById('targetAmount').value) || 0;
-  const housePrice = parseFloat(document.getElementById('housePrice').value) || 0;
-  const downPct = parseFloat(document.getElementById('downPct').value) || 20;
-  if (housePrice > 0) {
-    target = Math.round(housePrice * (downPct / 100));
-    document.getElementById('targetAmount').value = target;
-  }
+  const downPct = parseInt(document.getElementById('downPct').value, 10) || 20;
+  const targetAmount = parseFloat(document.getElementById('targetAmount').value) || 0;
   const currentSavings = parseFloat(document.getElementById('currentSavings').value) || 0;
   const monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value) || 0;
   const interestRate = parseFloat(document.getElementById('interestRate').value) || 0;
 
-  if (target <= 0) {
-    alert('Please enter a target down payment (or house price and down payment %).');
+  const effectiveTarget = housePrice > 0 ? Math.round(housePrice * downPct / 100) : targetAmount;
+
+  document.getElementById('housePriceLabel').textContent = housePrice === 0 ? 'Not set' : formatCurrency(housePrice);
+  document.getElementById('downPctLabel').textContent = downPct + '%';
+  document.getElementById('targetAmountLabel').textContent = formatCurrency(housePrice > 0 ? effectiveTarget : targetAmount);
+  document.getElementById('currentSavingsLabel').textContent = formatCurrency(currentSavings);
+  document.getElementById('monthlyContributionLabel').textContent = formatCurrency(monthlyContribution) + '/mo';
+  document.getElementById('interestRateLabel').textContent = interestRate.toFixed(1) + '%';
+
+  if (effectiveTarget <= 0) {
+    document.getElementById('resultTarget').textContent = formatCurrency(0);
+    document.getElementById('resultMonths').textContent = '—';
+    document.getElementById('resultDate').textContent = '—';
+    document.getElementById('progressMessage').textContent = 'Set a target down payment (or house price and down %) to see your plan.';
+    document.getElementById('progressMessage').style.background = '#fef3c7';
+    document.getElementById('progressMessage').style.color = '#92400e';
+    document.getElementById('tableBody').innerHTML = '';
+    if (savingsChart) { savingsChart.destroy(); savingsChart = null; }
+    if (progressChart) { progressChart.destroy(); progressChart = null; }
+    window.lastDPResult = null;
     return;
   }
 
-  const result = runProjection(target, currentSavings, monthlyContribution, interestRate);
+  const result = runProjection(effectiveTarget, currentSavings, monthlyContribution, interestRate);
 
   document.getElementById('resultTarget').textContent = formatCurrency(result.target);
   if (currentSavings >= result.target) {
@@ -119,35 +121,15 @@ document.getElementById('dpForm').addEventListener('submit', function(e) {
       data: {
         labels,
         datasets: [
-          {
-            label: 'Savings balance',
-            data: balanceData,
-            borderColor: '#059669',
-            backgroundColor: 'rgba(5, 150, 105, 0.15)',
-            borderWidth: 2,
-            tension: 0.2,
-            fill: true
-          },
-          {
-            label: 'Goal',
-            data: labels.map(() => result.target),
-            borderColor: '#dc2626',
-            borderDash: [5, 5],
-            borderWidth: 2,
-            fill: false
-          }
+          { label: 'Savings balance', data: balanceData, borderColor: '#059669', backgroundColor: 'rgba(5, 150, 105, 0.15)', borderWidth: 2, tension: 0.2, fill: true },
+          { label: 'Goal', data: labels.map(() => result.target), borderColor: '#dc2626', borderDash: [5, 5], borderWidth: 2, fill: false }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'top' },
-          tooltip: { callbacks: { label: c => c.dataset.label + ': ' + formatCurrency(c.parsed.y) } }
-        },
-        scales: {
-          y: { beginAtZero: true, ticks: { callback: v => formatCurrency(v) } }
-        }
+        plugins: { legend: { position: 'top' }, tooltip: { callbacks: { label: c => c.dataset.label + ': ' + formatCurrency(c.parsed.y) } } },
+        scales: { y: { beginAtZero: true, ticks: { callback: v => formatCurrency(v) } } }
       }
     });
   }
@@ -159,38 +141,27 @@ document.getElementById('dpForm').addEventListener('submit', function(e) {
       type: 'line',
       data: {
         labels,
-        datasets: [{
-          label: '% of goal',
-          data: pctData,
-          borderColor: '#2563eb',
-          backgroundColor: 'rgba(37, 99, 235, 0.15)',
-          borderWidth: 2,
-          tension: 0.2,
-          fill: true
-        }]
+        datasets: [{ label: '% of goal', data: pctData, borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.15)', borderWidth: 2, tension: 0.2, fill: true }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'top' },
-          tooltip: { callbacks: { label: c => c.dataset.label + ': ' + c.parsed.y.toFixed(1) + '%' } }
-        },
-        scales: {
-          y: { min: 0, max: 100, ticks: { callback: v => v + '%' } }
-        }
+        plugins: { legend: { position: 'top' }, tooltip: { callbacks: { label: c => c.dataset.label + ': ' + c.parsed.y.toFixed(1) + '%' } } },
+        scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' } } }
       }
     });
   }
 
-  document.getElementById('results').style.display = 'block';
-  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
-
   window.lastDPResult = result;
+}
+
+['housePrice', 'downPct', 'targetAmount', 'currentSavings', 'monthlyContribution', 'interestRate'].forEach(function(id) {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', updateDownPayment);
 });
 
-// Premium Save/Load/Compare/PDF/CSV stubs
 document.addEventListener('DOMContentLoaded', function() {
+  updateDownPayment();
   if (typeof isPremiumUser === 'undefined' || !isPremiumUser) return;
   const saveBtn = document.getElementById('saveScenarioBtn');
   const loadBtn = document.getElementById('loadScenarioBtn');

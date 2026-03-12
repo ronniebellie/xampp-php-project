@@ -15,6 +15,16 @@ $isPremium = has_premium_access();
   <title>Down Payment / House Savings Calculator</title>
   <?php $og_title = $ld_name = 'Down Payment / House Savings Calculator'; $og_description = $ld_description = 'Save for a down payment. Calculate monthly savings needed, timeline to reach your target, and impact of interest on your house fund.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
   <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    .slider-row { margin-bottom: 18px; }
+    .slider-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; font-weight: 600; font-size: 14px; }
+    .slider-label span.value { font-weight: 500; color: #4b5563; font-size: 13px; }
+    input[type="range"] { width: 100%; margin: 0; -webkit-appearance: none; background: transparent; }
+    input[type="range"]::-webkit-slider-runnable-track { height: 6px; background: #e5e7eb; border-radius: 999px; }
+    input[type="range"]::-moz-range-track { height: 6px; background: #e5e7eb; border-radius: 999px; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 999px; background: #1d4ed8; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(37,99,235,.5), 0 6px 12px rgba(15,23,42,.15); margin-top: -6px; }
+    input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 999px; background: #1d4ed8; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(37,99,235,.5), 0 6px 12px rgba(15,23,42,.15); }
+  </style>
 </head>
 <body>
   <?php include('../includes/premium-banner-include.php'); ?>
@@ -46,46 +56,42 @@ $isPremium = has_premium_access();
 </div>
 <?php endif; ?>
 
-    <form id="dpForm">
+    <section aria-label="Down payment inputs">
       <h3>Your down payment goal</h3>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin-bottom: 25px;">
-        <div>
-          <label for="targetAmount" style="display: block; margin-bottom: 5px; font-weight: 600;">Target down payment ($)</label>
-          <input type="number" id="targetAmount" min="1000" step="1000" value="60000" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
-          <small style="color: #666;">Amount you want to save for a down payment</small>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px;">
+        <div class="slider-row">
+          <div class="slider-label"><span>House price (optional)</span><span class="value" id="housePriceLabel"></span></div>
+          <input type="range" id="housePrice" min="0" max="600000" step="10000" value="0">
+          <small style="color: #666;">Set to 0 to use target amount below; otherwise target = price × down %</small>
         </div>
-        <div>
-          <label for="housePrice" style="display: block; margin-bottom: 5px; font-weight: 600;">Optional: House price ($)</label>
-          <input type="number" id="housePrice" min="0" step="5000" value="0" placeholder="e.g. 300000" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
-          <small style="color: #666;">Leave 0 to use target amount only</small>
+        <div class="slider-row">
+          <div class="slider-label"><span>Down payment %</span><span class="value" id="downPctLabel"></span></div>
+          <input type="range" id="downPct" min="5" max="30" step="1" value="20">
+          <small style="color: #666;">Used when house price &gt; 0</small>
         </div>
-        <div>
-          <label for="downPct" style="display: block; margin-bottom: 5px; font-weight: 600;">Down payment %</label>
-          <input type="number" id="downPct" min="0" max="100" step="1" value="20" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
-          <small style="color: #666;">If house price set, target = price × this %</small>
+        <div class="slider-row">
+          <div class="slider-label"><span>Target down payment</span><span class="value" id="targetAmountLabel"></span></div>
+          <input type="range" id="targetAmount" min="10000" max="200000" step="1000" value="60000">
+          <small style="color: #666;">Used when house price is 0; otherwise computed from price × down %</small>
         </div>
-        <div>
-          <label for="currentSavings" style="display: block; margin-bottom: 5px; font-weight: 600;">Current savings ($)</label>
-          <input type="number" id="currentSavings" min="0" step="500" value="10000" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div class="slider-row">
+          <div class="slider-label"><span>Current savings</span><span class="value" id="currentSavingsLabel"></span></div>
+          <input type="range" id="currentSavings" min="0" max="100000" step="1000" value="10000">
         </div>
-        <div>
-          <label for="monthlyContribution" style="display: block; margin-bottom: 5px; font-weight: 600;">Monthly contribution ($)</label>
-          <input type="number" id="monthlyContribution" min="0" step="25" value="800" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div class="slider-row">
+          <div class="slider-label"><span>Monthly contribution</span><span class="value" id="monthlyContributionLabel"></span></div>
+          <input type="range" id="monthlyContribution" min="0" max="3000" step="50" value="800">
           <small style="color: #666;">Amount you can add each month</small>
         </div>
-        <div>
-          <label for="interestRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Savings interest rate (% per year)</label>
-          <input type="number" id="interestRate" min="0" max="20" step="0.1" value="4.5" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div class="slider-row">
+          <div class="slider-label"><span>Savings interest rate (% per year)</span><span class="value" id="interestRateLabel"></span></div>
+          <input type="range" id="interestRate" min="0" max="10" step="0.1" value="4.5">
           <small style="color: #666;">e.g. high-yield savings ~4–5%</small>
         </div>
       </div>
+    </section>
 
-      <div style="text-align: center; margin: 30px 0;">
-        <button type="submit" class="button" style="font-size: 1.1em; padding: 12px 30px;">Calculate</button>
-      </div>
-    </form>
-
-    <div id="results" style="display: none;">
+    <div id="results">
       <h2>Your down payment plan</h2>
       <div class="summary-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 20px 0;">
         <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 12px; padding: 16px;">
