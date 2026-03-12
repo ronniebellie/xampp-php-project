@@ -99,6 +99,14 @@
       font-weight: 600;
       color: #111827;
     }
+    select.currency-select {
+      width: 100%;
+      padding: 9px 10px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
+      background-color: #ffffff;
+    }
     input[type="number"] {
       width: 100%;
       padding: 9px 10px;
@@ -223,22 +231,30 @@
     </div>
 
     <h2>Step 1 – Enter your numbers</h2>
-    <p class="hint">Use yen (¥) or any currency. The examples below use yen.</p>
+    <p class="hint">Choose your currency and enter the numbers. The examples below use yen.</p>
 
     <form id="cvpForm">
       <div class="grid">
         <div>
-          <label for="pricePerUnit">Selling price per unit (¥)</label>
+          <label for="currencySymbol">Currency</label>
+          <select id="currencySymbol" class="currency-select">
+            <option value="¥" selected>¥ (yen)</option>
+            <option value="$">$ (dollars)</option>
+          </select>
+          <small class="help">This symbol will be used in all money results.</small>
+        </div>
+        <div>
+          <label for="pricePerUnit">Selling price per unit</label>
           <input type="number" id="pricePerUnit" min="0" step="1" value="500">
           <small class="help">Example: You sell one drink for ¥500.</small>
         </div>
         <div>
-          <label for="variableCostPerUnit">Variable cost per unit (¥)</label>
+          <label for="variableCostPerUnit">Variable cost per unit</label>
           <input type="number" id="variableCostPerUnit" min="0" step="1" value="200">
           <small class="help">Example: Ingredients and cup cost ¥200 per drink.</small>
         </div>
         <div>
-          <label for="fixedCosts">Total fixed costs per month (¥)</label>
+          <label for="fixedCosts">Total fixed costs per month</label>
           <input type="number" id="fixedCosts" min="0" step="1000" value="300000">
           <small class="help">Example: Rent, salary, and utilities are ¥300,000 per month.</small>
         </div>
@@ -316,15 +332,16 @@
   </div>
 
   <script>
-    function formatCurrencyYen(value) {
+    function formatCurrency(value, symbol) {
       if (!isFinite(value)) return '—';
       const rounded = Math.round(value);
-      return '¥' + rounded.toLocaleString('en-US');
+      return symbol + rounded.toLocaleString('en-US');
     }
 
     document.getElementById('cvpForm').addEventListener('submit', function (e) {
       e.preventDefault();
 
+      const symbol = document.getElementById('currencySymbol').value || '¥';
       const price = parseFloat(document.getElementById('pricePerUnit').value) || 0;
       const variable = parseFloat(document.getElementById('variableCostPerUnit').value) || 0;
       const fixed = parseFloat(document.getElementById('fixedCosts').value) || 0;
@@ -349,18 +366,18 @@
       const variableTotal = variable * expectedUnits;
       const profit = revenueExpected - variableTotal - fixed;
 
-      document.getElementById('resultContribution').textContent = formatCurrencyYen(contribution);
+      document.getElementById('resultContribution').textContent = formatCurrency(contribution, symbol);
       document.getElementById('resultCmRatio').textContent = isFinite(cmRatio) ? (cmRatio * 100).toFixed(1) + '%' : '—';
 
       if (beUnits !== null && isFinite(beUnits)) {
         document.getElementById('resultBeUnits').textContent = beUnits.toFixed(1) + ' units';
-        document.getElementById('resultBeSales').textContent = formatCurrencyYen(beSales);
+        document.getElementById('resultBeSales').textContent = formatCurrency(beSales, symbol);
       } else {
         document.getElementById('resultBeUnits').textContent = '—';
         document.getElementById('resultBeSales').textContent = '—';
       }
 
-      document.getElementById('resultProfit').textContent = formatCurrencyYen(profit);
+      document.getElementById('resultProfit').textContent = formatCurrency(profit, symbol);
       const noteEl = document.getElementById('resultProfitNote');
       if (profit > 0) {
         noteEl.textContent = 'Positive number means profit at your expected sales level.';
