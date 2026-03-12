@@ -15,6 +15,16 @@ $isPremium = has_premium_access();
   <title>Emergency Fund Builder</title>
   <?php $og_title = $ld_name = 'Emergency Fund Builder'; $og_description = $ld_description = 'Build your emergency fund. Calculate how many months of expenses to save and how long to reach your target.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
   <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    .slider-row { margin-bottom: 18px; }
+    .slider-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; font-weight: 600; font-size: 14px; }
+    .slider-label span.value { font-weight: 500; color: #4b5563; font-size: 13px; }
+    input[type="range"] { width: 100%; margin: 0; -webkit-appearance: none; background: transparent; }
+    input[type="range"]::-webkit-slider-runnable-track { height: 6px; background: #e5e7eb; border-radius: 999px; }
+    input[type="range"]::-moz-range-track { height: 6px; background: #e5e7eb; border-radius: 999px; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 999px; background: #1d4ed8; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(37,99,235,.5), 0 6px 12px rgba(15,23,42,.15); margin-top: -6px; }
+    input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 999px; background: #1d4ed8; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(37,99,235,.5), 0 6px 12px rgba(15,23,42,.15); }
+  </style>
 </head>
 <body>
   <?php include('../includes/premium-banner-include.php'); ?>
@@ -46,46 +56,37 @@ $isPremium = has_premium_access();
 </div>
 <?php endif; ?>
 
-    <form id="efForm">
+    <section aria-label="Emergency fund inputs">
       <h3>Your situation</h3>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin-bottom: 25px;">
-        <div>
-          <label for="monthlyExpenses" style="display: block; margin-bottom: 5px; font-weight: 600;">Monthly essential expenses ($)</label>
-          <input type="number" id="monthlyExpenses" min="100" step="50" value="4000" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px;">
+        <div class="slider-row">
+          <div class="slider-label"><span>Monthly essential expenses</span><span class="value" id="monthlyExpensesLabel"></span></div>
+          <input type="range" id="monthlyExpenses" min="500" max="10000" step="100" value="4000">
           <small style="color: #666;">Rent, utilities, food, insurance, minimum debt payments</small>
         </div>
-        <div>
-          <label for="targetMonths" style="display: block; margin-bottom: 5px; font-weight: 600;">Target (months of expenses)</label>
-          <select id="targetMonths" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
-            <option value="3">3 months</option>
-            <option value="4">4 months</option>
-            <option value="5">5 months</option>
-            <option value="6" selected>6 months</option>
-          </select>
+        <div class="slider-row">
+          <div class="slider-label"><span>Target (months of expenses)</span><span class="value" id="targetMonthsLabel"></span></div>
+          <input type="range" id="targetMonths" min="3" max="12" step="1" value="6">
           <small style="color: #666;">Common goal: 3–6 months</small>
         </div>
-        <div>
-          <label for="currentSavings" style="display: block; margin-bottom: 5px; font-weight: 600;">Current emergency savings ($)</label>
-          <input type="number" id="currentSavings" min="0" step="100" value="2000" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div class="slider-row">
+          <div class="slider-label"><span>Current emergency savings</span><span class="value" id="currentSavingsLabel"></span></div>
+          <input type="range" id="currentSavings" min="0" max="50000" step="500" value="2000">
         </div>
-        <div>
-          <label for="monthlyContribution" style="display: block; margin-bottom: 5px; font-weight: 600;">Monthly contribution ($)</label>
-          <input type="number" id="monthlyContribution" min="0" step="25" value="400" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div class="slider-row">
+          <div class="slider-label"><span>Monthly contribution</span><span class="value" id="monthlyContributionLabel"></span></div>
+          <input type="range" id="monthlyContribution" min="0" max="2000" step="25" value="400">
           <small style="color: #666;">Amount you can add each month</small>
         </div>
-        <div>
-          <label for="interestRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Savings interest rate (% per year)</label>
-          <input type="number" id="interestRate" min="0" max="20" step="0.1" value="4.5" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div class="slider-row">
+          <div class="slider-label"><span>Savings interest rate (% per year)</span><span class="value" id="interestRateLabel"></span></div>
+          <input type="range" id="interestRate" min="0" max="10" step="0.1" value="4.5">
           <small style="color: #666;">e.g. high-yield savings ~4–5%</small>
         </div>
       </div>
+    </section>
 
-      <div style="text-align: center; margin: 30px 0;">
-        <button type="submit" class="button" style="font-size: 1.1em; padding: 12px 30px;">Calculate</button>
-      </div>
-    </form>
-
-    <div id="results" style="display: none;">
+    <div id="results">
       <h2>Your emergency fund plan</h2>
       <div class="summary-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 20px 0;">
         <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 12px; padding: 16px;">

@@ -1,4 +1,4 @@
-// Emergency Fund Builder
+// Emergency Fund Builder — live slider updates
 function formatCurrency(amount) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
 }
@@ -38,18 +38,18 @@ function runProjection(monthlyExpenses, targetMonths, currentSavings, monthlyCon
 let savingsChart = null;
 let progressChart = null;
 
-document.getElementById('efForm').addEventListener('submit', function(e) {
-  e.preventDefault();
+function updateEmergencyFund() {
   const monthlyExpenses = parseFloat(document.getElementById('monthlyExpenses').value) || 0;
   const targetMonths = parseInt(document.getElementById('targetMonths').value, 10) || 6;
   const currentSavings = parseFloat(document.getElementById('currentSavings').value) || 0;
   const monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value) || 0;
   const interestRate = parseFloat(document.getElementById('interestRate').value) || 0;
 
-  if (monthlyExpenses <= 0) {
-    alert('Please enter your monthly essential expenses.');
-    return;
-  }
+  document.getElementById('monthlyExpensesLabel').textContent = formatCurrency(monthlyExpenses);
+  document.getElementById('targetMonthsLabel').textContent = targetMonths + ' months';
+  document.getElementById('currentSavingsLabel').textContent = formatCurrency(currentSavings);
+  document.getElementById('monthlyContributionLabel').textContent = formatCurrency(monthlyContribution) + '/mo';
+  document.getElementById('interestRateLabel').textContent = interestRate.toFixed(1) + '%';
 
   const result = runProjection(monthlyExpenses, targetMonths, currentSavings, monthlyContribution, interestRate);
 
@@ -66,7 +66,11 @@ document.getElementById('efForm').addEventListener('submit', function(e) {
   }
 
   const progressEl = document.getElementById('progressMessage');
-  if (currentSavings >= result.target) {
+  if (result.target <= 0) {
+    progressEl.textContent = 'Set monthly expenses above $0 to see your target and timeline.';
+    progressEl.style.background = '#fef3c7';
+    progressEl.style.color = '#92400e';
+  } else if (currentSavings >= result.target) {
     progressEl.textContent = 'You\'ve already reached your emergency fund goal. Great job! Consider increasing your target (e.g. 9–12 months) if you want a larger cushion.';
     progressEl.style.background = '#f0fdf4';
     progressEl.style.color = '#166534';
@@ -86,7 +90,7 @@ document.getElementById('efForm').addEventListener('submit', function(e) {
 
   const tbody = document.getElementById('tableBody');
   tbody.innerHTML = '';
-  const tableRows = result.schedule.length ? result.schedule.slice(0, 24) : [{ month: 0, balance: currentSavings, interest: 0, contribution: 0, pct: 100 }];
+  const tableRows = result.schedule.length ? result.schedule.slice(0, 24) : [{ month: 0, balance: currentSavings, interest: 0, contribution: 0, pct: result.target > 0 ? (currentSavings / result.target) * 100 : 0 }];
   tableRows.forEach(row => {
     const tr = document.createElement('tr');
     tr.innerHTML = '<td>' + row.month + '</td><td>' + formatCurrency(row.balance) + '</td><td>' + formatCurrency(row.interest) + '</td><td>' + formatCurrency(row.contribution) + '</td><td>' + row.pct.toFixed(1) + '%</td>';
@@ -95,7 +99,7 @@ document.getElementById('efForm').addEventListener('submit', function(e) {
 
   const labels = result.schedule.length ? [0].concat(result.schedule.map(r => r.month)) : [0];
   const balanceData = result.schedule.length ? [currentSavings].concat(result.schedule.map(r => r.balance)) : [currentSavings];
-  const pctData = result.schedule.length ? [Math.min(100, (currentSavings / result.target) * 100)].concat(result.schedule.map(r => r.pct)) : [Math.min(100, (currentSavings / result.target) * 100)];
+  const pctData = result.schedule.length ? [Math.min(100, result.target > 0 ? (currentSavings / result.target) * 100 : 0)].concat(result.schedule.map(r => r.pct)) : [result.target > 0 ? Math.min(100, (currentSavings / result.target) * 100) : 0];
 
   if (savingsChart) savingsChart.destroy();
   const ctx1 = document.getElementById('savingsChart');
@@ -129,7 +133,7 @@ document.getElementById('efForm').addEventListener('submit', function(e) {
         maintainAspectRatio: false,
         plugins: {
           legend: { position: 'top' },
-          tooltip: { callbacks: { label: c => c.dataset.label + ': ' + (c.dataset.label === 'Goal' ? formatCurrency(c.parsed.y) : formatCurrency(c.parsed.y)) } }
+          tooltip: { callbacks: { label: c => c.dataset.label + ': ' + formatCurrency(c.parsed.y) } }
         },
         scales: {
           y: { beginAtZero: true, ticks: { callback: v => formatCurrency(v) } }
@@ -169,8 +173,12 @@ document.getElementById('efForm').addEventListener('submit', function(e) {
     });
   }
 
-  document.getElementById('results').style.display = 'block';
-  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
-
   window.lastEFResult = result;
+}
+
+['monthlyExpenses', 'targetMonths', 'currentSavings', 'monthlyContribution', 'interestRate'].forEach(function(id) {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', updateEmergencyFund);
 });
+
+document.addEventListener('DOMContentLoaded', updateEmergencyFund);
