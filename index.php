@@ -566,6 +566,12 @@ $seo_site_name = "Ron Belisle Financial Calculators";
       </section>
 
       <section class="card">
+        <h3>The Power of Compound Interest</h3>
+        <p>Play with starting amount, monthly contributions, years, and return to see how compounding drives long-term growth.</p>
+        <a class="btn" href="compound-interest/">Open</a>
+      </section>
+
+      <section class="card">
         <h3>How Much Do I Need? Nest Egg Target</h3>
         <p>Get a rule-of-thumb target for how much to have saved by retirement. Enter the income you want, subtract Social Security and pensions, and see the nest egg you’re aiming for.</p>
         <a class="btn" href="nest-egg-target/">Open</a>
