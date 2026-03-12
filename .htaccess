@@ -1,0 +1,6 @@
+# Send jp-business subdomain clean URLs to index.php so PHP can route to the right calculator
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{HTTP_HOST} ^jp-business\.ronbelisle\.com$ [NC]
+RewriteRule ^(npv-irr|breakeven-profit)/?$ index.php [L]
+</IfModule>
