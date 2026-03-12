@@ -601,6 +601,12 @@ function compareScenarios() {
         const data2 = scenarioToProjectionData(selected[1]);
         const results1 = calculateProjection(data1);
         const results2 = calculateProjection(data2);
+
+        // Use the first selected scenario as the basis for "Explain my results"
+        // so the AI feature still works after running a comparison.
+        window.lastRMDResult = results1;
+        window.lastRMDData = data1;
+
         if (selected.length >= 3) {
             const data3 = scenarioToProjectionData(selected[2]);
             const results3 = calculateProjection(data3);
@@ -709,6 +715,12 @@ function showComparison(name1, name2, results1, results2, data1, data2) {
     `;
     
     document.getElementById('comparisonTable').innerHTML = tableHTML;
+
+    // Re-bind Explain button because innerHTML replacement recreates the DOM node
+    const explainBtn = document.getElementById('explainResultsBtnInResults');
+    if (explainBtn) {
+        explainBtn.addEventListener('click', explainResults);
+    }
 }
 
 function showComparisonThree(name1, name2, name3, results1, results2, results3, data1, data2, data3) {
@@ -767,6 +779,12 @@ function showComparisonThree(name1, name2, name3, results1, results2, results3, 
     `;
     const el = document.getElementById('comparisonTableThree');
     if (el) el.innerHTML = tableHTML;
+
+    // Re-bind Explain button after DOM replacement in three-scenario comparison
+    const explainBtn = document.getElementById('explainResultsBtnInResults');
+    if (explainBtn) {
+        explainBtn.addEventListener('click', explainResults);
+    }
 }
 
 function escapeHtml(s) {

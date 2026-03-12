@@ -625,6 +625,12 @@ function showComparisonSS(name1, name2, r1, r2) {
     `;
     resultsDiv.innerHTML = comparisonHTML + resultsDiv.innerHTML;
     resultsDiv.scrollIntoView({ behavior: 'smooth' });
+
+    // Re-bind Explain button because innerHTML replacement recreates the DOM node
+    const explainBtn = document.getElementById('explainResultsBtnInResults');
+    if (explainBtn) {
+        explainBtn.addEventListener('click', explainResults);
+    }
 }
 
 function downloadPDF() {

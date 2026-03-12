@@ -807,6 +807,12 @@ function showRothComparison(name1, name2, result1, result2, data1, data2) {
         </div>
     `;
     resultsContent.innerHTML = comparisonHTML + resultsContent.innerHTML;
+
+    // Re-bind Explain button because innerHTML replacement recreates the DOM node
+    const explainBtn = document.getElementById('explainResultsBtnInResults');
+    if (explainBtn) {
+        explainBtn.addEventListener('click', explainResults);
+    }
 }
 
 function downloadPDF() {

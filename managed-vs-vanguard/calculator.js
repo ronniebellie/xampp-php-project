@@ -564,6 +564,12 @@ function showMVComparison(name1, name2, m1, m2, v1, v2, d1, d2, opp1, opp2) {
     `;
     const existingContent = resultsDiv.innerHTML;
     resultsDiv.innerHTML = comparisonHTML + existingContent;
+
+    // Re-bind Explain button because innerHTML replacement recreates the DOM node
+    const explainBtn = document.getElementById('explainResultsBtnInResults');
+    if (explainBtn) {
+        explainBtn.addEventListener('click', explainResults);
+    }
 }
 
 function escapeHtml(s) {
