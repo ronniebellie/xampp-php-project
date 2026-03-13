@@ -65,8 +65,8 @@ $isPremium = has_premium_access();
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Years until retirement</span><span class="value" id="yearsToRetirementLabel"></span></div>
-          <input type="range" id="yearsToRetirement" min="5" max="40" step="1" value="25">
-          <small style="color: #666;">We’ll show the implied retirement age below</small>
+          <input type="range" id="yearsToRetirement" min="0" max="40" step="1" value="25">
+          <small style="color: #666;">Set to 0 if you’re already retired. We’ll show the implied retirement age below.</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Current 401(k) + IRA balance</span><span class="value" id="currentBalanceLabel"></span></div>
