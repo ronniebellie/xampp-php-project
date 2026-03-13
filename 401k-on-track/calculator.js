@@ -86,6 +86,15 @@ function updateOnTrack() {
   const annualContribution = parseFloat(document.getElementById('annualContribution').value) || 0;
   const expectedReturn = parseFloat(document.getElementById('expectedReturn').value) || 6;
   let targetBalance = parseFloat(document.getElementById('targetBalance').value) || 0;
+
+  const currentBalanceLabelEl = document.getElementById('currentBalanceLabel');
+  if (currentBalanceLabelEl) currentBalanceLabelEl.textContent = formatCurrency(currentBalance);
+  const annualContributionLabelEl = document.getElementById('annualContributionLabel');
+  if (annualContributionLabelEl) annualContributionLabelEl.textContent = formatCurrency(annualContribution) + '/yr';
+  const expectedReturnLabelEl = document.getElementById('expectedReturnLabel');
+  if (expectedReturnLabelEl) expectedReturnLabelEl.textContent = expectedReturn.toFixed(2).replace(/\.00$/, '') + '%';
+  const targetBalanceLabelEl = document.getElementById('targetBalanceLabel');
+  if (targetBalanceLabelEl) targetBalanceLabelEl.textContent = formatCurrency(targetBalance);
   const desiredIncome = parseFloat(document.getElementById('desiredIncome').value) || 0;
   const withdrawalRate = parseFloat(document.getElementById('withdrawalRate').value) || 4;
   if (desiredIncome > 0 && withdrawalRate > 0) {
