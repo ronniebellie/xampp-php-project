@@ -70,10 +70,10 @@ document.getElementById('setTargetFromIncome').addEventListener('click', functio
   }
   const target = Math.round(income / (rate / 100));
   document.getElementById('targetBalance').value = target;
+  updateOnTrack();
 });
 
-document.getElementById('onTrackForm').addEventListener('submit', function(e) {
-  e.preventDefault();
+function updateOnTrack() {
   const currentAge = parseInt(document.getElementById('currentAge').value, 10) || 40;
   const retirementAge = parseInt(document.getElementById('retirementAge').value, 10) || 65;
   let years = Math.max(0, retirementAge - currentAge);
@@ -92,7 +92,9 @@ document.getElementById('onTrackForm').addEventListener('submit', function(e) {
     document.getElementById('targetBalance').value = targetBalance;
   }
   if (targetBalance <= 0) {
-    alert('Please enter a target balance (or desired income + withdrawal rate).');
+    document.getElementById('progressMessage').textContent = 'Set a target balance (or desired income and withdrawal rate) to see whether you are on track.';
+    document.getElementById('progressMessage').style.background = '#fef3c7';
+    document.getElementById('progressMessage').style.color = '#92400e';
     return;
   }
 
@@ -200,7 +202,6 @@ document.getElementById('onTrackForm').addEventListener('submit', function(e) {
     });
   }
 
-  document.getElementById('results').style.display = 'block';
   document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   const summary = '401(k) On Track. Age ' + currentAge + ', retirement age ' + retirementAge + ', ' + years + ' years to retirement. Current balance ' + formatCurrency(currentBalance) + ', annual contribution ' + formatCurrency(annualContribution) + ', expected return ' + expectedReturn + '%. Projected balance at retirement: ' + formatCurrency(result.projected) + '. Target: ' + formatCurrency(targetBalance) + '. ' + (onTrack ? 'On track.' : 'Shortfall: ' + formatCurrency(shortfall) + (result.suggestedContribution ? '. Suggested contribution to be on track: ' + formatCurrency(Math.round(result.suggestedContribution)) + '/year.' : '.'));
@@ -212,11 +213,15 @@ document.getElementById('onTrackForm').addEventListener('submit', function(e) {
     const url = buildShareUrlFromOnTrackForm();
     shareEl.setAttribute('data-share-url', url);
   }
+}
+
+['currentAge', 'retirementAge', 'currentBalance', 'annualContribution', 'expectedReturn', 'targetBalance'].forEach(function(id) {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', updateOnTrack);
 });
 
 // Premium stubs + load-from-URL for sharing results
 document.addEventListener('DOMContentLoaded', function() {
-  // If URL contains scenario parameters, pre-fill the form and auto-run the calculation
   (function applyScenarioFromUrl() {
     const params = new URLSearchParams(window.location.search || '');
     if (!params.has('currentAge') && !params.has('currentBalance')) return;
@@ -239,12 +244,13 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     if (any) {
-      const form = document.getElementById('onTrackForm');
-      if (form) {
-        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-      }
+      updateOnTrack();
     }
   })();
+
+  if (!window.location.search) {
+    updateOnTrack();
+  }
 
   const explainBtn = document.getElementById('explainResultsBtnInResults');
   if (explainBtn) explainBtn.addEventListener('click', explainResults);

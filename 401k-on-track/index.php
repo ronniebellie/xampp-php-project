@@ -15,6 +15,16 @@ $isPremium = has_premium_access();
   <title>401(k) / IRA On Track? Calculator</title>
   <?php $og_title = $ld_name = '401(k) / IRA On Track? Calculator'; $og_description = $ld_description = 'See if your 401(k) and IRA are on track for retirement. Enter your balance, contributions, and target to get a projection and suggested savings rate.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
   <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    .slider-row { margin-bottom: 18px; }
+    .slider-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; font-weight: 600; font-size: 14px; }
+    .slider-label span.value { font-weight: 500; color: #4b5563; font-size: 13px; }
+    input[type="range"] { width: 100%; margin: 0; -webkit-appearance: none; background: transparent; }
+    input[type="range"]::-webkit-slider-runnable-track { height: 6px; background: #e5e7eb; border-radius: 999px; }
+    input[type="range"]::-moz-range-track { height: 6px; background: #e5e7eb; border-radius: 999px; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 999px; background: #1d4ed8; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(37,99,235,.5), 0 6px 12px rgba(15,23,42,.15); margin-top: -6px; }
+    input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 999px; background: #1d4ed8; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(37,99,235,.5), 0 6px 12px rgba(15,23,42,.15); }
+  </style>
 </head>
 <body>
   <?php include('../includes/premium-banner-include.php'); ?>
@@ -48,33 +58,33 @@ $isPremium = has_premium_access();
 
     <form id="onTrackForm">
       <h3>Your situation</h3>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin-bottom: 25px;">
-        <div>
-          <label for="currentAge" style="display: block; margin-bottom: 5px; font-weight: 600;">Current age</label>
-          <input type="number" id="currentAge" min="18" max="80" step="1" value="40" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-bottom: 25px;">
+        <div class="slider-row">
+          <div class="slider-label"><span>Current age</span><span class="value" id="currentAgeLabel"></span></div>
+          <input type="range" id="currentAge" min="25" max="60" step="1" value="40">
         </div>
-        <div>
-          <label for="retirementAge" style="display: block; margin-bottom: 5px; font-weight: 600;">Target retirement age</label>
-          <input type="number" id="retirementAge" min="22" max="100" step="1" value="65" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div class="slider-row">
+          <div class="slider-label"><span>Target retirement age</span><span class="value" id="retirementAgeLabel"></span></div>
+          <input type="range" id="retirementAge" min="55" max="75" step="1" value="65">
           <small style="color: #666;">When you plan to stop contributing and start drawing</small>
         </div>
-        <div>
-          <label for="currentBalance" style="display: block; margin-bottom: 5px; font-weight: 600;">Current 401(k) + IRA balance ($)</label>
-          <input type="number" id="currentBalance" min="0" step="1000" value="150000" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div class="slider-row">
+          <div class="slider-label"><span>Current 401(k) + IRA balance</span><span class="value" id="currentBalanceLabel"></span></div>
+          <input type="range" id="currentBalance" min="0" max="2000000" step="10000" value="150000">
         </div>
-        <div>
-          <label for="annualContribution" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual contribution ($)</label>
-          <input type="number" id="annualContribution" min="0" step="500" value="12000" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div class="slider-row">
+          <div class="slider-label"><span>Annual contribution</span><span class="value" id="annualContributionLabel"></span></div>
+          <input type="range" id="annualContribution" min="0" max="60000" step="1000" value="12000">
           <small style="color: #666;">Total you add per year (employer match included)</small>
         </div>
-        <div>
-          <label for="expectedReturn" style="display: block; margin-bottom: 5px; font-weight: 600;">Expected annual return (%)</label>
-          <input type="number" id="expectedReturn" min="0" max="20" step="0.5" value="6" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div class="slider-row">
+          <div class="slider-label"><span>Expected annual return</span><span class="value" id="expectedReturnLabel"></span></div>
+          <input type="range" id="expectedReturn" min="0" max="12" step="0.25" value="6">
           <small style="color: #666;">Long-term average; many use 5–7% real return</small>
         </div>
-        <div>
-          <label for="targetBalance" style="display: block; margin-bottom: 5px; font-weight: 600;">Target balance at retirement ($)</label>
-          <input type="number" id="targetBalance" min="0" step="50000" value="1000000" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div class="slider-row">
+          <div class="slider-label"><span>Target balance at retirement</span><span class="value" id="targetBalanceLabel"></span></div>
+          <input type="range" id="targetBalance" min="250000" max="5000000" step="50000" value="1000000">
           <small style="color: #666;">Or set from income below</small>
         </div>
       </div>
@@ -94,12 +104,9 @@ $isPremium = has_premium_access();
         </div>
       </div>
 
-      <div style="text-align: center; margin: 30px 0;">
-        <button type="submit" class="button" style="font-size: 1.1em; padding: 12px 30px;">Am I on track?</button>
-      </div>
     </form>
 
-    <div id="results" style="display: none;">
+    <div id="results">
       <h2>Your projection</h2>
       <div class="summary-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 20px 0;">
         <div style="background: #eff6ff; border: 1px solid #93c5fd; border-radius: 12px; padding: 16px;">
