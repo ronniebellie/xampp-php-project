@@ -1,7 +1,6 @@
 (function () {
   'use strict';
 
-  const form = document.getElementById('planForm');
   const resultsEl = document.getElementById('results');
   const summaryBox = document.getElementById('summaryBox');
 
@@ -15,14 +14,42 @@
   }
 
   var LIMITS = {
-    portfolio: { min: 0, max: 500000000 },
-    withdrawal: { min: 0, max: 5000000 },
+    portfolio: { min: 50000, max: 5000000 },
+    withdrawal: { min: 10000, max: 500000 },
     years: { min: 5, max: 50 },
     expectedReturn: { min: 0, max: 20 },
     volatility: { min: 0, max: 50 },
     simulations: { min: 100, max: 10000 },
     inflationRate: { min: 0, max: 10 }
   };
+
+  function fmtCurrency(n) {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0, minimumFractionDigits: 0 }).format(n);
+  }
+
+  function updateLabels() {
+    var portfolio = parseFloat(document.getElementById('portfolio').value);
+    var withdrawal = parseFloat(document.getElementById('withdrawal').value);
+    var inflationRatePct = parseFloat(document.getElementById('inflationRate').value);
+    var years = parseInt(document.getElementById('years').value, 10);
+    var expectedReturnPct = parseFloat(document.getElementById('expectedReturn').value);
+    var volatilityPct = parseFloat(document.getElementById('volatility').value);
+    var numSims = parseInt(document.getElementById('simulations').value, 10);
+    var portfolioLabel = document.getElementById('portfolioLabel');
+    var withdrawalLabel = document.getElementById('withdrawalLabel');
+    var inflationRateLabel = document.getElementById('inflationRateLabel');
+    var yearsLabel = document.getElementById('yearsLabel');
+    var expectedReturnLabel = document.getElementById('expectedReturnLabel');
+    var volatilityLabel = document.getElementById('volatilityLabel');
+    var simulationsLabel = document.getElementById('simulationsLabel');
+    if (portfolioLabel) portfolioLabel.textContent = isNaN(portfolio) ? '' : fmtCurrency(portfolio);
+    if (withdrawalLabel) withdrawalLabel.textContent = isNaN(withdrawal) ? '' : fmtCurrency(withdrawal);
+    if (inflationRateLabel) inflationRateLabel.textContent = isNaN(inflationRatePct) ? '' : inflationRatePct.toFixed(1) + '%';
+    if (yearsLabel) yearsLabel.textContent = isNaN(years) ? '' : years + ' yrs';
+    if (expectedReturnLabel) expectedReturnLabel.textContent = isNaN(expectedReturnPct) ? '' : expectedReturnPct.toFixed(2).replace(/\.00$/, '') + '%';
+    if (volatilityLabel) volatilityLabel.textContent = isNaN(volatilityPct) ? '' : volatilityPct.toFixed(1) + '%';
+    if (simulationsLabel) simulationsLabel.textContent = isNaN(numSims) ? '' : numSims.toLocaleString() + ' sims';
+  }
 
   function validateInputs() {
     var portfolio = parseFloat(document.getElementById('portfolio').value);
@@ -33,8 +60,8 @@
     var numSims = parseInt(document.getElementById('simulations').value, 10);
     var inflationRatePct = parseFloat(document.getElementById('inflationRate').value);
     var err = [];
-    if (isNaN(portfolio) || portfolio < LIMITS.portfolio.min || portfolio > LIMITS.portfolio.max) err.push('Starting portfolio: $0 to $500,000,000');
-    if (isNaN(withdrawal) || withdrawal < LIMITS.withdrawal.min || withdrawal > LIMITS.withdrawal.max) err.push('Annual withdrawal: $0 to $5,000,000');
+    if (isNaN(portfolio) || portfolio < LIMITS.portfolio.min || portfolio > LIMITS.portfolio.max) err.push('Starting portfolio: $50,000 to $5,000,000');
+    if (isNaN(withdrawal) || withdrawal < LIMITS.withdrawal.min || withdrawal > LIMITS.withdrawal.max) err.push('Annual withdrawal: $10,000 to $500,000');
     if (isNaN(years) || years < LIMITS.years.min || years > LIMITS.years.max) err.push('Years to model: 5 to 50');
     if (isNaN(expectedReturnPct) || expectedReturnPct < LIMITS.expectedReturn.min || expectedReturnPct > LIMITS.expectedReturn.max) err.push('Expected return: 0% to 20%');
     if (isNaN(volatilityPct) || volatilityPct < LIMITS.volatility.min || volatilityPct > LIMITS.volatility.max) err.push('Volatility: 0% to 50%');
@@ -43,7 +70,7 @@
     return { err: err, portfolio: portfolio, withdrawal: withdrawal, years: years, expectedReturnPct: expectedReturnPct, volatilityPct: volatilityPct, numSims: numSims, inflationRatePct: inflationRatePct };
   }
 
-  function runMonteCarlo() {
+  function runMonteCarlo(shouldScroll) {
     var validationEl = document.getElementById('validationError');
     var v = validateInputs();
     if (v.err.length > 0) {
@@ -109,7 +136,7 @@
     var p75 = percentile(endingBalances, 75);
 
     function fmt(n) {
-      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0, minimumFractionDigits: 0 }).format(n);
+      return fmtCurrency(n);
     }
 
     summaryBox.innerHTML =
@@ -154,7 +181,9 @@
     };
 
     resultsEl.style.display = 'block';
-    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (shouldScroll) {
+      resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   var chartInstance = null;
@@ -202,10 +231,26 @@
     });
   }
 
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    runMonteCarlo();
+  var runBtn = document.getElementById('runMonteCarloBtn');
+  if (runBtn) runBtn.addEventListener('click', function () { runMonteCarlo(true); });
+
+  var inputIds = ['portfolio', 'withdrawal', 'inflationRate', 'years', 'expectedReturn', 'volatility', 'simulations'];
+  var runTimeout = null;
+  function scheduleRun() {
+    updateLabels();
+    if (runTimeout) clearTimeout(runTimeout);
+    runTimeout = setTimeout(function () {
+      runTimeout = null;
+      runMonteCarlo(false);
+    }, 400);
+  }
+  inputIds.forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('input', scheduleRun);
   });
+
+  updateLabels();
+  runMonteCarlo(false);
 
   var saveBtn = document.getElementById('saveScenarioBtn');
   var loadBtn = document.getElementById('loadScenarioBtn');

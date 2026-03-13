@@ -15,6 +15,16 @@ $isPremium = has_premium_access();
   <title>Plan Success (Monte Carlo) | Ron Belisle Financial Calculators</title>
   <?php $og_title = $ld_name = 'Plan Success (Monte Carlo)'; $og_description = $ld_description = 'Monte Carlo retirement calculator. See the probability your portfolio lasts through retirement with thousands of market simulations.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
   <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    .slider-row { margin-bottom: 18px; }
+    .slider-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; font-weight: 600; font-size: 14px; }
+    .slider-label span.value { font-weight: 500; color: #4b5563; font-size: 13px; }
+    input[type="range"] { width: 100%; margin: 0; -webkit-appearance: none; background: transparent; }
+    input[type="range"]::-webkit-slider-runnable-track { height: 6px; background: #e5e7eb; border-radius: 999px; }
+    input[type="range"]::-moz-range-track { height: 6px; background: #e5e7eb; border-radius: 999px; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 999px; background: #1d4ed8; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(37,99,235,.5), 0 6px 12px rgba(15,23,42,.15); margin-top: -6px; }
+    input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 999px; background: #1d4ed8; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(37,99,235,.5), 0 6px 12px rgba(15,23,42,.15); }
+  </style>
 </head>
 <body>
 
@@ -45,51 +55,51 @@ $isPremium = has_premium_access();
 </div>
 <?php endif; ?>
 
-    <form id="planForm">
+    <div id="planForm">
       <h3>Your Plan</h3>
       <div id="validationError" role="alert" style="display: none; margin-bottom: 15px; padding: 12px 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #b91c1c; font-size: 14px;"></div>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
-        <div>
-          <label for="portfolio" style="display: block; margin-bottom: 5px; font-weight: 600;">Starting Portfolio ($)</label>
-          <input type="number" id="portfolio" min="0" max="500000000" step="10000" value="1000000" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
-          <small style="color: #666;">Today’s portfolio value (max $500M)</small>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-bottom: 25px;">
+        <div class="slider-row">
+          <div class="slider-label"><span>Starting Portfolio</span><span class="value" id="portfolioLabel"></span></div>
+          <input type="range" id="portfolio" min="50000" max="5000000" step="50000" value="1000000">
+          <small style="color: #666;">Today’s portfolio value</small>
         </div>
-        <div>
-          <label for="withdrawal" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Withdrawal ($)</label>
-          <input type="number" id="withdrawal" min="0" max="5000000" step="1000" value="40000" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
-          <small style="color: #666;">First-year withdrawal (max $5M). You can optionally grow this with inflation below.</small>
+        <div class="slider-row">
+          <div class="slider-label"><span>Annual Withdrawal</span><span class="value" id="withdrawalLabel"></span></div>
+          <input type="range" id="withdrawal" min="10000" max="500000" step="5000" value="40000">
+          <small style="color: #666;">First-year withdrawal. Optionally grow with inflation below.</small>
         </div>
-        <div>
-          <label for="inflationRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Inflation Rate for Withdrawals (%)</label>
-          <input type="number" id="inflationRate" min="0" max="10" step="0.1" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
-          <small style="color: #666;">0–10%. Set to 0 for flat withdrawals. Typical long-term U.S. inflation ~3%.</small>
+        <div class="slider-row">
+          <div class="slider-label"><span>Inflation Rate for Withdrawals (%)</span><span class="value" id="inflationRateLabel"></span></div>
+          <input type="range" id="inflationRate" min="0" max="10" step="0.1" value="0">
+          <small style="color: #666;">0–10%. Set to 0 for flat withdrawals. Typical U.S. ~3%.</small>
         </div>
-        <div>
-          <label for="years" style="display: block; margin-bottom: 5px; font-weight: 600;">Years to Model</label>
-          <input type="number" id="years" min="5" max="50" value="30" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
-          <small style="color: #666;">5–50 years (e.g. 30 for a 30-year retirement)</small>
+        <div class="slider-row">
+          <div class="slider-label"><span>Years to Model</span><span class="value" id="yearsLabel"></span></div>
+          <input type="range" id="years" min="5" max="50" step="1" value="30">
+          <small style="color: #666;">e.g. 30 for a 30-year retirement</small>
         </div>
-        <div>
-          <label for="expectedReturn" style="display: block; margin-bottom: 5px; font-weight: 600;">Expected Annual Return (%)</label>
-          <input type="number" id="expectedReturn" min="0" max="20" step="0.25" value="6" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
-          <small style="color: #666;">0–20%. Long-term average return assumption</small>
+        <div class="slider-row">
+          <div class="slider-label"><span>Expected Annual Return (%)</span><span class="value" id="expectedReturnLabel"></span></div>
+          <input type="range" id="expectedReturn" min="0" max="20" step="0.25" value="6">
+          <small style="color: #666;">Long-term average return assumption</small>
         </div>
-        <div>
-          <label for="volatility" style="display: block; margin-bottom: 5px; font-weight: 600;">Volatility / Std Dev (%)</label>
-          <input type="number" id="volatility" min="0" max="50" step="0.5" value="12" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
-          <small style="color: #666;">0–50%. Typical stock portfolio: ~10–15%</small>
+        <div class="slider-row">
+          <div class="slider-label"><span>Volatility / Std Dev (%)</span><span class="value" id="volatilityLabel"></span></div>
+          <input type="range" id="volatility" min="0" max="50" step="0.5" value="12">
+          <small style="color: #666;">Typical stock portfolio: ~10–15%</small>
         </div>
-        <div>
-          <label for="simulations" style="display: block; margin-bottom: 5px; font-weight: 600;">Number of Simulations</label>
-          <input type="number" id="simulations" min="100" max="10000" step="100" value="1000" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
-          <small style="color: #666;">100–10,000. More = smoother result, slower run</small>
+        <div class="slider-row">
+          <div class="slider-label"><span>Number of Simulations</span><span class="value" id="simulationsLabel"></span></div>
+          <input type="range" id="simulations" min="100" max="10000" step="100" value="1000">
+          <small style="color: #666;">More = smoother result, slower run</small>
         </div>
       </div>
 
       <div style="text-align: center; margin: 30px 0;">
-        <button type="submit" class="button" style="font-size: 1.1em; padding: 12px 30px;">Run Monte Carlo</button>
+        <button type="button" id="runMonteCarloBtn" class="button" style="font-size: 1.1em; padding: 12px 30px;">Run Monte Carlo</button>
       </div>
-    </form>
+    </div>
 
     <div id="results" class="results-container" style="display: none;">
       <h2>Monte Carlo Results</h2>
