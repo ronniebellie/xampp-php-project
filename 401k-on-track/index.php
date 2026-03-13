@@ -100,7 +100,7 @@ $isPremium = has_premium_access();
           <small style="color: #666;">4% is a common rule of thumb</small>
         </div>
         <div style="align-self: end;">
-          <button type="button" id="setTargetFromIncome" class="btn-secondary" style="padding: 10px 16px;">Set target from income</button>
+          <button type="button" id="setTargetFromIncome" class="btn-secondary" style="padding: 10px 16px;">Calculate target balance</button>
         </div>
       </div>
 
@@ -109,6 +109,10 @@ $isPremium = has_premium_access();
     <div id="results">
       <h2>Your projection</h2>
       <div class="summary-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 20px 0;">
+        <div style="background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 12px; padding: 16px;">
+          <div style="font-size: 13px; color: #3730a3; font-weight: 600;">Current age</div>
+          <div id="resultCurrentAge" style="font-size: 24px; font-weight: 800; color: #312e81;"></div>
+        </div>
         <div style="background: #eff6ff; border: 1px solid #93c5fd; border-radius: 12px; padding: 16px;">
           <div style="font-size: 13px; color: #1e40af; font-weight: 600;">Years to retirement</div>
           <div id="resultYears" style="font-size: 24px; font-weight: 800; color: #1e3a8a;"></div>

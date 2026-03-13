@@ -105,6 +105,8 @@ function updateOnTrack() {
   const shortfall = onTrack ? 0 : targetBalance - result.projected;
   result.suggestedContribution = onTrack ? null : suggestedAnnualContribution(currentBalance, targetBalance, expectedReturn, years);
 
+  const currentAgeResultEl = document.getElementById('resultCurrentAge');
+  if (currentAgeResultEl) currentAgeResultEl.textContent = currentAge;
   document.getElementById('resultYears').textContent = years + ' years';
   document.getElementById('resultProjected').textContent = formatCurrency(result.projected);
   document.getElementById('resultTarget').textContent = formatCurrency(targetBalance);
