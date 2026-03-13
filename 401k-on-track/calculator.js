@@ -202,8 +202,6 @@ function updateOnTrack() {
     });
   }
 
-  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
-
   const summary = '401(k) On Track. Age ' + currentAge + ', retirement age ' + retirementAge + ', ' + years + ' years to retirement. Current balance ' + formatCurrency(currentBalance) + ', annual contribution ' + formatCurrency(annualContribution) + ', expected return ' + expectedReturn + '%. Projected balance at retirement: ' + formatCurrency(result.projected) + '. Target: ' + formatCurrency(targetBalance) + '. ' + (onTrack ? 'On track.' : 'Shortfall: ' + formatCurrency(shortfall) + (result.suggestedContribution ? '. Suggested contribution to be on track: ' + formatCurrency(Math.round(result.suggestedContribution)) + '/year.' : '.'));
   window.lastOnTrackResult = { result, currentAge, retirementAge, onTrack, shortfall, summary };
 
