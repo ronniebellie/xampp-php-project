@@ -18,7 +18,7 @@ $isPremium = has_premium_access();
   <style>
     .slider-row { margin-bottom: 18px; }
     .slider-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; font-weight: 600; font-size: 14px; }
-    .slider-label span.value { font-weight: 500; color: #4b5563; font-size: 13px; }
+    .slider-label span.value { font-weight: 500; color: #4b5563; font-size: 12px; flex-shrink: 0; }
     input[type="range"] { width: 100%; margin: 0; -webkit-appearance: none; background: transparent; }
     input[type="range"]::-webkit-slider-runnable-track { height: 6px; background: #e5e7eb; border-radius: 999px; }
     input[type="range"]::-moz-range-track { height: 6px; background: #e5e7eb; border-radius: 999px; }
@@ -60,37 +60,37 @@ $isPremium = has_premium_access();
       <div id="validationError" role="alert" style="display: none; margin-bottom: 15px; padding: 12px 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #b91c1c; font-size: 14px;"></div>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-bottom: 25px;">
         <div class="slider-row">
-          <div class="slider-label"><span>Starting Portfolio</span><span class="value" id="portfolioLabel"></span></div>
+          <div class="slider-label"><span>Starting Portfolio</span><span class="value" id="portfolioLabel">$1,000,000</span></div>
           <input type="range" id="portfolio" min="50000" max="5000000" step="50000" value="1000000">
           <small style="color: #666;">Today’s portfolio value</small>
         </div>
         <div class="slider-row">
-          <div class="slider-label"><span>Annual Withdrawal</span><span class="value" id="withdrawalLabel"></span></div>
+          <div class="slider-label"><span>Annual Withdrawal</span><span class="value" id="withdrawalLabel">$40,000</span></div>
           <input type="range" id="withdrawal" min="10000" max="500000" step="5000" value="40000">
           <small style="color: #666;">First-year withdrawal. Optionally grow with inflation below.</small>
         </div>
         <div class="slider-row">
-          <div class="slider-label"><span>Inflation Rate for Withdrawals (%)</span><span class="value" id="inflationRateLabel"></span></div>
+          <div class="slider-label"><span>Inflation Rate for Withdrawals (%)</span><span class="value" id="inflationRateLabel">0%</span></div>
           <input type="range" id="inflationRate" min="0" max="10" step="0.1" value="0">
           <small style="color: #666;">0–10%. Set to 0 for flat withdrawals. Typical U.S. ~3%.</small>
         </div>
         <div class="slider-row">
-          <div class="slider-label"><span>Years to Model</span><span class="value" id="yearsLabel"></span></div>
+          <div class="slider-label"><span>Years to Model</span><span class="value" id="yearsLabel">30 yrs</span></div>
           <input type="range" id="years" min="5" max="50" step="1" value="30">
           <small style="color: #666;">e.g. 30 for a 30-year retirement</small>
         </div>
         <div class="slider-row">
-          <div class="slider-label"><span>Expected Annual Return (%)</span><span class="value" id="expectedReturnLabel"></span></div>
+          <div class="slider-label"><span>Expected Annual Return (%)</span><span class="value" id="expectedReturnLabel">6%</span></div>
           <input type="range" id="expectedReturn" min="0" max="20" step="0.25" value="6">
           <small style="color: #666;">Long-term average return assumption</small>
         </div>
         <div class="slider-row">
-          <div class="slider-label"><span>Volatility / Std Dev (%)</span><span class="value" id="volatilityLabel"></span></div>
+          <div class="slider-label"><span>Volatility / Std Dev (%)</span><span class="value" id="volatilityLabel">12%</span></div>
           <input type="range" id="volatility" min="0" max="50" step="0.5" value="12">
           <small style="color: #666;">Typical stock portfolio: ~10–15%</small>
         </div>
         <div class="slider-row">
-          <div class="slider-label"><span>Number of Simulations</span><span class="value" id="simulationsLabel"></span></div>
+          <div class="slider-label"><span>Number of Simulations</span><span class="value" id="simulationsLabel">1,000 sims</span></div>
           <input type="range" id="simulations" min="100" max="10000" step="100" value="1000">
           <small style="color: #666;">More = smoother result, slower run</small>
         </div>
