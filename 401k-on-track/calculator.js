@@ -78,6 +78,10 @@ function updateOnTrack() {
   let years = parseInt(document.getElementById('yearsToRetirement').value, 10);
   if (isNaN(years) || years < 1) years = 1;
   const retirementAge = currentAge + years;
+  const currentAgeLabelEl = document.getElementById('currentAgeLabel');
+  if (currentAgeLabelEl) currentAgeLabelEl.textContent = currentAge + ' yrs';
+  const yearsLabelEl = document.getElementById('yearsToRetirementLabel');
+  if (yearsLabelEl) yearsLabelEl.textContent = years + ' yrs (retire at ~' + retirementAge + ')';
   const currentBalance = parseFloat(document.getElementById('currentBalance').value) || 0;
   const annualContribution = parseFloat(document.getElementById('annualContribution').value) || 0;
   const expectedReturn = parseFloat(document.getElementById('expectedReturn').value) || 6;
