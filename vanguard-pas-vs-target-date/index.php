@@ -58,11 +58,8 @@ $isPremium = has_premium_access();
                 </div>
 
                 <div class="input-group">
-                    <div class="slider-label">
-                        <span>Vanguard PAS Fee (%)</span>
-                        <span class="value" id="pasFeeLabel">0.30%</span>
-                    </div>
-                    <input type="range" id="pasFee" value="0.30" min="0.20" max="0.50" step="0.01">
+                    <label for="pasFee">Vanguard PAS Fee (%)</label>
+                    <input type="number" id="pasFee" value="0.30" min="0" max="1" step="0.01" readonly>
                     <span class="help-text">Vanguard Personal Advisor Services: 0.30%</span>
                 </div>
 

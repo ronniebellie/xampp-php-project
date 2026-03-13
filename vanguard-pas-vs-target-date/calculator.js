@@ -52,7 +52,6 @@
 
   function updateLabels() {
     var portfolio = parseFloat(document.getElementById('portfolioValue').value);
-    var pasFee = parseFloat(document.getElementById('pasFee').value);
     var years = parseInt(document.getElementById('years').value, 10);
     var returnRate = parseFloat(document.getElementById('returnRate').value);
     var withdrawalPct = parseFloat(document.getElementById('withdrawalPct').value) || 0;
@@ -63,8 +62,6 @@
 
     var portfolioLabel = document.getElementById('portfolioValueLabel');
     if (portfolioLabel) portfolioLabel.textContent = isNaN(portfolio) ? '' : formatCurrency(portfolio);
-    var pasFeeLabel = document.getElementById('pasFeeLabel');
-    if (pasFeeLabel) pasFeeLabel.textContent = isNaN(pasFee) ? '' : pasFee.toFixed(2) + '%';
     var yearsLabel = document.getElementById('yearsLabel');
     if (yearsLabel) yearsLabel.textContent = isNaN(years) ? '' : years + ' yrs';
     var returnRateLabel = document.getElementById('returnRateLabel');
@@ -254,7 +251,7 @@
 
   document.getElementById('calculateBtn').addEventListener('click', function () { calculate(true); });
 
-  ['portfolioValue', 'pasFee', 'years', 'returnRate', 'withdrawalPct', 'pctConservative', 'pctModerate', 'pctAggressive'].forEach(function (id) {
+  ['portfolioValue', 'years', 'returnRate', 'withdrawalPct', 'pctConservative', 'pctModerate', 'pctAggressive'].forEach(function (id) {
     var el = document.getElementById(id);
     if (el) el.addEventListener('input', function () { calculate(false); });
   });
