@@ -16,6 +16,16 @@ $isPremium = has_premium_access();
   <title>Social Security + Spending Gap Calculator</title>
   <?php $og_title = $ld_name = 'Social Security + Spending Gap Calculator'; $og_description = $ld_description = 'Bridge the gap between retirement and Social Security. See how much to save to cover spending until benefits start.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
   <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    .slider-row { margin-bottom: 18px; }
+    .slider-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; font-weight: 600; font-size: 14px; }
+    .slider-label span.value { font-weight: 500; color: #4b5563; font-size: 13px; }
+    input[type="range"] { width: 100%; margin: 0; -webkit-appearance: none; background: transparent; }
+    input[type="range"]::-webkit-slider-runnable-track { height: 6px; background: #e5e7eb; border-radius: 999px; }
+    input[type="range"]::-moz-range-track { height: 6px; background: #e5e7eb; border-radius: 999px; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 999px; background: #1d4ed8; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(37,99,235,.5), 0 6px 12px rgba(15,23,42,.15); margin-top: -6px; }
+    input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 999px; background: #1d4ed8; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(37,99,235,.5), 0 6px 12px rgba(15,23,42,.15); }
+  </style>
 </head>
 <body>
 
@@ -54,28 +64,28 @@ $isPremium = has_premium_access();
         <form id="gapForm">
             <h3>Your Retirement Income & Expenses</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
-                <div>
-                    <label for="targetSpending" style="display: block; margin-bottom: 5px; font-weight: 600;">Target Monthly Spending ($)</label>
-                    <input type="number" id="targetSpending" step="100" value="8000" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                <div class="slider-row">
+                    <div class="slider-label"><span>Target Monthly Spending</span><span class="value" id="targetSpendingLabel"></span></div>
+                    <input type="range" id="targetSpending" min="3000" max="15000" step="100" value="8000">
                     <small style="color: #666;">Your desired monthly retirement budget</small>
                 </div>
-                <div>
-                    <label for="ssIncome" style="display: block; margin-bottom: 5px; font-weight: 600;">Social Security Monthly Income ($)</label>
-                    <input type="number" id="ssIncome" step="100" value="3500" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                <div class="slider-row">
+                    <div class="slider-label"><span>Social Security Monthly Income</span><span class="value" id="ssIncomeLabel"></span></div>
+                    <input type="range" id="ssIncome" min="0" max="6000" step="100" value="3500">
                     <small style="color: #666;">Combined household Social Security benefits</small>
                 </div>
-                <div>
-                    <label for="otherIncome" style="display: block; margin-bottom: 5px; font-weight: 600;">Other Monthly Income ($)</label>
-                    <input type="number" id="otherIncome" step="100" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                <div class="slider-row">
+                    <div class="slider-label"><span>Other Monthly Income</span><span class="value" id="otherIncomeLabel"></span></div>
+                    <input type="range" id="otherIncome" min="0" max="4000" step="100" value="0">
                     <small style="color: #666;">Pension, rental income, part-time work, etc.</small>
                 </div>
             </div>
 
             <h3 style="margin-top: 30px;">Withdrawal Rate Assumptions</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
-                <div>
-                    <label for="withdrawalRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Starting Withdrawal Rate (%)</label>
-                    <input type="number" id="withdrawalRate" step="0.1" min="0" max="10" value="4.0" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                <div class="slider-row">
+                    <div class="slider-label"><span>Starting Withdrawal Rate</span><span class="value" id="withdrawalRateLabel"></span></div>
+                    <input type="range" id="withdrawalRate" min="2.5" max="6.0" step="0.1" value="4.0">
                     <small style="color: #666;">Common range: 3.5% - 5.0%</small>
                 </div>
                 <div>
@@ -86,10 +96,6 @@ $isPremium = has_premium_access();
                     </select>
                     <small style="color: #666;">For context in results</small>
                 </div>
-            </div>
-
-            <div style="text-align: center; margin: 30px 0;">
-                <button type="submit" class="button" style="font-size: 1.1em; padding: 12px 30px;">Calculate Gap</button>
             </div>
         </form>
 

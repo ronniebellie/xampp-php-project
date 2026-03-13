@@ -35,35 +35,35 @@ function calculatePortfolioNeeded(annualGap, withdrawalRate) {
     return annualGap / (withdrawalRate / 100);
 }
 
-// Main calculation
-document.getElementById('gapForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    // Get inputs
-    const targetSpending = parseFloat(document.getElementById('targetSpending').value);
-    const ssIncome = parseFloat(document.getElementById('ssIncome').value);
+function updateGap() {
+    const targetSpending = parseFloat(document.getElementById('targetSpending').value) || 0;
+    const ssIncome = parseFloat(document.getElementById('ssIncome').value) || 0;
     const otherIncome = parseFloat(document.getElementById('otherIncome').value) || 0;
-    const withdrawalRate = parseFloat(document.getElementById('withdrawalRate').value);
+    const withdrawalRate = parseFloat(document.getElementById('withdrawalRate').value) || 4;
     const filingStatus = document.getElementById('filingStatus').value;
+
+    const targetLabel = document.getElementById('targetSpendingLabel');
+    if (targetLabel) targetLabel.textContent = formatCurrency(targetSpending) + '/mo';
+    const ssLabel = document.getElementById('ssIncomeLabel');
+    if (ssLabel) ssLabel.textContent = formatCurrency(ssIncome) + '/mo';
+    const otherLabel = document.getElementById('otherIncomeLabel');
+    if (otherLabel) otherLabel.textContent = formatCurrency(otherIncome) + '/mo';
+    const wrLabel = document.getElementById('withdrawalRateLabel');
+    if (wrLabel) wrLabel.textContent = withdrawalRate.toFixed(1).replace(/\.0$/, '') + '%';
     
-    // Calculate gaps
     const totalIncome = ssIncome + otherIncome;
     const monthlyGap = Math.max(0, targetSpending - totalIncome);
     const annualGap = monthlyGap * 12;
     
-    // Calculate portfolio needed at specified rate
     const portfolioNeeded = calculatePortfolioNeeded(annualGap, withdrawalRate);
     
-    // Calculate what portfolio would be needed WITHOUT Social Security
     const monthlyGapWithoutSS = Math.max(0, targetSpending - otherIncome);
     const annualGapWithoutSS = monthlyGapWithoutSS * 12;
     const portfolioWithoutSS = calculatePortfolioNeeded(annualGapWithoutSS, withdrawalRate);
     
-    // Calculate savings from Social Security
     const portfolioSavings = portfolioWithoutSS - portfolioNeeded;
     const savingsPercent = portfolioWithoutSS > 0 ? (portfolioSavings / portfolioWithoutSS * 100) : 0;
     
-    // Create summary cards
     let html = '<div class="summary-grid">';
     html += `
         <div class="summary-card">
@@ -86,7 +86,6 @@ document.getElementById('gapForm').addEventListener('submit', function(e) {
     html += '</div>';
     document.getElementById('summaryCards').innerHTML = html;
     
-    // Create interpretation
     let interpretation = '<h3>What This Means</h3><ul>';
     
     interpretation += `<li><strong>Your monthly spending gap is ${formatCurrency(monthlyGap)}.</strong> `;
@@ -117,7 +116,6 @@ document.getElementById('gapForm').addEventListener('submit', function(e) {
     interpretation += '</ul>';
     document.getElementById('interpretation').innerHTML = interpretation;
     
-    // Create comparison table for different withdrawal rates
     const rates = [3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0];
     let tableHTML = '';
     
@@ -141,7 +139,6 @@ document.getElementById('gapForm').addEventListener('submit', function(e) {
     
     document.getElementById('tableBody').innerHTML = tableHTML;
     
-    // Create bar chart showing portfolio needed at different rates
     const ctx = document.getElementById('withdrawalChart');
     if (window.withdrawalChart instanceof Chart) {
         window.withdrawalChart.destroy();
@@ -223,16 +220,22 @@ document.getElementById('gapForm').addEventListener('submit', function(e) {
         }
     });
     
-    // Show results first
     document.getElementById('results').style.display = 'block';
-    
-    // Create second chart: Annual withdrawal amounts (after DOM is visible)
+
     setTimeout(() => {
         createAnnualWithdrawalChart(annualGap, rates, withdrawalRate);
     }, 100);
     
-    // Scroll to results
-    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+document.getElementById('gapForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    updateGap();
+});
+
+['targetSpending', 'ssIncome', 'otherIncome', 'withdrawalRate', 'filingStatus'].forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', updateGap);
 });
 // Premium Save/Load Functionality
 
@@ -312,6 +315,8 @@ function createAnnualWithdrawalChart(annualGap, rates, selectedRate) {
     });
 }
 document.addEventListener('DOMContentLoaded', function() {
+    updateGap();
+
     const saveBtn = document.getElementById('saveScenarioBtn');
     const loadBtn = document.getElementById('loadScenarioBtn');
     const compareBtn = document.getElementById('compareScenariosBtn');
