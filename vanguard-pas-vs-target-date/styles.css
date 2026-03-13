@@ -99,7 +99,16 @@ input[type="number"]:focus {
 
 input[readonly] {
     background: #f1f5f9;
-    cursor: not-allowed;
+    cursor: default;
+}
+/* Hide number spinners on readonly inputs so they don't look like dropdowns */
+input[type="number"][readonly] {
+    -moz-appearance: textfield;
+}
+input[type="number"][readonly]::-webkit-outer-spin-button,
+input[type="number"][readonly]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .help-text {
