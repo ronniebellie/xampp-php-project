@@ -61,7 +61,7 @@ $isPremium = has_premium_access();
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-bottom: 25px;">
         <div class="slider-row">
           <div class="slider-label"><span>Current age</span><span class="value" id="currentAgeLabel"></span></div>
-          <input type="range" id="currentAge" min="25" max="60" step="1" value="40">
+          <input type="range" id="currentAge" min="25" max="70" step="1" value="40">
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Years until retirement</span><span class="value" id="yearsToRetirementLabel"></span></div>
