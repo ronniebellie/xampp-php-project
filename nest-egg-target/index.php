@@ -15,6 +15,16 @@ $isPremium = has_premium_access();
   <title>How Much Do I Need? Nest Egg Target</title>
   <?php $og_title = $ld_name = 'How Much Do I Need? Nest Egg Target'; $og_description = $ld_description = 'How much do you need to save for retirement? Use the 4% rule to estimate your nest egg target from desired income and guaranteed sources.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
   <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    .slider-row { margin-bottom: 18px; }
+    .slider-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; font-weight: 600; font-size: 14px; }
+    .slider-label span.value { font-weight: 500; color: #4b5563; font-size: 13px; }
+    input[type="range"] { width: 100%; margin: 0; -webkit-appearance: none; background: transparent; }
+    input[type="range"]::-webkit-slider-runnable-track { height: 6px; background: #e5e7eb; border-radius: 999px; }
+    input[type="range"]::-moz-range-track { height: 6px; background: #e5e7eb; border-radius: 999px; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 999px; background: #1d4ed8; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(37,99,235,.5), 0 6px 12px rgba(15,23,42,.15); margin-top: -6px; }
+    input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 999px; background: #1d4ed8; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(37,99,235,.5), 0 6px 12px rgba(15,23,42,.15); }
+  </style>
 </head>
 <body>
   <?php include('../includes/premium-banner-include.php'); ?>
@@ -61,81 +71,84 @@ $isPremium = has_premium_access();
       </div>
 
       <div id="directIncomeWrap" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-bottom: 25px;">
-        <div>
-          <label for="desiredAnnualIncome" style="display: block; margin-bottom: 5px; font-weight: 600;">
-            Desired annual income in retirement ($)
-          </label>
+        <div class="slider-row">
+          <div class="slider-label">
+            <span>Desired annual income in retirement</span>
+            <span class="value" id="desiredAnnualIncomeLabel"></span>
+          </div>
           <input
-            type="number"
+            type="range"
             id="desiredAnnualIncome"
-            min="0"
-            step="1000"
+            min="20000"
+            max="200000"
+            step="5000"
             value="60000"
-            style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
           <small style="color: #666;">Total income you want per year in retirement (before or after tax—use one consistently).</small>
         </div>
       </div>
 
       <div id="estimateWrap" style="display: none; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-bottom: 25px;">
-        <div>
-          <label for="currentMonthlySpending" style="display: block; margin-bottom: 5px; font-weight: 600;">
-            Current monthly spending ($)
-          </label>
+        <div class="slider-row">
+          <div class="slider-label">
+            <span>Current monthly spending</span>
+            <span class="value" id="currentMonthlySpendingLabel"></span>
+          </div>
           <input
-            type="number"
+            type="range"
             id="currentMonthlySpending"
-            min="0"
-            step="50"
+            min="2000"
+            max="12000"
+            step="100"
             value="5000"
-            style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
           <small style="color: #666;">What you spend now (or expect to spend before retirement).</small>
         </div>
-        <div>
-          <label for="retirementSpendingPct" style="display: block; margin-bottom: 5px; font-weight: 600;">
-            Retirement spending as % of current
-          </label>
+        <div class="slider-row">
+          <div class="slider-label">
+            <span>Retirement spending as % of current</span>
+            <span class="value" id="retirementSpendingPctLabel"></span>
+          </div>
           <input
-            type="number"
+            type="range"
             id="retirementSpendingPct"
             min="40"
             max="120"
             step="1"
             value="80"
-            style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
           <small style="color: #666;">Many people use 70–80%.</small>
         </div>
       </div>
 
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-bottom: 25px;">
-        <div>
-          <label for="guaranteedAnnualIncome" style="display: block; margin-bottom: 5px; font-weight: 600;">
-            Expected annual guaranteed income in retirement ($)
-          </label>
+        <div class="slider-row">
+          <div class="slider-label">
+            <span>Expected annual guaranteed income in retirement</span>
+            <span class="value" id="guaranteedAnnualIncomeLabel"></span>
+          </div>
           <input
-            type="number"
+            type="range"
             id="guaranteedAnnualIncome"
             min="0"
-            step="500"
+            max="120000"
+            step="5000"
             value="24000"
-            style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
           <small style="color: #666;">Social Security, pensions, annuities, rental income you expect to continue.</small>
         </div>
-        <div>
-          <label for="withdrawalRate" style="display: block; margin-bottom: 5px; font-weight: 600;">
-            Withdrawal rate (% per year)
-          </label>
+        <div class="slider-row">
+          <div class="slider-label">
+            <span>Withdrawal rate (% per year)</span>
+            <span class="value" id="withdrawalRateLabel"></span>
+          </div>
           <input
-            type="number"
+            type="range"
             id="withdrawalRate"
             min="2"
             max="8"
             step="0.25"
             value="4"
-            style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
           <small style="color: #666;">4% is a common rule of thumb; use a lower % for a more conservative target.</small>
         </div>

@@ -22,44 +22,44 @@ document.addEventListener('DOMContentLoaded', () => {
     return Math.min(Math.max(num, min), max);
   }
 
-  // Toggle direct vs estimate inputs
-  const incomeMethodRadios = form.querySelectorAll('input[name="incomeMethod"]');
-  incomeMethodRadios.forEach(radio => {
-    radio.addEventListener('change', () => {
-      const useEstimate = form.querySelector('input[name="incomeMethod"]:checked').value === 'estimate';
-      directWrap.style.display = useEstimate ? 'none' : 'grid';
-      estimateWrap.style.display = useEstimate ? 'grid' : 'none';
-    });
-  });
-  // Initial state
-  estimateWrap.style.display = 'none';
+  function updateLabels(desiredAnnual, currentMonthly, pctRet, guaranteedAnnual, withdrawalRatePct) {
+    const desiredLabel = document.getElementById('desiredAnnualIncomeLabel');
+    if (desiredLabel) desiredLabel.textContent = fmtCurrency(desiredAnnual) + '/yr';
+    const currentMonthlyLabel = document.getElementById('currentMonthlySpendingLabel');
+    if (currentMonthlyLabel) currentMonthlyLabel.textContent = fmtCurrency(currentMonthly) + '/mo';
+    const pctLabel = document.getElementById('retirementSpendingPctLabel');
+    if (pctLabel) pctLabel.textContent = pctRet.toFixed(0) + '%';
+    const guaranteedLabel = document.getElementById('guaranteedAnnualIncomeLabel');
+    if (guaranteedLabel) guaranteedLabel.textContent = fmtCurrency(guaranteedAnnual) + '/yr';
+    const wrLabel = document.getElementById('withdrawalRateLabel');
+    if (wrLabel) wrLabel.textContent = withdrawalRatePct.toFixed(2).replace(/\.00$/, '') + '%';
+  }
 
-  if (!form) return;
-
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-
+  function recalc(showAlerts) {
     const method = form.querySelector('input[name="incomeMethod"]:checked').value;
     let desiredAnnual = 0;
+    const currentMonthly = Number(document.getElementById('currentMonthlySpending').value || 0);
+    const pctRet = Number(document.getElementById('retirementSpendingPct').value || 80);
 
     if (method === 'direct') {
       desiredAnnual = Number(document.getElementById('desiredAnnualIncome').value || 0);
     } else {
-      const monthly = Number(document.getElementById('currentMonthlySpending').value || 0);
-      const pct = Number(document.getElementById('retirementSpendingPct').value || 80) / 100;
-      desiredAnnual = monthly * 12 * pct;
+      desiredAnnual = currentMonthly * 12 * (pctRet / 100);
     }
 
     const guaranteedAnnual = Number(document.getElementById('guaranteedAnnualIncome').value || 0);
     let withdrawalRatePct = Number(document.getElementById('withdrawalRate').value || 4);
     const currentSavings = Number(document.getElementById('currentSavings').value || 0);
 
+    updateLabels(desiredAnnual, currentMonthly, pctRet, guaranteedAnnual, withdrawalRatePct);
+
     const errors = [];
     if (desiredAnnual <= 0) errors.push('desired retirement income (or current spending to estimate it)');
     if (withdrawalRatePct <= 0) errors.push('withdrawal rate');
 
     if (errors.length) {
-      alert('Please enter: ' + errors.join(', ') + '.');
+      if (showAlerts) alert('Please enter: ' + errors.join(', ') + '.');
+      resultsEl.style.display = 'none';
       return;
     }
 
@@ -99,8 +99,32 @@ document.addEventListener('DOMContentLoaded', () => {
     window.lastNestEggResult = { summary };
 
     resultsEl.style.display = 'block';
-    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  if (!form) return;
+
+  const incomeMethodRadios = form.querySelectorAll('input[name="incomeMethod"]');
+  incomeMethodRadios.forEach(radio => {
+    radio.addEventListener('change', () => {
+      const useEstimate = form.querySelector('input[name="incomeMethod"]:checked').value === 'estimate';
+      directWrap.style.display = useEstimate ? 'none' : 'grid';
+      estimateWrap.style.display = useEstimate ? 'grid' : 'none';
+      recalc(false);
+    });
   });
+  estimateWrap.style.display = 'none';
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    recalc(true);
+  });
+
+  ['desiredAnnualIncome', 'currentMonthlySpending', 'retirementSpendingPct', 'guaranteedAnnualIncome', 'withdrawalRate', 'currentSavings'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => recalc(false));
+  });
+
+  recalc(false);
 
   const explainBtn = document.getElementById('explainResultsBtnInResults');
   if (explainBtn) explainBtn.addEventListener('click', explainResults);
