@@ -142,8 +142,10 @@ function calculate(showAlerts) {
     // Show results
     document.getElementById('results').style.display = 'block';
     
-    // Scroll to results
-    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Scroll to results only when user clicked Calculate, not on slider drag
+    if (showAlerts) {
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
 
 // Create charts
