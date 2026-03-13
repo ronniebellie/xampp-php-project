@@ -80,15 +80,26 @@ document.addEventListener('DOMContentLoaded', () => {
     return { debt, invest };
   }
 
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-
+  function updateDebtVsSaving(showAlerts) {
     const debtBalance = Number(document.getElementById('debtBalance').value || 0);
     let debtRate = Number(document.getElementById('debtRate').value || 0);
     const minPayment = Number(document.getElementById('minPayment').value || 0);
     const extraPerMonth = Number(document.getElementById('extraPerMonth').value || 0);
     let investReturn = Number(document.getElementById('investReturn').value || 0);
     const horizonYears = Number(document.getElementById('horizonYears').value || 0);
+
+    const debtBalanceLabel = document.getElementById('debtBalanceLabel');
+    if (debtBalanceLabel) debtBalanceLabel.textContent = fmtCurrency(debtBalance);
+    const debtRateLabel = document.getElementById('debtRateLabel');
+    if (debtRateLabel) debtRateLabel.textContent = debtRate.toFixed(2).replace(/\.00$/, '') + '%';
+    const minPaymentLabel = document.getElementById('minPaymentLabel');
+    if (minPaymentLabel) minPaymentLabel.textContent = fmtCurrency(minPayment) + '/mo';
+    const extraPerMonthLabel = document.getElementById('extraPerMonthLabel');
+    if (extraPerMonthLabel) extraPerMonthLabel.textContent = fmtCurrency(extraPerMonth) + '/mo';
+    const investReturnLabel = document.getElementById('investReturnLabel');
+    if (investReturnLabel) investReturnLabel.textContent = investReturn.toFixed(2).replace(/\.00$/, '') + '%';
+    const horizonYearsLabel = document.getElementById('horizonYearsLabel');
+    if (horizonYearsLabel) horizonYearsLabel.textContent = horizonYears.toFixed(0) + ' yrs';
 
     const errors = [];
     if (debtBalance <= 0) errors.push('debt balance');
@@ -97,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (horizonYears <= 0) errors.push('time horizon');
 
     if (errors.length) {
-      alert('Please check: ' + errors.join(', ') + '.');
+      if (showAlerts) alert('Please check: ' + errors.join(', ') + '.');
       return;
     }
 
@@ -188,7 +199,18 @@ document.addEventListener('DOMContentLoaded', () => {
     explanationText.textContent = explanation.join(' ');
 
     resultsEl.style.display = 'block';
-    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    updateDebtVsSaving(true);
   });
+
+  ['debtBalance', 'debtRate', 'minPayment', 'extraPerMonth', 'investReturn', 'horizonYears'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => updateDebtVsSaving(false));
+  });
+
+  updateDebtVsSaving(false);
 });
 

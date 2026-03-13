@@ -15,6 +15,16 @@ $isPremium = has_premium_access();
   <title>Debt vs Saving: Which First?</title>
   <?php $og_title = $ld_name = 'Debt vs Saving: Which First?'; $og_description = $ld_description = 'Debt vs saving: which comes first? Compare paying off debt vs building emergency fund with different interest rate scenarios.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
   <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    .slider-row { margin-bottom: 18px; }
+    .slider-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; font-weight: 600; font-size: 14px; }
+    .slider-label span.value { font-weight: 500; color: #4b5563; font-size: 13px; }
+    input[type="range"] { width: 100%; margin: 0; -webkit-appearance: none; background: transparent; }
+    input[type="range"]::-webkit-slider-runnable-track { height: 6px; background: #e5e7eb; border-radius: 999px; }
+    input[type="range"]::-moz-range-track { height: 6px; background: #e5e7eb; border-radius: 999px; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 999px; background: #1d4ed8; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(37,99,235,.5), 0 6px 12px rgba(15,23,42,.15); margin-top: -6px; }
+    input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 999px; background: #1d4ed8; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(37,99,235,.5), 0 6px 12px rgba(15,23,42,.15); }
+  </style>
 </head>
 <body>
   <?php include('../includes/premium-banner-include.php'); ?>
@@ -51,95 +61,98 @@ $isPremium = has_premium_access();
     <form id="debtVsSavingForm">
       <h3>Your situation</h3>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-bottom: 25px;">
-        <div>
-          <label for="debtBalance" style="display: block; margin-bottom: 5px; font-weight: 600;">
-            Debt balance ($)
-          </label>
+        <div class="slider-row">
+          <div class="slider-label">
+            <span>Debt balance</span>
+            <span class="value" id="debtBalanceLabel"></span>
+          </div>
           <input
-            type="number"
+            type="range"
             id="debtBalance"
             min="0"
-            step="100"
+            max="50000"
+            step="500"
             value="20000"
-            style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
           <small style="color: #666;">Use your highest‑interest or most representative debt.</small>
         </div>
 
-        <div>
-          <label for="debtRate" style="display: block; margin-bottom: 5px; font-weight: 600;">
-            Debt interest rate (% per year)
-          </label>
+        <div class="slider-row">
+          <div class="slider-label">
+            <span>Debt interest rate (% per year)</span>
+            <span class="value" id="debtRateLabel"></span>
+          </div>
           <input
-            type="number"
+            type="range"
             id="debtRate"
             min="0"
             max="40"
             step="0.25"
             value="18"
-            style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
           <small style="color: #666;">Credit cards are often 15–25%.</small>
         </div>
 
-        <div>
-          <label for="minPayment" style="display: block; margin-bottom: 5px; font-weight: 600;">
-            Minimum monthly payment ($)
-          </label>
+        <div class="slider-row">
+          <div class="slider-label">
+            <span>Minimum monthly payment</span>
+            <span class="value" id="minPaymentLabel"></span>
+          </div>
           <input
-            type="number"
+            type="range"
             id="minPayment"
             min="0"
+            max="2000"
             step="25"
             value="400"
-            style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
           <small style="color: #666;">Roughly what you must pay toward this debt each month.</small>
         </div>
 
-        <div>
-          <label for="extraPerMonth" style="display: block; margin-bottom: 5px; font-weight: 600;">
-            Extra you could put toward debt or investing ($/month)
-          </label>
+        <div class="slider-row">
+          <div class="slider-label">
+            <span>Extra you could put toward debt or investing ($/month)</span>
+            <span class="value" id="extraPerMonthLabel"></span>
+          </div>
           <input
-            type="number"
+            type="range"
             id="extraPerMonth"
             min="0"
+            max="2000"
             step="25"
             value="300"
-            style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
           <small style="color: #666;">This is the lever we’ll send either to debt or to investments.</small>
         </div>
 
-        <div>
-          <label for="investReturn" style="display: block; margin-bottom: 5px; font-weight: 600;">
-            Expected investment return (% per year)
-          </label>
+        <div class="slider-row">
+          <div class="slider-label">
+            <span>Expected investment return (% per year)</span>
+            <span class="value" id="investReturnLabel"></span>
+          </div>
           <input
-            type="number"
+            type="range"
             id="investReturn"
             min="0"
             max="20"
             step="0.5"
             value="7"
-            style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
           <small style="color: #666;">Long‑term stock‑heavy portfolios are often modeled at 6–8%.</small>
         </div>
 
-        <div>
-          <label for="horizonYears" style="display: block; margin-bottom: 5px; font-weight: 600;">
-            Time horizon (years)
-          </label>
+        <div class="slider-row">
+          <div class="slider-label">
+            <span>Time horizon (years)</span>
+            <span class="value" id="horizonYearsLabel"></span>
+          </div>
           <input
-            type="number"
+            type="range"
             id="horizonYears"
             min="1"
             max="40"
             step="1"
             value="10"
-            style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
           <small style="color: #666;">How long you’ll keep this plan going.</small>
         </div>
