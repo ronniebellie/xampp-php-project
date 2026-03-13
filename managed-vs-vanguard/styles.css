@@ -22,6 +22,60 @@
     margin-bottom: 25px;
 }
 
+.slider-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.slider-label .value {
+    font-weight: 500;
+    color: #4b5563;
+    font-size: 13px;
+}
+
+.input-section input[type="range"] {
+    width: 100%;
+    margin: 0;
+    -webkit-appearance: none;
+    background: transparent;
+}
+
+.input-section input[type="range"]::-webkit-slider-runnable-track {
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 999px;
+}
+
+.input-section input[type="range"]::-moz-range-track {
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 999px;
+}
+
+.input-section input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: #1d4ed8;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px rgba(37,99,235,.5), 0 6px 12px rgba(15,23,42,.15);
+    margin-top: -6px;
+}
+
+.input-section input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: #1d4ed8;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px rgba(37,99,235,.5), 0 6px 12px rgba(15,23,42,.15);
+}
+
 .input-group label {
     display: block;
     font-weight: 600;
