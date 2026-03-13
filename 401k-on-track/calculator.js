@@ -31,6 +31,7 @@ function runProjection(currentBalance, annualContribution, annualReturnPct, year
 
 function suggestedAnnualContribution(currentBalance, target, annualReturnPct, years) {
   const r = (annualReturnPct || 0) / 100;
+  if (years <= 0) return null;
   const fvLump = currentBalance * Math.pow(1 + r, years);
   if (fvLump >= target) return 0;
   const factor = (Math.pow(1 + r, years) - 1) / (r || 1e-9);
@@ -76,7 +77,7 @@ document.getElementById('setTargetFromIncome').addEventListener('click', functio
 function updateOnTrack() {
   const currentAge = parseInt(document.getElementById('currentAge').value, 10) || 40;
   let years = parseInt(document.getElementById('yearsToRetirement').value, 10);
-  if (isNaN(years) || years < 1) years = 1;
+  if (isNaN(years) || years < 0) years = 0;
   const retirementAge = currentAge + years;
   const currentAgeLabelEl = document.getElementById('currentAgeLabel');
   if (currentAgeLabelEl) currentAgeLabelEl.textContent = currentAge + ' yrs';
