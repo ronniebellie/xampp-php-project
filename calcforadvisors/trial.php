@@ -38,6 +38,7 @@ $calculators = [
     ['title' => 'RMD Impact', 'url' => $calcBase . '/rmd-impact/', 'desc' => 'Estimate how Required Minimum Distributions interact with your portfolio, taxes, and retirement income over time.'],
     ['title' => 'Estate & Legacy Planning Suite', 'url' => $calcBase . '/estate-planning/', 'desc' => 'Model inherited IRA taxes under the 10-year rule, compare Roth conversion strategies, and explore SECURE Act planning tools.'],
     ['title' => 'Managed Portfolio vs Vanguard', 'url' => $calcBase . '/managed-vs-vanguard/', 'desc' => 'See the true cost of advisor fees—including opportunity cost—compared to low-cost Vanguard index funds.'],
+    ['title' => 'Vanguard Personal Advisor vs Target Date Funds', 'url' => $calcBase . '/vanguard-pas-vs-target-date/', 'desc' => 'Compare Vanguard PAS (0.30%) with a self-managed blend of Target Date funds.'],
     ['title' => 'Social Security Claiming Analyzer', 'url' => $calcBase . '/social-security-claiming-analyzer/', 'desc' => 'Compare claiming ages and see how lifetime Social Security benefits change over time.'],
     ['title' => 'Retirement Timeline & Checklist', 'url' => $calcBase . '/retirement-timeline/', 'desc' => 'Turn your target retirement date into a simple, phased checklist of tasks.'],
     ['title' => 'Roth Conversion Calculator', 'url' => $calcBase . '/roth-conv/', 'desc' => 'Analyze the benefits of converting traditional IRA funds to Roth, considering taxes, RMDs, and Medicare IRMAA.'],

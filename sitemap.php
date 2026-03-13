@@ -21,6 +21,7 @@ $urls = [
     ['loc' => '/roth-conv/', 'priority' => '0.9', 'changefreq' => 'monthly'],
     ['loc' => '/rmd-impact/', 'priority' => '0.9', 'changefreq' => 'monthly'],
     ['loc' => '/managed-vs-vanguard/', 'priority' => '0.9', 'changefreq' => 'monthly'],
+    ['loc' => '/vanguard-pas-vs-target-date/', 'priority' => '0.9', 'changefreq' => 'monthly'],
     ['loc' => '/retirement-timeline/', 'priority' => '0.9', 'changefreq' => 'monthly'],
     ['loc' => '/pension-vs-lump-sum/', 'priority' => '0.9', 'changefreq' => 'monthly'],
     ['loc' => '/plan-success/', 'priority' => '0.9', 'changefreq' => 'monthly'],

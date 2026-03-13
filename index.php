@@ -480,6 +480,12 @@ $seo_site_name = "Ron Belisle Financial Calculators";
       </section>
 
       <section class="card">
+        <h3>Vanguard Personal Advisor vs Target Date Funds</h3>
+        <p>Compare the cost of Vanguard PAS (0.30%) with a self-managed blend of Target Date funds. Allocate conservative, moderate, and aggressive.</p>
+        <a class="btn" href="vanguard-pas-vs-target-date/">Open</a>
+      </section>
+
+      <section class="card">
         <h3>Social Security Claiming Analyzer</h3>
         <p>Compare claiming ages and see how lifetime Social Security benefits change over time.</p>
         <a class="btn" href="social-security-claiming-analyzer/">Open</a>
