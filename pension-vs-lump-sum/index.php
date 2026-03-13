@@ -15,6 +15,16 @@ $isPremium = has_premium_access();
     <title>Pension vs. Lump Sum Calculator</title>
     <?php $og_title = $ld_name = 'Pension vs. Lump Sum Calculator'; $og_description = $ld_description = 'Compare pension vs lump sum. See break-even age and how many years of payments match the lump sum if invested.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
     <link rel="stylesheet" href="../css/styles.css">
+    <style>
+      .slider-row { margin-bottom: 18px; }
+      .slider-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; font-weight: 600; font-size: 14px; }
+      .slider-label span.value { font-weight: 500; color: #4b5563; font-size: 13px; }
+      input[type="range"] { width: 100%; margin: 0; -webkit-appearance: none; background: transparent; }
+      input[type="range"]::-webkit-slider-runnable-track { height: 6px; background: #e5e7eb; border-radius: 999px; }
+      input[type="range"]::-moz-range-track { height: 6px; background: #e5e7eb; border-radius: 999px; }
+      input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 999px; background: #1d4ed8; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(37,99,235,.5), 0 6px 12px rgba(15,23,42,.15); margin-top: -6px; }
+      input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 999px; background: #1d4ed8; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(37,99,235,.5), 0 6px 12px rgba(15,23,42,.15); }
+    </style>
 </head>
 <body>
 
@@ -45,42 +55,38 @@ $isPremium = has_premium_access();
 </div>
 <?php endif; ?>
 
-    <form id="pensionForm">
+    <section aria-label="Pension vs lump sum inputs">
       <h3>Your Numbers</h3>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
-        <div>
-          <label for="monthlyPension" style="display: block; margin-bottom: 5px; font-weight: 600;">Monthly Pension ($)</label>
-          <input type="number" id="monthlyPension" min="0" step="100" value="2500" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px;">
+        <div class="slider-row">
+          <div class="slider-label"><span>Monthly Pension ($)</span><span class="value" id="monthlyPensionLabel"></span></div>
+          <input type="range" id="monthlyPension" min="500" max="5000" step="100" value="2500">
           <small style="color: #666;">Before tax; single-life or joint-life amount</small>
         </div>
-        <div>
-          <label for="lumpSum" style="display: block; margin-bottom: 5px; font-weight: 600;">Lump Sum Offered ($)</label>
-          <input type="number" id="lumpSum" min="0" step="1000" value="500000" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div class="slider-row">
+          <div class="slider-label"><span>Lump Sum Offered ($)</span><span class="value" id="lumpSumLabel"></span></div>
+          <input type="range" id="lumpSum" min="100000" max="1000000" step="10000" value="500000">
           <small style="color: #666;">One-time amount if you give up the pension</small>
         </div>
-        <div>
-          <label for="currentAge" style="display: block; margin-bottom: 5px; font-weight: 600;">Your Current Age</label>
-          <input type="number" id="currentAge" min="50" max="95" value="65" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div class="slider-row">
+          <div class="slider-label"><span>Your Current Age</span><span class="value" id="currentAgeLabel"></span></div>
+          <input type="range" id="currentAge" min="50" max="95" step="1" value="65">
           <small style="color: #666;">Age when pension or lump sum starts</small>
         </div>
-        <div>
-          <label for="growthRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Assumed Growth Rate on Lump Sum (%)</label>
-          <input type="number" id="growthRate" min="0" max="15" step="0.25" value="5" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div class="slider-row">
+          <div class="slider-label"><span>Assumed Growth Rate on Lump Sum (%)</span><span class="value" id="growthRateLabel"></span></div>
+          <input type="range" id="growthRate" min="0" max="15" step="0.25" value="5">
           <small style="color: #666;">Annual return if you invest the lump sum</small>
         </div>
-        <div>
-          <label for="lifeExpectancy" style="display: block; margin-bottom: 5px; font-weight: 600;">Plan To Age (Life Expectancy)</label>
-          <input type="number" id="lifeExpectancy" min="70" max="120" value="90" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div class="slider-row">
+          <div class="slider-label"><span>Plan To Age (Life Expectancy)</span><span class="value" id="lifeExpectancyLabel"></span></div>
+          <input type="range" id="lifeExpectancy" min="70" max="105" step="1" value="90">
           <small style="color: #666;">Used to show total received by end of plan</small>
         </div>
       </div>
+    </section>
 
-      <div style="text-align: center; margin: 30px 0;">
-        <button type="submit" class="button" style="font-size: 1.1em; padding: 12px 30px;">Compare Pension vs. Lump Sum</button>
-      </div>
-    </form>
-
-    <div id="results" class="results-container" style="display: none;">
+    <div id="results" class="results-container">
       <h2>Pension vs. Lump Sum Comparison</h2>
 
       <div class="info-box info-box-blue" id="summaryBox" style="margin-bottom: 25px;"></div>

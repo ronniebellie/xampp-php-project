@@ -1,8 +1,6 @@
 (function () {
   'use strict';
 
-  const form = document.getElementById('pensionForm');
-  const resultsEl = document.getElementById('results');
   const summaryBox = document.getElementById('summaryBox');
   const resultsBody = document.getElementById('resultsBody');
 
@@ -10,12 +8,18 @@
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0, minimumFractionDigits: 0 }).format(n);
   }
 
-  function runComparison() {
+  function updatePension() {
     const monthlyPension = parseFloat(document.getElementById('monthlyPension').value) || 0;
     const lumpSum = parseFloat(document.getElementById('lumpSum').value) || 0;
     const currentAge = parseInt(document.getElementById('currentAge').value, 10) || 65;
     const growthRatePct = parseFloat(document.getElementById('growthRate').value) || 5;
     const lifeExpectancy = parseInt(document.getElementById('lifeExpectancy').value, 10) || 90;
+
+    document.getElementById('monthlyPensionLabel').textContent = formatCurrency(monthlyPension);
+    document.getElementById('lumpSumLabel').textContent = formatCurrency(lumpSum);
+    document.getElementById('currentAgeLabel').textContent = currentAge + ' yrs';
+    document.getElementById('growthRateLabel').textContent = growthRatePct.toFixed(2).replace(/\.?0+$/, '') + '%';
+    document.getElementById('lifeExpectancyLabel').textContent = lifeExpectancy;
 
     const annualPension = 12 * monthlyPension;
     const r = growthRatePct / 100;
@@ -36,12 +40,10 @@
       }
     }
 
-    // Show table through plan horizon, or through break-even + a few years if later
     const planYears = lifeExpectancy - currentAge + 2;
     const tableYears = Math.min(Math.max(planYears, (breakEvenYear || 0) + 3), maxYears);
     const displayRows = rows.slice(0, tableYears);
 
-    // Summary text
     let summaryHtml = '';
     if (breakEvenAge !== null) {
       summaryHtml = '<p><strong>Break-even:</strong> At age <strong>' + breakEvenAge + '</strong> (in ' + breakEvenYear + ' years), the total pension you will have received equals what the lump sum would have grown to at ' + growthRatePct + '% per year.</p>';
@@ -51,17 +53,12 @@
     }
     summaryBox.innerHTML = summaryHtml;
 
-    // Table
     resultsBody.innerHTML = displayRows.map(function (row) {
       const highlight = row.age === breakEvenAge ? ' style="background: #e0f2fe;"' : '';
       return '<tr' + highlight + '><td>' + row.year + '</td><td>' + row.age + '</td><td>' + formatCurrency(row.cumPension) + '</td><td>' + formatCurrency(row.lumpSumFV) + '</td></tr>';
     }).join('');
 
-    // Chart: cumulative pension vs lump sum FV over time
     createComparisonChart(displayRows, breakEvenAge);
-
-    resultsEl.style.display = 'block';
-    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     window.lastPensionResult = {
       monthlyPension,
@@ -153,12 +150,13 @@
     });
   }
 
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    runComparison();
+  ['monthlyPension', 'lumpSum', 'currentAge', 'growthRate', 'lifeExpectancy'].forEach(function (id) {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', updatePension);
   });
 
-  // Premium save/load stubs if needed later
+  document.addEventListener('DOMContentLoaded', updatePension);
+
   var saveBtn = document.getElementById('saveScenarioBtn');
   var loadBtn = document.getElementById('loadScenarioBtn');
   if (saveBtn) saveBtn.addEventListener('click', function () {
