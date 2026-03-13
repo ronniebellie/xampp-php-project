@@ -60,13 +60,19 @@ $isPremium = has_premium_access();
                     <label for="portfolioValue">Current Portfolio Value</label>
                     <div class="input-with-prefix">
                         <span class="prefix">$</span>
-                        <input type="number" id="portfolioValue" value="500000" min="1000" step="1000">
+                        <input type="range" id="portfolioValue" value="500000" min="50000" max="5000000" step="10000">
+                    </div>
+                    <div class="slider-label" style="margin-top: 4px; justify-content: flex-end;">
+                        <span class="value" id="portfolioValueLabel" style="font-weight: 500; color: #4b5563;"></span>
                     </div>
                 </div>
 
                 <div class="input-group">
                     <label for="advisorFee">Advisor Fee (%)</label>
-                    <input type="number" id="advisorFee" value="1.0" min="0" max="5" step="0.1">
+                    <input type="range" id="advisorFee" value="1.0" min="0" max="5" step="0.05">
+                    <div class="slider-label" style="margin-top: 4px; justify-content: flex-end;">
+                        <span class="value" id="advisorFeeLabel" style="font-weight: 500; color: #4b5563;"></span>
+                    </div>
                     <span class="help-text">Typical managed portfolio fee: 1.0%</span>
                 </div>
 
@@ -78,16 +84,22 @@ $isPremium = has_premium_access();
 
                 <div class="input-group">
                     <label for="years">Investment Timeline (Years)</label>
-                    <input type="number" id="years" value="20" min="1" max="50" step="1">
+                    <input type="range" id="years" value="20" min="1" max="50" step="1">
+                    <div class="slider-label" style="margin-top: 4px; justify-content: flex-end;">
+                        <span class="value" id="yearsLabel" style="font-weight: 500; color: #4b5563;"></span>
+                    </div>
                 </div>
 
                 <div class="input-group">
                     <label for="returnRate">Expected Annual Return (Before Fees) (%)</label>
-                    <input type="number" id="returnRate" value="8.0" min="0" max="20" step="0.5">
+                    <input type="range" id="returnRate" value="8.0" min="0" max="20" step="0.25">
+                    <div class="slider-label" style="margin-top: 4px; justify-content: flex-end;">
+                        <span class="value" id="returnRateLabel" style="font-weight: 500; color: #4b5563;"></span>
+                    </div>
                     <span class="help-text">Historical S&P 500 average: ~10% (we use conservative 8%)</span>
                 </div>
 
-                <button id="calculateBtn" class="calculate-btn">Calculate True Cost</button>
+                <button id="calculateBtn" class="calculate-btn" type="button">Calculate True Cost</button>
             </div>
 
             <!-- Results Section -->

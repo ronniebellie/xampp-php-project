@@ -42,17 +42,24 @@ function calculatePortfolio(principal, annualReturn, feeRate, years) {
 }
 
 // Main calculation
-function calculate() {
-    // Get inputs
+function calculate(showAlerts) {
     const portfolioValue = parseFloat(document.getElementById('portfolioValue').value);
     const advisorFee = parseFloat(document.getElementById('advisorFee').value);
     const vanguardFee = parseFloat(document.getElementById('vanguardFee').value);
     const years = parseInt(document.getElementById('years').value);
     const returnRate = parseFloat(document.getElementById('returnRate').value);
+
+    const portfolioValueLabel = document.getElementById('portfolioValueLabel');
+    if (portfolioValueLabel) portfolioValueLabel.textContent = formatCurrency(portfolioValue);
+    const advisorFeeLabel = document.getElementById('advisorFeeLabel');
+    if (advisorFeeLabel) advisorFeeLabel.textContent = advisorFee.toFixed(2).replace(/\.00$/, '') + '%';
+    const yearsLabel = document.getElementById('yearsLabel');
+    if (yearsLabel) yearsLabel.textContent = years + ' yrs';
+    const returnRateLabel = document.getElementById('returnRateLabel');
+    if (returnRateLabel) returnRateLabel.textContent = returnRate.toFixed(2).replace(/\.00$/, '') + '%';
     
-    // Validate inputs
     if (isNaN(portfolioValue) || isNaN(advisorFee) || isNaN(years) || isNaN(returnRate)) {
-        alert('Please enter valid numbers for all fields');
+        if (showAlerts) alert('Please enter valid numbers for all fields');
         return;
     }
     
@@ -353,21 +360,19 @@ function createFeesChart(managedData, vanguardData, years) {
 }
 
 // Event listener
-document.getElementById('calculateBtn').addEventListener('click', calculate);
+document.getElementById('calculateBtn').addEventListener('click', function() {
+    calculate(true);
+});
 
-// Allow Enter key to calculate
-document.querySelectorAll('input').forEach(input => {
-    input.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            calculate();
-        }
+['portfolioValue', 'advisorFee', 'years', 'returnRate'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', function() {
+        calculate(false);
     });
 });
 
-// Calculate on page load with default values
 window.addEventListener('load', function() {
-    // Optional: Auto-calculate on load
-    // calculate();
+    calculate(false);
 });
 // Premium Save/Load/Compare/PDF/CSV
 document.addEventListener('DOMContentLoaded', function() {
