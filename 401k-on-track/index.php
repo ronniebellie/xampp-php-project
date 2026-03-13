@@ -64,9 +64,9 @@ $isPremium = has_premium_access();
           <input type="range" id="currentAge" min="25" max="60" step="1" value="40">
         </div>
         <div class="slider-row">
-          <div class="slider-label"><span>Target retirement age</span><span class="value" id="retirementAgeLabel"></span></div>
-          <input type="range" id="retirementAge" min="55" max="75" step="1" value="65">
-          <small style="color: #666;">When you plan to stop contributing and start drawing</small>
+          <div class="slider-label"><span>Years until retirement</span><span class="value" id="yearsToRetirementLabel"></span></div>
+          <input type="range" id="yearsToRetirement" min="5" max="40" step="1" value="25">
+          <small style="color: #666;">We’ll show the implied retirement age below</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Current 401(k) + IRA balance</span><span class="value" id="currentBalanceLabel"></span></div>

@@ -43,7 +43,7 @@ function buildShareUrlFromOnTrackForm() {
   const params = new URLSearchParams();
   const ids = [
     'currentAge',
-    'retirementAge',
+    'yearsToRetirement',
     'currentBalance',
     'annualContribution',
     'expectedReturn',
@@ -75,12 +75,9 @@ document.getElementById('setTargetFromIncome').addEventListener('click', functio
 
 function updateOnTrack() {
   const currentAge = parseInt(document.getElementById('currentAge').value, 10) || 40;
-  const retirementAge = parseInt(document.getElementById('retirementAge').value, 10) || 65;
-  let years = Math.max(0, retirementAge - currentAge);
-  if (years <= 0) {
-    alert('Retirement age must be greater than current age.');
-    return;
-  }
+  let years = parseInt(document.getElementById('yearsToRetirement').value, 10);
+  if (isNaN(years) || years < 1) years = 1;
+  const retirementAge = currentAge + years;
   const currentBalance = parseFloat(document.getElementById('currentBalance').value) || 0;
   const annualContribution = parseFloat(document.getElementById('annualContribution').value) || 0;
   const expectedReturn = parseFloat(document.getElementById('expectedReturn').value) || 6;
@@ -129,7 +126,7 @@ function updateOnTrack() {
 
   const progressEl = document.getElementById('progressMessage');
   if (onTrack) {
-    progressEl.textContent = 'At your current contribution rate, you\'re projected to reach your target by age ' + retirementAge + '.';
+    progressEl.textContent = 'At your current contribution rate, you\'re projected to reach your target in ' + years + ' years (around age ' + retirementAge + ').';
     progressEl.style.background = '#f0fdf4';
     progressEl.style.color = '#166534';
   } else {
@@ -213,7 +210,7 @@ function updateOnTrack() {
   }
 }
 
-['currentAge', 'retirementAge', 'currentBalance', 'annualContribution', 'expectedReturn', 'targetBalance'].forEach(function(id) {
+['currentAge', 'yearsToRetirement', 'currentBalance', 'annualContribution', 'expectedReturn', 'targetBalance'].forEach(function(id) {
   const el = document.getElementById(id);
   if (el) el.addEventListener('input', updateOnTrack);
 });
@@ -223,18 +220,25 @@ document.addEventListener('DOMContentLoaded', function() {
   (function applyScenarioFromUrl() {
     const params = new URLSearchParams(window.location.search || '');
     if (!params.has('currentAge') && !params.has('currentBalance')) return;
-    const ids = [
-      'currentAge',
-      'retirementAge',
-      'currentBalance',
-      'annualContribution',
-      'expectedReturn',
-      'targetBalance',
-      'desiredIncome',
-      'withdrawalRate'
-    ];
     let any = false;
-    ids.forEach(id => {
+    const currentAgeEl = document.getElementById('currentAge');
+    if (currentAgeEl && params.has('currentAge')) {
+      currentAgeEl.value = params.get('currentAge');
+      any = true;
+    }
+    const yearsEl = document.getElementById('yearsToRetirement');
+    if (yearsEl) {
+      if (params.has('yearsToRetirement')) {
+        yearsEl.value = params.get('yearsToRetirement');
+        any = true;
+      } else if (params.has('retirementAge') && currentAgeEl) {
+        const ca = parseInt(currentAgeEl.value, 10) || 40;
+        const ra = parseInt(params.get('retirementAge'), 10) || (ca + 25);
+        yearsEl.value = Math.max(1, ra - ca);
+        any = true;
+      }
+    }
+    ['currentBalance', 'annualContribution', 'expectedReturn', 'targetBalance', 'desiredIncome', 'withdrawalRate'].forEach(id => {
       const el = document.getElementById(id);
       if (el && params.has(id)) {
         el.value = params.get(id);
