@@ -18,6 +18,9 @@ $strings = [
     'card_be_title' => 'Accounting – Break-even Point and Profit (Cost-Volume-Profit)',
     'card_be_p' => 'Find how many units you must sell to break even (no profit, no loss) and see profit or loss at your expected sales. Good for cafés, online shops, and other small business examples.',
     'card_be_small' => 'Useful for financial accounting and managerial accounting.',
+    'card_sd_title' => 'Microeconomics – Supply and Demand Equilibrium',
+    'card_sd_p' => 'Find the equilibrium price and quantity where quantity demanded equals quantity supplied. Enter simple linear demand and supply equations; the tool solves the intersection and shows a graph.',
+    'card_sd_small' => 'Useful for introductory microeconomics and market analysis.',
     'open_calc' => 'Open calculator',
     'note_heading' => 'For professors and students',
     'note_p1' => 'These tools are free for students and teachers at Mukogawa Women’s University. If you are a professor at another university and are interested, please contact Ron Belisle.',
@@ -43,6 +46,9 @@ $strings = [
     'card_be_title' => '会計 – 損益分岐点と利益（CVP分析）',
     'card_be_p' => '損益分岐点（利益も損失もない売上）に必要な販売数量と、想定売上での利益または損失を計算します。カフェやネットショップなどの例に使えます。',
     'card_be_small' => '財務会計・管理会計に役立ちます。',
+    'card_sd_title' => 'ミクロ経済 – 需要と供給の均衡',
+    'card_sd_p' => '需要量と供給量が一致する均衡価格・均衡数量を求めます。一次の需要・供給式を入力すると、交点を計算しグラフで表示します。',
+    'card_sd_small' => 'ミクロ経済学の入門と市場分析に役立ちます。',
     'open_calc' => '計算ツールを開く',
     'note_heading' => '教員・学生の皆さんへ',
     'note_p1' => '武庫川女子大学の学生・教員の方は無料でご利用いただけます。他大学の教員でご興味のある方は、Ron Belisle までご連絡ください。',
@@ -125,6 +131,12 @@ $langParam = $lang === 'ja' ? '?lang=ja' : '';
           <p><?php echo htmlspecialchars($s['card_be_p']); ?></p>
           <small><?php echo htmlspecialchars($s['card_be_small']); ?></small>
           <a class="button" href="/breakeven-profit/<?php echo $langParam; ?>"><?php echo htmlspecialchars($s['open_calc']); ?></a>
+        </article>
+        <article class="card">
+          <h2><?php echo htmlspecialchars($s['card_sd_title']); ?></h2>
+          <p><?php echo htmlspecialchars($s['card_sd_p']); ?></p>
+          <small><?php echo htmlspecialchars($s['card_sd_small']); ?></small>
+          <a class="button" href="/supply-demand/<?php echo $langParam; ?>"><?php echo htmlspecialchars($s['open_calc']); ?></a>
         </article>
       </div>
     </div>
