@@ -162,8 +162,8 @@
       targetFinal: targetFinal
     };
 
-    document.getElementById('results').style.display = 'block';
     if (shouldScroll) {
+      document.getElementById('results').style.display = 'block';
       document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }
@@ -258,7 +258,6 @@
 
   window.addEventListener('load', function () {
     updateLabels();
-    calculate(false);
   });
 
   document.addEventListener('DOMContentLoaded', function () {
