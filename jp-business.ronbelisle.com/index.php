@@ -4,12 +4,13 @@ require_once __DIR__ . '/includes/lang.php';
 $strings = [
   'en' => [
     'title' => 'Business Calculators for Japanese College Students',
-    'intro1' => 'These calculators are designed for Japanese university students who study business in English.',
+    'intro1' => 'These calculators are designed for Japanese university students who major in business.',
     'intro2' => 'They focus on three important areas: ',
     'intro2_finance' => 'finance',
     'intro2_accounting' => 'accounting',
     'intro2_micro' => 'microeconomics',
-    'intro3' => 'English is simple. You can change the numbers and see how the results change.',
+    'intro2_end' => '. You can change the numbers and see how the results change.',
+    'intro3' => 'The English is simple, but if you want, you can switch to Japanese at the top left.',
     'section_title' => 'Available calculators',
     'section_subtitle' => 'Start with any calculator below. Each page explains the idea in clear English and uses yen (¥) in the examples.',
     'card_npv_title' => 'Finance – Net Present Value (NPV) and Internal Rate of Return (IRR)',
@@ -34,7 +35,6 @@ $strings = [
     'lang_en' => 'English',
     'lang_ja' => '日本語',
     'intro2_sep' => ', ',
-    'intro2_end' => '.',
   ],
   'ja' => [
     'title' => '日本の大学生のためのビジネス計算ツール',
