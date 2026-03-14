@@ -260,14 +260,16 @@
     updateLabels();
   });
 
-  // When Safari (or other browsers) restores the page from bfcache on refresh/back,
-  // hide the results so the user sees the initial state until they click Calculate again.
+  // Hide results whenever the page is shown: first load, refresh, or back/forward (bfcache).
+  // This prevents Safari from showing stale calculated values after refresh.
+  function hideResultsOnShow() {
+    var results = document.getElementById('results');
+    if (results) results.style.display = 'none';
+  }
   window.addEventListener('pageshow', function (event) {
-    if (event.persisted) {
-      var results = document.getElementById('results');
-      if (results) results.style.display = 'none';
-    }
+    if (event.persisted) hideResultsOnShow();
   });
+  document.addEventListener('DOMContentLoaded', hideResultsOnShow);
 
   document.addEventListener('DOMContentLoaded', function () {
     var saveBtn = document.getElementById('saveScenarioBtn');
