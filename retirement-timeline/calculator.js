@@ -99,8 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
       when: 'Dial in the plan',
       tasks: phase2Tasks.map(t => ({
         ...t,
-        date: addMonths(retireDate, -12 * 30),
-        age: calculateAgeOn(birth, addMonths(retireDate, -12 * 30))
+        date: addMonths(retireDate, -12 * 2.5),
+        age: calculateAgeOn(birth, addMonths(retireDate, -12 * 2.5))
       }))
     });
 
