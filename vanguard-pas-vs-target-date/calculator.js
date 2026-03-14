@@ -260,6 +260,15 @@
     updateLabels();
   });
 
+  // When Safari (or other browsers) restores the page from bfcache on refresh/back,
+  // hide the results so the user sees the initial state until they click Calculate again.
+  window.addEventListener('pageshow', function (event) {
+    if (event.persisted) {
+      var results = document.getElementById('results');
+      if (results) results.style.display = 'none';
+    }
+  });
+
   document.addEventListener('DOMContentLoaded', function () {
     var saveBtn = document.getElementById('saveScenarioBtn');
     var loadBtn = document.getElementById('loadScenarioBtn');
