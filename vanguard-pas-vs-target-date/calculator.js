@@ -1,6 +1,13 @@
 (function () {
   'use strict';
 
+  var PAS_API_BASE = (function () {
+    var path = window.location.pathname;
+    var match = path.match(/^(.*\/)vanguard-pas-vs-target-date\/?/);
+    var basePath = (match ? match[1] : '/').replace(/\/?$/, '/');
+    return window.location.origin + basePath;
+  })();
+
   function formatCurrency(amount) {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -271,17 +278,102 @@
   });
   document.addEventListener('DOMContentLoaded', hideResultsOnShow);
 
+  function saveScenario() {
+    var scenarioName = prompt('Enter a name for this scenario:', 'PAS vs Target Date');
+    if (!scenarioName) return;
+    var formData = {
+      portfolioValue: document.getElementById('portfolioValue').value,
+      pasFee: document.getElementById('pasFee').value,
+      targetDateFee: document.getElementById('targetDateFee').value,
+      years: document.getElementById('years').value,
+      returnRate: document.getElementById('returnRate').value,
+      withdrawalPct: document.getElementById('withdrawalPct').value,
+      pctConservative: document.getElementById('pctConservative').value,
+      pctModerate: document.getElementById('pctModerate').value,
+      pctAggressive: document.getElementById('pctAggressive').value
+    };
+    fetch(PAS_API_BASE + 'api/save_scenario.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        calculator_type: 'vanguard-pas-vs-target-date',
+        scenario_name: scenarioName,
+        scenario_data: formData
+      })
+    })
+    .then(function (res) { return res.text().then(function (text) { return { ok: res.ok, status: res.status, text: text }; }); })
+    .then(function (out) {
+      var data;
+      try { data = JSON.parse(out.text); } catch (_) { throw new Error(out.text || 'Server error'); }
+      if (!out.ok) throw new Error(data.error || 'Save failed');
+      return data;
+    })
+    .then(function (data) {
+      var status = document.getElementById('saveStatus');
+      if (status) status.textContent = 'Saved!';
+      if (status) setTimeout(function () { status.textContent = ''; }, 3000);
+    })
+    .catch(function (err) { alert('Save scenario failed: ' + err.message); });
+  }
+
+  function loadScenario() {
+    fetch(PAS_API_BASE + 'api/load_scenarios.php?calculator_type=vanguard-pas-vs-target-date', { credentials: 'include' })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      if (!data.success) {
+        alert('Error: ' + (data.error || 'Unknown error'));
+        return;
+      }
+      if (!data.scenarios || data.scenarios.length === 0) {
+        alert('No saved scenarios yet. Save your first one!');
+        return;
+      }
+      var message = 'Select a scenario to load (or type "d" + number to delete):\n\n';
+      data.scenarios.forEach(function (s, i) {
+        message += (i + 1) + '. ' + s.name + ' (saved ' + new Date(s.updated_at).toLocaleDateString() + ')\n';
+      });
+      message += '\nExamples: Enter "1" to load, "d1" to delete';
+      var choice = prompt(message + '\n\nEnter number or d+number:');
+      if (!choice) return;
+      var index;
+      if (choice.toLowerCase().indexOf('d') === 0) {
+        index = parseInt(choice.substring(1), 10) - 1;
+        if (index >= 0 && index < data.scenarios.length && confirm('Delete "' + data.scenarios[index].name + '"? This cannot be undone.')) {
+          fetch(PAS_API_BASE + 'api/delete_scenario.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ scenario_id: data.scenarios[index].id })
+          })
+          .then(function (r) { return r.json(); })
+          .then(function (result) {
+            if (result.success) alert('Scenario deleted!');
+            else alert('Error: ' + result.error);
+          });
+        }
+        return;
+      }
+      index = parseInt(choice, 10) - 1;
+      if (index >= 0 && index < data.scenarios.length) {
+        var scenario = data.scenarios[index];
+        var d = scenario.data || {};
+        ['portfolioValue', 'pasFee', 'targetDateFee', 'years', 'returnRate', 'withdrawalPct', 'pctConservative', 'pctModerate', 'pctAggressive'].forEach(function (key) {
+          var el = document.getElementById(key);
+          if (el && d[key] !== undefined) el.value = d[key];
+        });
+        updateLabels();
+        alert('Scenario loaded! Click "Calculate True Cost" to see results.');
+      }
+    })
+    .catch(function (err) { alert('Load scenarios failed: ' + err.message); });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     var saveBtn = document.getElementById('saveScenarioBtn');
     var loadBtn = document.getElementById('loadScenarioBtn');
-    if (saveBtn) saveBtn.addEventListener('click', function () {
-      var status = document.getElementById('saveStatus');
-      if (status) status.textContent = 'Save/load can be added.';
-    });
-    if (loadBtn) loadBtn.addEventListener('click', function () {
-      var status = document.getElementById('saveStatus');
-      if (status) status.textContent = '';
-    });
+    if (saveBtn) saveBtn.addEventListener('click', saveScenario);
+    if (loadBtn) loadBtn.addEventListener('click', loadScenario);
     var explainBtn = document.getElementById('explainResultsBtnInResults');
     if (explainBtn) explainBtn.addEventListener('click', explainPASResults);
   });
