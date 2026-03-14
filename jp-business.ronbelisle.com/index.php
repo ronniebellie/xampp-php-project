@@ -21,6 +21,9 @@ $strings = [
     'card_sd_title' => 'Microeconomics – Supply and Demand Equilibrium',
     'card_sd_p' => 'Find the equilibrium price and quantity where quantity demanded equals quantity supplied. Enter simple linear demand and supply equations; the tool solves the intersection and shows a graph.',
     'card_sd_small' => 'Useful for introductory microeconomics and market analysis.',
+    'card_payback_title' => 'Finance – Payback and Discounted Payback',
+    'card_payback_p' => 'See how many years it takes to recover your initial investment. Payback uses undiscounted cash flows; discounted payback uses the same discount rate as NPV. Pairs with the NPV/IRR calculator.',
+    'card_payback_small' => 'Useful for corporate finance and investment decisions.',
     'open_calc' => 'Open calculator',
     'note_heading' => 'For professors and students',
     'note_p1' => 'These tools are free for students and teachers at Mukogawa Women’s University. If you are a professor at another university and are interested, please contact Ron Belisle.',
@@ -49,6 +52,9 @@ $strings = [
     'card_sd_title' => 'ミクロ経済 – 需要と供給の均衡',
     'card_sd_p' => '需要量と供給量が一致する均衡価格・均衡数量を求めます。一次の需要・供給式を入力すると、交点を計算しグラフで表示します。',
     'card_sd_small' => 'ミクロ経済学の入門と市場分析に役立ちます。',
+    'card_payback_title' => 'ファイナンス – 回収期間と割引回収期間',
+    'card_payback_p' => '初期投資を何年で回収できるかを計算します。回収期間は割引なし、割引回収期間はNPVと同じ割引率を使います。NPV・IRRの計算ツールと一緒に使えます。',
+    'card_payback_small' => '企業財務・投資の意思決定に役立ちます。',
     'open_calc' => '計算ツールを開く',
     'note_heading' => '教員・学生の皆さんへ',
     'note_p1' => '武庫川女子大学の学生・教員の方は無料でご利用いただけます。他大学の教員でご興味のある方は、Ron Belisle までご連絡ください。',
@@ -137,6 +143,12 @@ $langParam = $lang === 'ja' ? '?lang=ja' : '';
           <p><?php echo htmlspecialchars($s['card_sd_p']); ?></p>
           <small><?php echo htmlspecialchars($s['card_sd_small']); ?></small>
           <a class="button" href="/supply-demand/<?php echo $langParam; ?>"><?php echo htmlspecialchars($s['open_calc']); ?></a>
+        </article>
+        <article class="card">
+          <h2><?php echo htmlspecialchars($s['card_payback_title']); ?></h2>
+          <p><?php echo htmlspecialchars($s['card_payback_p']); ?></p>
+          <small><?php echo htmlspecialchars($s['card_payback_small']); ?></small>
+          <a class="button" href="/payback/<?php echo $langParam; ?>"><?php echo htmlspecialchars($s['open_calc']); ?></a>
         </article>
       </div>
     </div>
