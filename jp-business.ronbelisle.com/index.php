@@ -1,177 +1,139 @@
 <?php
-// Simple standalone page for Japanese business students calculators (no login / premium required)
+require_once __DIR__ . '/includes/lang.php';
+
+$strings = [
+  'en' => [
+    'title' => 'Business Calculators for Japanese College Students',
+    'intro1' => 'These calculators are designed for Japanese university students who study business in English.',
+    'intro2' => 'They focus on three important areas: ',
+    'intro2_finance' => 'finance',
+    'intro2_accounting' => 'accounting',
+    'intro2_micro' => 'microeconomics',
+    'intro3' => 'English is simple. You can change the numbers and see how the results change.',
+    'section_title' => 'Available calculators',
+    'section_subtitle' => 'Start with any calculator below. Each page explains the idea in clear English and uses yen (¥) in the examples.',
+    'card_npv_title' => 'Finance – Net Present Value (NPV) and Internal Rate of Return (IRR)',
+    'card_npv_p' => 'Check if an investment project adds value. Enter the cost today and the cash you expect in future years. The calculator shows NPV and IRR in simple language.',
+    'card_npv_small' => 'Useful for corporate finance and investment decisions.',
+    'card_be_title' => 'Accounting – Break-even Point and Profit (Cost-Volume-Profit)',
+    'card_be_p' => 'Find how many units you must sell to break even (no profit, no loss) and see profit or loss at your expected sales. Good for cafés, online shops, and other small business examples.',
+    'card_be_small' => 'Useful for financial accounting and managerial accounting.',
+    'open_calc' => 'Open calculator',
+    'note_heading' => 'For professors and students',
+    'note_p1' => 'These tools are free for students and teachers at Mukogawa Women’s University. If you are a professor at another university and are interested, please contact Ron Belisle.',
+    'note_email' => 'Email: ',
+    'lang_en' => 'English',
+    'lang_ja' => '日本語',
+    'intro2_sep' => ', ',
+    'intro2_end' => '.',
+  ],
+  'ja' => [
+    'title' => '日本の大学生のためのビジネス計算ツール',
+    'intro1' => 'このサイトは、英語でビジネスを学ぶ日本の大学生向けの計算ツールです。',
+    'intro2' => '次の3つの分野に対応しています：',
+    'intro2_finance' => 'ファイナンス',
+    'intro2_accounting' => '会計',
+    'intro2_micro' => 'ミクロ経済学',
+    'intro3' => '英語はわかりやすく書いてあります。数字を変えると結果がどう変わるか確認できます。',
+    'section_title' => '計算ツール一覧',
+    'section_subtitle' => '下の計算ツールから選んでください。各ページでは考え方をやさしく説明し、例では円（¥）を使っています。',
+    'card_npv_title' => 'ファイナンス – 正味現在価値（NPV）と内部収益率（IRR）',
+    'card_npv_p' => '投資プロジェクトが価値を生むかどうかを判断します。今日の投資額と、今後受け取るキャッシュフローを入力すると、NPVとIRRが表示されます。',
+    'card_npv_small' => '企業財務・投資の意思決定に役立ちます。',
+    'card_be_title' => '会計 – 損益分岐点と利益（CVP分析）',
+    'card_be_p' => '損益分岐点（利益も損失もない売上）に必要な販売数量と、想定売上での利益または損失を計算します。カフェやネットショップなどの例に使えます。',
+    'card_be_small' => '財務会計・管理会計に役立ちます。',
+    'open_calc' => '計算ツールを開く',
+    'note_heading' => '教員・学生の皆さんへ',
+    'note_p1' => '武庫川女子大学の学生・教員の方は無料でご利用いただけます。他大学の教員でご興味のある方は、Ron Belisle までご連絡ください。',
+    'note_email' => 'メール：',
+    'lang_en' => 'English',
+    'lang_ja' => '日本語',
+    'intro2_sep' => '、',
+    'intro2_end' => '。',
+  ],
+];
+$s = $strings[$lang];
+$langParam = $lang === 'ja' ? '?lang=ja' : '';
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo $lang === 'ja' ? 'ja' : 'en'; ?>">
 <head>
   <?php
-  // Reuse main analytics if available
   if (file_exists(__DIR__ . '/../includes/analytics.php')) {
       include __DIR__ . '/../includes/analytics.php';
   }
   ?>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Business calculators in simple English for Japanese university students: finance, accounting, and microeconomics.">
-  <title>Business Calculators for Japanese College Students</title>
+  <meta name="description" content="<?php echo $lang === 'ja' ? '日本の大学生向けビジネス計算ツール（ファイナンス・会計・ミクロ経済）。' : 'Business calculators in simple English for Japanese university students: finance, accounting, and microeconomics.'; ?>">
+  <title><?php echo htmlspecialchars($s['title']); ?></title>
   <link rel="stylesheet" href="/css/styles.css">
   <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      margin: 0;
-      background: #f9fafb;
-      color: #0f172a;
-    }
-    .wrap {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 24px 16px 40px;
-    }
-    .page-header {
-      background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #38bdf8 100%);
-      color: #fff;
-      border-radius: 18px;
-      padding: 24px 20px;
-      box-shadow: 0 14px 34px rgba(15, 23, 42, 0.25);
-      margin-bottom: 26px;
-    }
-    .page-header h1 {
-      margin: 0 0 10px;
-      font-size: 24px;
-      letter-spacing: -0.02em;
-    }
-    .page-header p {
-      margin: 4px 0;
-      font-size: 15px;
-      line-height: 1.5;
-    }
-    .page-header small {
-      display: block;
-      margin-top: 8px;
-      font-size: 13px;
-      opacity: 0.9;
-    }
-    .section-title {
-      font-size: 18px;
-      font-weight: 800;
-      margin: 8px 0 4px;
-      letter-spacing: -0.01em;
-    }
-    .section-subtitle {
-      margin: 0 0 16px;
-      font-size: 14px;
-      color: #4b5563;
-    }
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 16px;
-      margin-top: 8px;
-    }
-    .card {
-      background: #ffffff;
-      border-radius: 14px;
-      border: 1px solid rgba(148, 163, 184, 0.6);
-      padding: 16px 16px 14px;
-      box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .card h2 {
-      margin: 0;
-      font-size: 16px;
-      letter-spacing: -0.01em;
-      color: #0f172a;
-    }
-    .card p {
-      margin: 0;
-      font-size: 14px;
-      color: #4b5563;
-      line-height: 1.5;
-      flex: 1;
-    }
-    .card small {
-      display: block;
-      margin-top: 4px;
-      font-size: 12px;
-      color: #6b7280;
-    }
-    .card a.button {
-      margin-top: 10px;
-      align-self: flex-start;
-      display: inline-block;
-      padding: 8px 14px;
-      border-radius: 999px;
-      background: #1d4ed8;
-      color: #fff;
-      font-size: 14px;
-      font-weight: 700;
-      text-decoration: none;
-      border: 1px solid rgba(15, 23, 42, 0.15);
-    }
-    .card a.button:hover {
-      background: #1e40af;
-    }
-    .note-box {
-      margin-top: 22px;
-      padding: 14px 14px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(148, 163, 184, 0.7);
-      background: #f9fafb;
-      font-size: 13px;
-      color: #374151;
-    }
-    .note-box strong {
-      display: block;
-      margin-bottom: 4px;
-    }
-    @media (max-width: 640px) {
-      .page-header {
-        padding: 18px 14px;
-        border-radius: 14px;
-      }
-      .page-header h1 {
-        font-size: 20px;
-      }
-    }
+    body { margin: 0; background: #f9fafb; color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 24px 16px 40px; }
+    .lang-toggle { margin-bottom: 12px; font-size: 14px; }
+    .lang-toggle a { color: #1d4ed8; text-decoration: none; margin-right: 8px; }
+    .lang-toggle a:hover { text-decoration: underline; }
+    .lang-toggle a.active { font-weight: 700; color: #0f172a; pointer-events: none; }
+    .page-header { background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #38bdf8 100%); color: #fff; border-radius: 18px; padding: 24px 20px; box-shadow: 0 14px 34px rgba(15, 23, 42, 0.25); margin-bottom: 26px; }
+    .page-header h1 { margin: 0 0 10px; font-size: 24px; letter-spacing: -0.02em; }
+    .page-header p { margin: 4px 0; font-size: 15px; line-height: 1.5; }
+    .page-header small { display: block; margin-top: 8px; font-size: 13px; opacity: 0.9; }
+    .section-title { font-size: 18px; font-weight: 800; margin: 8px 0 4px; letter-spacing: -0.01em; }
+    .section-subtitle { margin: 0 0 16px; font-size: 14px; color: #4b5563; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 8px; }
+    .card { background: #fff; border-radius: 14px; border: 1px solid rgba(148, 163, 184, 0.6); padding: 16px 16px 14px; box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08); display: flex; flex-direction: column; gap: 8px; }
+    .card h2 { margin: 0; font-size: 16px; letter-spacing: -0.01em; color: #0f172a; }
+    .card p { margin: 0; font-size: 14px; color: #4b5563; line-height: 1.5; flex: 1; }
+    .card small { display: block; margin-top: 4px; font-size: 12px; color: #6b7280; }
+    .card a.button { margin-top: 10px; align-self: flex-start; display: inline-block; padding: 8px 14px; border-radius: 999px; background: #1d4ed8; color: #fff; font-size: 14px; font-weight: 700; text-decoration: none; border: 1px solid rgba(15, 23, 42, 0.15); }
+    .card a.button:hover { background: #1e40af; }
+    .note-box { margin-top: 22px; padding: 14px 14px 12px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.7); background: #f9fafb; font-size: 13px; color: #374151; }
+    .note-box strong { display: block; margin-bottom: 4px; }
+    @media (max-width: 640px) { .page-header { padding: 18px 14px; border-radius: 14px; } .page-header h1 { font-size: 20px; } }
   </style>
 </head>
 <body>
   <div class="wrap">
+    <div class="lang-toggle">
+      <a href="?lang=en" class="<?php echo $lang === 'en' ? 'active' : ''; ?>"><?php echo htmlspecialchars($s['lang_en']); ?></a>
+      <span aria-hidden="true">|</span>
+      <a href="?lang=ja" class="<?php echo $lang === 'ja' ? 'active' : ''; ?>"><?php echo htmlspecialchars($s['lang_ja']); ?></a>
+    </div>
+
     <div class="page-header">
-      <h1>Business Calculators for Japanese College Students</h1>
-      <p>These calculators are designed for Japanese university students who study business in English.</p>
-      <p>They focus on three important areas: <strong>finance</strong>, <strong>accounting</strong>, and <strong>microeconomics</strong>.</p>
-      <small>English is simple. You can change the numbers and see how the results change.</small>
+      <h1><?php echo htmlspecialchars($s['title']); ?></h1>
+      <p><?php echo htmlspecialchars($s['intro1']); ?></p>
+      <p><?php echo htmlspecialchars($s['intro2']); ?><strong><?php echo htmlspecialchars($s['intro2_finance']); ?></strong><?php echo htmlspecialchars($s['intro2_sep']); ?><strong><?php echo htmlspecialchars($s['intro2_accounting']); ?></strong><?php echo htmlspecialchars($s['intro2_sep']); ?><strong><?php echo htmlspecialchars($s['intro2_micro']); ?></strong><?php echo htmlspecialchars($s['intro2_end']); ?></p>
+      <small><?php echo htmlspecialchars($s['intro3']); ?></small>
     </div>
 
     <div>
-      <h2 class="section-title">Available calculators</h2>
-      <p class="section-subtitle">Start with any calculator below. Each page explains the idea in clear English and uses yen (¥) in the examples.</p>
+      <h2 class="section-title"><?php echo htmlspecialchars($s['section_title']); ?></h2>
+      <p class="section-subtitle"><?php echo htmlspecialchars($s['section_subtitle']); ?></p>
 
       <div class="cards">
         <article class="card">
-          <h2>Finance – Net Present Value (NPV) and Internal Rate of Return (IRR)</h2>
-          <p>Check if an investment project adds value. Enter the cost today and the cash you expect in future years. The calculator shows NPV and IRR in simple language.</p>
-          <small>Useful for corporate finance and investment decisions.</small>
-          <a class="button" href="/npv-irr/">Open calculator</a>
+          <h2><?php echo htmlspecialchars($s['card_npv_title']); ?></h2>
+          <p><?php echo htmlspecialchars($s['card_npv_p']); ?></p>
+          <small><?php echo htmlspecialchars($s['card_npv_small']); ?></small>
+          <a class="button" href="/npv-irr/<?php echo $langParam; ?>"><?php echo htmlspecialchars($s['open_calc']); ?></a>
         </article>
         <article class="card">
-          <h2>Accounting – Break-even Point and Profit (Cost-Volume-Profit)</h2>
-          <p>Find how many units you must sell to break even (no profit, no loss) and see profit or loss at your expected sales. Good for cafés, online shops, and other small business examples.</p>
-          <small>Useful for financial accounting and managerial accounting.</small>
-          <a class="button" href="/breakeven-profit/">Open calculator</a>
+          <h2><?php echo htmlspecialchars($s['card_be_title']); ?></h2>
+          <p><?php echo htmlspecialchars($s['card_be_p']); ?></p>
+          <small><?php echo htmlspecialchars($s['card_be_small']); ?></small>
+          <a class="button" href="/breakeven-profit/<?php echo $langParam; ?>"><?php echo htmlspecialchars($s['open_calc']); ?></a>
         </article>
       </div>
     </div>
 
     <div class="note-box">
-      <strong>For professors and students</strong>
-      <p>These tools are free for students and teachers at Mukogawa Women’s University. If you are a professor at another university and are interested, please contact Ron Belisle.</p>
-      <p>Email: <a href="mailto:ronbelisle@gmail.com">ronbelisle@gmail.com</a></p>
+      <strong><?php echo htmlspecialchars($s['note_heading']); ?></strong>
+      <p><?php echo htmlspecialchars($s['note_p1']); ?></p>
+      <p><?php echo htmlspecialchars($s['note_email']); ?><a href="mailto:ronbelisle@gmail.com">ronbelisle@gmail.com</a></p>
     </div>
   </div>
 </body>
 </html>
-
