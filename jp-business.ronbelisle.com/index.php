@@ -4,12 +4,7 @@ require_once __DIR__ . '/includes/lang.php';
 $strings = [
   'en' => [
     'title' => 'Business Calculators for Japanese College Students',
-    'intro1' => 'These calculators are designed for Japanese university students who major in business.',
-    'intro2' => 'They focus on three important areas: ',
-    'intro2_finance' => 'finance',
-    'intro2_accounting' => 'accounting',
-    'intro2_micro' => 'microeconomics',
-    'intro2_end' => '. You can change the numbers and see how the results change.',
+    'intro_para' => 'These calculators are designed for Japanese university students who major in business. They focus on three important areas: finance, accounting, microeconomics. You can change the numbers and see how the results change.',
     'intro3' => 'The English is simple, but if you want, you can switch to Japanese at the top left.',
     'section_title' => 'Available calculators',
     'section_subtitle' => 'Start with any calculator below. Each page explains the idea in clear English and uses yen (¥) in the examples.',
@@ -34,16 +29,11 @@ $strings = [
     'note_email' => 'Email: ',
     'lang_en' => 'English',
     'lang_ja' => '日本語',
-    'intro2_sep' => ', ',
   ],
   'ja' => [
     'title' => '日本の大学生のためのビジネス計算ツール',
-    'intro1' => 'このサイトは、英語でビジネスを学ぶ日本の大学生向けの計算ツールです。',
-    'intro2' => '次の3つの分野に対応しています：',
-    'intro2_finance' => 'ファイナンス',
-    'intro2_accounting' => '会計',
-    'intro2_micro' => 'ミクロ経済学',
-    'intro3' => '英語はわかりやすく書いてあります。数字を変えると結果がどう変わるか確認できます。',
+    'intro_para' => 'このサイトは、ビジネスを専攻する日本の大学生向けの計算ツールです。ファイナンス、会計、ミクロ経済学の3つの分野に対応しています。数字を変えると結果がどう変わるか確認できます。',
+    'intro3' => '英語はわかりやすく書いてあります。左上で日本語に切り替えもできます。',
     'section_title' => '計算ツール一覧',
     'section_subtitle' => '下の計算ツールから選んでください。各ページでは考え方をやさしく説明し、例では円（¥）を使っています。',
     'card_npv_title' => 'ファイナンス – 正味現在価値（NPV）と内部収益率（IRR）',
@@ -67,8 +57,6 @@ $strings = [
     'note_email' => 'メール：',
     'lang_en' => 'English',
     'lang_ja' => '日本語',
-    'intro2_sep' => '、',
-    'intro2_end' => '。',
   ],
 ];
 $s = $strings[$lang];
@@ -122,8 +110,7 @@ $langParam = $lang === 'ja' ? '?lang=ja' : '';
 
     <div class="page-header">
       <h1><?php echo htmlspecialchars($s['title']); ?></h1>
-      <p><?php echo htmlspecialchars($s['intro1']); ?></p>
-      <p><?php echo htmlspecialchars($s['intro2']); ?><strong><?php echo htmlspecialchars($s['intro2_finance']); ?></strong><?php echo htmlspecialchars($s['intro2_sep']); ?><strong><?php echo htmlspecialchars($s['intro2_accounting']); ?></strong><?php echo htmlspecialchars($s['intro2_sep']); ?><strong><?php echo htmlspecialchars($s['intro2_micro']); ?></strong><?php echo htmlspecialchars($s['intro2_end']); ?></p>
+      <p><?php echo htmlspecialchars($s['intro_para']); ?></p>
       <small><?php echo htmlspecialchars($s['intro3']); ?></small>
     </div>
 
