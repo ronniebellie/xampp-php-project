@@ -377,11 +377,83 @@
     .catch(function (err) { alert('Load scenarios failed: ' + err.message); });
   }
 
+  function downloadPDF() {
+    var r = window.lastPASvsTargetResult;
+    if (!r) {
+      alert('Please run Calculate first, then download the PDF.');
+      return;
+    }
+    var chartCanvas1 = document.getElementById('growthChart');
+    var chartCanvas2 = document.getElementById('feesChart');
+    var chartImage1 = chartCanvas1 && window.Chart ? chartCanvas1.toDataURL('image/png') : null;
+    var chartImage2 = chartCanvas2 && window.Chart ? chartCanvas2.toDataURL('image/png') : null;
+    var payload = {
+      portfolioValue: r.portfolioValue,
+      pasFee: r.pasFee,
+      targetDateFee: r.targetDateFee,
+      years: r.years,
+      returnRate: r.returnRate,
+      withdrawalPct: r.withdrawalPct,
+      opportunityCost: r.opportunityCost,
+      directFeeDiff: r.directFeeDiff,
+      lostGrowth: r.lostGrowth,
+      pasFinal: r.pasFinal,
+      targetFinal: r.targetFinal,
+      pasData: r.pasData,
+      targetData: r.targetData,
+      chartImage1: chartImage1,
+      chartImage2: chartImage2
+    };
+    fetch(PAS_API_BASE + 'api/generate_pas_pdf.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) })
+    .then(function (res) {
+      if (!res.ok) return res.text().then(function (t) { try { var j = JSON.parse(t); throw new Error(j.error || 'PDF failed'); } catch (e) { throw new Error(t || 'PDF failed'); } });
+      var ct = res.headers.get('Content-Type') || '';
+      if (ct.indexOf('application/pdf') === -1) return res.text().then(function (t) { throw new Error('Server did not return a PDF.'); });
+      return res.blob();
+    })
+    .then(function (blob) {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'Vanguard_PAS_vs_Target_Date_' + new Date().toISOString().split('T')[0] + '.pdf';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    })
+    .catch(function (e) { alert('Download PDF: ' + e.message); });
+  }
+
+  function downloadCSV() {
+    var r = window.lastPASvsTargetResult;
+    if (!r) {
+      alert('Please run Calculate first, then export CSV.');
+      return;
+    }
+    var payload = { pasData: r.pasData, targetData: r.targetData };
+    fetch(PAS_API_BASE + 'api/export_pas_csv.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) })
+    .then(function (res) {
+      if (!res.ok) return res.text().then(function (t) { try { var j = JSON.parse(t); throw new Error(j.error || 'CSV failed'); } catch (e) { throw new Error(t || 'CSV failed'); } });
+      var ct = res.headers.get('Content-Type') || '';
+      if (ct.indexOf('text/csv') === -1 && ct.indexOf('application/csv') === -1) throw new Error('Server did not return CSV.');
+      return res.blob();
+    })
+    .then(function (blob) {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'Vanguard_PAS_vs_Target_Date_' + new Date().toISOString().split('T')[0] + '.csv';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    })
+    .catch(function (e) { alert('Export CSV: ' + e.message); });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     var saveBtn = document.getElementById('saveScenarioBtn');
     var loadBtn = document.getElementById('loadScenarioBtn');
+    var pdfBtn = document.getElementById('downloadPdfBtn');
+    var csvBtn = document.getElementById('downloadCsvBtn');
     if (saveBtn) saveBtn.addEventListener('click', saveScenario);
     if (loadBtn) loadBtn.addEventListener('click', loadScenario);
+    if (pdfBtn) pdfBtn.addEventListener('click', downloadPDF);
+    if (csvBtn) csvBtn.addEventListener('click', downloadCSV);
     var explainBtn = document.getElementById('explainResultsBtnInResults');
     if (explainBtn) explainBtn.addEventListener('click', explainPASResults);
   });

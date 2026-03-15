@@ -40,8 +40,13 @@ $isPremium = has_premium_access();
     <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
         <button type="button" id="saveScenarioBtn" class="btn-primary" style="background: #48bb78;">Save Scenario</button>
         <button type="button" id="loadScenarioBtn" class="btn-secondary">Load Scenario</button>
+        <button type="button" id="downloadPdfBtn" class="btn-primary" style="background: #e53e3e; color: white;" title="Full report with charts (PDF)">📄 Download PDF</button>
+        <button type="button" id="downloadCsvBtn" class="btn-primary" style="background: #3182ce; color: white;" title="Year-by-year data for Excel or spreadsheets">📊 Export CSV</button>
         <span id="saveStatus" style="color: #22543d; font-weight: 600;"></span>
     </div>
+    <p style="margin: 12px 0 0 0; font-size: 13px; color: #4a5568; line-height: 1.5;">
+        <strong>Save</strong> / <strong>Load</strong> — Store and recall scenarios. <strong>PDF</strong> — Full report with charts. <strong>CSV</strong> — Spreadsheet data. <strong>Explain</strong> — AI explains your results in plain language.
+    </p>
 </div>
 <?php endif; ?>
 
@@ -232,7 +237,7 @@ $isPremium = has_premium_access();
         <?php if (!$isPremium): ?>
         <?php
         $premium_upsell_headline = 'Unlock Premium Features';
-        $premium_upsell_text = 'Upgrade to Premium to save and load scenarios and get AI-generated plain-language explanations of your results.';
+        $premium_upsell_text = 'Upgrade to Premium to save and load scenarios, export PDF and CSV reports, and get AI-generated plain-language explanations of your results.';
         include(__DIR__ . '/../includes/premium-upsell-banner.php');
         ?>
         <footer class="calculator-footer">
