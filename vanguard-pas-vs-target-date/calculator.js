@@ -17,8 +17,9 @@
     }).format(amount);
   }
 
-  function calculatePortfolio(principal, annualReturnPct, feeRatePct, years, withdrawalPct) {
+  function calculatePortfolio(principal, annualReturnPct, feeRatePct, years, withdrawalPct, withdrawalStartYear) {
     withdrawalPct = withdrawalPct || 0;
+    withdrawalStartYear = withdrawalStartYear != null ? withdrawalStartYear : 1;
     var yearlyData = [];
     var balance = principal;
     var totalFees = 0;
@@ -27,7 +28,7 @@
     for (var y = 1; y <= years; y++) {
       balance = balance * (1 + annualReturnPct / 100);
       var yearFee = balance * (feeRatePct / 100);
-      var yearWithdrawal = withdrawalPct > 0 ? balance * (withdrawalPct / 100) : 0;
+      var yearWithdrawal = (withdrawalPct > 0 && y >= withdrawalStartYear) ? balance * (withdrawalPct / 100) : 0;
       totalFees += yearFee;
       totalWithdrawals += yearWithdrawal;
       yearlyData.push({
@@ -103,6 +104,9 @@
     var years = parseInt(document.getElementById('years').value, 10);
     var returnRate = parseFloat(document.getElementById('returnRate').value);
     var withdrawalPct = parseFloat(document.getElementById('withdrawalPct').value) || 0;
+    var timelineStartYear = parseInt(document.getElementById('timelineStartYear').value, 10) || new Date().getFullYear();
+    var withdrawalsStartYear = parseInt(document.getElementById('withdrawalsStartYear').value, 10) || timelineStartYear;
+    var withdrawalStartYear = Math.max(1, Math.min(years, (withdrawalsStartYear - timelineStartYear + 1)));
 
     updateLabels();
 
@@ -111,8 +115,8 @@
       return;
     }
 
-    var pasData = calculatePortfolio(portfolioValue, returnRate, pasFee, years, withdrawalPct);
-    var targetData = calculatePortfolio(portfolioValue, returnRate, targetDateFee, years, withdrawalPct);
+    var pasData = calculatePortfolio(portfolioValue, returnRate, pasFee, years, withdrawalPct, withdrawalStartYear);
+    var targetData = calculatePortfolio(portfolioValue, returnRate, targetDateFee, years, withdrawalPct, withdrawalStartYear);
 
     var alloc = getNormalizedAllocation();
     var midYear = Math.floor(years / 2);
@@ -159,6 +163,8 @@
       years: years,
       returnRate: returnRate,
       withdrawalPct: withdrawalPct,
+      timelineStartYear: timelineStartYear,
+      withdrawalsStartYear: withdrawalsStartYear,
       allocation: { conservative: alloc.c, moderate: alloc.m, aggressive: alloc.a },
       pasData: pasData,
       targetData: targetData,
@@ -258,7 +264,7 @@
 
   document.getElementById('calculateBtn').addEventListener('click', function () { calculate(true); });
 
-  ['portfolioValue', 'years', 'returnRate', 'withdrawalPct', 'pctConservative', 'pctModerate', 'pctAggressive'].forEach(function (id) {
+  ['portfolioValue', 'years', 'returnRate', 'withdrawalPct', 'timelineStartYear', 'withdrawalsStartYear', 'pctConservative', 'pctModerate', 'pctAggressive'].forEach(function (id) {
     var el = document.getElementById(id);
     if (el) el.addEventListener('input', function () { calculate(false); });
   });
@@ -288,6 +294,8 @@
       years: document.getElementById('years').value,
       returnRate: document.getElementById('returnRate').value,
       withdrawalPct: document.getElementById('withdrawalPct').value,
+      timelineStartYear: document.getElementById('timelineStartYear').value,
+      withdrawalsStartYear: document.getElementById('withdrawalsStartYear').value,
       pctConservative: document.getElementById('pctConservative').value,
       pctModerate: document.getElementById('pctModerate').value,
       pctAggressive: document.getElementById('pctAggressive').value
@@ -358,7 +366,7 @@
       if (index >= 0 && index < data.scenarios.length) {
         var scenario = data.scenarios[index];
         var d = scenario.data || {};
-        ['portfolioValue', 'pasFee', 'targetDateFee', 'years', 'returnRate', 'withdrawalPct', 'pctConservative', 'pctModerate', 'pctAggressive'].forEach(function (key) {
+        ['portfolioValue', 'pasFee', 'targetDateFee', 'years', 'returnRate', 'withdrawalPct', 'timelineStartYear', 'withdrawalsStartYear', 'pctConservative', 'pctModerate', 'pctAggressive'].forEach(function (key) {
           var el = document.getElementById(key);
           if (el && d[key] !== undefined) el.value = d[key];
         });
@@ -387,7 +395,7 @@ function explainPASResults() {
   }
   var summary = 'Vanguard Personal Advisor vs Target Date Funds. Portfolio $' + r.portfolioValue.toLocaleString() + ', PAS fee ' + r.pasFee + '%, Target Date fee ' + r.targetDateFee + '%. ';
   summary += 'Timeline ' + r.years + ' years, expected return ' + r.returnRate + '%. ';
-  if (r.withdrawalPct > 0) summary += 'Annual withdrawal ' + r.withdrawalPct + '% of portfolio. ';
+  if (r.withdrawalPct > 0) summary += 'Annual withdrawal ' + r.withdrawalPct + '% of portfolio, starting ' + (r.withdrawalsStartYear != null ? r.withdrawalsStartYear : 'year 1') + '. ';
   summary += 'Allocation: ' + r.allocation.conservative + '% conservative, ' + r.allocation.moderate + '% moderate, ' + r.allocation.aggressive + '% aggressive. ';
   summary += 'Opportunity cost over ' + r.years + ' years: $' + Math.round(r.opportunityCost).toLocaleString() + '. ';
   summary += 'Direct fee difference: $' + Math.round(r.directFeeDiff).toLocaleString() + '. Lost growth: $' + Math.round(r.lostGrowth > 0 ? r.lostGrowth : r.opportunityCost).toLocaleString() + '.';

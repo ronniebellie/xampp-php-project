@@ -87,12 +87,22 @@ $isPremium = has_premium_access();
                 </div>
 
                 <div class="input-group">
+                    <label for="timelineStartYear">Timeline start year</label>
+                    <input type="number" id="timelineStartYear" value="<?php echo (int)date('Y'); ?>" min="2000" max="2100" step="1">
+                    <span class="help-text">The calendar year that counts as &ldquo;year 1&rdquo; of the projection.</span>
+                </div>
+                <div class="input-group">
                     <div class="slider-label">
                         <span>Annual Withdrawal (% of portfolio)</span>
                         <span class="value" id="withdrawalPctLabel">0%</span>
                     </div>
                     <input type="range" id="withdrawalPct" value="0" min="0" max="10" step="0.1">
                     <span class="help-text">Set to 0 for no withdrawal. Many retirees use ~4% (e.g. 4.2% starting in a given year).</span>
+                </div>
+                <div class="input-group">
+                    <label for="withdrawalsStartYear">Withdrawals start year</label>
+                    <input type="number" id="withdrawalsStartYear" value="<?php echo (int)date('Y'); ?>" min="2000" max="2100" step="1">
+                    <span class="help-text">Calendar year when you begin taking the annual withdrawal % above. Example: 2027 if you won&rsquo;t withdraw until then.</span>
                 </div>
 
                 <h3 style="margin: 24px 0 12px; font-size: 18px; color: #334155;">Self-Managed Allocation (Target Date funds)</h3>
