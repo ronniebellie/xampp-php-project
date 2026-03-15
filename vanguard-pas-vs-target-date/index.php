@@ -89,7 +89,7 @@ $isPremium = has_premium_access();
                 <div class="input-group">
                     <label for="timelineStartYear">Timeline start year</label>
                     <input type="number" id="timelineStartYear" value="<?php echo (int)date('Y'); ?>" min="2000" max="2100" step="1">
-                    <span class="help-text">The calendar year that counts as &ldquo;year 1&rdquo; of the projection.</span>
+                    <span class="help-text">The real-world year when the simulation begins: year 1 in the results is this year, year 2 is the next calendar year, and so on.</span>
                 </div>
                 <div class="input-group">
                     <div class="slider-label">
