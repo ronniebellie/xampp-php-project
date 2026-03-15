@@ -383,10 +383,16 @@
       alert('Please run Calculate first, then download the PDF.');
       return;
     }
-    var chartCanvas1 = document.getElementById('growthChart');
-    var chartCanvas2 = document.getElementById('feesChart');
-    var chartImage1 = chartCanvas1 && window.Chart ? chartCanvas1.toDataURL('image/png') : null;
-    var chartImage2 = chartCanvas2 && window.Chart ? chartCanvas2.toDataURL('image/png') : null;
+    var chartImage1 = null;
+    var chartImage2 = null;
+    try {
+      var chartCanvas1 = document.getElementById('growthChart');
+      var chartCanvas2 = document.getElementById('feesChart');
+      if (chartCanvas1 && typeof chartCanvas1.toDataURL === 'function') chartImage1 = chartCanvas1.toDataURL('image/png');
+      if (chartCanvas2 && typeof chartCanvas2.toDataURL === 'function') chartImage2 = chartCanvas2.toDataURL('image/png');
+    } catch (e) {
+      /* charts optional; continue without */
+    }
     var payload = {
       portfolioValue: r.portfolioValue,
       pasFee: r.pasFee,
@@ -404,11 +410,21 @@
       chartImage1: chartImage1,
       chartImage2: chartImage2
     };
-    fetch(PAS_API_BASE + 'api/generate_pas_pdf.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) })
+    var url = PAS_API_BASE + 'api/generate_pas_pdf.php';
+    fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) })
     .then(function (res) {
-      if (!res.ok) return res.text().then(function (t) { try { var j = JSON.parse(t); throw new Error(j.error || 'PDF failed'); } catch (e) { throw new Error(t || 'PDF failed'); } });
-      var ct = res.headers.get('Content-Type') || '';
-      if (ct.indexOf('application/pdf') === -1) return res.text().then(function (t) { throw new Error('Server did not return a PDF.'); });
+      var ct = (res.headers.get('Content-Type') || '').toLowerCase();
+      if (!res.ok) {
+        return res.text().then(function (t) {
+          try { var j = JSON.parse(t); throw new Error(j.error || 'PDF failed'); } catch (err) {
+            if (err.message && err.message !== 'PDF failed') throw err;
+            throw new Error((t && t.length > 150 ? t.slice(0, 150) + '…' : t) || 'PDF failed');
+          }
+        });
+      }
+      if (ct.indexOf('application/pdf') === -1) {
+        return res.text().then(function (t) { throw new Error((t && t.length > 150 ? t.slice(0, 150) + '…' : t) || 'Server did not return a PDF.'); });
+      }
       return res.blob();
     })
     .then(function (blob) {
@@ -418,7 +434,7 @@
       a.click();
       URL.revokeObjectURL(a.href);
     })
-    .catch(function (e) { alert('Download PDF: ' + e.message); });
+    .catch(function (e) { alert('Download PDF: ' + (e && e.message ? e.message : String(e))); });
   }
 
   function downloadCSV() {
