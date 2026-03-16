@@ -95,8 +95,9 @@ session_start();
     </div>
 
     <div class="note-box">
-      <p>These calculators are free for college students and instructors. For retirement and advanced planning tools, visit
-        <a href="https://ronbelisle.com" target="_blank" rel="noopener noreferrer">ronbelisle.com</a>.
+      <p>These calculators are free for college students and instructors. Check out
+        <a href="https://ronbelisle.com" target="_blank" rel="noopener noreferrer">ronbelisle.com</a>
+        for a full suite of financial planning calculators.
       </p>
     </div>
   </div>
