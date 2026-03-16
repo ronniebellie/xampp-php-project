@@ -27,7 +27,9 @@ $strings = [
     'card_loan_p' => 'See the monthly payment, total interest, and simple amortization schedule for a loan. Helpful for car loans, student loans, and small business borrowing.',
     'card_loan_small' => 'Useful for personal and business finance decisions.',
     'open_calc' => 'Open calculator',
-    'note_heading' => 'For professors and students','note_p1' => 'These calculators are free for college students and teachers. Check out Ron's full suite of calculators at ronbelisle.com.','note_email' => ''
+    'note_heading' => 'For professors and students',
+    'note_p1' => 'These calculators are free for college students and teachers. Check out Ron\'s full suite of calculators at ronbelisle.com.',
+    'note_email' => '',
     'lang_en' => 'English',
     'lang_ja' => '日本語',
   ],
@@ -56,7 +58,9 @@ $strings = [
     'card_loan_p' => 'ローンの毎月返済額、支払う総利息、簡単な償却表を表示します。自動車ローンや奨学金、ビジネスローンの比較に役立ちます。',
     'card_loan_small' => '個人・ビジネスの資金計画に役立ちます。',
     'open_calc' => '計算ツールを開く',
-    'note_heading' => '教員・学生の皆さんへ','note_p1' => 'これらの計算ツールは大学生と教員の方に無料で提供しています。Ron の他の計算ツールも ronbelisle.com でぜひご覧ください。','note_email' => ''
+    'note_heading' => '教員・学生の皆さんへ',
+    'note_p1' => 'これらの計算ツールは大学生と教員の方に無料で提供しています。Ron の他の計算ツールも ronbelisle.com でぜひご覧ください。',
+    'note_email' => '',
     'lang_en' => 'English',
     'lang_ja' => '日本語',
   ],
