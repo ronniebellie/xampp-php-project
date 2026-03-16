@@ -198,8 +198,12 @@ $baseUrl = '/';
         <div>
           <label for="currencySymbol"><?php echo htmlspecialchars($s['currency']); ?></label>
           <select id="currencySymbol" class="currency-select">
-            <option value="¥" selected>¥ (yen)</option>
-            <option value="$">$ (dollars)</option>
+            <?php if ($isBusinessSite): ?>
+              <option value="$" selected>$ (dollars)</option>
+            <?php else: ?>
+              <option value="¥" selected>¥ (yen)</option>
+              <option value="$">$ (dollars)</option>
+            <?php endif; ?>
           </select>
           <small class="help"><?php echo htmlspecialchars($s['currency_help']); ?></small>
         </div>

@@ -171,8 +171,12 @@ $langParam = $lang === 'ja' ? '?lang=ja' : '';
         <div>
           <label for="currencySymbol"><?php echo htmlspecialchars($s['currency']); ?></label>
           <select id="currencySymbol" class="currency-select">
-            <option value="¥" selected>¥ (yen)</option>
-            <option value="$">$ (dollars)</option>
+            <?php if ($isBusinessSite): ?>
+              <option value="$" selected>$ (dollars)</option>
+            <?php else: ?>
+              <option value="¥" selected>¥ (yen)</option>
+              <option value="$">$ (dollars)</option>
+            <?php endif; ?>
           </select>
         </div>
         <div>
