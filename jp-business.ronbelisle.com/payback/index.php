@@ -85,6 +85,8 @@ $strings = [
     'lang_ja' => '日本語',
   ],
 ];
+$host = $_SERVER['HTTP_HOST'] ?? '';
+$isBusinessSite = ($host === 'business.ronbelisle.com');
 $s = $strings[$lang];
 $langParam = $lang === 'ja' ? '?lang=ja' : '';
 ?>
@@ -140,11 +142,13 @@ $langParam = $lang === 'ja' ? '?lang=ja' : '';
 </head>
 <body>
   <div class="wrap">
+    <?php if (!$isBusinessSite): ?>
     <div class="lang-toggle">
       <a href="/payback/?lang=en" class="<?php echo $lang === 'en' ? 'active' : ''; ?>"><?php echo htmlspecialchars($s['lang_en']); ?></a>
       <span aria-hidden="true">|</span>
       <a href="/payback/?lang=ja" class="<?php echo $lang === 'ja' ? 'active' : ''; ?>"><?php echo htmlspecialchars($s['lang_ja']); ?></a>
     </div>
+    <?php endif; ?>
     <a href="/<?php echo $langParam; ?>" class="back-link"><?php echo htmlspecialchars($s['back']); ?></a>
 
     <header>

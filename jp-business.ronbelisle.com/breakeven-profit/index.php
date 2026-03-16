@@ -113,6 +113,8 @@ $strings = [
     'validation_msg' => '0以上の数を入力してください。販売価格は0より大きい必要があります。',
   ],
 ];
+$host = $_SERVER['HTTP_HOST'] ?? '';
+$isBusinessSite = ($host === 'business.ronbelisle.com');
 $s = $strings[$lang];
 $langParam = $lang === 'ja' ? '?lang=ja' : '';
 $baseUrl = '/';
@@ -167,11 +169,13 @@ $baseUrl = '/';
 </head>
 <body>
   <div class="wrap">
+    <?php if (!$isBusinessSite): ?>
     <div class="lang-toggle">
       <a href="/breakeven-profit/?lang=en" class="<?php echo $lang === 'en' ? 'active' : ''; ?>"><?php echo htmlspecialchars($s['lang_en']); ?></a>
       <span aria-hidden="true">|</span>
       <a href="/breakeven-profit/?lang=ja" class="<?php echo $lang === 'ja' ? 'active' : ''; ?>"><?php echo htmlspecialchars($s['lang_ja']); ?></a>
     </div>
+    <?php endif; ?>
     <a href="<?php echo htmlspecialchars($baseUrl . $langParam); ?>" class="back-link"><?php echo htmlspecialchars($s['back']); ?></a>
 
     <header>
