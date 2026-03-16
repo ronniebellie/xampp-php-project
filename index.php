@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-// Serve jp-business mini-site when using that subdomain (clean URLs: /npv-irr/, /breakeven-profit/)
+// Serve jp-business mini-site when using jp-business subdomain (clean URLs: /npv-irr/, /breakeven-profit/)
 if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'jp-business.ronbelisle.com') {
     $uri = isset($_SERVER['REQUEST_URI']) ? strtok($_SERVER['REQUEST_URI'], '?') : '';
     $uri = rtrim($uri, '/');
@@ -18,6 +18,12 @@ if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'jp-business.ronbe
         exit;
     }
     require __DIR__ . '/jp-business.ronbelisle.com/index.php';
+    exit;
+}
+
+// Serve business calculators landing when using business.ronbelisle.com
+if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'business.ronbelisle.com') {
+    require __DIR__ . '/business.ronbelisle.com/index.php';
     exit;
 }
 
