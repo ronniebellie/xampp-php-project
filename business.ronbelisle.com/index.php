@@ -53,42 +53,42 @@ session_start();
           <h2>Finance – Net Present Value (NPV) and Internal Rate of Return (IRR)</h2>
           <p>Evaluate investment projects using NPV and IRR. Enter the initial outlay and the cash flows you expect in future years. The calculator reports NPV and IRR and explains how to interpret them.</p>
           <small>Useful for capital budgeting and investment decision-making.</small>
-          <a class="button" href="/npv-irr/">Open calculator</a>
+          <a class="button" href="https://business.ronbelisle.com/npv-irr/">Open calculator</a>
         </article>
 
         <article class="card">
           <h2>Accounting – Break-even Point and Profit (Cost–Volume–Profit)</h2>
           <p>Find the unit sales you need to break even (no profit, no loss) and see profit or loss at your expected sales level. Good for analyzing cafés, online stores, and other simple business models.</p>
           <small>Useful for managerial and financial accounting courses.</small>
-          <a class="button" href="/breakeven-profit/">Open calculator</a>
+          <a class="button" href="https://business.ronbelisle.com/breakeven-profit/">Open calculator</a>
         </article>
 
         <article class="card">
           <h2>Microeconomics – Supply and Demand Equilibrium</h2>
           <p>Compute the equilibrium price and quantity where quantity demanded equals quantity supplied. Enter linear demand and supply equations; the tool solves for the intersection and shows a graph.</p>
           <small>Useful for introductory microeconomics and market analysis.</small>
-          <a class="button" href="/supply-demand/">Open calculator</a>
+          <a class="button" href="https://business.ronbelisle.com/supply-demand/">Open calculator</a>
         </article>
 
         <article class="card">
           <h2>Finance – Payback and Discounted Payback</h2>
           <p>See how many years it takes to recover your initial investment, with and without discounting. Payback uses raw cash flows; discounted payback uses the same discount rate you might use for NPV.</p>
           <small>Useful as a bridge between simple payback and NPV/IRR.</small>
-          <a class="button" href="/payback/">Open calculator</a>
+          <a class="button" href="https://business.ronbelisle.com/payback/">Open calculator</a>
         </article>
 
         <article class="card">
           <h2>Finance – EAR vs APR</h2>
           <p>Convert a quoted annual percentage rate (APR) to the effective annual rate (EAR) based on compounding frequency. Quickly compare loans or deposits with different compounding conventions.</p>
           <small>Useful for banking, corporate finance, and personal finance topics.</small>
-          <a class="button" href="/ear-apr/">Open calculator</a>
+          <a class="button" href="https://business.ronbelisle.com/ear-apr/">Open calculator</a>
         </article>
 
         <article class="card">
           <h2>Finance – Loan Payment and Amortization</h2>
           <p>Enter a loan amount, annual interest rate, and term in years to see the monthly payment, total interest paid, and a simple amortization table by year. Works well for car loans, student loans, and small business loans.</p>
           <small>Useful for time value of money and lending topics.</small>
-          <a class="button" href="/loan-amortization/">Open calculator</a>
+          <a class="button" href="https://business.ronbelisle.com/loan-amortization/">Open calculator</a>
         </article>
       </div>
     </div>
