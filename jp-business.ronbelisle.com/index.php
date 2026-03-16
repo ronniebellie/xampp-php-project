@@ -27,7 +27,7 @@ $strings = [
     'card_loan_p' => 'See the monthly payment, total interest, and simple amortization schedule for a loan. Helpful for car loans, student loans, and small business borrowing.',
     'card_loan_small' => 'Useful for personal and business finance decisions.',
     'open_calc' => 'Open calculator',
-    'note_heading' => 'For professors and students',
+    'note_heading' => '',
     'note_p1' => 'These calculators are free for college students and teachers. Check out Ron\'s full suite of calculators at ronbelisle.com.',
     'note_email' => '',
     'lang_en' => 'English',
@@ -165,9 +165,9 @@ $langParam = $lang === 'ja' ? '?lang=ja' : '';
     </div>
 
     <div class="note-box">
-      <strong><?php echo htmlspecialchars($s['note_heading']); ?></strong>
-      <p><?php echo htmlspecialchars($s['note_p1']); ?></p>
-      <p><?php echo htmlspecialchars($s['note_email']); ?><a href="mailto:ronbelisle@gmail.com">ronbelisle@gmail.com</a></p>
+      <p><?php echo htmlspecialchars($s['note_p1']); ?>
+        <a href="https://ronbelisle.com" target="_blank" rel="noopener noreferrer">ronbelisle.com</a>.
+      </p>
     </div>
   </div>
 </body>
