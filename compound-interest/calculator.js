@@ -115,6 +115,9 @@ function updateCompoundCalculator() {
       }
     }
   });
+
+  const resultsEl = document.getElementById('compoundResults');
+  if (resultsEl) resultsEl.style.display = 'block';
 }
 
 ['initial', 'rate', 'years', 'monthly'].forEach(function (id) {
@@ -125,6 +128,13 @@ function updateCompoundCalculator() {
 });
 
 document.addEventListener('DOMContentLoaded', function () {
-  updateCompoundCalculator();
+  const initial = parseFloat(document.getElementById('initial').value) || 0;
+  const rate = parseFloat(document.getElementById('rate').value) || 0;
+  const years = parseInt(document.getElementById('years').value, 10) || 0;
+  const monthly = parseFloat(document.getElementById('monthly').value) || 0;
+  document.getElementById('initialLabel').textContent = formatCurrencyCI(initial);
+  document.getElementById('returnLabel').textContent = rate.toFixed(2).replace(/\.00$/, '') + '%';
+  document.getElementById('yearsLabel').textContent = years + (years === 1 ? ' year' : ' years');
+  document.getElementById('monthlyLabel').textContent = formatCurrencyCI(monthly) + '/mo';
 });
 

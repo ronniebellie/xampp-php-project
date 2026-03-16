@@ -4,7 +4,7 @@ require_once __DIR__ . '/../includes/lang.php';
 $strings = [
   'en' => [
     'title' => 'Payback and Discounted Payback',
-    'back' => '← Back to Business Calculators for Japanese Students',
+    'back' => '← Back to Business Calculators',
     'p1' => 'This calculator shows how many years it takes to recover your initial investment.',
     'p2' => 'Payback uses undiscounted cash flows. Discounted payback uses the same discount rate as NPV to find when the project’s present value has “paid back” the initial cost. Pairs with the NPV/IRR calculator.',
     'small' => 'Shorter payback means faster recovery. Discounted payback is always longer than (or equal to) payback because it values later cash less.',

@@ -314,8 +314,23 @@ function createAnnualWithdrawalChart(annualGap, rates, selectedRate) {
         }
     });
 }
+function updateGapLabelsOnly() {
+    const targetSpending = parseFloat(document.getElementById('targetSpending').value) || 0;
+    const ssIncome = parseFloat(document.getElementById('ssIncome').value) || 0;
+    const otherIncome = parseFloat(document.getElementById('otherIncome').value) || 0;
+    const withdrawalRate = parseFloat(document.getElementById('withdrawalRate').value) || 4;
+    const targetLabel = document.getElementById('targetSpendingLabel');
+    if (targetLabel) targetLabel.textContent = formatCurrency(targetSpending) + '/mo';
+    const ssLabel = document.getElementById('ssIncomeLabel');
+    if (ssLabel) ssLabel.textContent = formatCurrency(ssIncome) + '/mo';
+    const otherLabel = document.getElementById('otherIncomeLabel');
+    if (otherLabel) otherLabel.textContent = formatCurrency(otherIncome) + '/mo';
+    const wrLabel = document.getElementById('withdrawalRateLabel');
+    if (wrLabel) wrLabel.textContent = withdrawalRate.toFixed(1).replace(/\.0$/, '') + '%';
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    updateGap();
+    updateGapLabelsOnly();
 
     const saveBtn = document.getElementById('saveScenarioBtn');
     const loadBtn = document.getElementById('loadScenarioBtn');

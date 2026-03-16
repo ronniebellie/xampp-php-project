@@ -139,11 +139,9 @@ function calculate(showAlerts) {
         vanguardTotalFees
     };
     
-    // Show results
-    document.getElementById('results').style.display = 'block';
-    
-    // Scroll to results only when user clicked Calculate, not on slider drag
+    // Show results only when user clicked Calculate, not on load or slider drag
     if (showAlerts) {
+        document.getElementById('results').style.display = 'block';
         document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 }
@@ -374,7 +372,7 @@ document.getElementById('calculateBtn').addEventListener('click', function() {
 });
 
 window.addEventListener('load', function() {
-    calculate(false);
+    calculate(false); // Update labels and result data; results panel stays hidden until user clicks Calculate
 });
 // Premium Save/Load/Compare/PDF/CSV
 document.addEventListener('DOMContentLoaded', function() {

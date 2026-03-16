@@ -4,7 +4,7 @@ require_once __DIR__ . '/../includes/lang.php';
 $strings = [
   'en' => [
     'title' => 'EAR vs APR',
-    'back' => '← Back to Business Calculators for Japanese Students',
+    'back' => '← Back to Business Calculators',
     'p1' => 'Convert an annual percentage rate (APR) to an effective annual rate (EAR) based on how often interest is compounded.',
     'p2' => 'Banks and loans often quote APR. To compare offers or see the true cost of borrowing, use EAR. More compounding per year means higher EAR for the same APR.',
     'small' => 'Useful for both English and Japanese students in finance and banking.',

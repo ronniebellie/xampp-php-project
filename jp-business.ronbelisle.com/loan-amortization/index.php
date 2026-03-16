@@ -4,7 +4,7 @@ require_once __DIR__ . '/../includes/lang.php';
 $strings = [
   'en' => [
     'title' => 'Loan Payment and Amortization',
-    'back' => '← Back to Business Calculators for Japanese Students',
+    'back' => '← Back to Business Calculators',
     'p1' => 'This calculator shows the monthly payment, total interest, and simple amortization schedule for a loan.',
     'p2' => 'Enter the loan amount, annual interest rate, and term in years. The calculator uses monthly compounding and level payments (the same payment every month).',
     'small' => 'Understanding loan payments helps you compare car loans, student loans, and small‑business borrowing.',

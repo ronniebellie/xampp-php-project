@@ -4,7 +4,7 @@ require_once __DIR__ . '/../includes/lang.php';
 $strings = [
   'en' => [
     'title' => 'Break-even Point and Profit (For Small Business)',
-    'back' => '← Back to Business Calculators for Japanese Students',
+    'back' => '← Back to Business Calculators',
     'p1' => 'This calculator shows how many units you need to sell to break even (no profit, no loss).',
     'p2' => 'It also shows profit or loss at your expected sales volume.',
     'small' => 'Useful for coffee shops, cafés, online shops, and other small businesses.',

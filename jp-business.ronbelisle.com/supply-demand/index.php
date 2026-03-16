@@ -4,7 +4,7 @@ require_once __DIR__ . '/../includes/lang.php';
 $strings = [
   'en' => [
     'title' => 'Supply and Demand Equilibrium',
-    'back' => '← Back to Business Calculators for Japanese Students',
+    'back' => '← Back to Business Calculators',
     'p1' => 'This calculator finds the equilibrium price and quantity in a simple market.',
     'p2' => 'You enter a linear demand equation and a linear supply equation. Where they cross is the equilibrium.',
     'small' => 'At equilibrium, quantity demanded equals quantity supplied.',

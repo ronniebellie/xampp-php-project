@@ -174,6 +174,21 @@ function updateEmergencyFund() {
   }
 
   window.lastEFResult = result;
+
+  document.getElementById('results').style.display = 'block';
+}
+
+function updateEmergencyFundLabelsOnly() {
+  const monthlyExpenses = parseFloat(document.getElementById('monthlyExpenses').value) || 0;
+  const targetMonths = parseInt(document.getElementById('targetMonths').value, 10) || 6;
+  const currentSavings = parseFloat(document.getElementById('currentSavings').value) || 0;
+  const monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value) || 0;
+  const interestRate = parseFloat(document.getElementById('interestRate').value) || 0;
+  document.getElementById('monthlyExpensesLabel').textContent = formatCurrency(monthlyExpenses);
+  document.getElementById('targetMonthsLabel').textContent = targetMonths + ' months';
+  document.getElementById('currentSavingsLabel').textContent = formatCurrency(currentSavings);
+  document.getElementById('monthlyContributionLabel').textContent = formatCurrency(monthlyContribution) + '/mo';
+  document.getElementById('interestRateLabel').textContent = interestRate.toFixed(1) + '%';
 }
 
 ['monthlyExpenses', 'targetMonths', 'currentSavings', 'monthlyContribution', 'interestRate'].forEach(function(id) {
@@ -181,4 +196,4 @@ function updateEmergencyFund() {
   if (el) el.addEventListener('input', updateEmergencyFund);
 });
 
-document.addEventListener('DOMContentLoaded', updateEmergencyFund);
+document.addEventListener('DOMContentLoaded', updateEmergencyFundLabelsOnly);

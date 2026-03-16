@@ -180,8 +180,8 @@
       summary: 'Plan Success (Monte Carlo). Starting portfolio $' + portfolio.toLocaleString() + ', annual withdrawal $' + withdrawal.toLocaleString() + ' for ' + years + ' years. Expected return ' + expectedReturnPct + '%, volatility ' + volatilityPct + '%. Success rate: ' + successRate + '% of ' + numSims.toLocaleString() + ' simulations. Ending portfolio percentiles: 25th ' + fmt(p25) + ', median ' + fmt(p50) + ', 75th ' + fmt(p75) + '.'
     };
 
-    resultsEl.style.display = 'block';
     if (shouldScroll) {
+      resultsEl.style.display = 'block';
       resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }
@@ -250,7 +250,6 @@
   });
 
   updateLabels();
-  runMonteCarlo(false);
 
   var saveBtn = document.getElementById('saveScenarioBtn');
   var loadBtn = document.getElementById('loadScenarioBtn');

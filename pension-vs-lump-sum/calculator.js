@@ -73,6 +73,8 @@
         ? 'Break-even at age ' + breakEvenAge + ' (in ' + breakEvenYear + ' years). Monthly pension $' + monthlyPension + ', lump sum $' + lumpSum + ', growth rate ' + growthRatePct + '%.'
         : 'No break-even at assumed growth ' + growthRatePct + '%. Lump sum FV exceeds cumulative pension. Monthly pension $' + monthlyPension + ', lump sum $' + lumpSum + ', planned to age ' + lifeExpectancy + '.'
     };
+
+    document.getElementById('results').style.display = 'block';
   }
 
   function createComparisonChart(displayRows, breakEvenAge) {
@@ -155,7 +157,20 @@
     if (el) el.addEventListener('input', updatePension);
   });
 
-  document.addEventListener('DOMContentLoaded', updatePension);
+  function updateLabelsOnly() {
+    const monthlyPension = parseFloat(document.getElementById('monthlyPension').value) || 0;
+    const lumpSum = parseFloat(document.getElementById('lumpSum').value) || 0;
+    const currentAge = parseInt(document.getElementById('currentAge').value, 10) || 65;
+    const growthRatePct = parseFloat(document.getElementById('growthRate').value) || 5;
+    const lifeExpectancy = parseInt(document.getElementById('lifeExpectancy').value, 10) || 90;
+    document.getElementById('monthlyPensionLabel').textContent = formatCurrency(monthlyPension);
+    document.getElementById('lumpSumLabel').textContent = formatCurrency(lumpSum);
+    document.getElementById('currentAgeLabel').textContent = currentAge + ' yrs';
+    document.getElementById('growthRateLabel').textContent = growthRatePct.toFixed(2).replace(/\.?0+$/, '') + '%';
+    document.getElementById('lifeExpectancyLabel').textContent = lifeExpectancy;
+  }
+
+  document.addEventListener('DOMContentLoaded', updateLabelsOnly);
 
   var saveBtn = document.getElementById('saveScenarioBtn');
   var loadBtn = document.getElementById('loadScenarioBtn');

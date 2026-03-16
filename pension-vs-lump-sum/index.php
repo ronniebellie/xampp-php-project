@@ -86,7 +86,7 @@ $isPremium = has_premium_access();
       </div>
     </section>
 
-    <div id="results" class="results-container">
+    <div id="results" class="results-container" style="display: none;">
       <h2>Pension vs. Lump Sum Comparison</h2>
 
       <div class="info-box info-box-blue" id="summaryBox" style="margin-bottom: 25px;"></div>

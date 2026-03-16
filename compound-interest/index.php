@@ -155,27 +155,29 @@ $isPremium = has_premium_access();
       </div>
     </section>
 
-    <section aria-label="Summary of results">
-      <div class="summary-pill-grid">
-        <div class="summary-pill final">
-          <div class="label">Final balance</div>
-          <div class="value" id="finalBalance"></div>
+    <div id="compoundResults" style="display: none;">
+      <section aria-label="Summary of results">
+        <div class="summary-pill-grid">
+          <div class="summary-pill final">
+            <div class="label">Final balance</div>
+            <div class="value" id="finalBalance"></div>
+          </div>
+          <div class="summary-pill invested">
+            <div class="label">Total invested</div>
+            <div class="value" id="totalInvested"></div>
+          </div>
+          <div class="summary-pill interest">
+            <div class="label">Interest earned</div>
+            <div class="value" id="interestEarned"></div>
+          </div>
         </div>
-        <div class="summary-pill invested">
-          <div class="label">Total invested</div>
-          <div class="value" id="totalInvested"></div>
-        </div>
-        <div class="summary-pill interest">
-          <div class="label">Interest earned</div>
-          <div class="value" id="interestEarned"></div>
-        </div>
-      </div>
-    </section>
+      </section>
 
-    <div class="chart-section" style="margin-top: 26px;">
-      <h3>Growth of your money over time</h3>
-      <div class="chart-wrapper" style="height: 320px;">
-        <canvas id="compoundChart"></canvas>
+      <div class="chart-section" style="margin-top: 26px;">
+        <h3>Growth of your money over time</h3>
+        <div class="chart-wrapper" style="height: 320px;">
+          <canvas id="compoundChart"></canvas>
+        </div>
       </div>
     </div>
 

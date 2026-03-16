@@ -91,7 +91,7 @@ $isPremium = has_premium_access();
       </div>
     </section>
 
-    <div id="results">
+    <div id="results" style="display: none;">
       <h2>Your down payment plan</h2>
       <div class="summary-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 20px 0;">
         <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 12px; padding: 16px;">

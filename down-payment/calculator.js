@@ -153,6 +153,8 @@ function updateDownPayment() {
   }
 
   window.lastDPResult = result;
+
+  document.getElementById('results').style.display = 'block';
 }
 
 ['housePrice', 'downPct', 'targetAmount', 'currentSavings', 'monthlyContribution', 'interestRate'].forEach(function(id) {
@@ -160,8 +162,24 @@ function updateDownPayment() {
   if (el) el.addEventListener('input', updateDownPayment);
 });
 
+function updateDownPaymentLabelsOnly() {
+  const housePrice = parseFloat(document.getElementById('housePrice').value) || 0;
+  const downPct = parseInt(document.getElementById('downPct').value, 10) || 20;
+  const targetAmount = parseFloat(document.getElementById('targetAmount').value) || 0;
+  const currentSavings = parseFloat(document.getElementById('currentSavings').value) || 0;
+  const monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value) || 0;
+  const interestRate = parseFloat(document.getElementById('interestRate').value) || 0;
+  const effectiveTarget = housePrice > 0 ? Math.round(housePrice * downPct / 100) : targetAmount;
+  document.getElementById('housePriceLabel').textContent = housePrice === 0 ? 'Not set' : formatCurrency(housePrice);
+  document.getElementById('downPctLabel').textContent = downPct + '%';
+  document.getElementById('targetAmountLabel').textContent = formatCurrency(housePrice > 0 ? effectiveTarget : targetAmount);
+  document.getElementById('currentSavingsLabel').textContent = formatCurrency(currentSavings);
+  document.getElementById('monthlyContributionLabel').textContent = formatCurrency(monthlyContribution) + '/mo';
+  document.getElementById('interestRateLabel').textContent = interestRate.toFixed(1) + '%';
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-  updateDownPayment();
+  updateDownPaymentLabelsOnly();
   if (typeof isPremiumUser === 'undefined' || !isPremiumUser) return;
   const saveBtn = document.getElementById('saveScenarioBtn');
   const loadBtn = document.getElementById('loadScenarioBtn');
