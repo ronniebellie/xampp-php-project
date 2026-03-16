@@ -23,10 +23,11 @@ $strings = [
     'card_ear_apr_title' => 'Finance – EAR vs APR',
     'card_ear_apr_p' => 'Convert a stated annual rate (APR) to the effective annual rate (EAR) based on how often interest is compounded. Quick and useful for comparing loans or investments.',
     'card_ear_apr_small' => 'Useful for both EN and JA students in finance and banking.',
+    'card_loan_title' => 'Finance – Loan Payment and Amortization',
+    'card_loan_p' => 'See the monthly payment, total interest, and simple amortization schedule for a loan. Helpful for car loans, student loans, and small business borrowing.',
+    'card_loan_small' => 'Useful for personal and business finance decisions.',
     'open_calc' => 'Open calculator',
-    'note_heading' => 'For professors and students',
-    'note_p1' => 'These tools are free for students and teachers at Mukogawa Women’s University. If you are a professor at another university and are interested, please contact Ron Belisle.',
-    'note_email' => 'Email: ',
+    'note_heading' => 'For professors and students','note_p1' => 'These calculators are free for college students and teachers. Check out Ron's full suite of calculators at ronbelisle.com.','note_email' => ''
     'lang_en' => 'English',
     'lang_ja' => '日本語',
   ],
@@ -51,10 +52,11 @@ $strings = [
     'card_ear_apr_title' => 'ファイナンス – EARとAPR',
     'card_ear_apr_p' => '表示上の年率（APR）を、複利回数に応じた実効年率（EAR）に換算します。ローンや投資の比較に便利です。',
     'card_ear_apr_small' => 'ファイナンス・金融を学ぶ学生（英語・日本語）向け。',
+    'card_loan_title' => 'ファイナンス – ローン返済額と償却表',
+    'card_loan_p' => 'ローンの毎月返済額、支払う総利息、簡単な償却表を表示します。自動車ローンや奨学金、ビジネスローンの比較に役立ちます。',
+    'card_loan_small' => '個人・ビジネスの資金計画に役立ちます。',
     'open_calc' => '計算ツールを開く',
-    'note_heading' => '教員・学生の皆さんへ',
-    'note_p1' => '武庫川女子大学の学生・教員の方は無料でご利用いただけます。他大学の教員でご興味のある方は、Ron Belisle までご連絡ください。',
-    'note_email' => 'メール：',
+    'note_heading' => '教員・学生の皆さんへ','note_p1' => 'これらの計算ツールは大学生と教員の方に無料で提供しています。Ron の他の計算ツールも ronbelisle.com でぜひご覧ください。','note_email' => ''
     'lang_en' => 'English',
     'lang_ja' => '日本語',
   ],
@@ -148,6 +150,12 @@ $langParam = $lang === 'ja' ? '?lang=ja' : '';
           <p><?php echo htmlspecialchars($s['card_ear_apr_p']); ?></p>
           <small><?php echo htmlspecialchars($s['card_ear_apr_small']); ?></small>
           <a class="button" href="/ear-apr/<?php echo $langParam; ?>"><?php echo htmlspecialchars($s['open_calc']); ?></a>
+        </article>
+        <article class="card">
+          <h2><?php echo htmlspecialchars($s['card_loan_title']); ?></h2>
+          <p><?php echo htmlspecialchars($s['card_loan_p']); ?></p>
+          <small><?php echo htmlspecialchars($s['card_loan_small']); ?></small>
+          <a class="button" href="/loan-amortization/<?php echo $langParam; ?>"><?php echo htmlspecialchars($s['open_calc']); ?></a>
         </article>
       </div>
     </div>
