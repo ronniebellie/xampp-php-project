@@ -1,6 +1,9 @@
 <?php
 require_once __DIR__ . '/../includes/lang.php';
 
+$host = $_SERVER['HTTP_HOST'] ?? '';
+$isBusinessSite = ($host === 'business.ronbelisle.com');
+
 $strings = [
   'en' => [
     'title' => 'NPV and IRR (For Investment Decisions)',
@@ -93,16 +96,74 @@ $strings = [
     'lang_ja' => '日本語',
   ],
 ];
-$s = $strings[$lang];
-$langParam = $lang === 'ja' ? '?lang=ja' : '';
+$businessStringsEn = [
+  'title' => 'NPV and IRR for Capital Budgeting',
+  'back' => '← Back to Business Calculators',
+  'p1' => 'Use this calculator to evaluate investment projects using NPV and IRR.',
+  'p2' => 'Enter the initial outlay and the future cash flows. The tool reports NPV and IRR and gives brief guidance on how to interpret them.',
+  'small' => 'If NPV is positive at your discount rate, the project adds value. If NPV is negative, it destroys value.',
+  'key_idea' => 'Key idea',
+  'key_idea_text' => 'NPV discounts each cash flow back to today at your required return and subtracts the initial cost. IRR is the discount rate that makes NPV equal to zero.',
+  'step1' => 'Step 1 – Enter cash flows',
+  'hint' => 'Use dollars ($) in the example, and a negative number for the initial investment (cash outflow today).',
+  'currency' => 'Currency',
+  'initial_label' => 'Initial investment (time 0)',
+  'initial_help' => 'Example: -100000 means you invest $100,000 today.',
+  'rate_label' => 'Discount rate (% per year)',
+  'rate_help' => 'Example: if your required return is 10%, type 10.',
+  'cf_year' => 'Cash flow in Year ',
+  'cf_year_suffix' => '',
+  'btn_calc' => 'Calculate NPV and IRR',
+  'step2' => 'Step 2 – Interpret the results',
+  'result_npv' => 'Net Present Value (NPV)',
+  'result_npv_positive' => 'If NPV > 0 at your discount rate, the project creates value.',
+  'result_npv_negative' => 'If NPV < 0, the project destroys value at that rate.',
+  'result_npv_zero' => 'If NPV = 0, the project just earns your required return.',
+  'result_irr' => 'Internal Rate of Return (IRR)',
+  'result_irr_note' => 'Compare IRR to your hurdle rate. If IRR is higher, the project is generally acceptable.',
+  'table_title' => 'Cash flows and present values',
+  'table_year' => 'Year',
+  'table_cf' => 'Cash flow',
+  'table_pv' => 'Present value',
+  'example_title' => 'Example (machine investment)',
+  'example_p1' => 'Suppose a firm invests $100,000 today and expects to receive $40,000 at the end of each of the next three years. The required return is 10%.',
+  'example_li1' => 'Initial outlay: -100,000',
+  'example_li2' => 'Discount rate: 10%',
+  'example_li3' => 'Year 1: 40,000 · Year 2: 40,000 · Year 3: 40,000',
+  'example_p2' => 'If NPV is positive and IRR is above 10%, the project adds value relative to the firm’s required return.',
+  'keywords_title' => 'Key terms',
+  'kw_npv' => 'NPV (Net Present Value)',
+  'kw_npv_dd' => 'The present value of all cash inflows and outflows discounted at the required rate. Positive NPV means the project adds value.',
+  'kw_irr' => 'IRR (Internal Rate of Return)',
+  'kw_irr_dd' => 'The discount rate that makes NPV equal to zero. Compare it to your hurdle rate.',
+  'kw_discount' => 'Discount rate',
+  'kw_discount_dd' => 'The required return or cost of capital you use to discount future cash flows.',
+];
+
+if ($isBusinessSite) {
+    $lang = 'en';
+    $s = $businessStringsEn;
+    $langParam = '';
+} else {
+    $s = $strings[$lang];
+    $langParam = $lang === 'ja' ? '?lang=ja' : '';
+}
 ?>
 <!DOCTYPE html>
-<html lang="<?php echo $lang === 'ja' ? 'ja' : 'en'; ?>">
+<html lang="<?php echo $isBusinessSite ? 'en' : ($lang === 'ja' ? 'ja' : 'en'); ?>">
 <head>
   <?php if (file_exists(__DIR__ . '/../../includes/analytics.php')) { include __DIR__ . '/../../includes/analytics.php'; } ?>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="<?php echo $lang === 'ja' ? 'NPV・IRRの計算。日本の大学生向け。' : 'Net Present Value and Internal Rate of Return in simple English. For Japanese college students studying finance.'; ?>">
+  <meta name="description" content="<?php
+    if ($isBusinessSite) {
+        echo 'Net Present Value and Internal Rate of Return for business students: evaluate projects using NPV and IRR.';
+    } else {
+        echo $lang === 'ja'
+          ? 'NPV・IRRの計算。日本の大学生向け。'
+          : 'Net Present Value and Internal Rate of Return in simple English. For Japanese college students studying finance.';
+    }
+  ?>">
   <title><?php echo htmlspecialchars($s['title']); ?></title>
   <link rel="stylesheet" href="/css/styles.css">
   <style>
@@ -149,12 +210,16 @@ $langParam = $lang === 'ja' ? '?lang=ja' : '';
 </head>
 <body>
   <div class="wrap">
-    <div class="lang-toggle">
-      <a href="/npv-irr/?lang=en" class="<?php echo $lang === 'en' ? 'active' : ''; ?>"><?php echo htmlspecialchars($s['lang_en']); ?></a>
-      <span aria-hidden="true">|</span>
-      <a href="/npv-irr/?lang=ja" class="<?php echo $lang === 'ja' ? 'active' : ''; ?>"><?php echo htmlspecialchars($s['lang_ja']); ?></a>
-    </div>
-    <a href="/<?php echo $langParam; ?>" class="back-link"><?php echo htmlspecialchars($s['back']); ?></a>
+    <?php if ($isBusinessSite): ?>
+      <a href="https://business.ronbelisle.com" class="back-link"><?php echo htmlspecialchars($s['back']); ?></a>
+    <?php else: ?>
+      <div class="lang-toggle">
+        <a href="/npv-irr/?lang=en" class="<?php echo $lang === 'en' ? 'active' : ''; ?>"><?php echo htmlspecialchars($s['lang_en']); ?></a>
+        <span aria-hidden="true">|</span>
+        <a href="/npv-irr/?lang=ja" class="<?php echo $lang === 'ja' ? 'active' : ''; ?>"><?php echo htmlspecialchars($s['lang_ja']); ?></a>
+      </div>
+      <a href="/<?php echo $langParam; ?>" class="back-link"><?php echo htmlspecialchars($s['back']); ?></a>
+    <?php endif; ?>
 
     <header>
       <h1><?php echo htmlspecialchars($s['title']); ?></h1>

@@ -42,7 +42,6 @@ session_start();
       <h1>Business Calculators for University Students</h1>
       <p>These calculators are designed for college students majoring in business, finance, accounting, or economics.</p>
       <p>They focus on six important areas: capital budgeting, cost–volume–profit analysis, supply and demand, payback, interest rates, and loans.</p>
-      <small>The examples use dollars ($), but you can adjust the numbers to match any currency.</small>
     </div>
 
     <div>
