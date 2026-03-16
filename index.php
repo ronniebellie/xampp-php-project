@@ -21,10 +21,15 @@ if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'jp-business.ronbe
     exit;
 }
 
-// Serve business calculators landing when using business.ronbelisle.com
+// Serve business calculators landing when using business.ronbelisle.com (root path only)
 if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'business.ronbelisle.com') {
-    require __DIR__ . '/business.ronbelisle.com/index.php';
-    exit;
+    $uri = isset($_SERVER['REQUEST_URI']) ? strtok($_SERVER['REQUEST_URI'], '?') : '';
+    $uri = rtrim($uri, '/');
+    if ($uri === '' || $uri === '/') {
+        require __DIR__ . '/business.ronbelisle.com/index.php';
+        exit;
+    }
+    // For other paths (e.g., /npv-irr/), fall through so the stub directories handle them.
 }
 
 require_once 'includes/db_config.php';
