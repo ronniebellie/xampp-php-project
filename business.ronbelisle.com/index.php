@@ -46,7 +46,7 @@ session_start();
 
     <div>
       <h2 class="section-title">Available calculators</h2>
-      <p class="section-subtitle">Start with any calculator below. Each page explains the idea in clear business English and shows how changing the inputs affects the results.</p>
+      <p class="section-subtitle">Start with any calculator below. Each page explains the idea in clear English and shows how changing the inputs affects the results.</p>
 
       <div class="cards">
         <article class="card">
