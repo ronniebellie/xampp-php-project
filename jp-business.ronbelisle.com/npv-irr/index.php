@@ -234,7 +234,15 @@ if ($isBusinessSite) {
     </div>
 
     <h2><?php echo htmlspecialchars($s['step1']); ?></h2>
-    <p class="hint"><?php echo htmlspecialchars($s['hint']); ?></p>
+    <p class="hint">
+      <?php
+        if ($isBusinessSite) {
+          echo 'Enter the cash flows for your project. Use a negative number for the initial investment (cash outflow today).';
+        } else {
+          echo htmlspecialchars($s['hint']);
+        }
+      ?>
+    </p>
 
     <form id="npvForm">
       <div class="grid">
