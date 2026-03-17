@@ -191,7 +191,15 @@ $baseUrl = '/';
     </div>
 
     <h2><?php echo htmlspecialchars($s['step1']); ?></h2>
-    <p class="hint"><?php echo htmlspecialchars($s['hint']); ?></p>
+    <p class="hint">
+      <?php
+        if ($isBusinessSite) {
+          echo 'Enter the numbers for your example.';
+        } else {
+          echo htmlspecialchars($s['hint']);
+        }
+      ?>
+    </p>
 
     <form id="cvpForm">
       <div class="grid">
