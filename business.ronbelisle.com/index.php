@@ -14,6 +14,12 @@ session_start();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Business calculators for university students: NPV & IRR, break-even and profit, supply and demand equilibrium, payback and discounted payback, EAR vs APR, and loan payment/amortization.">
   <title>Business Calculators for University Students</title>
+  <?php
+    $og_title = $ld_name = 'Business Calculators for University Students';
+    $og_description = $ld_description = 'Business calculators for university students: NPV & IRR, break-even and profit, supply and demand equilibrium, payback and discounted payback, EAR vs APR, and loan payment/amortization.';
+    include(__DIR__ . '/../includes/og-twitter-meta.php');
+    include(__DIR__ . '/../includes/json-ld-softwareapp.php');
+  ?>
   <link rel="stylesheet" href="/css/styles.css">
   <style>
     body { margin: 0; background: #f9fafb; color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }

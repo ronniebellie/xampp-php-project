@@ -127,6 +127,14 @@ $baseUrl = '/';
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="<?php echo $lang === 'ja' ? '損益分岐点と利益を計算。日本の大学生向け。' : 'Find the break-even point and profit in simple English. Good for Japanese college students studying business.'; ?>">
   <title><?php echo htmlspecialchars($s['title']); ?></title>
+  <?php
+    $og_title = $ld_name = $s['title'];
+    $og_description = $ld_description = ($lang === 'ja')
+      ? '損益分岐点と利益を計算。日本の大学生向け。'
+      : 'Break-even point and profit calculator for students (Cost–Volume–Profit).';
+    include(__DIR__ . '/../../includes/og-twitter-meta.php');
+    include(__DIR__ . '/../../includes/json-ld-softwareapp.php');
+  ?>
   <link rel="stylesheet" href="/css/styles.css">
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background: #f9fafb; color: #0f172a; }

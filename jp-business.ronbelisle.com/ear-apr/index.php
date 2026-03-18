@@ -84,6 +84,14 @@ $langParam = $lang === 'ja' ? '?lang=ja' : '';
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="<?php echo $lang === 'ja' ? '実効年率・APRの換算。日本の大学生向け。' : 'EAR vs APR: effective annual rate from stated rate and compounding. For students.'; ?>">
   <title><?php echo htmlspecialchars($s['title']); ?></title>
+  <?php
+    $og_title = $ld_name = $s['title'];
+    $og_description = $ld_description = ($lang === 'ja')
+      ? '実効年率（EAR）とAPRを換算する計算ツール。'
+      : 'Convert APR to EAR and compare compounding frequencies.';
+    include(__DIR__ . '/../../includes/og-twitter-meta.php');
+    include(__DIR__ . '/../../includes/json-ld-softwareapp.php');
+  ?>
   <link rel="stylesheet" href="/css/styles.css">
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background: #f9fafb; color: #0f172a; }

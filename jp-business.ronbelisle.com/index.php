@@ -80,6 +80,14 @@ $langParam = $lang === 'ja' ? '?lang=ja' : '';
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="<?php echo $lang === 'ja' ? '日本の大学生向けビジネス計算ツール（ファイナンス・会計・ミクロ経済）。' : 'Business calculators in simple English for Japanese university students: finance, accounting, and microeconomics.'; ?>">
   <title><?php echo htmlspecialchars($s['title']); ?></title>
+  <?php
+    $og_title = $ld_name = ($lang === 'ja') ? '日本の大学生のためのビジネス計算ツール' : 'Business Calculators for Japanese College Students';
+    $og_description = $ld_description = ($lang === 'ja')
+      ? '日本の大学生向けビジネス計算ツール（ファイナンス・会計・ミクロ経済）。'
+      : 'Business calculators in simple English for Japanese university students: finance, accounting, and microeconomics.';
+    include(__DIR__ . '/../includes/og-twitter-meta.php');
+    include(__DIR__ . '/../includes/json-ld-softwareapp.php');
+  ?>
   <link rel="stylesheet" href="/css/styles.css">
   <style>
     body { margin: 0; background: #f9fafb; color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }

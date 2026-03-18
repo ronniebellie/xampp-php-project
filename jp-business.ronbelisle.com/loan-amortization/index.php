@@ -96,6 +96,14 @@ $langParam = $lang === 'ja' ? '?lang=ja' : '';
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="<?php echo $lang === 'ja' ? 'ローンの毎月返済額と総利息、償却表の計算。日本の大学生向け。' : 'Loan payment and amortization: monthly payment, total interest, and yearly summary. For Japanese college students studying finance.'; ?>">
   <title><?php echo htmlspecialchars($s['title']); ?></title>
+  <?php
+    $og_title = $ld_name = $s['title'];
+    $og_description = $ld_description = ($lang === 'ja')
+      ? 'ローンの毎月返済額、総利息、償却表を計算するツール。'
+      : 'Loan payment and amortization calculator for students.';
+    include(__DIR__ . '/../../includes/og-twitter-meta.php');
+    include(__DIR__ . '/../../includes/json-ld-softwareapp.php');
+  ?>
   <link rel="stylesheet" href="/css/styles.css">
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background: #f9fafb; color: #0f172a; }
