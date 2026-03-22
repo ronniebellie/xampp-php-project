@@ -20,7 +20,6 @@ htdocs/
 │   ├── header.php                 ← Already exists (shared)
 │   ├── footer.php                 ← Already exists (shared)
 │   └── styles.css                 ← Add CSS_ADDITIONS.css content here
-├── retirement-app/                ← Your other apps
 ├── social-security-claiming-analyzer/
 ├── ss-gap/
 └── time-value-of-money/

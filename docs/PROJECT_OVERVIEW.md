@@ -12,7 +12,7 @@ A PHP site offering **free financial/retirement planning calculators** with an o
 - **Premium (logged-in, subscribed):** Extended projections, save/load scenarios, download RMD reports as PDFs.
 - **Auth:** Register, login, logout; subscription status stored and checked in the DB.
 
-**Calculators:** RMD Impact, Future Value, Social Security Claiming Analyzer, SS + Spending Gap, Roth Conversion, Required vs. Desired Spending, Managed vs Vanguard, Time Value of Money (sub-tools), and a retirement projection app in `retirement-app/`.
+**Calculators:** RMD Impact, Future Value, Social Security Claiming Analyzer, SS + Spending Gap, Roth Conversion, Required vs. Desired Spending, Managed vs Vanguard, Time Value of Money (sub-tools), and others linked from the homepage.
 
 ---
 
@@ -39,7 +39,6 @@ A PHP site offering **free financial/retirement planning calculators** with an o
 | **`/api/`** | JSON endpoints for premium: `save_scenario.php`, `load_scenarios.php`, `delete_scenario.php`, `generate_rmd_pdf.php`. Require login + premium; use `includes/db_config.php`. |
 | **`/rmd-impact/`, `/future-value-app/`, `/ss-gap/`, etc.** | One folder per calculator: `index.php` + `calculator.js` (+ optional CSS). Link from homepage; call `/api/` for save/load/PDF. |
 | **`/time-value-of-money/`** | Same pattern with subfolders (e.g. `present-value/`, `future-value-annuity/`) each with its own `index.php`. |
-| **`/retirement-app/`** | Separate MVC-style app (own repo/submodule): `controllers/ProjectionController.php`, `models/ProjectionModel.php`, `views/projection.php`. |
 | **`/css/`** | Shared styles. **`/vendor/`** = Composer (TCPDF, Stripe). |
 
 ---
@@ -76,7 +75,6 @@ A PHP site offering **free financial/retirement planning calculators** with an o
 ## Where Core Business Logic Lives
 
 - **Calculator math and rules:** In **JavaScript** in each app folder (e.g. `rmd-impact/calculator.js` — RMD divisors, tax brackets, projections). Core financial logic is **client-side JS** in those `calculator.js` files.
-- **Retirement projection (multi-year balance):** **Server-side** in `retirement-app/models/ProjectionModel.php` (e.g. `projectYears` with compounding).
 - **Premium persistence and PDF:** **`/api/`** — validate session + premium, then DB or TCPDF.
 
 ---
