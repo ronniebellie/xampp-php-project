@@ -55,9 +55,10 @@ $hide_site_header = isset($_GET['embed'])
     || (!empty($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'calcforadvisors.com') !== false);
 
 // SEO: homepage
+require_once __DIR__ . '/includes/seo_public_url.php';
 $seo_title = "Ron Belisle Financial Calculators | Retirement & Planning Tools";
 $seo_description = "Free retirement and financial calculators: 401(k) on track, Roth conversion, Social Security claiming, RMD impact, pension vs lump sum, and more. Plan your retirement with confidence.";
-$seo_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'ronbelisle.com') . '/';
+$seo_url = rb_seo_public_url();
 $seo_site_name = "Ron Belisle Financial Calculators";
 ?>
 <!DOCTYPE html>
@@ -68,6 +69,7 @@ $seo_site_name = "Ron Belisle Financial Calculators";
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="<?php echo htmlspecialchars($seo_description); ?>">
   <title><?php echo htmlspecialchars($seo_title); ?></title>
+  <link rel="canonical" href="<?php echo htmlspecialchars($seo_url); ?>">
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="<?php echo htmlspecialchars($seo_url); ?>">

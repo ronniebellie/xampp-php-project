@@ -5,9 +5,17 @@
  */
 header('Content-Type: application/xml; charset=utf-8');
 
-$proto = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
-$host = $_SERVER['HTTP_HOST'] ?? 'ronbelisle.com';
-$base = $proto . '://' . $host;
+require_once __DIR__ . '/includes/seo_public_url.php';
+$h = strtolower($_SERVER['HTTP_HOST'] ?? 'ronbelisle.com');
+if ($h === 'www.ronbelisle.com' || $h === 'ronbelisle.com') {
+    $base = 'https://ronbelisle.com';
+} else {
+    $proto = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+    if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https') {
+        $proto = 'https';
+    }
+    $base = $proto . '://' . ($_SERVER['HTTP_HOST'] ?? 'ronbelisle.com');
+}
 
 $today = date('Y-m-d');
 

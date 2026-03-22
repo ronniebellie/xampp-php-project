@@ -5,10 +5,8 @@
  */
 if (empty($ld_name) || empty($ld_description)) return;
 
-$proto = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
-$host = $_SERVER['HTTP_HOST'] ?? 'ronbelisle.com';
-$uri = $_SERVER['REQUEST_URI'] ?? '/';
-$ld_url = $proto . '://' . $host . $uri;
+require_once __DIR__ . '/seo_public_url.php';
+$ld_url = rb_seo_public_url();
 
 $schema = [
     '@context' => 'https://schema.org',

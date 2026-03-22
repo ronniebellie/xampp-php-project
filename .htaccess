@@ -1,6 +1,18 @@
-# Send jp-business subdomain clean URLs to index.php so PHP can route to the right calculator
+# Canonical host: www.ronbelisle.com -> https://ronbelisle.com (301)
+# Force HTTPS on apex ronbelisle.com (subdomains unchanged)
 <IfModule mod_rewrite.c>
 RewriteEngine On
+
+RewriteCond %{HTTP_HOST} ^www\.ronbelisle\.com$ [NC]
+RewriteRule ^ https://ronbelisle.com%{REQUEST_URI} [L,R=301]
+
+# Apex HTTP -> HTTPS (works behind TLS proxies: skip if X-Forwarded-Proto is already https)
+RewriteCond %{HTTP_HOST} ^ronbelisle\.com$ [NC]
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
+RewriteRule ^ https://ronbelisle.com%{REQUEST_URI} [L,R=301]
+
+# Send jp-business subdomain clean URLs to index.php so PHP can route to the right calculator
 RewriteCond %{HTTP_HOST} ^jp-business\.ronbelisle\.com$ [NC]
 RewriteRule ^(npv-irr|breakeven-profit)/?$ index.php [L]
 </IfModule>

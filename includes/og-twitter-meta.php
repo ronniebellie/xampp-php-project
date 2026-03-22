@@ -4,18 +4,17 @@
  * Set $og_title and $og_description before including.
  * Optional: $og_image (full URL, e.g. https://ronbelisle.com/images/og-calc.png), $og_site_name
  */
+require_once __DIR__ . '/seo_public_url.php';
 if (empty($og_title)) $og_title = '';
 if (empty($og_description)) $og_description = '';
 if (empty($og_url)) {
-    $proto = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
-    $host = $_SERVER['HTTP_HOST'] ?? 'ronbelisle.com';
-    $uri = $_SERVER['REQUEST_URI'] ?? '/';
-    $og_url = $proto . '://' . $host . $uri;
+    $og_url = rb_seo_public_url();
 }
 $og_site_name = $og_site_name ?? 'Ron Belisle Financial Calculators';
 
 if ($og_title !== ''):
 ?>
+  <link rel="canonical" href="<?php echo htmlspecialchars($og_url); ?>">
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="<?php echo htmlspecialchars($og_url); ?>">
