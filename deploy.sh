@@ -5,5 +5,5 @@
 set -e
 SERVER="root@64.23.181.64"
 
-ssh "$SERVER" 'cd /var/www/xampp-php-project && rm -f deploy.sh && git pull && git submodule update --init --recursive && composer install --no-dev && rsync -av --exclude=.git --exclude="*.swp" /var/www/xampp-php-project/ /var/www/html/ && mkdir -p /var/www/calcforadvisors && rsync -av --exclude=.git --exclude="*.swp" /var/www/xampp-php-project/calcforadvisors/ /var/www/calcforadvisors/'
+ssh "$SERVER" 'cd /var/www/xampp-php-project && rm -f deploy.sh && git pull && git submodule update --init --recursive --force && composer install --no-dev && rsync -av --exclude=.git --exclude="*.swp" /var/www/xampp-php-project/ /var/www/html/ && mkdir -p /var/www/calcforadvisors && rsync -av --exclude=.git --exclude="*.swp" /var/www/xampp-php-project/calcforadvisors/ /var/www/calcforadvisors/'
 echo "Deploy done. Check https://ronbelisle.com and https://calcforadvisors.com"
