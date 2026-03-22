@@ -8,6 +8,7 @@ $isPremium = has_premium_access();
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <?php include __DIR__ . '/../includes/analytics.php'; ?>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Time value of money calculators: present value, future value, annuities, loan payments, and interest rates. Finance fundamentals.">

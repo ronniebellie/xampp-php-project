@@ -44,6 +44,7 @@ $urls = [
     ['loc' => '/down-payment/', 'priority' => '0.8', 'changefreq' => 'monthly'],
     ['loc' => '/student-loan-payoff/', 'priority' => '0.8', 'changefreq' => 'monthly'],
     ['loc' => '/trade-off-explorer/', 'priority' => '0.8', 'changefreq' => 'monthly'],
+    ['loc' => '/compound-interest/', 'priority' => '0.8', 'changefreq' => 'monthly'],
     ['loc' => '/time-value-of-money/', 'priority' => '0.8', 'changefreq' => 'monthly'],
     ['loc' => '/time-value-of-money/present-value/', 'priority' => '0.7', 'changefreq' => 'monthly'],
     ['loc' => '/time-value-of-money/present-value-annuity/', 'priority' => '0.7', 'changefreq' => 'monthly'],

@@ -91,11 +91,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <?php include __DIR__ . '/../../includes/analytics.php'; ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Solve for number of periods. How long until you reach a financial goal at a given rate and payment?">
+    <meta name="description" content="Solve for number of years for a lump sum to grow from present value to future value at a given interest rate and compounding.">
     <title>Number of Periods</title>
-    <?php $ld_name = 'Number of Periods Calculator'; $ld_description = 'Solve for number of periods. How long until you reach a financial goal at a given rate and payment?'; include(__DIR__ . '/../../includes/json-ld-softwareapp.php'); ?>
+    <?php $og_title = $ld_name = 'Number of Periods Calculator'; $og_description = $ld_description = 'Solve for number of years for a lump sum to grow from present value to future value at a given interest rate and compounding.'; include(__DIR__ . '/../../includes/og-twitter-meta.php'); include(__DIR__ . '/../../includes/json-ld-softwareapp.php'); ?>
     <link rel="stylesheet" href="/css/styles.css" />
 </head>
 <body>

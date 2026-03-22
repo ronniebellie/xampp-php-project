@@ -36,11 +36,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <?php include __DIR__ . '/../../includes/analytics.php'; ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Calculate future value of an annuity. See how regular payments grow with compound interest over time.">
     <title>Future Value of an Annuity</title>
-    <?php $ld_name = 'Future Value of an Annuity'; $ld_description = 'Calculate future value of an annuity. See how regular payments grow with compound interest over time.'; include(__DIR__ . '/../../includes/json-ld-softwareapp.php'); ?>
+    <?php $og_title = $ld_name = 'Future Value of an Annuity'; $og_description = $ld_description = 'Calculate future value of an annuity. See how regular payments grow with compound interest over time.'; include(__DIR__ . '/../../includes/og-twitter-meta.php'); include(__DIR__ . '/../../includes/json-ld-softwareapp.php'); ?>
     <link rel="stylesheet" href="/css/styles.css" />
 </head>
 <body>
