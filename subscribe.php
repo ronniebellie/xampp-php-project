@@ -163,7 +163,7 @@ if ($user['subscription_status'] === 'premium') {
             <!-- Monthly Plan -->
             <div class="pricing-card">
                 <div class="plan-name">Monthly</div>
-                <div class="plan-price"><sup>$</sup>6<span class="plan-period">/month</span></div>
+                <div class="plan-price"><sup>$</sup>3<span class="plan-period">/month</span></div>
                 
                 <ul class="plan-features">
                     <li>All premium calculators</li>
@@ -182,8 +182,8 @@ if ($user['subscription_status'] === 'premium') {
             <div class="pricing-card popular">
                 <div class="popular-badge">BEST VALUE</div>
                 <div class="plan-name">Annual</div>
-                <div class="plan-price"><sup>$</sup>60<span class="plan-period">/year</span></div>
-                <div class="plan-savings">Save $12/year!</div>
+                <div class="plan-price"><sup>$</sup>30<span class="plan-period">/year</span></div>
+                <div class="plan-savings">Save $6/year!</div>
                 
                 <ul class="plan-features">
                     <li>All premium calculators</li>
