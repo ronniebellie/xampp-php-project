@@ -429,7 +429,7 @@ $seo_site_name = "Ron Belisle Financial Calculators";
             </p>
           <?php else: ?>
             <p class="brand-subtitle">
-              All calculators are free to use—no account needed. <a href="auth/login.php">Log in</a> or <a href="auth/register.php">Sign up</a> for <a href="#premium">Premium</a> features.
+              All calculators are free to use—no account needed. <a href="auth/login.php">Log in</a> or <a href="auth/register.php">Sign up</a> for <a href="https://ronbelisle.com/premium.html">Premium</a> features.
             </p>
           <?php endif; ?>
           <div class="brand-subtitle" style="margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(15,23,42,.35);">
