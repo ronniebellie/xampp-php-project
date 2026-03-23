@@ -29,9 +29,9 @@ if ($user['subscription_status'] === 'premium') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Subscribe to Premium. Save scenarios, compare plans, export PDF/CSV, and get AI explanations across all calculators.">
+    <meta name="description" content="Start a 7-day free trial of Premium. Save scenarios, export PDF/CSV, AI explanations, and more across all calculators.">
     <title>Subscribe to Premium - Ron Belisle Financial Planning</title>
-    <?php $og_title = 'Subscribe to Premium - Ron Belisle Financial Planning'; $og_description = 'Subscribe to Premium. Save scenarios, compare plans, export PDF/CSV, and get AI explanations across all calculators.'; include(__DIR__ . '/includes/og-twitter-meta.php'); ?>
+    <?php $og_title = 'Subscribe to Premium - Ron Belisle Financial Planning'; $og_description = 'Start a 7-day free trial of Premium. Save scenarios, export PDF/CSV, AI explanations, and more across all calculators.'; include(__DIR__ . '/includes/og-twitter-meta.php'); ?>
     <link rel="stylesheet" href="css/shared-styles.css">
     <script src="https://js.stripe.com/v3/"></script>
     <style>
@@ -152,12 +152,35 @@ if ($user['subscription_status'] === 'premium') {
             border-radius: 6px;
             font-size: 0.9em;
         }
+
+        .trial-callout {
+            margin: 24px 0 8px;
+            padding: 16px 18px;
+            background: #ecfdf5;
+            border: 1px solid #6ee7b7;
+            border-radius: 8px;
+            color: #065f46;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .trial-callout strong {
+            display: block;
+            font-size: 1.05em;
+            margin-bottom: 6px;
+            color: #047857;
+        }
     </style>
 </head>
 <body>
     <div class="subscription-container">
         <h1>Upgrade to Premium</h1>
         <p>Get unlimited access to all retirement calculators and planning tools</p>
+
+        <div class="trial-callout">
+            <strong>7-day free trial</strong>
+            Try every premium feature free for 7 days. You’ll add a payment method at checkout so access can continue seamlessly—<em>you won’t be charged until the trial ends</em>. Cancel anytime before then and pay nothing.
+        </div>
         
         <div class="pricing-cards">
             <!-- Monthly Plan -->
@@ -166,6 +189,7 @@ if ($user['subscription_status'] === 'premium') {
                 <div class="plan-price"><sup>$</sup>3<span class="plan-period">/month</span></div>
                 
                 <ul class="plan-features">
+                    <li>7-day free trial, then $3/month</li>
                     <li>All premium calculators</li>
                     <li>Unlimited calculations</li>
                     <li>Save your scenarios</li>
@@ -174,7 +198,7 @@ if ($user['subscription_status'] === 'premium') {
                 </ul>
                 
                 <button class="subscribe-btn" onclick="checkout('monthly')">
-                    Subscribe Monthly
+                    Start 7-day free trial
                 </button>
             </div>
             
@@ -186,6 +210,7 @@ if ($user['subscription_status'] === 'premium') {
                 <div class="plan-savings">Save $6/year!</div>
                 
                 <ul class="plan-features">
+                    <li>7-day free trial, then $30/year</li>
                     <li>All premium calculators</li>
                     <li>Unlimited calculations</li>
                     <li>Save your scenarios</li>
@@ -194,14 +219,14 @@ if ($user['subscription_status'] === 'premium') {
                 </ul>
                 
                 <button class="subscribe-btn" onclick="checkout('annual')">
-                    Subscribe Annually
+                    Start 7-day free trial
                 </button>
             </div>
         </div>
         
         <div class="money-back">
             <strong>💯 30-Day Money Back Guarantee</strong><br>
-            Not satisfied? Get a full refund within 30 days, no questions asked.
+            After your trial, not satisfied? Get a full refund within 30 days of your first payment, no questions asked.
         </div>
     </div>
 

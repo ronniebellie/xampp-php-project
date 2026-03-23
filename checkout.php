@@ -39,10 +39,25 @@ try {
             'quantity' => 1,
         ]],
         'mode' => 'subscription',
+        // 7-day trial: matches subscribe.php & premium.html; first charge after trial ends
+        // If your Stripe Price already includes a trial, remove this block to avoid stacking trials.
+        'subscription_data' => [
+            'trial_period_days' => 7,
+            'metadata' => [
+                'plan' => $plan,
+                'user_id' => (string) $user_id,
+            ],
+        ],
+        // Extra reassurance on the hosted Checkout page (trial also drives Stripe’s own “X days free” copy)
+        'custom_text' => [
+            'submit' => [
+                'message' => '7-day free trial: you won\'t be charged until it ends. Cancel anytime before then.',
+            ],
+        ],
         'success_url' => $base_url . '/success.php?session_id={CHECKOUT_SESSION_ID}',
         'cancel_url' => $base_url . '/subscribe.php?canceled=true',
         'customer_email' => $user['email'],
-        'client_reference_id' => $user_id,
+        'client_reference_id' => (string) $user_id,
         'metadata' => [
             'user_id' => $user_id,
             'plan' => $plan

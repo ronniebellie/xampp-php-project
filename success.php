@@ -27,13 +27,34 @@ $base_url = $scheme . '://' . $host;
 \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
 
 $error_message = null;
+$trial_active = false;
 
 try {
-    // Retrieve the checkout session
-    $checkout_session = \Stripe\Checkout\Session::retrieve($session_id);
-    
-    $user_id = $checkout_session->client_reference_id;
-    $subscription_id = $checkout_session->subscription;
+    // Retrieve the checkout session (expand subscription for trial status)
+    $checkout_session = \Stripe\Checkout\Session::retrieve(
+        $session_id,
+        ['expand' => ['subscription']]
+    );
+
+    if ($checkout_session->status !== 'complete') {
+        throw new Exception('Checkout was not completed.');
+    }
+    if ($checkout_session->mode === 'subscription') {
+        if (!in_array($checkout_session->payment_status, ['paid', 'unpaid'], true)) {
+            throw new Exception('Subscription could not be confirmed.');
+        }
+        $sub = $checkout_session->subscription;
+        if (is_object($sub) && isset($sub->status) && $sub->status === 'trialing') {
+            $trial_active = true;
+        }
+    } elseif ($checkout_session->payment_status !== 'paid') {
+        throw new Exception('Payment was not completed.');
+    }
+
+    $user_id = (int) $checkout_session->client_reference_id;
+    $subscription_id = is_string($checkout_session->subscription)
+        ? $checkout_session->subscription
+        : ($checkout_session->subscription->id ?? null);
     
     // Get current user info (to detect first-time upgrade and to email them)
     $stmt = $conn->prepare("SELECT email, full_name, subscription_status FROM users WHERE id = ?");
@@ -45,6 +66,9 @@ try {
     
     if (!$user) {
         throw new Exception('User not found');
+    }
+    if (!$subscription_id) {
+        throw new Exception('Subscription not found');
     }
     
     $was_already_premium = ($user['subscription_status'] === 'premium');
@@ -62,7 +86,8 @@ try {
         $subject = "Thanks for subscribing – Ron Belisle Financial Calculators";
         
         $message = "Hi " . $first_name . ",\n\n";
-        $message .= "Thank you for subscribing to Premium at Ron Belisle Financial Calculators. Your subscription is now active.\n\n";
+        $message .= "Thank you for subscribing to Premium at Ron Belisle Financial Calculators. Your subscription is now active";
+        $message .= !empty($trial_active) ? " (you're in your 7-day free trial—you won't be charged until it ends).\n\n" : ".\n\n";
         $message .= "You now have full access to:\n";
         $message .= "• Save and compare scenarios across all calculators\n";
         $message .= "• Export PDF and CSV reports\n";
@@ -188,6 +213,11 @@ try {
             <p class="success-message">
                 Your subscription is now active. You have full access to all premium retirement calculators and planning tools.
             </p>
+            <?php if (!empty($trial_active)): ?>
+            <p class="success-message" style="background:#ecfdf5;border:1px solid #6ee7b7;border-radius:8px;padding:14px 16px;color:#065f46;">
+                You’re in a <strong>7-day free trial</strong>. Your payment method is on file; you won’t be charged until the trial ends. You can cancel anytime from your account before then.
+            </p>
+            <?php endif; ?>
             
             <div class="premium-features">
                 <h3>You now have access to:</h3>
