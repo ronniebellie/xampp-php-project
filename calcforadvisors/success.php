@@ -21,9 +21,26 @@ if (!$session_id) {
 $error = null;
 $plan = null;
 
+$trialActive = false;
+
 try {
-    $session = \Stripe\Checkout\Session::retrieve($session_id);
-    if ($session->payment_status !== 'paid') {
+    $session = \Stripe\Checkout\Session::retrieve(
+        $session_id,
+        ['expand' => ['subscription']]
+    );
+    if ($session->status !== 'complete') {
+        throw new Exception('Checkout was not completed.');
+    }
+    if ($session->mode === 'subscription') {
+        // Free trial: Stripe often leaves payment_status unpaid until the first charge
+        if (!in_array($session->payment_status, ['paid', 'unpaid'], true)) {
+            throw new Exception('Subscription could not be confirmed.');
+        }
+        $sub = $session->subscription;
+        if (is_object($sub) && isset($sub->status) && $sub->status === 'trialing') {
+            $trialActive = true;
+        }
+    } elseif ($session->payment_status !== 'paid') {
         throw new Exception('Payment was not completed.');
     }
     $plan = $session->metadata->plan ?? 'subscription';
@@ -84,6 +101,11 @@ try {
             <div class="icon">✓</div>
             <h1>Thank you for subscribing</h1>
             <p>Your calcforadvisors subscription is now active.</p>
+            <?php if (!empty($trialActive)): ?>
+            <p style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:12px 14px;color:#166534;">
+                You’re in a <strong>30-day free trial</strong>. Your payment method is on file; you won’t be charged until the trial ends. You can cancel anytime from the billing portal.
+            </p>
+            <?php endif; ?>
             <p>Set up your account to access your subscriber dashboard, manage billing, and get your white-label calculators.</p>
             <a href="request-set-password.php" class="cta">Set up your account</a>
             <p style="margin-top: 16px; font-size: 14px;"><a href="index.html" style="color: #2c5282;">Return to calcforadvisors.com</a></p>

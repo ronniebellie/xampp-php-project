@@ -45,6 +45,11 @@ try {
             'quantity' => 1,
         ]],
         'mode' => 'subscription',
+        // 30-day trial: card collected now; first charge after trial (matches pricing page copy)
+        'subscription_data' => [
+            'trial_period_days' => 30,
+            'metadata' => ['plan' => $plan],
+        ],
         'success_url' => $base . '/success.php?session_id={CHECKOUT_SESSION_ID}',
         'cancel_url' => $base . '/index.html#pricing',
         'metadata' => ['plan' => $plan],
