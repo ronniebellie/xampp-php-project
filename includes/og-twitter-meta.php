@@ -18,6 +18,11 @@ if (empty($og_image)) {
     $og_image = rb_seo_site_base_url() . '/images/og-default.png';
 }
 
+// Facebook recommends width/height for link previews (matches og-default.png).
+$og_image_width = isset($og_image_width) ? (int) $og_image_width : 1200;
+$og_image_height = isset($og_image_height) ? (int) $og_image_height : 630;
+$og_image_type = $og_image_type ?? 'image/png';
+
 if ($og_title !== ''):
 ?>
   <link rel="canonical" href="<?php echo htmlspecialchars($og_url); ?>">
@@ -30,6 +35,9 @@ if ($og_title !== ''):
   <meta property="og:locale" content="en_US">
   <?php if (!empty($og_image)): ?>
   <meta property="og:image" content="<?php echo htmlspecialchars($og_image); ?>">
+  <meta property="og:image:width" content="<?php echo (int) $og_image_width; ?>">
+  <meta property="og:image:height" content="<?php echo (int) $og_image_height; ?>">
+  <meta property="og:image:type" content="<?php echo htmlspecialchars($og_image_type); ?>">
   <meta property="og:image:alt" content="<?php echo htmlspecialchars($og_image_alt ?? $og_title); ?>">
   <?php endif; ?>
   <!-- Twitter -->
