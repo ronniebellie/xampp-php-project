@@ -84,8 +84,9 @@ $seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financ
   <meta property="og:image:height" content="630">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:alt" content="<?php echo htmlspecialchars($seo_og_image_alt); ?>">
-  <!-- Twitter -->
+  <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="<?php echo htmlspecialchars($seo_url); ?>">
   <meta name="twitter:title" content="<?php echo htmlspecialchars($seo_title); ?>">
   <meta name="twitter:description" content="<?php echo htmlspecialchars($seo_description); ?>">
   <meta name="twitter:image" content="<?php echo htmlspecialchars($seo_og_image); ?>">

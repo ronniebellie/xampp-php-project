@@ -40,8 +40,9 @@ if ($og_title !== ''):
   <meta property="og:image:type" content="<?php echo htmlspecialchars($og_image_type); ?>">
   <meta property="og:image:alt" content="<?php echo htmlspecialchars($og_image_alt ?? $og_title); ?>">
   <?php endif; ?>
-  <!-- Twitter -->
+  <!-- Twitter / X -->
   <meta name="twitter:card" content="<?php echo !empty($og_image) ? 'summary_large_image' : 'summary'; ?>">
+  <meta name="twitter:url" content="<?php echo htmlspecialchars($og_url); ?>">
   <meta name="twitter:title" content="<?php echo htmlspecialchars($og_title); ?>">
   <meta name="twitter:description" content="<?php echo htmlspecialchars($og_description); ?>">
   <?php if (!empty($og_image)): ?>
