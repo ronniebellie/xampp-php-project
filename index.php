@@ -60,7 +60,7 @@ $seo_title = "Ron Belisle Financial Calculators | Retirement & Planning Tools";
 $seo_description = "Free retirement and financial calculators: 401(k) on track, Roth conversion, Social Security claiming, RMD impact, pension vs lump sum, and more. Plan your retirement with confidence.";
 $seo_url = rb_seo_public_url();
 $seo_site_name = "Ron Belisle Financial Calculators";
-$seo_og_image = rb_seo_site_base_url() . '/images/og-default.png';
+$seo_og_image = rb_seo_site_base_url() . '/images/og-default.jpg';
 $seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financial planning tools';
 ?>
 <!DOCTYPE html>
@@ -82,7 +82,7 @@ $seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financ
   <meta property="og:image" content="<?php echo htmlspecialchars($seo_og_image); ?>">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:alt" content="<?php echo htmlspecialchars($seo_og_image_alt); ?>">
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image">
@@ -90,6 +90,7 @@ $seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financ
   <meta name="twitter:title" content="<?php echo htmlspecialchars($seo_title); ?>">
   <meta name="twitter:description" content="<?php echo htmlspecialchars($seo_description); ?>">
   <meta name="twitter:image" content="<?php echo htmlspecialchars($seo_og_image); ?>">
+  <meta name="twitter:image:alt" content="<?php echo htmlspecialchars($seo_og_image_alt); ?>">
   <?php include __DIR__ . '/includes/json-ld-home.php'; ?>
   <style>
     :root{

@@ -4,7 +4,7 @@
  * Set $og_title and $og_description before including.
  * Optional: $og_image (absolute URL), $og_image_alt, $og_site_name
  *
- * Default share image: /images/og-default.png (1200×630). Add that file to the repo / server.
+ * Default share image: /images/og-default.jpg (1200×630 JPEG; also keep og-default.png if needed).
  */
 require_once __DIR__ . '/seo_public_url.php';
 if (empty($og_title)) $og_title = '';
@@ -15,13 +15,13 @@ if (empty($og_url)) {
 $og_site_name = $og_site_name ?? 'Ron Belisle Financial Calculators';
 
 if (empty($og_image)) {
-    $og_image = rb_seo_site_base_url() . '/images/og-default.png';
+    $og_image = rb_seo_site_base_url() . '/images/og-default.jpg';
 }
 
-// Facebook recommends width/height for link previews (matches og-default.png).
+// Facebook / X recommend width/height for link previews (matches og-default.jpg).
 $og_image_width = isset($og_image_width) ? (int) $og_image_width : 1200;
 $og_image_height = isset($og_image_height) ? (int) $og_image_height : 630;
-$og_image_type = $og_image_type ?? 'image/png';
+$og_image_type = $og_image_type ?? 'image/jpeg';
 
 if ($og_title !== ''):
 ?>
@@ -47,5 +47,6 @@ if ($og_title !== ''):
   <meta name="twitter:description" content="<?php echo htmlspecialchars($og_description); ?>">
   <?php if (!empty($og_image)): ?>
   <meta name="twitter:image" content="<?php echo htmlspecialchars($og_image); ?>">
+  <meta name="twitter:image:alt" content="<?php echo htmlspecialchars($og_image_alt ?? $og_title); ?>">
   <?php endif; ?>
 <?php endif; ?>
