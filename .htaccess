@@ -3,6 +3,9 @@
 <IfModule mod_rewrite.c>
 RewriteEngine On
 
+# Pretty sitemap URL for Search Console and crawlers
+RewriteRule ^sitemap\.xml$ sitemap.php [L]
+
 RewriteCond %{HTTP_HOST} ^www\.ronbelisle\.com$ [NC]
 RewriteRule ^ https://ronbelisle.com%{REQUEST_URI} [L,R=301]
 

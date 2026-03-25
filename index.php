@@ -60,6 +60,8 @@ $seo_title = "Ron Belisle Financial Calculators | Retirement & Planning Tools";
 $seo_description = "Free retirement and financial calculators: 401(k) on track, Roth conversion, Social Security claiming, RMD impact, pension vs lump sum, and more. Plan your retirement with confidence.";
 $seo_url = rb_seo_public_url();
 $seo_site_name = "Ron Belisle Financial Calculators";
+$seo_og_image = rb_seo_site_base_url() . '/images/og-default.png';
+$seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financial planning tools';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -77,10 +79,14 @@ $seo_site_name = "Ron Belisle Financial Calculators";
   <meta property="og:description" content="<?php echo htmlspecialchars($seo_description); ?>">
   <meta property="og:site_name" content="<?php echo htmlspecialchars($seo_site_name); ?>">
   <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="<?php echo htmlspecialchars($seo_og_image); ?>">
+  <meta property="og:image:alt" content="<?php echo htmlspecialchars($seo_og_image_alt); ?>">
   <!-- Twitter -->
-  <meta name="twitter:card" content="summary">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="<?php echo htmlspecialchars($seo_title); ?>">
   <meta name="twitter:description" content="<?php echo htmlspecialchars($seo_description); ?>">
+  <meta name="twitter:image" content="<?php echo htmlspecialchars($seo_og_image); ?>">
+  <?php include __DIR__ . '/includes/json-ld-home.php'; ?>
   <style>
     :root{
       --max: 980px;

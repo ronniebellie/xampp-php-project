@@ -1,5 +1,5 @@
 User-agent: *
 Allow: /
 
-# Sitemap
-Sitemap: https://ronbelisle.com/sitemap.php
+# Sitemap (sitemap.xml rewrites to sitemap.php)
+Sitemap: https://ronbelisle.com/sitemap.xml
