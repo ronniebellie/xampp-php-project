@@ -6,9 +6,6 @@ RewriteEngine On
 # Pretty sitemap URL for Search Console and crawlers
 RewriteRule ^sitemap\.xml$ sitemap.php [L]
 
-# /retirement-app/ removed — 301 to home so crawlers don't get 404
-RewriteRule ^retirement-app(/.*)?$ / [L,R=301]
-
 RewriteCond %{HTTP_HOST} ^www\.ronbelisle\.com$ [NC]
 RewriteRule ^ https://ronbelisle.com%{REQUEST_URI} [L,R=301]
 
