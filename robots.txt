@@ -1,5 +1,5 @@
 User-agent: *
 Allow: /
 
-# Sitemap (sitemap.xml rewrites to sitemap.php)
-Sitemap: https://ronbelisle.com/sitemap.xml
+# Use sitemap.php directly (sitemap.xml may 404 if Apache ignores .htaccess rewrites)
+Sitemap: https://ronbelisle.com/sitemap.php
