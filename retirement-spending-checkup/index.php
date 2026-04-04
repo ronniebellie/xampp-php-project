@@ -219,13 +219,6 @@ $isPremium = has_premium_access();
       $premium_upsell_text = 'Upgrade to Premium to save and compare scenarios, export PDFs and CSVs, get AI-generated plain-language explanations of your specific results, and more across all calculators.';
       include(__DIR__ . '/../includes/premium-upsell-banner.php');
     ?>
-    <footer class="site-footer">
-      <span class="donate-text">If these tools are useful, please consider supporting future development.</span>
-      <a href="https://www.paypal.com/paypalme/rongbelisle" target="_blank" class="donate-btn">
-        <span class="donate-dot"></span>
-        Donate
-      </a>
-    </footer>
     <?php endif; ?>
   </div>
 
