@@ -293,6 +293,25 @@ $seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financ
       letter-spacing: -0.01em;
     }
     .section-heading:first-of-type { margin-top: 0; }
+    .tier{
+      margin-top: 18px;
+    }
+    .tier-title{
+      margin: 16px 4px 6px;
+      font-size: 14px;
+      font-weight: 850;
+      color: rgba(15,23,42,.86);
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+    }
+    .tier-hint{
+      margin: 0 4px 12px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.45;
+      max-width: 820px;
+    }
+    .grid.tight{ margin-top: 10px; }
     .section-divider {
       margin: 48px 0 0;
       padding: 32px 0 0;
@@ -484,97 +503,125 @@ $seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financ
     <?php endif; ?>
 
     <?php if (!$hide_site_header): ?><h2 class="section-heading" id="retirement">For folks in or near retirement (Boomers and Gen X)</h2><?php endif; ?>
-    <main class="grid" aria-label="Retirement app links">
-      <section class="card">
-        <h3>RMD Impact</h3>
-        <p>Estimate how Required Minimum Distributions interact with your portfolio, taxes, and retirement income over time.</p>
-        <a class="btn" href="rmd-impact/">Open</a>
-      </section>
+    <div class="tier" aria-label="Retirement app links">
+      <div class="tier-title">Start here</div>
+      <p class="tier-hint">Get the big building blocks in place first (Social Security, spending, and timeline). Then go deeper into sustainability, taxes, and optimization.</p>
+      <div class="grid tight">
+        <section class="card">
+          <h3>Social Security Claiming Analyzer</h3>
+          <p>Compare claiming ages and see how lifetime Social Security benefits change over time.</p>
+          <a class="btn" href="social-security-claiming-analyzer/">Open</a>
+        </section>
 
-      <section class="card">
-        <h3>Estate &amp; Legacy Planning Suite</h3>
-        <p>Model inherited IRA taxes under the 10-year rule, compare Roth conversion strategies across generations, and explore SECURE Act planning tools.</p>
-        <a class="btn" href="/estate-planning/">Open</a>
-      </section>
+        <section class="card">
+          <h3>Retirement Spending &amp; On-Track Checkup</h3>
+          <p>Estimate a retirement budget from your current spending, factor in guaranteed income, and see whether your savings look on track using a simple withdrawal-rate rule of thumb.</p>
+          <a class="btn" href="retirement-spending-checkup/">Open</a>
+        </section>
 
-      <section class="card">
-        <h3>Managed Portfolio vs Vanguard Index Fund</h3>
-        <p>See the true cost of advisor fees - including opportunity cost - compared to low-cost Vanguard index funds.</p>
-        <a class="btn" href="managed-vs-vanguard/">Open</a>
-      </section>
+        <section class="card">
+          <h3>Retirement Timeline &amp; Checklist</h3>
+          <p>Turn your target retirement date into a simple, phased checklist of tasks—from early prep to your last day at work and first year in retirement.</p>
+          <a class="btn" href="retirement-timeline/">Open</a>
+        </section>
 
-      <section class="card">
-        <h3>Vanguard Personal Advisor vs Target Date Funds</h3>
-        <p>Compare the cost of Vanguard PAS (0.30%) with a self-managed blend of Target Date funds. Allocate conservative, moderate, and aggressive.</p>
-        <a class="btn" href="vanguard-pas-vs-target-date/">Open</a>
-      </section>
+        <section class="card">
+          <h3>Social Security + Spending Gap Calculator</h3>
+          <p>See how Social Security reduces the portfolio you need by identifying your real retirement spending gap.</p>
+          <a class="btn" href="ss-gap/">Open</a>
+        </section>
+      </div>
+    </div>
 
-      <section class="card">
-        <h3>Social Security Claiming Analyzer</h3>
-        <p>Compare claiming ages and see how lifetime Social Security benefits change over time.</p>
-        <a class="btn" href="social-security-claiming-analyzer/">Open</a>
-      </section>
+    <div class="tier">
+      <div class="tier-title">Income &amp; savings building blocks</div>
+      <p class="tier-hint">Add up predictable income sources and see how your savings can grow (or be drawn down) over time.</p>
+      <div class="grid tight">
+        <section class="card">
+          <h3>Pension vs. Lump Sum</h3>
+          <p>See how many years it takes for the pension to “pay back” the lump sum and how your life expectancy affects the choice.</p>
+          <a class="btn" href="pension-vs-lump-sum/">Open</a>
+        </section>
 
-      <section class="card">
-        <h3>Retirement Timeline &amp; Checklist</h3>
-        <p>Turn your target retirement date into a simple, phased checklist of tasks—from early prep to your last day at work and first year in retirement.</p>
-        <a class="btn" href="retirement-timeline/">Open</a>
-      </section>
+        <section class="card">
+          <h3>Future Value Calculator</h3>
+          <p>Calculate present value, future value, annuities, and required payments to reach your financial goals.</p>
+          <a class="btn" href="future-value-app/">Open</a>
+        </section>
+      </div>
+    </div>
 
-      <section class="card">
-        <h3>Roth Conversion Calculator</h3>
-        <p>Analyze the benefits of converting traditional IRA funds to Roth, considering current vs future tax brackets, RMDs, and Medicare IRMAA thresholds.</p>
-        <a class="btn" href="roth-conv/">Open</a>
-      </section>
+    <div class="tier">
+      <div class="tier-title">Sustainability &amp; protection</div>
+      <p class="tier-hint">Pressure-test your plan, clarify needs vs wants, and look at risks that matter after retirement begins.</p>
+      <div class="grid tight">
+        <section class="card">
+          <h3>Required vs. Desired Spending Calculator</h3>
+          <p>Separate essential expenses from discretionary spending to calculate the minimum portfolio needed for security and the ideal portfolio for your full retirement lifestyle.</p>
+          <a class="btn" href="required-vs-desired/">Open</a>
+        </section>
 
-      <section class="card">
-        <h3>Required vs. Desired Spending Calculator</h3>
-        <p>Separate essential expenses from discretionary spending to calculate the minimum portfolio needed for security and the ideal portfolio for your full retirement lifestyle.</p>
-        <a class="btn" href="required-vs-desired/">Open</a>
-      </section>
+        <section class="card">
+          <h3>Plan Success (Monte Carlo)</h3>
+          <p>See the probability of your portfolio lasting through retirement using random market return simulations.</p>
+          <a class="btn" href="plan-success/">Open</a>
+        </section>
 
-      <section class="card">
-        <h3>Retirement Spending &amp; On-Track Checkup</h3>
-        <p>Estimate a retirement budget from your current spending, factor in guaranteed income, and see whether your savings look on track using a simple withdrawal-rate rule of thumb.</p>
-        <a class="btn" href="retirement-spending-checkup/">Open</a>
-      </section>
+        <section class="card">
+          <h3>Survivor Gap Calculator</h3>
+          <p>Compare single-life vs joint-life annuity payouts and see how life insurance could fill the gap for your surviving spouse.</p>
+          <a class="btn" href="survivor-gap/">Open</a>
+        </section>
 
-      <section class="card">
-        <h3>Future Value Calculator</h3>
-        <p>Calculate present value, future value, annuities, and required payments to reach your financial goals.</p>
-        <a class="btn" href="future-value-app/">Open</a>
-      </section>
+        <section class="card">
+          <h3>Debt Payoff Calculator</h3>
+          <p>Pay down debt before retirement—compare avalanche vs snowball, see payoff timelines, and how extra payments save interest.</p>
+          <a class="btn" href="debt-payoff/">Open</a>
+        </section>
+      </div>
+    </div>
 
-      <section class="card">
-        <h3>Social Security + Spending Gap Calculator</h3>
-        <p>See how Social Security reduces the portfolio you need by identifying your real retirement spending gap.</p>
-        <a class="btn" href="ss-gap/">Open</a>
-      </section>
+    <div class="tier">
+      <div class="tier-title">Advanced planning (taxes, rules, optimization)</div>
+      <p class="tier-hint">These tools can be powerful, but they’ll make more sense after you’ve established the basics above.</p>
+      <div class="grid tight">
+        <section class="card">
+          <h3>Roth Conversion Calculator</h3>
+          <p>Analyze the benefits of converting traditional IRA funds to Roth, considering current vs future tax brackets, RMDs, and Medicare IRMAA thresholds.</p>
+          <a class="btn" href="roth-conv/">Open</a>
+        </section>
 
-      <section class="card">
-        <h3>Survivor Gap Calculator</h3>
-        <p>Compare single-life vs joint-life annuity payouts and see how life insurance could fill the gap for your surviving spouse.</p>
-        <a class="btn" href="survivor-gap/">Open</a>
-      </section>
+        <section class="card">
+          <h3>RMD Impact</h3>
+          <p>Estimate how Required Minimum Distributions interact with your portfolio, taxes, and retirement income over time.</p>
+          <a class="btn" href="rmd-impact/">Open</a>
+        </section>
 
-      <section class="card">
-        <h3>Debt Payoff Calculator</h3>
-        <p>Pay down debt before retirement—compare avalanche vs snowball, see payoff timelines, and how extra payments save interest.</p>
-        <a class="btn" href="debt-payoff/">Open</a>
-      </section>
+        <section class="card">
+          <h3>Estate &amp; Legacy Planning Suite</h3>
+          <p>Model inherited IRA taxes under the 10-year rule, compare Roth conversion strategies across generations, and explore SECURE Act planning tools.</p>
+          <a class="btn" href="/estate-planning/">Open</a>
+        </section>
+      </div>
+    </div>
 
-      <section class="card">
-        <h3>Pension vs. Lump Sum</h3>
-        <p>See how many years it takes for the pension to “pay back” the lump sum and how your life expectancy affects the choice.</p>
-        <a class="btn" href="pension-vs-lump-sum/">Open</a>
-      </section>
+    <div class="tier">
+      <div class="tier-title">Costs &amp; comparisons</div>
+      <p class="tier-hint">If you’re deciding between DIY vs managed options, these show how fees can add up over time.</p>
+      <div class="grid tight">
+        <section class="card">
+          <h3>Managed Portfolio vs Vanguard Index Fund</h3>
+          <p>See the true cost of advisor fees - including opportunity cost - compared to low-cost Vanguard index funds.</p>
+          <a class="btn" href="managed-vs-vanguard/">Open</a>
+        </section>
 
-      <section class="card">
-        <h3>Plan Success (Monte Carlo)</h3>
-        <p>See the probability of your portfolio lasting through retirement using random market return simulations.</p>
-        <a class="btn" href="plan-success/">Open</a>
-      </section>
-    </main>
+        <section class="card">
+          <h3>Vanguard Personal Advisor vs Target Date Funds</h3>
+          <p>Compare the cost of Vanguard PAS (0.30%) with a self-managed blend of Target Date funds. Allocate conservative, moderate, and aggressive.</p>
+          <a class="btn" href="vanguard-pas-vs-target-date/">Open</a>
+        </section>
+      </div>
+    </div>
 
     <?php if (!$hide_site_header): ?>
     <div class="section-divider">
