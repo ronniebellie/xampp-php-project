@@ -11,11 +11,6 @@ session_start();
 require_once __DIR__ . '/../includes/db_config.php';
 
 // OpenAI config (optional – returns 503 if not configured)
-if (!file_exists(__DIR__ . '/../includes/openai_config.php')) {
-    header('Content-Type: application/json');
-    http_response_code(503);
-    die(json_encode(['error' => 'AI Explain feature is not configured on this server']));
-}
 require_once __DIR__ . '/../includes/openai_config.php';
 
 if (!defined('OPENAI_API_KEY') || OPENAI_API_KEY === '' || strpos(OPENAI_API_KEY, 'sk-your-') === 0) {
