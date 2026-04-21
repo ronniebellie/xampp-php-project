@@ -29,16 +29,5 @@ fi
 # White-label calcforadvisors bundle lives alongside the main repo in this project layout
 mkdir -p /var/www/calcforadvisors
 rsync -av --delete --exclude=.git --exclude="*.swp" "$APP_DIR/calcforadvisors/" /var/www/calcforadvisors/
-
-# Optional: keep the legacy checkout in sync too (not the Apache docroot, but avoids drift)
-if [ -d /var/www/xampp-php-project/.git ]; then
-  cd /var/www/xampp-php-project
-  git fetch origin
-  git reset --hard origin/main
-  git submodule update --init --recursive
-  if [ -f composer.json ]; then
-    composer install --no-dev --no-interaction --prefer-dist
-  fi
-fi
 '
 echo "Deploy done. Check https://ronbelisle.com and https://calcforadvisors.com"
