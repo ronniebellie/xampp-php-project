@@ -626,61 +626,77 @@ $seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financ
     <?php if (!$hide_site_header): ?>
     <div class="section-divider">
     <h2 class="section-heading" id="early-career">For folks building or strengthening their foundation (Millennials and Gen Z)</h2>
-    <main class="grid" aria-label="Early career app links">
-      <section class="card">
-        <h3>Debt Payoff Calculator</h3>
-        <p>Compare avalanche vs snowball, see payoff timelines, and see how extra payments shorten your journey and save interest.</p>
-        <a class="btn" href="debt-payoff/">Open</a>
-      </section>
+    <div class="tier" aria-label="Early career app links">
+      <div class="tier-title">Foundation (stabilize first)</div>
+      <p class="tier-hint">Build a buffer, get control of debt, and make the “debt vs investing” trade-off with clear numbers.</p>
+      <div class="grid tight">
+        <section class="card">
+          <h3>Emergency Fund Builder</h3>
+          <p>Set a target (e.g. 3–6 months of expenses) and see how long it takes to get there at your savings rate.</p>
+          <a class="btn" href="emergency-fund/">Open</a>
+        </section>
 
-      <section class="card">
-        <h3>Debt vs Saving: Which First?</h3>
-        <p>Compare putting extra cash toward high-interest debt versus investing it for retirement and see which leaves you with higher net worth over time.</p>
-        <a class="btn" href="debt-vs-saving/">Open</a>
-      </section>
+        <section class="card">
+          <h3>Debt Payoff Calculator</h3>
+          <p>Compare avalanche vs snowball, see payoff timelines, and see how extra payments shorten your journey and save interest.</p>
+          <a class="btn" href="debt-payoff/">Open</a>
+        </section>
 
-      <section class="card">
-        <h3>Emergency Fund Builder</h3>
-        <p>Set a target (e.g. 3–6 months of expenses) and see how long it takes to get there at your savings rate.</p>
-        <a class="btn" href="emergency-fund/">Open</a>
-      </section>
+        <section class="card">
+          <h3>Debt vs Saving: Which First?</h3>
+          <p>Compare putting extra cash toward high-interest debt versus investing it for retirement and see which leaves you with higher net worth over time.</p>
+          <a class="btn" href="debt-vs-saving/">Open</a>
+        </section>
+      </div>
+    </div>
 
-      <section class="card">
-        <h3>Down Payment / House Savings</h3>
-        <p>See how much to save each month to reach your down payment goal and when you'll get there.</p>
-        <a class="btn" href="down-payment/">Open</a>
-      </section>
+    <div class="tier">
+      <div class="tier-title">Big goals (life milestones)</div>
+      <p class="tier-hint">Plan for the big moving parts—student loans and housing—without losing track of your long-term plan.</p>
+      <div class="grid tight">
+        <section class="card">
+          <h3>Student Loan Payoff</h3>
+          <p>Model extra payments, refinancing, and payoff timelines so you can choose a strategy that fits.</p>
+          <a class="btn" href="student-loan-payoff/">Open</a>
+        </section>
 
-      <section class="card">
-        <h3>Student Loan Payoff</h3>
-        <p>Model extra payments, refinancing, and payoff timelines so you can choose a strategy that fits.</p>
-        <a class="btn" href="student-loan-payoff/">Open</a>
-      </section>
+        <section class="card">
+          <h3>Down Payment / House Savings</h3>
+          <p>See how much to save each month to reach your down payment goal and when you'll get there.</p>
+          <a class="btn" href="down-payment/">Open</a>
+        </section>
+      </div>
+    </div>
 
-      <section class="card">
-        <h3>Retirement Trade-Off Explorer</h3>
-        <p>See how retiring later, saving more each year, or spending less (or adding part-time income) changes whether you look on track for your retirement income goal.</p>
-        <a class="btn" href="trade-off-explorer/">Open</a>
-      </section>
+    <div class="tier">
+      <div class="tier-title">Retirement growth (get on track)</div>
+      <p class="tier-hint">Once the basics are stable, use these to set a target and see the levers that move your long-term outcome.</p>
+      <div class="grid tight">
+        <section class="card">
+          <h3>401(k) / IRA On Track?</h3>
+          <p>See if your current balance and contributions put you on track for retirement by your target age.</p>
+          <a class="btn" href="401k-on-track/">Open</a>
+        </section>
 
-      <section class="card">
-        <h3>The Power of Compound Interest</h3>
-        <p>Play with starting amount, monthly contributions, years, and return to see how compounding drives long-term growth.</p>
-        <a class="btn" href="compound-interest/">Open</a>
-      </section>
+        <section class="card">
+          <h3>How Much Do I Need? Nest Egg Target</h3>
+          <p>Get a rule-of-thumb target for how much to have saved by retirement. Enter the income you want, subtract Social Security and pensions, and see the nest egg you’re aiming for.</p>
+          <a class="btn" href="nest-egg-target/">Open</a>
+        </section>
 
-      <section class="card">
-        <h3>How Much Do I Need? Nest Egg Target</h3>
-        <p>Get a rule-of-thumb target for how much to have saved by retirement. Enter the income you want, subtract Social Security and pensions, and see the nest egg you’re aiming for.</p>
-        <a class="btn" href="nest-egg-target/">Open</a>
-      </section>
+        <section class="card">
+          <h3>The Power of Compound Interest</h3>
+          <p>Play with starting amount, monthly contributions, years, and return to see how compounding drives long-term growth.</p>
+          <a class="btn" href="compound-interest/">Open</a>
+        </section>
 
-      <section class="card">
-        <h3>401(k) / IRA On Track?</h3>
-        <p>See if your current balance and contributions put you on track for retirement by your target age.</p>
-        <a class="btn" href="401k-on-track/">Open</a>
-      </section>
-    </main>
+        <section class="card">
+          <h3>Retirement Trade-Off Explorer</h3>
+          <p>See how retiring later, saving more each year, or spending less (or adding part-time income) changes whether you look on track for your retirement income goal.</p>
+          <a class="btn" href="trade-off-explorer/">Open</a>
+        </section>
+      </div>
+    </div>
     </div>
     <?php endif; ?>
 
