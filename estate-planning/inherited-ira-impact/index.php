@@ -1,9 +1,10 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/../../includes/db_config.php';
 require_once __DIR__ . '/../../includes/has_premium_access.php';
 $isLoggedIn = isset($_SESSION['user_id']) || !empty($_SESSION['calcforadvisors_subscriber_id']);
 $isPremium = has_premium_access();
+$rb_includes = dirname(__DIR__, 2) . '/includes';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -13,7 +14,7 @@ $isPremium = has_premium_access();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Model inherited IRA tax impact across two generations. Compare no-conversion vs Roth conversion under the SECURE Act 10-year rule.">
     <title>Inherited IRA &amp; Legacy Tax Impact Calculator</title>
-    <?php $og_title = $ld_name = 'Inherited IRA & Legacy Tax Impact Calculator'; $og_description = $ld_description = 'Model inherited IRA tax impact across two generations. Compare no-conversion vs Roth conversion under the SECURE Act 10-year rule.'; include(__DIR__ . '/../../includes/og-twitter-meta.php'); include(__DIR__ . '/../../includes/json-ld-softwareapp.php'); ?>
+    <?php $og_title = $ld_name = 'Inherited IRA & Legacy Tax Impact Calculator'; $og_description = $ld_description = 'Model inherited IRA tax impact across two generations. Compare no-conversion vs Roth conversion under the SECURE Act 10-year rule.'; include($rb_includes . '/og-twitter-meta.php'); include($rb_includes . '/json-ld-softwareapp.php'); ?>
     <link rel="stylesheet" href="../../css/styles.css">
     <style>
         .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }

@@ -1,9 +1,10 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/../includes/db_config.php';
 require_once __DIR__ . '/../includes/has_premium_access.php';
 $isLoggedIn = isset($_SESSION['user_id']) || !empty($_SESSION['calcforadvisors_subscriber_id']);
 $isPremium = has_premium_access();
+$rb_includes = dirname(__DIR__) . '/includes';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -13,7 +14,7 @@ $isPremium = has_premium_access();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Estate and legacy planning calculators. Model inherited IRA tax impact and Roth conversions across two generations under the SECURE Act.">
     <title>Estate &amp; Legacy Planning Suite</title>
-    <?php $og_title = $ld_name = 'Estate & Legacy Planning Suite'; $og_description = $ld_description = 'Estate and legacy planning calculators. Model inherited IRA tax impact and Roth conversions across two generations under the SECURE Act.'; include(__DIR__ . '/../../includes/og-twitter-meta.php'); include(__DIR__ . '/../../includes/json-ld-softwareapp.php'); ?>
+    <?php $og_title = $ld_name = 'Estate & Legacy Planning Suite'; $og_description = $ld_description = 'Estate and legacy planning calculators. Model inherited IRA tax impact and Roth conversions across two generations under the SECURE Act.'; include($rb_includes . '/og-twitter-meta.php'); include($rb_includes . '/json-ld-softwareapp.php'); ?>
     <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
