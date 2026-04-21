@@ -82,7 +82,7 @@ A PHP site offering **free financial/retirement planning calculators** with an o
 ## Deployment Workflow
 
 - **Local (Mac):** `/Applications/XAMPP/htdocs/` — develop here, commit, push to GitHub.
-- **Server:** Git repo lives at **`/var/www/xampp-php-project`**; web root (Apache) is **`/var/www/html`**. After `git pull` in the repo, **copy** updated files into `/var/www/html` so the site serves the new code.
+- **Server:** The canonical Apache web root for **ronbelisle.com** is **`/var/www/html`** (this directory is a Git checkout tracking `origin/main`). Deploy by updating this directory directly (no copying between two separate server directories).
 
 **Typical sequence (iTerm):**
 ```bash
@@ -92,13 +92,12 @@ git commit -m "Your message"
 git push origin main
 
 ssh root@64.23.181.64
-cd /var/www/xampp-php-project
-git pull
-cp /var/www/xampp-php-project/<path-to-file> /var/www/html/<path-to-file>   # repeat for each changed file
+cd /var/www/html
+git pull --ff-only
 exit
 ```
 
-**Important:** When you change more than one file (e.g. `api/generate_rmd_pdf.php` and `rmd-impact/calculator.js`), copy **all** of them to `/var/www/html`. Otherwise the live site may still run old code for uncopied files. To deploy the whole app in one go: `cp -r /var/www/xampp-php-project/* /var/www/html/` (watch for overwriting local-only files like `includes/db_config.php` on the server).
+**Important:** Server-only secrets live in ignored files (e.g. `includes/db_config.php`, `includes/stripe_config.php`, `includes/openai_config.php`). Don’t commit them, and don’t delete them on the server during deploy.
 
 ---
 
