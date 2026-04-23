@@ -561,6 +561,45 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         calculate();
     });
+
+    // Make income fields unambiguous for already-retired users.
+    const currentAgeEl = document.getElementById('currentAge');
+    const retirementAgeEl = document.getElementById('retirementAge');
+    const currentIncomeLabel = document.getElementById('currentIncomeLabel');
+    const currentIncomeHelp = document.getElementById('currentIncomeHelp');
+    const retirementIncomeLabel = document.getElementById('retirementIncomeLabel');
+    const retirementIncomeHelp = document.getElementById('retirementIncomeHelp');
+
+    function isAlreadyRetired() {
+        const currentAge = parseInt(currentAgeEl?.value || '', 10);
+        const retirementAgeRaw = (retirementAgeEl?.value || '').trim();
+        if (!retirementAgeRaw) return true; // UX copy says blank => already retired
+        const retirementAge = parseInt(retirementAgeRaw, 10);
+        if (!Number.isFinite(currentAge) || !Number.isFinite(retirementAge)) return false;
+        return retirementAge <= currentAge;
+    }
+
+    function updateIncomeCopy() {
+        if (!currentIncomeLabel || !currentIncomeHelp || !retirementIncomeLabel || !retirementIncomeHelp) return;
+
+        if (isAlreadyRetired()) {
+            currentIncomeLabel.textContent = 'Current Annual Income ($)';
+            currentIncomeHelp.textContent = 'Your total expected income this year (Social Security, pension, interest/dividends, part-time work). Before standard deduction. Excludes Roth conversions.';
+
+            retirementIncomeLabel.textContent = 'Ongoing Annual Income (excluding RMDs) ($)';
+            retirementIncomeHelp.textContent = 'Your ongoing annual income excluding RMDs and excluding Roth conversions (often similar to current income once retired).';
+        } else {
+            currentIncomeLabel.textContent = 'Current Annual Gross Income ($)';
+            currentIncomeHelp.textContent = 'Wages, pensions, etc. (before standard deduction)';
+
+            retirementIncomeLabel.textContent = 'Expected Retirement Income (excluding RMDs) ($)';
+            retirementIncomeHelp.textContent = 'Annual income excluding RMDs and excluding Roth conversions';
+        }
+    }
+
+    updateIncomeCopy();
+    if (currentAgeEl) currentAgeEl.addEventListener('input', updateIncomeCopy);
+    if (retirementAgeEl) retirementAgeEl.addEventListener('input', updateIncomeCopy);
 });
 // Premium Save/Load/Compare/PDF/CSV
 document.addEventListener('DOMContentLoaded', function() {

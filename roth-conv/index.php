@@ -92,14 +92,14 @@ $isPremium = has_premium_access();
                     <small style="color: #666;">Current balance in Roth accounts</small>
                 </div>
                 <div>
-    <label for="currentIncome" style="display: block; margin-bottom: 5px; font-weight: 600;">Current Annual Gross Income ($)</label>
+    <label for="currentIncome" id="currentIncomeLabel" style="display: block; margin-bottom: 5px; font-weight: 600;">Current Annual Gross Income ($)</label>
     <input type="number" id="currentIncome" value="80000" min="0" step="1000" required style="width: 100%;">
-    <small style="color: #666;">Wages, pensions, etc. (before standard deduction)</small>
+    <small id="currentIncomeHelp" style="color: #666;">Wages, pensions, etc. (before standard deduction)</small>
 </div>
                 <div>
-                    <label for="retirementIncome" style="display: block; margin-bottom: 5px; font-weight: 600;">Expected Retirement Income ($)</label>
+                    <label for="retirementIncome" id="retirementIncomeLabel" style="display: block; margin-bottom: 5px; font-weight: 600;">Expected Retirement Income ($)</label>
                     <input type="number" id="retirementIncome" value="40000" min="0" step="1000" required style="width: 100%;">
-                    <small style="color: #666;">Annual income excluding RMDs</small>
+                    <small id="retirementIncomeHelp" style="color: #666;">Annual income excluding RMDs</small>
                 </div>
             </div>
 
