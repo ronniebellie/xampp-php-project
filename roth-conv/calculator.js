@@ -110,6 +110,8 @@ function getRothFormData() {
     rothIRA: el('rothIRA')?.value,
     currentIncome: el('currentIncome')?.value,
     retirementIncome: el('retirementIncome')?.value,
+    annualPortfolioWithdrawal: el('annualPortfolioWithdrawal')?.value,
+    withdrawalOrder: el('withdrawalOrder')?.value,
     conversionAmount: el('conversionAmount')?.value,
     conversionYears: el('conversionYears')?.value,
     returnRate: el('returnRate')?.value,
@@ -127,6 +129,8 @@ function runRothAnalysis(data) {
   const rothIRA = parseFloat(data.rothIRA) || 0;
   const currentIncome = parseFloat(data.currentIncome) || 0;
   const retirementIncome = parseFloat(data.retirementIncome) || 0;
+  const annualPortfolioWithdrawal = parseFloat(data.annualPortfolioWithdrawal) || 0;
+  const withdrawalOrder = data.withdrawalOrder || 'traditional_then_roth';
   const conversionAmount = parseFloat(data.conversionAmount) || 0;
   const conversionYears = parseInt(data.conversionYears, 10) || 1;
   const returnRate = (parseFloat(data.returnRate) || 0) / 100;
@@ -148,6 +152,7 @@ function runRothAnalysis(data) {
       traditionalBalance *= (1 + returnRate);
       rothBalance *= (1 + returnRate);
       let rmd = 0, conversion = 0;
+      let traditionalWithdrawal = 0, rothWithdrawal = 0, totalWithdrawal = 0;
       if (age >= 73 && traditionalBalance > 0) {
         rmd = calculateRMD(age, traditionalBalance);
         traditionalBalance -= rmd;
@@ -160,11 +165,41 @@ function runRothAnalysis(data) {
         rothBalance += conversion;
         income += conversion;
       }
+
+      // Planned portfolio withdrawals for spending (optional).
+      // Treat withdrawals from Traditional as taxable ordinary income; Roth withdrawals are tax-free.
+      if (age >= retirementAge && annualPortfolioWithdrawal > 0) {
+        let remaining = annualPortfolioWithdrawal;
+        if (withdrawalOrder === 'roth_then_traditional') {
+          rothWithdrawal = Math.min(remaining, rothBalance);
+          rothBalance -= rothWithdrawal;
+          remaining -= rothWithdrawal;
+
+          traditionalWithdrawal = Math.min(remaining, traditionalBalance);
+          traditionalBalance -= traditionalWithdrawal;
+          remaining -= traditionalWithdrawal;
+        } else {
+          traditionalWithdrawal = Math.min(remaining, traditionalBalance);
+          traditionalBalance -= traditionalWithdrawal;
+          remaining -= traditionalWithdrawal;
+
+          rothWithdrawal = Math.min(remaining, rothBalance);
+          rothBalance -= rothWithdrawal;
+          remaining -= rothWithdrawal;
+        }
+        totalWithdrawal = traditionalWithdrawal + rothWithdrawal;
+        income += traditionalWithdrawal;
+      }
+
       const taxableIncome = Math.max(0, income - standardDeduction);
       const federalTax = calculateFederalTax(taxableIncome, filingStatus);
       totalTaxesPaid += federalTax;
       yearlyData.push({
-        age, year, traditionalBalance, rothBalance, conversion, rmd, income, taxableIncome, federalTax, totalTaxesPaid, totalRMDs
+        age, year,
+        traditionalBalance, rothBalance,
+        conversion, rmd,
+        traditionalWithdrawal, rothWithdrawal, totalWithdrawal,
+        income, taxableIncome, federalTax, totalTaxesPaid, totalRMDs
       });
     }
     return {
@@ -338,6 +373,7 @@ function displayResults(data) {
                             <th>Year</th>
                             <th>Conversion</th>
                             <th>RMD</th>
+                            <th>Portfolio Withdrawal</th>
                             <th>Total Income</th>
                             <th>Federal Tax</th>
                             <th>Traditional IRA</th>
@@ -369,6 +405,7 @@ function generateTableRows(yearlyData) {
             <td>${row.year}</td>
             <td>$${row.conversion.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
             <td>$${row.rmd.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+            <td>$${(row.totalWithdrawal || 0).toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
             <td>$${row.income.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
             <td>$${row.federalTax.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
             <td>$${row.traditionalBalance.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>

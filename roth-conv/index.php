@@ -103,6 +103,23 @@ $isPremium = has_premium_access();
                 </div>
             </div>
 
+            <h3 style="margin-top: 18px;">Spending from your portfolio (optional)</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                <div>
+                    <label for="annualPortfolioWithdrawal" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Portfolio Withdrawal ($)</label>
+                    <input type="number" id="annualPortfolioWithdrawal" value="0" min="0" step="1000" style="width: 100%;">
+                    <small style="color: #666;">Amount you plan to withdraw each year for spending (in addition to Social Security/pension income). RMDs still happen separately.</small>
+                </div>
+                <div>
+                    <label for="withdrawalOrder" style="display: block; margin-bottom: 5px; font-weight: 600;">Withdrawal Order</label>
+                    <select id="withdrawalOrder" style="width: 100%;">
+                        <option value="traditional_then_roth" selected>Traditional first, then Roth</option>
+                        <option value="roth_then_traditional">Roth first, then Traditional</option>
+                    </select>
+                    <small style="color: #666;">Traditional withdrawals are taxed as income; Roth withdrawals are tax‑free.</small>
+                </div>
+            </div>
+
             <h3 style="margin-top: 30px;">Conversion Strategy</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                 <div>
@@ -162,6 +179,6 @@ $isPremium = has_premium_access();
     <script>
     const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
     </script>
-    <script src="calculator.js"></script>
+    <script src="calculator.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/calculator.js')); ?>"></script>
 </body>
 </html>
