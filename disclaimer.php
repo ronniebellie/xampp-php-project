@@ -148,10 +148,15 @@
             </ul>
             <p><strong>Always consult with qualified professionals</strong> (financial advisors, CPAs, attorneys, etc.) before making important financial decisions.</p>
 
+            <h2>AI-Generated Explanations</h2>
+            <p>Some features (including certain premium options) may offer <strong>plain-language summaries of your calculator results</strong> that are generated automatically. These explanations are for <strong>educational and informational purposes only</strong>, the same as the underlying numbers. They are <strong>not</strong> personalized financial, tax, or investment advice and do not create a professional relationship.</p>
+            <p>Automated text may <strong>oversimplify, omit caveats, or occasionally misstate</strong> what the model actually computed. Always verify important figures, labels, and takeaways against the <strong>calculator output, tables, and your own review</strong>—and rely on qualified professionals for decisions. Do not treat AI wording as a recommendation to take or avoid any specific action (such as a Roth conversion) simply because the summary uses favorable or unfavorable language.</p>
+
             <h2>No Warranties or Guarantees</h2>
             <p>While every effort has been made to ensure the accuracy of the calculators and information provided, this website makes <strong>no warranties or guarantees</strong> regarding:</p>
             <ul>
                 <li>The accuracy, completeness, or reliability of calculation results</li>
+                <li>The accuracy or completeness of any automated (AI) plain-language explanations or summaries of those results</li>
                 <li>The suitability of any calculator for your particular needs</li>
                 <li>The timeliness or currency of tax laws, Social Security rules, or other regulations</li>
                 <li>Freedom from errors, bugs, or technical issues</li>
