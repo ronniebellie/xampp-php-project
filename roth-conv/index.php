@@ -106,9 +106,9 @@ $isPremium = has_premium_access();
             <h3 style="margin-top: 18px;">Spending from your portfolio (optional)</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                 <div>
-                    <label for="annualPortfolioWithdrawal" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Portfolio Withdrawal ($)</label>
-                    <input type="number" id="annualPortfolioWithdrawal" value="0" min="0" step="1000" style="width: 100%;">
-                    <small style="color: #666;">Amount you plan to withdraw each year for spending (in addition to Social Security/pension income). RMDs still happen separately.</small>
+                    <label for="annualPortfolioWithdrawalRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Portfolio Withdrawal (%)</label>
+                    <input type="number" id="annualPortfolioWithdrawalRate" value="0" min="0" max="20" step="0.1" style="width: 100%;">
+                    <small style="color: #666;">Percent of your total portfolio (Traditional + Roth) you plan to withdraw each year for spending. Traditional withdrawals are taxable; Roth is tax‑free. RMDs still happen separately.</small>
                 </div>
                 <div>
                     <label for="withdrawalOrder" style="display: block; margin-bottom: 5px; font-weight: 600;">Withdrawal Order</label>

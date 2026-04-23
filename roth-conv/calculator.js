@@ -110,7 +110,7 @@ function getRothFormData() {
     rothIRA: el('rothIRA')?.value,
     currentIncome: el('currentIncome')?.value,
     retirementIncome: el('retirementIncome')?.value,
-    annualPortfolioWithdrawal: el('annualPortfolioWithdrawal')?.value,
+    annualPortfolioWithdrawalRate: el('annualPortfolioWithdrawalRate')?.value,
     withdrawalOrder: el('withdrawalOrder')?.value,
     conversionAmount: el('conversionAmount')?.value,
     conversionYears: el('conversionYears')?.value,
@@ -129,7 +129,9 @@ function runRothAnalysis(data) {
   const rothIRA = parseFloat(data.rothIRA) || 0;
   const currentIncome = parseFloat(data.currentIncome) || 0;
   const retirementIncome = parseFloat(data.retirementIncome) || 0;
-  const annualPortfolioWithdrawal = parseFloat(data.annualPortfolioWithdrawal) || 0;
+  const annualPortfolioWithdrawalRate = parseFloat(data.annualPortfolioWithdrawalRate) || 0;
+  // Back-compat: older saved scenarios used a fixed dollar withdrawal.
+  const legacyAnnualPortfolioWithdrawal = parseFloat(data.annualPortfolioWithdrawal) || 0;
   const withdrawalOrder = data.withdrawalOrder || 'traditional_then_roth';
   const conversionAmount = parseFloat(data.conversionAmount) || 0;
   const conversionYears = parseInt(data.conversionYears, 10) || 1;
@@ -168,8 +170,17 @@ function runRothAnalysis(data) {
 
       // Planned portfolio withdrawals for spending (optional).
       // Treat withdrawals from Traditional as taxable ordinary income; Roth withdrawals are tax-free.
-      if (age >= retirementAge && annualPortfolioWithdrawal > 0) {
-        let remaining = annualPortfolioWithdrawal;
+      let targetWithdrawal = 0;
+      if (age >= retirementAge) {
+        if (annualPortfolioWithdrawalRate > 0) {
+          targetWithdrawal = (annualPortfolioWithdrawalRate / 100) * (traditionalBalance + rothBalance);
+        } else if (legacyAnnualPortfolioWithdrawal > 0) {
+          targetWithdrawal = legacyAnnualPortfolioWithdrawal;
+        }
+      }
+
+      if (targetWithdrawal > 0) {
+        let remaining = targetWithdrawal;
         if (withdrawalOrder === 'roth_then_traditional') {
           rothWithdrawal = Math.min(remaining, rothBalance);
           rothBalance -= rothWithdrawal;
