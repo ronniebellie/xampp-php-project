@@ -112,7 +112,7 @@ $isPremium = has_premium_access();
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                 <div>
                     <label for="annualPortfolioWithdrawalRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Portfolio Withdrawal (%)</label>
-                    <input type="number" id="annualPortfolioWithdrawalRate" value="0" min="0" max="20" step="0.1" style="width: 100%;">
+                    <input type="number" id="annualPortfolioWithdrawalRate" value="0" min="0" max="20" step="0.01" style="width: 100%;">
                     <small style="color: #666;">Percent of your total portfolio (Traditional + Roth) you plan to withdraw each year for spending. Traditional withdrawals are taxable; Roth is tax‑free. RMDs still happen separately.</small>
                 </div>
                 <div>
