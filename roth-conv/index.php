@@ -116,6 +116,19 @@ $isPremium = has_premium_access();
                     <small style="color: #666;">Percent of your total portfolio (Traditional + Roth) you plan to withdraw each year for spending. Traditional withdrawals are taxable; Roth is tax‑free. RMDs still happen separately.</small>
                 </div>
                 <div>
+                    <label for="withdrawalMode" style="display: block; margin-bottom: 5px; font-weight: 600;">Withdrawal Mode</label>
+                    <select id="withdrawalMode" style="width: 100%;">
+                        <option value="rate" selected>Use a fixed withdrawal %</option>
+                        <option value="target_after_tax">Solve withdrawals for target after‑tax spending</option>
+                    </select>
+                    <small style="color: #666;">If you choose “target after‑tax,” the calculator will increase withdrawals as needed to cover conversion/RMD taxes while maintaining your spending target.</small>
+                </div>
+                <div id="targetSpendingWrap" style="display: none;">
+                    <label for="targetAfterTaxSpending" style="display: block; margin-bottom: 5px; font-weight: 600;">Target Annual Spending (after tax) ($)</label>
+                    <input type="number" id="targetAfterTaxSpending" value="110000" min="0" step="1000" style="width: 100%;">
+                    <small style="color: #666;">Target annual spending after federal income taxes. The model will solve for the portfolio withdrawals needed to hit this target.</small>
+                </div>
+                <div>
                     <label for="withdrawalOrder" style="display: block; margin-bottom: 5px; font-weight: 600;">Withdrawal Order</label>
                     <select id="withdrawalOrder" style="width: 100%;">
                         <option value="traditional_then_roth" selected>Traditional first, then Roth</option>

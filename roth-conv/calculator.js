@@ -116,6 +116,8 @@ function getRothFormData() {
     currentIncome: el('currentIncome')?.value,
     retirementIncome: el('retirementIncome')?.value,
     annualPortfolioWithdrawalRate: el('annualPortfolioWithdrawalRate')?.value,
+    withdrawalMode: el('withdrawalMode')?.value,
+    targetAfterTaxSpending: el('targetAfterTaxSpending')?.value,
     withdrawalOrder: el('withdrawalOrder')?.value,
     conversionAmount: el('conversionAmount')?.value,
     conversionYears: el('conversionYears')?.value,
@@ -138,6 +140,8 @@ function runRothAnalysis(data) {
   const annualPortfolioWithdrawalRate = parseFloat(data.annualPortfolioWithdrawalRate) || 0;
   // Back-compat: older saved scenarios used a fixed dollar withdrawal.
   const legacyAnnualPortfolioWithdrawal = parseFloat(data.annualPortfolioWithdrawal) || 0;
+  const withdrawalMode = data.withdrawalMode || 'rate';
+  const targetAfterTaxSpending = parseFloat(data.targetAfterTaxSpending) || 0;
   const withdrawalOrder = data.withdrawalOrder || 'traditional_then_roth';
   const conversionAmount = parseFloat(data.conversionAmount) || 0;
   const conversionYears = parseInt(data.conversionYears, 10) || 1;
@@ -152,6 +156,88 @@ function runRothAnalysis(data) {
   const conversionStartAge = Math.max(currentAge, retirementAge);
   const conversionEndAge = conversionStartAge + conversionYears - 1;
 
+  function applyWithdrawals(targetWithdrawal, withdrawalOrder, traditionalBalance, rothBalance) {
+    let traditionalWithdrawal = 0, rothWithdrawal = 0;
+    let remaining = Math.max(0, targetWithdrawal || 0);
+
+    if (remaining <= 0) {
+      return { traditionalBalance, rothBalance, traditionalWithdrawal, rothWithdrawal, totalWithdrawal: 0 };
+    }
+
+    if (withdrawalOrder === 'roth_then_traditional') {
+      rothWithdrawal = Math.min(remaining, rothBalance);
+      rothBalance -= rothWithdrawal;
+      remaining -= rothWithdrawal;
+
+      traditionalWithdrawal = Math.min(remaining, traditionalBalance);
+      traditionalBalance -= traditionalWithdrawal;
+      remaining -= traditionalWithdrawal;
+    } else {
+      traditionalWithdrawal = Math.min(remaining, traditionalBalance);
+      traditionalBalance -= traditionalWithdrawal;
+      remaining -= traditionalWithdrawal;
+
+      rothWithdrawal = Math.min(remaining, rothBalance);
+      rothBalance -= rothWithdrawal;
+      remaining -= rothWithdrawal;
+    }
+
+    return {
+      traditionalBalance,
+      rothBalance,
+      traditionalWithdrawal,
+      rothWithdrawal,
+      totalWithdrawal: traditionalWithdrawal + rothWithdrawal
+    };
+  }
+
+  function solveWithdrawalForAfterTaxTarget(opts) {
+    const {
+      baseCashIncome,
+      forcedCashTraditional, // RMD cash amount (already withdrawn from traditional)
+      taxableBaseIncome,     // base income that is taxable as ordinary income
+      conversionTaxable,     // conversion amount (taxable but not cash)
+      standardDeduction,
+      filingStatus,
+      withdrawalOrder,
+      traditionalBalance,
+      rothBalance,
+      targetAfterTaxSpending
+    } = opts;
+
+    // Net cash available = base cash income + forced cash (RMD) + withdrawals - federal tax.
+    // Tax is based on taxable income = taxable base + forced cash + taxable portion of withdrawals + conversion.
+    function netCashForWithdrawal(w) {
+      const applied = applyWithdrawals(w, withdrawalOrder, traditionalBalance, rothBalance);
+      const taxableIncomeGross = taxableBaseIncome + forcedCashTraditional + applied.traditionalWithdrawal + conversionTaxable;
+      const taxableIncome = Math.max(0, taxableIncomeGross - standardDeduction);
+      const federalTax = calculateFederalTax(taxableIncome, filingStatus);
+      const cashInflow = baseCashIncome + forcedCashTraditional + applied.totalWithdrawal;
+      const netCash = cashInflow - federalTax;
+      return { ...applied, taxableIncome, federalTax, cashInflow, netCash };
+    }
+
+    // Bisection search for w that makes netCash ~= targetAfterTaxSpending.
+    const maxPossible = traditionalBalance + rothBalance;
+    let lo = 0;
+    let hi = maxPossible;
+    let best = null;
+
+    for (let i = 0; i < 40; i++) {
+      const mid = (lo + hi) / 2;
+      const r = netCashForWithdrawal(mid);
+      best = r;
+      if (r.netCash >= targetAfterTaxSpending) {
+        hi = mid;
+      } else {
+        lo = mid;
+      }
+    }
+
+    // Final result at hi (closest meeting target).
+    return netCashForWithdrawal(hi);
+  }
+
   function projectRetirement(doConversion) {
     let traditionalBalance = traditionalIRA;
     let rothBalance = rothIRA;
@@ -160,68 +246,80 @@ function runRothAnalysis(data) {
     const yearlyData = [];
     for (let age = currentAge; age <= lifeExpectancy; age++) {
       const year = age - currentAge + 2026;
-      let income = age >= retirementAge ? retirementIncome : currentIncome;
+      const baseIncome = age >= retirementAge ? retirementIncome : currentIncome; // cash income (and treated as taxable in this simplified model)
       // Apply investment growth at start of year
       traditionalBalance *= (1 + returnRate);
       rothBalance *= (1 + returnRate);
       let rmd = 0, conversion = 0;
       let traditionalWithdrawal = 0, rothWithdrawal = 0, totalWithdrawal = 0;
+      let cashInflow = baseIncome;
+      let taxableIncomeGross = baseIncome;
       if (age >= 73 && traditionalBalance > 0) {
         rmd = calculateRMD(age, traditionalBalance);
         traditionalBalance -= rmd;
         totalRMDs += rmd;
-        income += rmd;
+        cashInflow += rmd;
+        taxableIncomeGross += rmd;
       }
       if (doConversion && age >= conversionStartAge && age <= conversionEndAge) {
         conversion = Math.min(conversionAmount, traditionalBalance);
         traditionalBalance -= conversion;
         rothBalance += conversion;
-        income += conversion;
+        taxableIncomeGross += conversion; // taxable, but not cash
       }
 
       // Planned portfolio withdrawals for spending (optional).
       // Treat withdrawals from Traditional as taxable ordinary income; Roth withdrawals are tax-free.
-      let targetWithdrawal = 0;
       if (age >= retirementAge) {
-        if (annualPortfolioWithdrawalRate > 0) {
-          targetWithdrawal = (annualPortfolioWithdrawalRate / 100) * (traditionalBalance + rothBalance);
-        } else if (legacyAnnualPortfolioWithdrawal > 0) {
-          targetWithdrawal = legacyAnnualPortfolioWithdrawal;
-        }
-      }
-
-      if (targetWithdrawal > 0) {
-        let remaining = targetWithdrawal;
-        if (withdrawalOrder === 'roth_then_traditional') {
-          rothWithdrawal = Math.min(remaining, rothBalance);
-          rothBalance -= rothWithdrawal;
-          remaining -= rothWithdrawal;
-
-          traditionalWithdrawal = Math.min(remaining, traditionalBalance);
-          traditionalBalance -= traditionalWithdrawal;
-          remaining -= traditionalWithdrawal;
+        if (withdrawalMode === 'target_after_tax' && targetAfterTaxSpending > 0) {
+          const solved = solveWithdrawalForAfterTaxTarget({
+            baseCashIncome: baseIncome,
+            forcedCashTraditional: rmd,
+            taxableBaseIncome: baseIncome,
+            conversionTaxable: conversion,
+            standardDeduction,
+            filingStatus,
+            withdrawalOrder,
+            traditionalBalance,
+            rothBalance,
+            targetAfterTaxSpending
+          });
+          traditionalBalance = solved.traditionalBalance;
+          rothBalance = solved.rothBalance;
+          traditionalWithdrawal = solved.traditionalWithdrawal;
+          rothWithdrawal = solved.rothWithdrawal;
+          totalWithdrawal = solved.totalWithdrawal;
+          cashInflow = solved.cashInflow;
+          taxableIncomeGross = baseIncome + rmd + traditionalWithdrawal + conversion;
         } else {
-          traditionalWithdrawal = Math.min(remaining, traditionalBalance);
-          traditionalBalance -= traditionalWithdrawal;
-          remaining -= traditionalWithdrawal;
-
-          rothWithdrawal = Math.min(remaining, rothBalance);
-          rothBalance -= rothWithdrawal;
-          remaining -= rothWithdrawal;
+          let targetWithdrawal = 0;
+          if (annualPortfolioWithdrawalRate > 0) {
+            targetWithdrawal = (annualPortfolioWithdrawalRate / 100) * (traditionalBalance + rothBalance);
+          } else if (legacyAnnualPortfolioWithdrawal > 0) {
+            targetWithdrawal = legacyAnnualPortfolioWithdrawal;
+          }
+          const applied = applyWithdrawals(targetWithdrawal, withdrawalOrder, traditionalBalance, rothBalance);
+          traditionalBalance = applied.traditionalBalance;
+          rothBalance = applied.rothBalance;
+          traditionalWithdrawal = applied.traditionalWithdrawal;
+          rothWithdrawal = applied.rothWithdrawal;
+          totalWithdrawal = applied.totalWithdrawal;
+          cashInflow += totalWithdrawal;
+          taxableIncomeGross += traditionalWithdrawal;
         }
-        totalWithdrawal = traditionalWithdrawal + rothWithdrawal;
-        income += traditionalWithdrawal;
       }
 
-      const taxableIncome = Math.max(0, income - standardDeduction);
+      const taxableIncome = Math.max(0, taxableIncomeGross - standardDeduction);
       const federalTax = calculateFederalTax(taxableIncome, filingStatus);
       totalTaxesPaid += federalTax;
+      const netCash = cashInflow - federalTax;
       yearlyData.push({
         age, year,
         traditionalBalance, rothBalance,
         conversion, rmd,
         traditionalWithdrawal, rothWithdrawal, totalWithdrawal,
-        income, taxableIncome, federalTax, totalTaxesPaid, totalRMDs
+        income: taxableIncomeGross, taxableIncome, federalTax, totalTaxesPaid, totalRMDs,
+        cashInflow, netCash
       });
     }
     return {
@@ -258,6 +356,8 @@ function runRothAnalysis(data) {
     standardDeduction,
     seniorCount,
     seniorDeductionAdded,
+    withdrawalMode,
+    targetAfterTaxSpending,
     withConversion, withoutConversion
   };
 }
@@ -379,6 +479,11 @@ function displayResults(data) {
                 for a total standard deduction of <strong>$${data.standardDeduction.toLocaleString()}</strong>.
               </p>
             ` : ``}
+            ${data.withdrawalMode === 'target_after_tax' && data.targetAfterTaxSpending > 0 ? `
+              <p style="margin: 10px 0 0; font-size: 13px; color: #4b5563;">
+                Note: Withdrawal mode is set to <strong>Target after‑tax spending</strong> — the model automatically increases portfolio withdrawals as needed to cover federal taxes (including Roth conversion and RMD taxes) while targeting <strong>$${data.targetAfterTaxSpending.toLocaleString()}</strong> per year after tax.
+              </p>
+            ` : ``}
         </div>
         
         <div class="info-box info-box-blue">
@@ -410,8 +515,9 @@ function displayResults(data) {
                             <th>Conversion</th>
                             <th>RMD</th>
                             <th>Portfolio Withdrawal</th>
-                            <th>Total Income</th>
+                            <th>Total Income (tax)</th>
                             <th>Federal Tax</th>
+                            <th>Net Cash (after tax)</th>
                             <th>Traditional IRA</th>
                             <th>Roth IRA</th>
                         </tr>
@@ -444,6 +550,7 @@ function generateTableRows(yearlyData) {
             <td>$${(row.totalWithdrawal || 0).toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
             <td>$${row.income.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
             <td>$${row.federalTax.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+            <td>$${(row.netCash || 0).toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
             <td>$${row.traditionalBalance.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
             <td>$${row.rothBalance.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
         </tr>
@@ -641,6 +748,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const filingStatusEl = document.getElementById('filingStatus');
     const spouseAgeWrap = document.getElementById('spouseAgeWrap');
     const spouseAgeEl = document.getElementById('spouseAge');
+    const withdrawalModeEl = document.getElementById('withdrawalMode');
+    const targetSpendingWrap = document.getElementById('targetSpendingWrap');
+    const targetAfterTaxEl = document.getElementById('targetAfterTaxSpending');
+    const withdrawalRateEl = document.getElementById('annualPortfolioWithdrawalRate');
     const currentIncomeLabel = document.getElementById('currentIncomeLabel');
     const currentIncomeHelp = document.getElementById('currentIncomeHelp');
     const retirementIncomeLabel = document.getElementById('retirementIncomeLabel');
@@ -681,11 +792,23 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!isJoint) spouseAgeEl.value = '';
     }
 
+    function updateWithdrawalModeVisibility() {
+        if (!withdrawalModeEl || !targetSpendingWrap || !targetAfterTaxEl || !withdrawalRateEl) return;
+        const mode = withdrawalModeEl.value;
+        const isTarget = mode === 'target_after_tax';
+        targetSpendingWrap.style.display = isTarget ? 'block' : 'none';
+        targetAfterTaxEl.required = isTarget;
+        // If solving for target spending, withdrawal % is optional and should not block form submit.
+        withdrawalRateEl.required = false;
+    }
+
     updateIncomeCopy();
     updateSpouseAgeVisibility();
+    updateWithdrawalModeVisibility();
     if (currentAgeEl) currentAgeEl.addEventListener('input', updateIncomeCopy);
     if (retirementAgeEl) retirementAgeEl.addEventListener('input', updateIncomeCopy);
     if (filingStatusEl) filingStatusEl.addEventListener('change', updateSpouseAgeVisibility);
+    if (withdrawalModeEl) withdrawalModeEl.addEventListener('change', updateWithdrawalModeVisibility);
 });
 // Premium Save/Load/Compare/PDF/CSV
 document.addEventListener('DOMContentLoaded', function() {
