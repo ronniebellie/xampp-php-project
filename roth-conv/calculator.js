@@ -42,11 +42,15 @@ const TAX_BRACKETS_2026 = {
 
 // Standard Deductions 2026
 const STANDARD_DEDUCTION_2026 = {
-  single: 15000,
-  married: 30000,
-  married_separate: 15000,
-  head: 22500
+  single: 16100,
+  married: 32200,
+  married_separate: 16100,
+  head: 24150
 };
+
+// Enhanced deduction for seniors (age 65+). This calculator uses the commonly-cited $6,000 per eligible person.
+// (If future rules phase this out by income, we can add that later.)
+const SENIOR_DEDUCTION_65PLUS = 6000;
 
 // RMD Divisors (Uniform Lifetime Table)
 const RMD_DIVISORS = {
@@ -103,6 +107,7 @@ function getRothFormData() {
   const el = id => document.getElementById(id);
   return {
     currentAge: el('currentAge')?.value,
+    spouseAge: el('spouseAge')?.value,
     retirementAge: el('retirementAge')?.value,
     lifeExpectancy: el('lifeExpectancy')?.value,
     filingStatus: el('filingStatus')?.value,
@@ -122,6 +127,7 @@ function getRothFormData() {
 /** Run Roth analysis from a data object (form or loaded scenario). Returns same shape as displayResults expects. */
 function runRothAnalysis(data) {
   const currentAge = parseInt(data.currentAge, 10);
+  const spouseAge = data.spouseAge ? parseInt(data.spouseAge, 10) : null;
   const retirementAge = data.retirementAge ? parseInt(data.retirementAge, 10) : currentAge;
   const lifeExpectancy = parseInt(data.lifeExpectancy, 10);
   const filingStatus = data.filingStatus;
@@ -137,7 +143,12 @@ function runRothAnalysis(data) {
   const conversionYears = parseInt(data.conversionYears, 10) || 1;
   const returnRate = (parseFloat(data.returnRate) || 0) / 100;
   const inflationRate = (parseFloat(data.inflationRate) || 0) / 100;
-  const standardDeduction = STANDARD_DEDUCTION_2026[filingStatus];
+  const baseStandardDeduction = STANDARD_DEDUCTION_2026[filingStatus] || 0;
+  const seniorCount =
+    (currentAge >= 65 ? 1 : 0) +
+    (filingStatus === 'married' && spouseAge != null && spouseAge >= 65 ? 1 : 0);
+  const seniorDeductionAdded = seniorCount * SENIOR_DEDUCTION_65PLUS;
+  const standardDeduction = baseStandardDeduction + seniorDeductionAdded;
   const conversionStartAge = Math.max(currentAge, retirementAge);
   const conversionEndAge = conversionStartAge + conversionYears - 1;
 
@@ -243,6 +254,10 @@ function runRothAnalysis(data) {
     currentMarginalRate: getMarginalRate(taxableIncome, filingStatus),
     marginalRateWithConversion: getMarginalRate(taxableIncome + conversionAmount, filingStatus),
     taxableIncome, taxSavings, rmdReduction, netBenefit: taxSavings, breakEvenAge,
+    baseStandardDeduction,
+    standardDeduction,
+    seniorCount,
+    seniorDeductionAdded,
     withConversion, withoutConversion
   };
 }
@@ -354,6 +369,16 @@ function displayResults(data) {
                     ${(data.marginalRateWithConversion * 100).toFixed(0)}%
                 </div>
             </div>
+            <p style="margin: 12px 0 0; font-size: 13px; color: #4b5563;">
+              Note: Tax brackets and standard deduction amounts shown are based on the <strong>2026</strong> assumptions in this calculator.
+            </p>
+            ${data.seniorDeductionAdded > 0 ? `
+              <p style="margin: 12px 0 0; font-size: 13px; color: #4b5563;">
+                Note: This run applied an extra 65+ senior deduction of <strong>$${data.seniorDeductionAdded.toLocaleString()}</strong>
+                (${data.seniorCount} ${data.seniorCount === 1 ? 'person' : 'people'} at $${SENIOR_DEDUCTION_65PLUS.toLocaleString()} each),
+                for a total standard deduction of <strong>$${data.standardDeduction.toLocaleString()}</strong>.
+              </p>
+            ` : ``}
         </div>
         
         <div class="info-box info-box-blue">
@@ -613,6 +638,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Make income fields unambiguous for already-retired users.
     const currentAgeEl = document.getElementById('currentAge');
     const retirementAgeEl = document.getElementById('retirementAge');
+    const filingStatusEl = document.getElementById('filingStatus');
+    const spouseAgeWrap = document.getElementById('spouseAgeWrap');
+    const spouseAgeEl = document.getElementById('spouseAge');
     const currentIncomeLabel = document.getElementById('currentIncomeLabel');
     const currentIncomeHelp = document.getElementById('currentIncomeHelp');
     const retirementIncomeLabel = document.getElementById('retirementIncomeLabel');
@@ -645,9 +673,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function updateSpouseAgeVisibility() {
+        if (!filingStatusEl || !spouseAgeWrap || !spouseAgeEl) return;
+        const isJoint = filingStatusEl.value === 'married';
+        spouseAgeWrap.style.display = isJoint ? 'block' : 'none';
+        spouseAgeEl.required = isJoint;
+        if (!isJoint) spouseAgeEl.value = '';
+    }
+
     updateIncomeCopy();
+    updateSpouseAgeVisibility();
     if (currentAgeEl) currentAgeEl.addEventListener('input', updateIncomeCopy);
     if (retirementAgeEl) retirementAgeEl.addEventListener('input', updateIncomeCopy);
+    if (filingStatusEl) filingStatusEl.addEventListener('change', updateSpouseAgeVisibility);
 });
 // Premium Save/Load/Compare/PDF/CSV
 document.addEventListener('DOMContentLoaded', function() {

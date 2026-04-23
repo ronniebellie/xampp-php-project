@@ -77,6 +77,11 @@ $isPremium = has_premium_access();
                         <option value="head">Head of Household</option>
                     </select>
                 </div>
+                <div id="spouseAgeWrap" style="display: none;">
+                    <label for="spouseAge" style="display: block; margin-bottom: 5px; font-weight: 600;">Spouse Age</label>
+                    <input type="number" id="spouseAge" value="" min="18" max="120" style="width: 100%;">
+                    <small style="color: #666;">Used to compute the extra 65+ standard deduction for joint returns.</small>
+                </div>
             </div>
 
             <h3 style="margin-top: 30px;">Financial Situation</h3>
