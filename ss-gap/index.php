@@ -98,9 +98,8 @@ $isPremium = has_premium_access();
                 </div>
             </div>
 
-            <div style="display: flex; gap: 12px; align-items: center; justify-content: flex-start; margin: 18px 0 8px 0;">
-                <button type="submit" class="btn-primary">Calculate</button>
-                <small style="color: #666;">Tip: This calculator also updates instantly as you move the sliders.</small>
+            <div style="margin: 18px 0 8px 0;">
+                <small style="color: #666;">Note: This calculator updates instantly as you move the sliders.</small>
             </div>
         </form>
 
