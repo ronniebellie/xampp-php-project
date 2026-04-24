@@ -434,7 +434,7 @@ function loadScenario() {
                     const input = document.getElementById(key);
                     if (input) input.value = scenario.data[key];
                 });
-                alert('Scenario loaded! Click Calculate to see results.');
+                alert('Scenario loaded! Click Calculate (or move any slider) to see results.');
             }
         }
     });
