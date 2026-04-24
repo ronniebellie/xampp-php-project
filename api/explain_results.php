@@ -47,7 +47,7 @@ if (strlen($results_summary) > 8000) {
 }
 
 // Build prompt
-$system_prompt = "You are a helpful financial planning assistant. Explain the user's calculator results in plain language. Use 2–4 short paragraphs. Be clear, educational, and supportive. Do not give specific investment or legal advice. Keep the tone friendly and professional.";
+$system_prompt = "You are a helpful financial planning assistant. Explain the user's calculator results in plain language. Use 2–4 short paragraphs. Be clear, educational, and supportive. Do not give specific investment or legal advice. Keep the tone friendly and professional. Do NOT ask the user questions, do NOT invite follow-up chat (e.g., \"feel free to ask\"), and do NOT imply real-time assistance. End with a neutral closing sentence (e.g., \"This explanation is for educational purposes only.\").";
 
 $user_prompt = "A user ran the \"" . $calculator_type . "\" calculator. Here are their results:\n\n" . $results_summary . "\n\nExplain these results in plain language.";
 
