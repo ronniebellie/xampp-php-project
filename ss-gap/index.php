@@ -56,7 +56,7 @@ $isPremium = has_premium_access();
         <span id="saveStatus" style="color: #22543d; font-weight: 600;"></span>
     </div>
     <p style="margin: 12px 0 0 0; font-size: 13px; color: #4a5568; line-height: 1.5;">
-        <strong>Save</strong> / <strong>Load</strong> — Store and recall scenarios. <strong>Compare</strong> — See two scenarios side-by-side. <strong>PDF</strong> — Full report with charts. <strong>CSV</strong> — Spreadsheet data.
+        <strong>Save</strong> / <strong>Load</strong> — Store and recall scenarios. <strong>Compare</strong> — See two scenarios side-by-side. <strong>PDF</strong> — Full report with charts. <strong>CSV</strong> — Spreadsheet data. <strong>Explain</strong> — AI explains your results in plain language.
     </p>
 </div>
 <?php endif; ?>
@@ -142,6 +142,13 @@ $isPremium = has_premium_access();
                 </div>
                 <p style="font-size: 0.9em; color: #666; margin-top: 10px;">*Historical success rate over 30 years based on historical data (approximate)</p>
             </div>
+
+            <?php if ($isPremium): ?>
+            <div class="explain-results-block" style="margin: 24px 0; padding: 24px; background: #f0fdf4; border: 2px solid #0d9488; border-radius: 12px;">
+                <button type="button" id="explainResultsBtnInResults" class="btn-primary" style="background: #0d9488; color: white; font-size: 16px; padding: 14px 28px; font-weight: 700;">🤖 Explain my results</button>
+                <p style="margin: 12px 0 0 0; font-size: 15px; color: #166534; line-height: 1.5;">Get AI-generated plain-language explanations of your specific results.</p>
+            </div>
+            <?php endif; ?>
             <?php $share_title = 'Spending Gap (SS Gap) Calculator'; $share_text = 'Check out the Spending Gap calculator at ronbelisle.com — see how much portfolio you need to fill the gap between Social Security and expenses.'; include(__DIR__ . '/../includes/share-results-block.php'); ?>
         </div>
 
