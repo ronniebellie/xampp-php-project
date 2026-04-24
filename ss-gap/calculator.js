@@ -153,89 +153,94 @@ function updateGap() {
     });
     
     document.getElementById('tableBody').innerHTML = tableHTML;
-    
-    const ctx = document.getElementById('withdrawalChart');
-    if (window.withdrawalChart instanceof Chart) {
-        window.withdrawalChart.destroy();
-    }
-    
-    window.withdrawalChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: rates.map(r => r.toFixed(1) + '%'),
-            datasets: [{
-                label: 'Portfolio Needed',
-                data: rates.map(r => calculatePortfolioNeeded(annualGap, r)),
-                backgroundColor: rates.map(r => {
-                    if (Math.abs(r - withdrawalRate) < 0.01) {
-                        return 'rgba(34, 197, 94, 0.7)'; // Green for selected
-                    } else if (r <= 4.0) {
-                        return 'rgba(59, 130, 246, 0.7)'; // Blue for conservative
-                    } else if (r <= 5.0) {
-                        return 'rgba(251, 191, 36, 0.7)'; // Yellow for moderate
-                    } else {
-                        return 'rgba(239, 68, 68, 0.7)'; // Red for aggressive
-                    }
-                }),
-                borderColor: rates.map(r => {
-                    if (Math.abs(r - withdrawalRate) < 0.01) {
-                        return 'rgb(34, 197, 94)';
-                    } else if (r <= 4.0) {
-                        return 'rgb(59, 130, 246)';
-                    } else if (r <= 5.0) {
-                        return 'rgb(251, 191, 36)';
-                    } else {
-                        return 'rgb(239, 68, 68)';
-                    }
-                }),
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const rate = rates[context.dataIndex];
-                            const portfolio = context.parsed.y;
-                            return [
-                                'Portfolio: ' + formatCurrency(portfolio),
-                                'Annual: ' + formatCurrency(portfolio * rate / 100),
-                                'Success: ' + getSuccessRate(rate)
-                            ];
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Withdrawal Rate'
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Portfolio Size Needed'
-                    },
-                    ticks: {
-                        callback: function(value) {
-                            return formatCurrency(value);
-                        }
-                    }
-                }
-            }
-        }
-    });
-    
+
+    // Show results even if charts fail to render (e.g., Chart.js blocked).
     document.getElementById('results').style.display = 'block';
+
+    if (typeof Chart !== 'undefined') {
+        const ctx = document.getElementById('withdrawalChart');
+        if (ctx) {
+            if (window.withdrawalChart && typeof window.withdrawalChart.destroy === 'function') {
+                window.withdrawalChart.destroy();
+            }
+
+            window.withdrawalChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: rates.map(r => r.toFixed(1) + '%'),
+                    datasets: [{
+                        label: 'Portfolio Needed',
+                        data: rates.map(r => calculatePortfolioNeeded(annualGap, r)),
+                        backgroundColor: rates.map(r => {
+                            if (Math.abs(r - withdrawalRate) < 0.01) {
+                                return 'rgba(34, 197, 94, 0.7)'; // Green for selected
+                            } else if (r <= 4.0) {
+                                return 'rgba(59, 130, 246, 0.7)'; // Blue for conservative
+                            } else if (r <= 5.0) {
+                                return 'rgba(251, 191, 36, 0.7)'; // Yellow for moderate
+                            } else {
+                                return 'rgba(239, 68, 68, 0.7)'; // Red for aggressive
+                            }
+                        }),
+                        borderColor: rates.map(r => {
+                            if (Math.abs(r - withdrawalRate) < 0.01) {
+                                return 'rgb(34, 197, 94)';
+                            } else if (r <= 4.0) {
+                                return 'rgb(59, 130, 246)';
+                            } else if (r <= 5.0) {
+                                return 'rgb(251, 191, 36)';
+                            } else {
+                                return 'rgb(239, 68, 68)';
+                            }
+                        }),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const rate = rates[context.dataIndex];
+                                    const portfolio = context.parsed.y;
+                                    return [
+                                        'Portfolio: ' + formatCurrency(portfolio),
+                                        'Annual: ' + formatCurrency(portfolio * rate / 100),
+                                        'Success: ' + getSuccessRate(rate)
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Withdrawal Rate'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Portfolio Size Needed'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
 
     setTimeout(() => {
         createAnnualWithdrawalChart(annualGap, rates, withdrawalRate);
@@ -336,6 +341,8 @@ function showExplainModal(explanation) {
 function createAnnualWithdrawalChart(annualGap, rates, selectedRate) {
     const ctx = document.getElementById('annualWithdrawalChart');
     if (!ctx) return;
+
+    if (typeof Chart === 'undefined') return;
     
     if (window.annualWithdrawalChart instanceof Chart) {
         window.annualWithdrawalChart.destroy();
