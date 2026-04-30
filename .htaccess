@@ -15,6 +15,12 @@ RewriteCond %{HTTPS} !=on
 RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
 RewriteRule ^ https://ronbelisle.com%{REQUEST_URI} [L,R=301]
 
+# Canonical homepage URL: /index.php -> / (301)
+# Use THE_REQUEST so we only redirect real /index.php requests (not internal rewrites).
+RewriteCond %{HTTP_HOST} ^ronbelisle\.com$ [NC]
+RewriteCond %{THE_REQUEST} \s/+index\.php[?\s] [NC]
+RewriteRule ^index\.php$ / [R=301,L]
+
 # Send jp-business subdomain clean URLs to index.php so PHP can route to the right calculator
 RewriteCond %{HTTP_HOST} ^jp-business\.ronbelisle\.com$ [NC]
 RewriteRule ^(npv-irr|breakeven-profit)/?$ index.php [L]

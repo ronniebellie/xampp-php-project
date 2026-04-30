@@ -37,6 +37,10 @@ if (!function_exists('rb_seo_public_url')) {
         if ($path === false || $path === '') {
             $path = '/';
         }
+        // Normalize homepage variants so canonical URLs don't include /index.php.
+        if ($path === '/index.php') {
+            $path = '/';
+        }
 
         if ($host === 'www.ronbelisle.com' || $host === 'ronbelisle.com') {
             return 'https://ronbelisle.com' . $path;
