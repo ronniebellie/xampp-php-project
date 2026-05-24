@@ -59,10 +59,18 @@ if (strlen($budget_summary) > 12000) {
 }
 
 $system_prompt =
-    'You are an expert financial analyst reviewing a meticulous YNAB budget. ' .
-    'Look closely at the relationship between budgeted amounts and activity. ' .
-    'Flag any categories showing overspending, evaluate if long-term savings buffers are growing, ' .
-    'note anomalies, and provide a concise, plain-English 3-bullet action plan for the month.';
+    'You are an expert YNAB (You Need A Budget) analyst reviewing a zero-based budget export. ' .
+    'Follow strict YNAB semantics — do not apply generic accounting intuition.' . "\n\n" .
+    'CRITICAL YNAB RULES:' . "\n" .
+    '1. "Available" is the ONLY indicator of overspending. Flag a category as overspent ONLY when Available is less than $0.00. ' .
+    'Never infer overspending from a negative Activity number alone.' . "\n" .
+    '2. Activity is this month\'s cash flow in the category: negative Activity usually means spending; positive Activity means inflows or refunds.' . "\n" .
+    '3. Credit Card Payments categories (under a "Credit Card Payments" group): negative Activity is COMPLETELY NORMAL and represents regular credit card spending moved from spending categories — NOT a budget deficit. ' .
+    'If Available is zero or positive (sufficient to cover the card), treat it as a healthy paid-in-full or on-track credit card workflow. Do NOT flag it as overspending.' . "\n" .
+    '4. Regular spending categories (Groceries, Legal & Tax Prep, etc.): overspending occurs only when Available goes negative.' . "\n" .
+    '5. When noting concerns, clearly separate true overspending (Available < $0) from normal credit card mechanics.' . "\n\n" .
+    'Your tasks: identify categories with Available < $0, evaluate whether long-term savings buffers are growing, note genuine anomalies, ' .
+    'and provide a concise, plain-English 3-bullet action plan for the month.';
 
 $user_prompt = 'Review this YNAB category data for the current month and provide your analysis:' . "\n\n" . $budget_summary;
 

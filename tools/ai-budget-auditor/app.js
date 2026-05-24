@@ -111,6 +111,10 @@
     return (json.data && json.data.category_groups) || [];
   }
 
+  function isCreditCardCategory(groupName) {
+    return /credit card payments?/i.test(groupName || '');
+  }
+
   function flattenCategories(categoryGroups) {
     var rows = [];
     categoryGroups.forEach(function (group) {
@@ -122,7 +126,8 @@
           name: cat.name,
           budgeted: cat.budgeted || 0,
           activity: cat.activity || 0,
-          balance: cat.balance || 0
+          balance: cat.balance || 0,
+          isCreditCard: isCreditCardCategory(group.name)
         });
       });
     });
@@ -134,7 +139,12 @@
       'YNAB Budget Audit — ' + currentMonthLabel(),
       'Budget: ' + budgetName,
       '',
-      'All amounts in USD. Activity is spending (negative) or inflows (positive). Available = budgeted + prior rollovers + activity.',
+      'YNAB interpretation rules for this export:',
+      '- Available is the ONLY overspending signal. Available < $0.00 = overspent. Negative Activity alone is NOT overspending.',
+      '- Credit Card Payments categories: negative Activity is normal card usage. If Available >= $0, the card workflow is healthy — do not flag as overspent.',
+      '- Regular categories: overspending means Available went negative (e.g. Legal & Tax Prep with negative Available).',
+      '',
+      'All amounts in USD. Activity = this month\'s spending/inflows. Available = budgeted + rollovers + activity.',
       ''
     ];
 
@@ -145,24 +155,33 @@
         lines.push('[' + currentGroup + ']');
       }
       var overspent = row.balance < 0;
+      var suffix = '';
+      if (overspent) {
+        suffix = ' (OVERSPENT — Available < $0)';
+      } else if (row.isCreditCard && row.activity < 0) {
+        suffix = ' (Credit card: negative Activity is normal; Available covers balance — not overspent)';
+      }
       lines.push(
         '- ' + row.name +
         ': Budgeted ' + formatMoney(row.budgeted) +
         ' | Activity ' + formatMoney(row.activity) +
         ' | Available ' + formatMoney(row.balance) +
-        (overspent ? ' (OVERSPENT)' : '')
+        suffix
       );
     });
 
+    var overspentRows = rows.filter(function (r) { return r.balance < 0; });
     var totalBudgeted = rows.reduce(function (sum, r) { return sum + r.budgeted; }, 0);
     var totalActivity = rows.reduce(function (sum, r) { return sum + r.activity; }, 0);
-    var overspentCount = rows.filter(function (r) { return r.balance < 0; }).length;
 
     lines.push('');
     lines.push('Summary totals');
     lines.push('- Total budgeted: ' + formatMoney(totalBudgeted));
     lines.push('- Total activity: ' + formatMoney(totalActivity));
-    lines.push('- Categories overspent: ' + overspentCount);
+    lines.push('- Categories overspent (Available < $0 only): ' + overspentRows.length);
+    if (overspentRows.length) {
+      lines.push('- Overspent category names: ' + overspentRows.map(function (r) { return r.name; }).join(', '));
+    }
 
     return lines.join('\n');
   }
