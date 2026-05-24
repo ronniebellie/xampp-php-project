@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>AI Budget Auditor (Private)</title>
+  <link rel="stylesheet" href="../../css/styles.css">
+  <style>
+    .config-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+      margin-bottom: 8px;
+    }
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .field input[type="password"],
+    .field input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    .field small {
+      display: block;
+      margin-top: 6px;
+      color: #6b7280;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .actions-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 24px;
+    }
+    .btn-primary {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      background: #1d4ed8;
+      color: #fff;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .btn-primary:hover:not(:disabled) { background: #1e40af; }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-secondary {
+      padding: 12px 20px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: #fff;
+      color: #374151;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn-secondary:hover { background: #f9fafb; }
+    #statusMessage {
+      margin-top: 16px;
+      font-size: 14px;
+      color: #4b5563;
+      min-height: 1.4em;
+    }
+    #statusMessage.error { color: #b91c1c; font-weight: 600; }
+    #previewSection { display: none; margin-top: 32px; }
+    .overspend { color: #b91c1c; font-weight: 600; }
+    .private-badge {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #92400e;
+      background: #fef3c7;
+      border: 1px solid #fcd34d;
+      border-radius: 999px;
+      padding: 4px 10px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <p style="margin-bottom: 20px;"><a href="../../" style="text-decoration: none; color: #1d4ed8;">← Return to home page</a></p>
+
+    <header>
+      <span class="private-badge">Private utility</span>
+      <h1>AI Budget Auditor</h1>
+      <p class="sub">Pull your current-month YNAB categories, then ask GPT-4o for a concise spending review. API keys stay in this browser’s localStorage; YNAB is called directly, and the AI step uses a thin server proxy.</p>
+    </header>
+
+    <div class="info-box-blue" style="margin-bottom: 30px;">
+      <h2>How it works</h2>
+      <p>Paste your personal access token and OpenAI key below; both are saved in <code>localStorage</code> on this device. <strong>YNAB</strong> is fetched from your browser. The formatted budget summary and your OpenAI key are sent to <code>/api/ynab_proxy.php</code>, which forwards the chat request server-side (avoiding browser CORS limits). Keys are never stored on the server. Use <code>last-used</code> as the budget ID, or paste a specific budget UUID from YNAB.</p>
+    </div>
+
+    <section aria-label="API configuration">
+      <h3>Configuration</h3>
+      <div class="config-grid">
+        <div class="field">
+          <label for="ynabToken">YNAB Personal Access Token</label>
+          <input type="password" id="ynabToken" autocomplete="off" spellcheck="false" placeholder="Paste YNAB token">
+          <small>From YNAB → Account Settings → Developer Settings → Personal Access Tokens.</small>
+        </div>
+        <div class="field">
+          <label for="openaiKey">OpenAI API Key</label>
+          <input type="password" id="openaiKey" autocomplete="off" spellcheck="false" placeholder="sk-…">
+          <small>Sent in the request header to <code>/api/ynab_proxy.php</code> for the GPT-4o analysis step only.</small>
+        </div>
+        <div class="field">
+          <label for="budgetId">YNAB Budget ID</label>
+          <input type="text" id="budgetId" autocomplete="off" spellcheck="false" placeholder="last-used">
+          <small>Default <code>last-used</code> works for most setups. Or paste a budget UUID.</small>
+        </div>
+      </div>
+
+      <div class="actions-row">
+        <button type="button" id="runAuditBtn" class="btn-primary">Run AI Budget Audit</button>
+        <button type="button" id="clearKeysBtn" class="btn-secondary">Clear saved keys</button>
+      </div>
+      <div id="statusMessage" role="status" aria-live="polite"></div>
+    </section>
+
+    <section id="previewSection" aria-label="Category preview">
+      <h3>Category snapshot (current month)</h3>
+      <p style="color: #4b5563; margin-top: 0;">Fetched from YNAB before sending to the analyst. Amounts are for the current budget month (UTC).</p>
+      <div class="table-wrapper">
+        <table class="data-table" id="categoryTable">
+          <thead>
+            <tr>
+              <th>Group</th>
+              <th>Category</th>
+              <th>Budgeted</th>
+              <th>Activity</th>
+              <th>Available</th>
+            </tr>
+          </thead>
+          <tbody id="categoryTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
