@@ -7,12 +7,15 @@
     budgetId: 'aiBudgetAuditor_budgetId'
   };
 
+  var isPremium = typeof isPremiumUser !== 'undefined' && isPremiumUser;
 
   var state = {
     modalOverlay: null,
     budgetSummary: '',
+    budgetName: '',
     openaiKey: '',
-    conversation: []
+    conversation: [],
+    snapshotReady: false
   };
 
   var els = {};
@@ -49,13 +52,17 @@
 
   function loadConfig() {
     els.ynabToken.value = localStorage.getItem(STORAGE_KEYS.ynabToken) || '';
-    els.openaiKey.value = localStorage.getItem(STORAGE_KEYS.openaiKey) || '';
+    if (els.openaiKey) {
+      els.openaiKey.value = localStorage.getItem(STORAGE_KEYS.openaiKey) || '';
+    }
     els.budgetId.value = localStorage.getItem(STORAGE_KEYS.budgetId) || 'last-used';
   }
 
   function saveConfig() {
     localStorage.setItem(STORAGE_KEYS.ynabToken, els.ynabToken.value.trim());
-    localStorage.setItem(STORAGE_KEYS.openaiKey, els.openaiKey.value.trim());
+    if (els.openaiKey) {
+      localStorage.setItem(STORAGE_KEYS.openaiKey, els.openaiKey.value.trim());
+    }
     localStorage.setItem(STORAGE_KEYS.budgetId, (els.budgetId.value.trim() || 'last-used'));
   }
 
@@ -64,16 +71,39 @@
       localStorage.removeItem(STORAGE_KEYS[key]);
     });
     els.ynabToken.value = '';
-    els.openaiKey.value = '';
+    if (els.openaiKey) els.openaiKey.value = '';
     els.budgetId.value = 'last-used';
-    els.previewSection.style.display = 'none';
-    els.categoryTableBody.innerHTML = '';
+    resetSnapshot();
     setStatus('Saved keys cleared from this browser.');
   }
 
-  function setBusy(busy) {
-    els.runAuditBtn.disabled = busy;
-    els.runAuditBtn.textContent = busy ? 'Analyzing…' : 'Run AI Budget Audit';
+  function resetSnapshot() {
+    state.budgetSummary = '';
+    state.budgetName = '';
+    state.snapshotReady = false;
+    els.previewSection.style.display = 'none';
+    els.categoryTableBody.innerHTML = '';
+    if (els.snapshotSummary) els.snapshotSummary.innerHTML = '';
+    if (els.premiumUpsellBanner) els.premiumUpsellBanner.style.display = 'none';
+    if (els.premiumAiRow) els.premiumAiRow.style.display = 'none';
+    if (els.runAiBtn) els.runAiBtn.disabled = true;
+  }
+
+  function setSnapshotBusy(busy) {
+    els.runSnapshotBtn.disabled = busy;
+    els.runSnapshotBtn.textContent = busy ? 'Loading…' : 'Load Category Snapshot';
+  }
+
+  function setAiBusy(busy) {
+    var label = busy ? 'Analyzing…' : '🤖 Get AI Analysis';
+    if (els.runAiBtn) {
+      els.runAiBtn.disabled = busy || !state.snapshotReady;
+      els.runAiBtn.textContent = busy ? 'Analyzing…' : 'Get AI Analysis';
+    }
+    if (els.runAiBtnInline) {
+      els.runAiBtnInline.disabled = busy;
+      els.runAiBtnInline.textContent = busy ? 'Analyzing…' : label;
+    }
   }
 
   async function fetchJson(url, options) {
@@ -189,11 +219,45 @@
     return lines.join('\n');
   }
 
+  function renderSnapshotSummary(rows, budgetName) {
+    if (!els.snapshotSummary) return;
+
+    var overspentRows = rows.filter(function (r) { return r.balance < 0; });
+    var totalBudgeted = rows.reduce(function (sum, r) { return sum + r.budgeted; }, 0);
+    var totalActivity = rows.reduce(function (sum, r) { return sum + r.activity; }, 0);
+    var overspentClass = overspentRows.length ? 'alert' : 'ok';
+    var overspentText = overspentRows.length
+      ? overspentRows.length + (overspentRows.length === 1 ? ' category' : ' categories')
+      : 'None';
+
+    els.snapshotSummary.innerHTML =
+      '<div class="snapshot-card">' +
+        '<div class="snapshot-card-label">Budget</div>' +
+        '<div class="snapshot-card-value" style="font-size:18px;">' + escapeHtml(budgetName) + '</div>' +
+      '</div>' +
+      '<div class="snapshot-card">' +
+        '<div class="snapshot-card-label">Total budgeted</div>' +
+        '<div class="snapshot-card-value">' + escapeHtml(formatMoney(totalBudgeted)) + '</div>' +
+      '</div>' +
+      '<div class="snapshot-card">' +
+        '<div class="snapshot-card-label">Total activity</div>' +
+        '<div class="snapshot-card-value">' + escapeHtml(formatMoney(totalActivity)) + '</div>' +
+      '</div>' +
+      '<div class="snapshot-card ' + overspentClass + '">' +
+        '<div class="snapshot-card-label">Overspent (Available &lt; $0)</div>' +
+        '<div class="snapshot-card-value">' + escapeHtml(overspentText) + '</div>' +
+      '</div>';
+
+    if (els.previewTitle) {
+      els.previewTitle.textContent = 'Category snapshot — ' + budgetName + ' (' + currentMonthLabel() + ')';
+    }
+  }
+
   function renderPreview(rows) {
     els.categoryTableBody.innerHTML = rows.map(function (row) {
       var overspent = row.balance < 0;
       return (
-        '<tr>' +
+        '<tr' + (overspent ? ' style="background:#fef2f2;"' : '') + '>' +
           '<td>' + escapeHtml(row.groupName) + '</td>' +
           '<td>' + escapeHtml(row.name) + '</td>' +
           '<td>' + escapeHtml(formatMoney(row.budgeted)) + '</td>' +
@@ -203,6 +267,18 @@
       );
     }).join('');
     els.previewSection.style.display = rows.length ? 'block' : 'none';
+  }
+
+  function showPostSnapshotUi() {
+    if (els.premiumUpsellBanner) {
+      els.premiumUpsellBanner.style.display = 'block';
+    }
+    if (els.premiumAiRow) {
+      els.premiumAiRow.style.display = 'flex';
+    }
+    if (els.runAiBtn) {
+      els.runAiBtn.disabled = false;
+    }
   }
 
   function proxyUrl() {
@@ -219,6 +295,7 @@
 
     var json = await fetchJson(proxyUrl(), {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + apiKey
@@ -289,11 +366,11 @@
     var question = (input.value || '').trim();
     if (!question) return;
     if (!state.budgetSummary) {
-      alert('Follow-up is unavailable because the budget context was not saved. Close and run the audit again.');
+      alert('Follow-up is unavailable because the budget context was not saved. Close and load the snapshot again.');
       return;
     }
     if (!state.openaiKey) {
-      alert('Follow-up is unavailable because your OpenAI key is missing. Paste it in Configuration and run the audit again.');
+      alert('Follow-up is unavailable because your OpenAI key is missing.');
       return;
     }
 
@@ -332,11 +409,9 @@
     state.modalOverlay.querySelector('#aiBudgetAuditCloseBtn').addEventListener('click', closeModal);
   }
 
-  function showAuditModal(analysisText, meta) {
+  function showAuditModal(analysisText) {
     closeModal();
 
-    state.budgetSummary = meta.budgetSummary || '';
-    state.openaiKey = meta.openaiKey || '';
     state.conversation = [{ role: 'assistant', content: analysisText }];
 
     var overlay = document.createElement('div');
@@ -355,7 +430,7 @@
     box.innerHTML =
       '<div style="padding:24px 24px 16px;overflow-y:auto;flex:1;">' +
         '<h2 style="margin:0 0 8px 0;font-size:1.25rem;color:#1f2937;">📊 AI Budget Audit</h2>' +
-        '<p style="margin:0 0 18px 0;font-size:13px;color:#6b7280;">' + escapeHtml(meta.budgetName) + ' · ' + escapeHtml(currentMonthLabel()) + '</p>' +
+        '<p style="margin:0 0 18px 0;font-size:13px;color:#6b7280;">' + escapeHtml(state.budgetName) + ' · ' + escapeHtml(currentMonthLabel()) + '</p>' +
         '<div id="aiBudgetAuditBody" style="color:#374151;line-height:1.7;font-size:15px;">' + renderMarkdownish(analysisText) + '</div>' +
         '<div id="aiBudgetAuditThread"></div>' +
       '</div>' +
@@ -378,16 +453,13 @@
   }
 
   function onModalKeydown(e) {
-    if (e.key === 'Escape') {
-      closeModal();
-    }
+    if (e.key === 'Escape') closeModal();
   }
 
-  async function runAudit() {
+  async function loadSnapshot() {
     saveConfig();
 
     var token = els.ynabToken.value.trim();
-    var openaiKey = els.openaiKey.value.trim();
     var budgetId = els.budgetId.value.trim() || 'last-used';
 
     if (!token) {
@@ -395,13 +467,8 @@
       els.ynabToken.focus();
       return;
     }
-    if (!openaiKey) {
-      setStatus('Please paste your OpenAI API Key.', true);
-      els.openaiKey.focus();
-      return;
-    }
 
-    setBusy(true);
+    setSnapshotBusy(true);
     setStatus('Fetching categories from YNAB…');
 
     try {
@@ -413,43 +480,87 @@
         throw new Error('No visible categories returned for this budget.');
       }
 
+      state.budgetName = budgetMeta.name;
+      state.budgetSummary = formatCategorySummary(budgetMeta.name, rows);
+      state.snapshotReady = true;
+
+      renderSnapshotSummary(rows, budgetMeta.name);
       renderPreview(rows);
-      var summary = formatCategorySummary(budgetMeta.name, rows);
+      showPostSnapshotUi();
 
-      setStatus('Sending summary to GPT-4o for analysis…');
-      var analysis = await fetchOpenAiAnalysis(summary, openaiKey);
-
-      setStatus('Audit complete.');
-      showAuditModal(analysis, {
-        budgetName: budgetMeta.name,
-        budgetSummary: summary,
-        openaiKey: openaiKey
-      });
+      setStatus('Category snapshot loaded.' + (isPremium ? ' Click Get AI Analysis when ready.' : ''));
     } catch (err) {
       setStatus(err && err.message ? err.message : String(err), true);
     } finally {
-      setBusy(false);
+      setSnapshotBusy(false);
+    }
+  }
+
+  async function runAiAnalysis() {
+    if (!isPremium) return;
+
+    saveConfig();
+
+    if (!state.snapshotReady || !state.budgetSummary) {
+      setStatus('Load a category snapshot first.', true);
+      return;
+    }
+
+    var openaiKey = els.openaiKey ? els.openaiKey.value.trim() : '';
+    if (!openaiKey) {
+      setStatus('Please paste your OpenAI API Key for AI analysis.', true);
+      if (els.openaiKey) els.openaiKey.focus();
+      return;
+    }
+
+    state.openaiKey = openaiKey;
+    setAiBusy(true);
+    setStatus('Sending summary to GPT-4o for analysis…');
+
+    try {
+      var analysis = await fetchOpenAiAnalysis(state.budgetSummary, openaiKey);
+      setStatus('AI analysis complete.');
+      showAuditModal(analysis);
+    } catch (err) {
+      setStatus(err && err.message ? err.message : String(err), true);
+    } finally {
+      setAiBusy(false);
     }
   }
 
   function bindEvents() {
-    ['ynabToken', 'openaiKey', 'budgetId'].forEach(function (id) {
-      $(id).addEventListener('change', saveConfig);
-      $(id).addEventListener('blur', saveConfig);
+    ['ynabToken', 'budgetId'].forEach(function (id) {
+      var el = $(id);
+      if (el) {
+        el.addEventListener('change', saveConfig);
+        el.addEventListener('blur', saveConfig);
+      }
     });
-    els.runAuditBtn.addEventListener('click', runAudit);
+    if (els.openaiKey) {
+      els.openaiKey.addEventListener('change', saveConfig);
+      els.openaiKey.addEventListener('blur', saveConfig);
+    }
+    els.runSnapshotBtn.addEventListener('click', loadSnapshot);
     els.clearKeysBtn.addEventListener('click', clearConfig);
+    if (els.runAiBtn) els.runAiBtn.addEventListener('click', runAiAnalysis);
+    if (els.runAiBtnInline) els.runAiBtnInline.addEventListener('click', runAiAnalysis);
   }
 
   function init() {
     els.ynabToken = $('ynabToken');
     els.openaiKey = $('openaiKey');
     els.budgetId = $('budgetId');
-    els.runAuditBtn = $('runAuditBtn');
+    els.runSnapshotBtn = $('runSnapshotBtn');
+    els.runAiBtn = $('runAiBtn');
+    els.runAiBtnInline = $('runAiBtnInline');
     els.clearKeysBtn = $('clearKeysBtn');
     els.statusMessage = $('statusMessage');
     els.previewSection = $('previewSection');
+    els.previewTitle = $('previewTitle');
     els.categoryTableBody = $('categoryTableBody');
+    els.snapshotSummary = $('snapshotSummary');
+    els.premiumUpsellBanner = $('premiumUpsellBanner');
+    els.premiumAiRow = $('premiumAiRow');
 
     loadConfig();
     bindEvents();

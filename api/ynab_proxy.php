@@ -8,12 +8,19 @@
  */
 error_reporting(0);
 ini_set('display_errors', 0);
+session_start();
 
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     die(json_encode(['error' => 'Method not allowed. Use POST.']));
+}
+
+require_once __DIR__ . '/../includes/has_premium_access.php';
+if (!has_premium_access()) {
+    http_response_code(403);
+    die(json_encode(['error' => 'Premium subscription required for AI Budget Analysis. Upgrade at /premium.html']));
 }
 
 function read_authorization_header() {
