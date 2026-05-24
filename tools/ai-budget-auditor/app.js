@@ -144,27 +144,76 @@
     return (json.data && json.data.category_groups) || [];
   }
 
+  async function fetchBudgetMonth(token, budgetId) {
+    var url = 'https://api.youneedabudget.com/v1/budgets/' + encodeURIComponent(budgetId) + '/months/current';
+    var json = await fetchJson(url, {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    return (json.data && json.data.month) || null;
+  }
+
   function isCreditCardCategory(groupName) {
     return /credit card payments?/i.test(groupName || '');
   }
 
-  function flattenCategories(categoryGroups) {
+  function isReadyToAssignCategory(groupName, categoryName) {
+    var name = (categoryName || '').trim().toLowerCase();
+    var group = (groupName || '').trim().toLowerCase();
+    if (/ready to assign|to be assigned|to be budgeted/.test(name)) {
+      return true;
+    }
+    if (/internal master category/.test(group)) {
+      return /ready to assign|inflow/.test(name);
+    }
+    return false;
+  }
+
+  function buildReadyToAssignRow(monthDetail) {
+    if (!monthDetail) {
+      return null;
+    }
+    return {
+      groupName: 'Budget',
+      name: 'Ready to Assign',
+      budgeted: 0,
+      activity: monthDetail.income || 0,
+      balance: monthDetail.to_be_budgeted || 0,
+      isCreditCard: false,
+      isReadyToAssign: true
+    };
+  }
+
+  function flattenCategories(categoryGroups, monthDetail) {
     var rows = [];
     categoryGroups.forEach(function (group) {
       if (!group || group.deleted || group.hidden) return;
       (group.categories || []).forEach(function (cat) {
         if (!cat || cat.deleted || cat.hidden) return;
+        if (isReadyToAssignCategory(group.name, cat.name)) {
+          return;
+        }
         rows.push({
           groupName: group.name,
           name: cat.name,
           budgeted: cat.budgeted || 0,
           activity: cat.activity || 0,
           balance: cat.balance || 0,
-          isCreditCard: isCreditCardCategory(group.name)
+          isCreditCard: isCreditCardCategory(group.name),
+          isReadyToAssign: false
         });
       });
     });
+
+    var readyToAssignRow = buildReadyToAssignRow(monthDetail);
+    if (readyToAssignRow) {
+      rows.unshift(readyToAssignRow);
+    }
+
     return rows;
+  }
+
+  function categoryRowsForTotals(rows) {
+    return rows.filter(function (row) { return !row.isReadyToAssign; });
   }
 
   function formatCategorySummary(budgetName, rows) {
@@ -178,6 +227,7 @@
       '- Regular categories: overspending means Available went negative (e.g. Legal & Tax Prep with negative Available).',
       '',
       'All amounts in USD. Activity = this month\'s spending/inflows. Available = budgeted + rollovers + activity.',
+      '- Ready to Assign: Available = to_be_budgeted from the budget month; Activity = inflows assigned to Ready to Assign (not total budget activity).',
       ''
     ];
 
@@ -187,31 +237,38 @@
         currentGroup = row.groupName;
         lines.push('[' + currentGroup + ']');
       }
-      var overspent = row.balance < 0;
+      var overspent = !row.isReadyToAssign && row.balance < 0;
       var suffix = '';
-      if (overspent) {
+      if (row.isReadyToAssign) {
+        suffix = ' (Ready to Assign — Available is to_be_budgeted; Activity is RTA inflow this month)';
+      } else if (overspent) {
         suffix = ' (OVERSPENT — Available < $0)';
       } else if (row.isCreditCard && row.activity < 0) {
         suffix = ' (Credit card: negative Activity is normal; Available covers balance — not overspent)';
       }
       lines.push(
         '- ' + row.name +
-        ': Budgeted ' + formatMoney(row.budgeted) +
+        ': Budgeted ' + (row.isReadyToAssign ? '—' : formatMoney(row.budgeted)) +
         ' | Activity ' + formatMoney(row.activity) +
         ' | Available ' + formatMoney(row.balance) +
         suffix
       );
     });
 
-    var overspentRows = rows.filter(function (r) { return r.balance < 0; });
-    var totalBudgeted = rows.reduce(function (sum, r) { return sum + r.budgeted; }, 0);
-    var totalActivity = rows.reduce(function (sum, r) { return sum + r.activity; }, 0);
+    var dataRows = categoryRowsForTotals(rows);
+    var overspentRows = dataRows.filter(function (r) { return r.balance < 0; });
+    var totalBudgeted = dataRows.reduce(function (sum, r) { return sum + r.budgeted; }, 0);
+    var totalActivity = dataRows.reduce(function (sum, r) { return sum + r.activity; }, 0);
+    var readyToAssignRow = rows.find(function (r) { return r.isReadyToAssign; });
 
     lines.push('');
     lines.push('Summary totals');
     lines.push('- Total budgeted: ' + formatMoney(totalBudgeted));
     lines.push('- Total activity: ' + formatMoney(totalActivity));
     lines.push('- Categories overspent (Available < $0 only): ' + overspentRows.length);
+    if (readyToAssignRow) {
+      lines.push('- Ready to Assign (to_be_budgeted): ' + formatMoney(readyToAssignRow.balance));
+    }
     if (overspentRows.length) {
       lines.push('- Overspent category names: ' + overspentRows.map(function (r) { return r.name; }).join(', '));
     }
@@ -222,9 +279,11 @@
   function renderSnapshotSummary(rows, budgetName) {
     if (!els.snapshotSummary) return;
 
-    var overspentRows = rows.filter(function (r) { return r.balance < 0; });
-    var totalBudgeted = rows.reduce(function (sum, r) { return sum + r.budgeted; }, 0);
-    var totalActivity = rows.reduce(function (sum, r) { return sum + r.activity; }, 0);
+    var dataRows = categoryRowsForTotals(rows);
+    var overspentRows = dataRows.filter(function (r) { return r.balance < 0; });
+    var totalBudgeted = dataRows.reduce(function (sum, r) { return sum + r.budgeted; }, 0);
+    var totalActivity = dataRows.reduce(function (sum, r) { return sum + r.activity; }, 0);
+    var readyToAssignRow = rows.find(function (r) { return r.isReadyToAssign; });
     var overspentClass = overspentRows.length ? 'alert' : 'ok';
     var overspentText = overspentRows.length
       ? overspentRows.length + (overspentRows.length === 1 ? ' category' : ' categories')
@@ -235,6 +294,11 @@
         '<div class="snapshot-card-label">Budget</div>' +
         '<div class="snapshot-card-value" style="font-size:18px;">' + escapeHtml(budgetName) + '</div>' +
       '</div>' +
+      (readyToAssignRow ?
+        '<div class="snapshot-card ok">' +
+          '<div class="snapshot-card-label">Ready to Assign</div>' +
+          '<div class="snapshot-card-value">' + escapeHtml(formatMoney(readyToAssignRow.balance)) + '</div>' +
+        '</div>' : '') +
       '<div class="snapshot-card">' +
         '<div class="snapshot-card-label">Total budgeted</div>' +
         '<div class="snapshot-card-value">' + escapeHtml(formatMoney(totalBudgeted)) + '</div>' +
@@ -255,12 +319,13 @@
 
   function renderPreview(rows) {
     els.categoryTableBody.innerHTML = rows.map(function (row) {
-      var overspent = row.balance < 0;
+      var overspent = !row.isReadyToAssign && row.balance < 0;
+      var budgetedCell = row.isReadyToAssign ? '—' : escapeHtml(formatMoney(row.budgeted));
       return (
         '<tr' + (overspent ? ' style="background:#fef2f2;"' : '') + '>' +
           '<td>' + escapeHtml(row.groupName) + '</td>' +
           '<td>' + escapeHtml(row.name) + '</td>' +
-          '<td>' + escapeHtml(formatMoney(row.budgeted)) + '</td>' +
+          '<td>' + budgetedCell + '</td>' +
           '<td>' + escapeHtml(formatMoney(row.activity)) + '</td>' +
           '<td class="' + (overspent ? 'overspend' : '') + '">' + escapeHtml(formatMoney(row.balance)) + '</td>' +
         '</tr>'
@@ -472,9 +537,15 @@
     setStatus('Fetching categories from YNAB…');
 
     try {
-      var budgetMeta = await fetchBudgetMeta(token, budgetId);
-      var categoryGroups = await fetchYnabCategories(token, budgetId);
-      var rows = flattenCategories(categoryGroups);
+      var results = await Promise.all([
+        fetchBudgetMeta(token, budgetId),
+        fetchYnabCategories(token, budgetId),
+        fetchBudgetMonth(token, budgetId)
+      ]);
+      var budgetMeta = results[0];
+      var categoryGroups = results[1];
+      var monthDetail = results[2];
+      var rows = flattenCategories(categoryGroups, monthDetail);
 
       if (!rows.length) {
         throw new Error('No visible categories returned for this budget.');
