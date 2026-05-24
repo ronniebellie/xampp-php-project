@@ -236,6 +236,7 @@ $premiumUpsellUrl = get_premium_upsell_url($isLoggedIn);
   </style>
 </head>
 <body>
+  <?php include(__DIR__ . '/../../includes/premium-banner-include.php'); ?>
   <div class="wrap">
     <p style="margin-bottom: 20px;"><a href="../../" style="text-decoration: none; color: #1d4ed8;">← Return to home page</a></p>
 
