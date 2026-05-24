@@ -87,6 +87,55 @@
       padding: 4px 10px;
       margin-bottom: 10px;
     }
+    .setup-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 22px 24px;
+      margin-bottom: 28px;
+    }
+    .setup-card h3 {
+      margin: 0 0 10px;
+      font-size: 1.15rem;
+      color: #1f2937;
+    }
+    .setup-card > p {
+      margin: 0 0 18px;
+      color: #4b5563;
+      line-height: 1.55;
+    }
+    .setup-steps {
+      margin: 0;
+      padding-left: 22px;
+      color: #374151;
+      line-height: 1.6;
+    }
+    .setup-steps li {
+      margin-bottom: 14px;
+    }
+    .setup-steps li:last-child {
+      margin-bottom: 0;
+    }
+    .setup-steps a {
+      color: #1d4ed8;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .setup-steps a:hover {
+      text-decoration: underline;
+    }
+    .setup-note {
+      display: block;
+      margin-top: 8px;
+      padding: 10px 12px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-left: 3px solid #f59e0b;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #92400e;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
@@ -105,12 +154,33 @@
     </div>
 
     <section aria-label="API configuration">
+      <div class="setup-card">
+        <h3>🚀 Getting Started (60-Second Setup)</h3>
+        <p>This tool is entirely serverless for your credentials — paste your keys below and they stay securely in this browser’s <code>localStorage</code>. Nothing is saved on the server.</p>
+        <ol class="setup-steps">
+          <li>
+            <strong>OpenAI API Key</strong> — Sign in and create a new secret key at
+            <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">platform.openai.com/api-keys</a>,
+            then paste it into the OpenAI field below.
+          </li>
+          <li>
+            <strong>YNAB Personal Access Token</strong> — Open
+            <a href="https://app.ynab.com/settings/developer" target="_blank" rel="noopener noreferrer">app.ynab.com/settings/developer</a>,
+            click <strong>New Token</strong>, copy the token, and paste it below.
+            <span class="setup-note"><strong>Note:</strong> If you normally use Google or Apple Sign-In to access YNAB, you will be prompted to quickly set a local account password first to unlock the “New Token” button.</span>
+          </li>
+          <li>
+            <strong>YNAB Budget ID</strong> — Leave this set to <code>last-used</code> to automatically fetch your most recently active budget. Only change it if you want to audit a specific budget UUID.
+          </li>
+        </ol>
+      </div>
+
       <h3>Configuration</h3>
       <div class="config-grid">
         <div class="field">
           <label for="ynabToken">YNAB Personal Access Token</label>
           <input type="password" id="ynabToken" autocomplete="off" spellcheck="false" placeholder="Paste YNAB token">
-          <small>From YNAB → Account Settings → Developer Settings → Personal Access Tokens.</small>
+          <small>Generate a token at <a href="https://app.ynab.com/settings/developer" target="_blank" rel="noopener noreferrer" style="color: #1d4ed8;">app.ynab.com/settings/developer</a>.</small>
         </div>
         <div class="field">
           <label for="openaiKey">OpenAI API Key</label>
