@@ -481,12 +481,21 @@ function explainPASResults() {
     alert('Please run the calculation first to see results.');
     return;
   }
+  var totalOpportunityCost = Math.round(r.opportunityCost);
+  var directFeeDiff = Math.round(r.directFeeDiff);
+  var lostGrowth = Math.round(Math.max(0, r.lostGrowth));
+
   var summary = 'Vanguard Personal Advisor vs Target Date Funds. Portfolio $' + r.portfolioValue.toLocaleString() + ', PAS fee ' + r.pasFee + '%, Target Date fee ' + r.targetDateFee + '%. ';
   summary += 'Timeline ' + r.years + ' years, expected return ' + r.returnRate + '%. ';
   if (r.withdrawalPct > 0) summary += 'Annual withdrawal ' + r.withdrawalPct + '% of portfolio, starting ' + (r.withdrawalsStartYear != null ? r.withdrawalsStartYear : 'year 1') + '. ';
-  summary += 'Allocation: ' + r.allocation.conservative + '% conservative, ' + r.allocation.moderate + '% moderate, ' + r.allocation.aggressive + '% aggressive. ';
-  summary += 'Opportunity cost over ' + r.years + ' years: $' + Math.round(r.opportunityCost).toLocaleString() + '. ';
-  summary += 'Direct fee difference: $' + Math.round(r.directFeeDiff).toLocaleString() + '. Lost growth: $' + Math.round(r.lostGrowth > 0 ? r.lostGrowth : r.opportunityCost).toLocaleString() + '.';
+  summary += 'Allocation: ' + r.allocation.conservative + '% conservative, ' + r.allocation.moderate + '% moderate, ' + r.allocation.aggressive + '% aggressive.\n\n';
+  summary += 'OPPORTUNITY COST BREAKDOWN (do not double-count):\n';
+  summary += '- Total Opportunity Cost (grand total): $' + totalOpportunityCost.toLocaleString() + '\n';
+  summary += '- Direct Fee Difference (paid out of pocket): $' + directFeeDiff.toLocaleString() + '\n';
+  summary += '- Lost Growth (fees removed from market, could not compound): $' + lostGrowth.toLocaleString() + '\n';
+  summary += 'Relationship: Total Opportunity Cost = Direct Fee Difference + Lost Growth ($' +
+    directFeeDiff.toLocaleString() + ' + $' + lostGrowth.toLocaleString() + ' = $' +
+    totalOpportunityCost.toLocaleString() + '). The total is NOT an additional separate cost on top of the two components.';
 
   var btn = document.getElementById('explainResultsBtnInResults');
   var origText = btn ? btn.textContent : '';
@@ -505,37 +514,10 @@ function explainPASResults() {
     var data;
     try { data = JSON.parse(text); } catch (e) { throw new Error('Server returned an unexpected response.'); }
     if (data.error) throw new Error(data.error);
-    showExplainModal(data.explanation);
+    showExplainModal(data.explanation, { calculatorType: 'vanguard-pas-vs-target-date', resultsSummary: summary });
   })
   .catch(function (err) {
     if (btn) { btn.disabled = false; btn.textContent = origText; }
     alert('Explain results: ' + err.message);
   });
-}
-
-function showExplainModal(explanation) {
-  var overlay = document.getElementById('explainResultsModalOverlay');
-  if (overlay) overlay.remove();
-  overlay = document.createElement('div');
-  overlay.id = 'explainResultsModalOverlay';
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px;';
-  overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.remove(); });
-  var box = document.createElement('div');
-  box.style.cssText = 'background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:560px;width:100%;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;';
-  box.addEventListener('click', function (e) { e.stopPropagation(); });
-  function escapeHtml(s) {
-    var div = document.createElement('div');
-    div.textContent = s;
-    return div.innerHTML;
-  }
-  box.innerHTML = '<div style="padding:24px 24px 16px;">' +
-    '<h2 style="margin:0 0 16px 0;font-size:1.25rem;color:#1f2937;">🤖 AI Explanation</h2>' +
-    '<div style="color:#374151;line-height:1.7;white-space:pre-wrap;overflow-y:auto;max-height:50vh;">' + escapeHtml(explanation) + '</div>' +
-    '</div>' +
-    '<div style="padding:16px 24px;border-top:1px solid #e5e7eb;background:#f9fafb;">' +
-    '<button type="button" id="explainModalCloseBtn" style="padding:10px 24px;border:none;border-radius:8px;background:#0d9488;color:#fff;cursor:pointer;font-weight:600;">Close</button>' +
-    '</div>';
-  overlay.appendChild(box);
-  document.body.appendChild(overlay);
-  document.getElementById('explainModalCloseBtn').addEventListener('click', function () { overlay.remove(); });
 }

@@ -201,6 +201,7 @@ $isPremium = has_premium_access();
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="../js/share-results.js"></script>
+    <script src="../js/explain-results-modal.js"></script>
     <script>
         const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
         const RVD_API_BASE = (function() {
@@ -657,7 +658,7 @@ $isPremium = has_premium_access();
                     throw new Error('Server returned an unexpected response. The AI Explain feature may not be configured on this server, or try logging out and back in.');
                 }
                 if (resp.error) throw new Error(resp.error);
-                showExplainModal(resp.explanation);
+                showExplainModal(resp.explanation, { calculatorType: 'required-vs-desired', resultsSummary: summary });
             })
             .catch(err => {
                 if (btn) { btn.disabled = false; btn.textContent = origText; }
@@ -665,21 +666,6 @@ $isPremium = has_premium_access();
             });
         }
 
-        function showExplainModal(explanation) {
-            let overlay = document.getElementById('explainResultsModalOverlay');
-            if (overlay) overlay.remove();
-            overlay = document.createElement('div');
-            overlay.id = 'explainResultsModalOverlay';
-            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px;';
-            overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
-            const box = document.createElement('div');
-            box.style.cssText = 'background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:560px;width:100%;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;';
-            box.addEventListener('click', function(e) { e.stopPropagation(); });
-            box.innerHTML = '<div style="padding:24px 24px 16px;"><h2 style="margin:0 0 16px 0;font-size:1.25rem;color:#1f2937;">🤖 AI Explanation</h2><div style="color:#374151;line-height:1.7;white-space:pre-wrap;overflow-y:auto;max-height:50vh;">' + escapeHtml(explanation) + '</div></div><div style="padding:16px 24px;border-top:1px solid #e5e7eb;background:#f9fafb;"><p style="margin:0 0 12px 0;font-size:12px;color:#6b7280;">This is an AI-generated explanation for educational purposes. Not financial or legal advice.</p><button type="button" id="explainModalCloseBtn" style="padding:10px 24px;border:none;border-radius:8px;background:#0d9488;color:#fff;cursor:pointer;font-weight:600;">Close</button></div>';
-            overlay.appendChild(box);
-            document.body.appendChild(overlay);
-            document.getElementById('explainModalCloseBtn').addEventListener('click', function() { overlay.remove(); });
-        }
 
         function saveScenario() {
             const scenarioName = prompt('Enter a name for this scenario:', 'My Spending Plan');

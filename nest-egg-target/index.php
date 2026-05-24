@@ -225,6 +225,7 @@ $isPremium = has_premium_access();
   </div>
 
   <script src="../js/share-results.js"></script>
+    <script src="../js/explain-results-modal.js"></script>
   <script>const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;</script>
   <script src="calculator.js"></script>
 </body>

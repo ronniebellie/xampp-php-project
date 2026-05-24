@@ -166,6 +166,7 @@ $rb_includes = dirname(__DIR__, 2) . '/includes';
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../../js/explain-results-modal.js"></script>
     <script src="calculator.js"></script>
 </body>
 </html>

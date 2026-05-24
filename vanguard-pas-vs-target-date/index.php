@@ -245,9 +245,10 @@ $isPremium = has_premium_access();
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="../js/share-results.js"></script>
+    <script src="../js/explain-results-modal.js"></script>
     <script>
     const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
     </script>
-    <script src="calculator.js?v=3"></script>
+    <script src="calculator.js?v=4"></script>
 </body>
 </html>

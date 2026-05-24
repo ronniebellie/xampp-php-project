@@ -2,6 +2,7 @@
 /**
  * Explain Results API – Premium feature
  * Accepts calculator results, calls OpenAI to explain them in plain language.
+ * Supports follow-up questions when conversation + follow_up_question are sent.
  * Requires: logged-in session + premium subscription.
  */
 error_reporting(0);
@@ -39,6 +40,8 @@ if (!$data || empty($data['results_summary'])) {
 
 $calculator_type = isset($data['calculator_type']) ? trim($data['calculator_type']) : 'calculator';
 $results_summary = trim($data['results_summary']);
+$follow_up_question = isset($data['follow_up_question']) ? trim($data['follow_up_question']) : '';
+$conversation = isset($data['conversation']) && is_array($data['conversation']) ? $data['conversation'] : [];
 
 if (strlen($results_summary) > 8000) {
     header('Content-Type: application/json');
@@ -46,18 +49,64 @@ if (strlen($results_summary) > 8000) {
     die(json_encode(['error' => 'Results summary is too long. Please shorten or summarize.']));
 }
 
-// Build prompt
-$system_prompt = "You are a helpful financial planning assistant. Explain the user's calculator results in plain language. Use 2–4 short paragraphs. Be clear, educational, and supportive. Do not give specific investment or legal advice. Keep the tone friendly and professional. Do NOT ask the user questions, do NOT invite follow-up chat (e.g., \"feel free to ask\"), and do NOT imply real-time assistance. End with a neutral closing sentence (e.g., \"This explanation is for educational purposes only.\").";
+$is_follow_up = ($follow_up_question !== '');
 
-$user_prompt = "A user ran the \"" . $calculator_type . "\" calculator. Here are their results:\n\n" . $results_summary . "\n\nExplain these results in plain language.";
+if ($is_follow_up) {
+    if (strlen($follow_up_question) > 2000) {
+        header('Content-Type: application/json');
+        http_response_code(400);
+        die(json_encode(['error' => 'Follow-up question is too long.']));
+    }
+    if (count($conversation) > 20) {
+        header('Content-Type: application/json');
+        http_response_code(400);
+        die(json_encode(['error' => 'Too many follow-up messages in this session.']));
+    }
+}
+
+// Build prompt
+$system_prompt = "You are a helpful financial planning assistant. Explain the user's calculator results in plain language. Be clear, educational, and supportive. Do not give specific investment or legal advice. Keep the tone friendly and professional. Do NOT say things like \"feel free to ask\" in your text—the interface provides a follow-up question box. End responses with a neutral closing sentence (e.g., \"This explanation is for educational purposes only.\").";
+
+if ($calculator_type === 'vanguard-pas-vs-target-date') {
+    $system_prompt .= " For this calculator, Total Opportunity Cost is the grand total over the timeline—the sum of Direct Fee Difference plus Lost Growth. Never describe Total Opportunity Cost as an extra cost in addition to those components (that would double-count). When you mention opportunity cost, clearly state that the total equals direct fees paid out of pocket plus lost compounding on those fee dollars.";
+}
+
+$messages = [['role' => 'system', 'content' => $system_prompt]];
+
+if ($is_follow_up) {
+    $system_prompt .= " Answer only the follow-up question using the calculator results and prior explanation. Keep the answer concise (1–3 short paragraphs). Do not invite further chat in prose.";
+    $messages[0]['content'] = $system_prompt;
+
+    $context_user = "Calculator: \"" . $calculator_type . "\".\n\nResults:\n\n" . $results_summary;
+    $messages[] = ['role' => 'user', 'content' => $context_user];
+
+    foreach ($conversation as $turn) {
+        if (!is_array($turn)) continue;
+        $role = isset($turn['role']) ? trim($turn['role']) : '';
+        $content = isset($turn['content']) ? trim($turn['content']) : '';
+        if ($content === '') continue;
+        if ($role !== 'user' && $role !== 'assistant') continue;
+        if (strlen($content) > 4000) {
+            $content = substr($content, 0, 4000);
+        }
+        $messages[] = ['role' => $role, 'content' => $content];
+    }
+
+    $messages[] = ['role' => 'user', 'content' => "Follow-up question: " . $follow_up_question];
+} else {
+    $user_prompt = "A user ran the \"" . $calculator_type . "\" calculator. Here are their results:\n\n" . $results_summary . "\n\nExplain these results in plain language. Use 2–4 short paragraphs.";
+
+    if ($calculator_type === 'vanguard-pas-vs-target-date') {
+        $user_prompt .= "\n\nWhen explaining opportunity cost, use wording like: \"The Total Opportunity Cost of [total] represents the grand total of what you give up over the timeline. This is the sum of two distinct factors: the Direct Fee Difference of [direct] that you pay out of pocket, and [lost growth] in Lost Growth because those fee dollars were removed from the market and couldn't compound.\" Do not imply the user loses the total plus the components separately.";
+    }
+
+    $messages[] = ['role' => 'user', 'content' => $user_prompt];
+}
 
 $payload = [
     'model' => 'gpt-4o-mini',
-    'messages' => [
-        ['role' => 'system', 'content' => $system_prompt],
-        ['role' => 'user', 'content' => $user_prompt]
-    ],
-    'max_tokens' => 600,
+    'messages' => $messages,
+    'max_tokens' => $is_follow_up ? 400 : 600,
     'temperature' => 0.6
 ];
 

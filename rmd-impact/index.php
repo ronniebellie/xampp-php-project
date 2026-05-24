@@ -183,6 +183,7 @@ $isPremium = has_premium_access();
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="../js/share-results.js"></script>
+    <script src="../js/explain-results-modal.js"></script>
     <script>
     function toggleSpouseAge() {
         const spouseBeneficiary = document.getElementById('spouseBeneficiary').value;
