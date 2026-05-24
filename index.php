@@ -134,15 +134,79 @@ $seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financ
       font-size:24px;font-weight:850;letter-spacing:-.01em;margin:0;color:var(--accent);line-height:1.25;
     }
     .brand-tagline{
-      font-size:15px;color:var(--muted);margin:8px 0 0;line-height:1.5;max-width:560px;
+      font-size:15px;color:var(--muted);margin:10px 0 0;line-height:1.6;max-width:680px;
     }
-    .brand-subtitle{
-      font-size:14px;color:var(--muted);margin:10px 0 0;
+    .hero-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:18px;
+      align-items:center;
     }
-    .brand-subtitle a{
-      color:var(--accent);text-decoration:none;font-weight:600;
+    .hero-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:10px 18px;
+      border-radius:10px;
+      font-size:14px;
+      font-weight:700;
+      text-decoration:none;
+      line-height:1.2;
+      transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
     }
-    .brand-subtitle a:hover{text-decoration:underline}
+    .hero-btn:hover{
+      transform:translateY(-1px);
+    }
+    .hero-btn-secondary{
+      color:var(--text);
+      background:#fff;
+      border:1px solid var(--border);
+      box-shadow:0 2px 8px rgba(15,23,42,.06);
+    }
+    .hero-btn-secondary:hover{
+      background:#f8fafc;
+    }
+    .hero-btn-primary{
+      color:#fff;
+      background:var(--accent);
+      border:1px solid rgba(29,78,216,.35);
+      box-shadow:0 4px 12px rgba(29,78,216,.22);
+    }
+    .hero-btn-primary:hover{
+      background:#1e40af;
+    }
+    .hero-btn-premium{
+      color:#fff;
+      background:linear-gradient(135deg,#059669 0%,#10b981 100%);
+      border:1px solid rgba(5,150,105,.35);
+      box-shadow:0 4px 12px rgba(16,185,129,.24);
+    }
+    .hero-btn-premium:hover{
+      background:linear-gradient(135deg,#047857 0%,#059669 100%);
+    }
+    .hero-welcome{
+      font-size:14px;
+      color:var(--muted);
+      margin:0;
+      line-height:1.5;
+    }
+    .hero-welcome strong{color:var(--text)}
+    .brand-advisors{
+      font-size:14px;
+      color:var(--muted);
+      margin:18px 0 0;
+      padding-top:16px;
+      border-top:1px solid rgba(15,23,42,.12);
+      line-height:1.55;
+      max-width:680px;
+    }
+    .brand-advisors a{
+      color:var(--accent);
+      text-decoration:none;
+      font-weight:600;
+    }
+    .brand-advisors a:hover{text-decoration:underline}
     
     /* Premium Banner */
     .premium-banner {
@@ -244,6 +308,13 @@ $seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financ
       .brand-tagline {
         font-size: 14px;
         max-width: none;
+      }
+      .hero-actions {
+        width: 100%;
+      }
+      .hero-btn {
+        flex: 1 1 calc(50% - 10px);
+        min-width: 120px;
       }
       .premium-banner {
         padding: 20px 18px;
@@ -445,28 +516,28 @@ $seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financ
       <div class="brand">
         <div class="mark" aria-hidden="true">RB</div>
         <div class="brand-text">
-          <h1 class="brand-title">Free web apps for sound financial planning</h1>
-          <p class="brand-tagline">Free calculators for retirement planning (Boomers and Gen X) and for building a solid financial foundation (Millennials and Gen Z)</p>
+          <h1 class="brand-title">Smart Tools &amp; AI Insights for Secure Financial Planning</h1>
+          <p class="brand-tagline">Explore free interactive calculators for retirement timeline planning, Social Security optimization, and investment metrics. Upgrade to Premium for advanced features, live YNAB data integration, and personal AI budget auditing.</p>
           <?php if ($isLoggedIn): ?>
-            <p class="brand-subtitle">
-              Welcome back, <strong><?php echo htmlspecialchars($userName); ?></strong>! 
-              <a href="auth/logout.php">Log out</a>
+            <div class="hero-actions">
+              <p class="hero-welcome">Welcome back, <strong><?php echo htmlspecialchars($userName); ?></strong></p>
+              <a href="auth/logout.php" class="hero-btn hero-btn-secondary">Log Out</a>
               <?php if (!$is_premium): ?>
-                | <a href="subscribe.php" class="subscribe-btn">Upgrade to Premium</a>
+                <a href="subscribe.php" class="hero-btn hero-btn-premium">Upgrade to Premium</a>
               <?php else: ?>
-                | <span class="premium-badge">✨ Premium Member</span>
+                <span class="premium-badge">✨ Premium Member</span>
               <?php endif; ?>
-            </p>
+            </div>
           <?php else: ?>
-            <p class="brand-subtitle">
-              All calculators are free to use—no account needed. <a href="auth/login.php">Log in</a> or <a href="auth/register.php">Sign up</a> for <a href="https://ronbelisle.com/premium.html">Premium</a> features.
-            </p>
+            <div class="hero-actions">
+              <a href="auth/login.php" class="hero-btn hero-btn-secondary">Log In</a>
+              <a href="auth/register.php" class="hero-btn hero-btn-primary">Sign Up</a>
+              <a href="premium.html" class="hero-btn hero-btn-premium">Premium</a>
+            </div>
           <?php endif; ?>
-          <div class="brand-subtitle" style="margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(15,23,42,.35);">
-            <p style="margin: 0;">
-              For retirement professionals, including estate &amp; legacy advisors, we offer these calculators with your own branding. — <a href="https://calcforadvisors.com" target="_blank" rel="noopener">Click here to learn more</a>.
-            </p>
-          </div>
+          <p class="brand-advisors">
+            For retirement professionals, including estate &amp; legacy advisors, we offer these calculators with your own branding. — <a href="https://calcforadvisors.com" target="_blank" rel="noopener">Click here to learn more</a>.
+          </p>
         </div>
       </div>
     </div>
