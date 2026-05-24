@@ -383,6 +383,9 @@ $seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financ
       max-width: 820px;
     }
     .grid.tight{ margin-top: 10px; }
+    .ynab-tool-grid .card{
+      grid-column: 1 / -1;
+    }
     .section-divider {
       margin: 48px 0 0;
       padding: 32px 0 0;
@@ -600,6 +603,19 @@ $seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financ
           <h3>Social Security + Spending Gap Calculator</h3>
           <p>See how Social Security reduces the portfolio you need by identifying your real retirement spending gap.</p>
           <a class="btn" href="ss-gap/">Open</a>
+        </section>
+      </div>
+    </div>
+
+    <?php if (!$hide_site_header): ?><h2 class="section-heading" id="ynab-budgeting">For Active Budgeters &amp; Cash Flow Tracking (YNAB Community)</h2><?php endif; ?>
+    <div class="tier" aria-label="YNAB budgeting tools">
+      <div class="tier-title">Start here</div>
+      <p class="tier-hint">Analyze monthly cash flow, audit spending patterns, and optimize category balances using native YNAB data logic.</p>
+      <div class="grid tight ynab-tool-grid">
+        <section class="card">
+          <h3>AI Budget Auditor &amp; Financial Assistant</h3>
+          <p>Connect your YNAB budget to generate instant, rule-based category snapshots completely free. Upgrade to Premium to unlock interactive GPT-4o budget audits, overspending anomaly alerts, and personalized live chat follow-ups.</p>
+          <a class="btn" href="tools/ai-budget-auditor/">Open</a>
         </section>
       </div>
     </div>
