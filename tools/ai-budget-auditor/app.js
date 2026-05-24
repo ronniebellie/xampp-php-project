@@ -156,6 +156,10 @@
     return /credit card payments?/i.test(groupName || '');
   }
 
+  function isInternalMasterCategoryGroup(groupName) {
+    return /internal master category/i.test((groupName || '').trim());
+  }
+
   function isReadyToAssignCategory(groupName, categoryName) {
     var name = (categoryName || '').trim().toLowerCase();
     var group = (groupName || '').trim().toLowerCase();
@@ -187,6 +191,7 @@
     var rows = [];
     categoryGroups.forEach(function (group) {
       if (!group || group.deleted || group.hidden) return;
+      if (isInternalMasterCategoryGroup(group.name)) return;
       (group.categories || []).forEach(function (cat) {
         if (!cat || cat.deleted || cat.hidden) return;
         if (isReadyToAssignCategory(group.name, cat.name)) {
