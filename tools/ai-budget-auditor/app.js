@@ -9,7 +9,10 @@
 
 
   var state = {
-    modalOverlay: null
+    modalOverlay: null,
+    budgetSummary: '',
+    openaiKey: '',
+    conversation: []
   };
 
   var els = {};
@@ -206,14 +209,21 @@
     return (window.location.origin || '') + '/api/ynab_proxy.php';
   }
 
-  async function fetchOpenAiAnalysis(summary, apiKey) {
+  async function fetchOpenAiAnalysis(summary, apiKey, options) {
+    options = options || {};
+    var body = { budget_summary: summary };
+    if (options.followUpQuestion) {
+      body.follow_up_question = options.followUpQuestion;
+      body.conversation = options.conversation || [];
+    }
+
     var json = await fetchJson(proxyUrl(), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + apiKey
       },
-      body: JSON.stringify({ budget_summary: summary })
+      body: JSON.stringify(body)
     });
 
     if (!json.analysis) {
@@ -236,14 +246,98 @@
   }
 
   function closeModal() {
+    document.removeEventListener('keydown', onModalKeydown);
     if (state.modalOverlay) {
       state.modalOverlay.remove();
       state.modalOverlay = null;
     }
   }
 
+  function getModalThreadEl() {
+    return state.modalOverlay ? state.modalOverlay.querySelector('#aiBudgetAuditThread') : null;
+  }
+
+  function appendThreadMessage(role, text) {
+    var thread = getModalThreadEl();
+    if (!thread) return;
+    var block = document.createElement('div');
+    block.style.cssText = 'margin-top:14px;padding-top:14px;border-top:1px solid #e5e7eb;';
+    var label = role === 'user' ? 'You asked' : 'AI';
+    var labelColor = role === 'user' ? '#1d4ed8' : '#0f766e';
+    block.innerHTML =
+      '<div style="font-size:12px;font-weight:700;color:' + labelColor + ';margin-bottom:6px;">' + label + '</div>' +
+      '<div style="margin:0;color:#374151;line-height:1.7;font-size:15px;">' + renderMarkdownish(text) + '</div>';
+    thread.appendChild(block);
+    block.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function setFollowUpBusy(busy) {
+    if (!state.modalOverlay) return;
+    var input = state.modalOverlay.querySelector('#aiBudgetFollowUpInput');
+    var btn = state.modalOverlay.querySelector('#aiBudgetFollowUpBtn');
+    if (input) input.disabled = busy;
+    if (btn) {
+      btn.disabled = busy;
+      btn.textContent = busy ? 'Sending…' : 'Ask';
+    }
+  }
+
+  async function sendFollowUp() {
+    if (!state.modalOverlay) return;
+    var input = state.modalOverlay.querySelector('#aiBudgetFollowUpInput');
+    if (!input) return;
+    var question = (input.value || '').trim();
+    if (!question) return;
+    if (!state.budgetSummary) {
+      alert('Follow-up is unavailable because the budget context was not saved. Close and run the audit again.');
+      return;
+    }
+    if (!state.openaiKey) {
+      alert('Follow-up is unavailable because your OpenAI key is missing. Paste it in Configuration and run the audit again.');
+      return;
+    }
+
+    appendThreadMessage('user', question);
+    input.value = '';
+    setFollowUpBusy(true);
+
+    try {
+      var answer = await fetchOpenAiAnalysis(state.budgetSummary, state.openaiKey, {
+        followUpQuestion: question,
+        conversation: state.conversation
+      });
+      state.conversation.push({ role: 'user', content: question });
+      state.conversation.push({ role: 'assistant', content: answer });
+      appendThreadMessage('assistant', answer);
+    } catch (err) {
+      alert('Follow-up: ' + (err && err.message ? err.message : String(err)));
+    } finally {
+      setFollowUpBusy(false);
+    }
+  }
+
+  function bindFollowUpHandlers() {
+    if (!state.modalOverlay) return;
+    var btn = state.modalOverlay.querySelector('#aiBudgetFollowUpBtn');
+    var input = state.modalOverlay.querySelector('#aiBudgetFollowUpInput');
+    if (btn) btn.addEventListener('click', sendFollowUp);
+    if (input) {
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendFollowUp();
+        }
+      });
+    }
+    state.modalOverlay.querySelector('#aiBudgetAuditCloseBtn').addEventListener('click', closeModal);
+  }
+
   function showAuditModal(analysisText, meta) {
     closeModal();
+
+    state.budgetSummary = meta.budgetSummary || '';
+    state.openaiKey = meta.openaiKey || '';
+    state.conversation = [{ role: 'assistant', content: analysisText }];
 
     var overlay = document.createElement('div');
     overlay.id = 'aiBudgetAuditModalOverlay';
@@ -263,23 +357,28 @@
         '<h2 style="margin:0 0 8px 0;font-size:1.25rem;color:#1f2937;">📊 AI Budget Audit</h2>' +
         '<p style="margin:0 0 18px 0;font-size:13px;color:#6b7280;">' + escapeHtml(meta.budgetName) + ' · ' + escapeHtml(currentMonthLabel()) + '</p>' +
         '<div id="aiBudgetAuditBody" style="color:#374151;line-height:1.7;font-size:15px;">' + renderMarkdownish(analysisText) + '</div>' +
+        '<div id="aiBudgetAuditThread"></div>' +
       '</div>' +
-      '<div style="padding:16px 24px;border-top:1px solid #e5e7eb;background:#f9fafb;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">' +
-        '<button type="button" id="aiBudgetAuditCloseBtn" style="padding:10px 20px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#374151;cursor:pointer;font-weight:600;">Close</button>' +
-        '<p style="margin:0;font-size:12px;color:#6b7280;flex:1 1 200px;">AI-generated for personal review only. Not financial advice.</p>' +
+      '<div style="padding:16px 24px;border-top:1px solid #e5e7eb;background:#f9fafb;">' +
+        '<label for="aiBudgetFollowUpInput" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:8px;">Ask a follow-up question about this budget</label>' +
+        '<textarea id="aiBudgetFollowUpInput" rows="2" placeholder="For example: Should I move money from Next car purchase to cover Legal &amp; Tax Prep?" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;resize:vertical;min-height:52px;"></textarea>' +
+        '<div style="display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap;">' +
+          '<button type="button" id="aiBudgetFollowUpBtn" style="padding:10px 20px;border:none;border-radius:8px;background:#0d9488;color:#fff;cursor:pointer;font-weight:600;">Ask</button>' +
+          '<button type="button" id="aiBudgetAuditCloseBtn" style="padding:10px 20px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#374151;cursor:pointer;font-weight:600;">Close</button>' +
+        '</div>' +
+        '<p style="margin:12px 0 0 0;font-size:12px;color:#6b7280;">AI-generated for personal review only. Not financial advice.</p>' +
       '</div>';
 
     overlay.appendChild(box);
     document.body.appendChild(overlay);
     state.modalOverlay = overlay;
 
-    box.querySelector('#aiBudgetAuditCloseBtn').addEventListener('click', closeModal);
+    bindFollowUpHandlers();
     document.addEventListener('keydown', onModalKeydown);
   }
 
   function onModalKeydown(e) {
     if (e.key === 'Escape') {
-      document.removeEventListener('keydown', onModalKeydown);
       closeModal();
     }
   }
@@ -321,7 +420,11 @@
       var analysis = await fetchOpenAiAnalysis(summary, openaiKey);
 
       setStatus('Audit complete.');
-      showAuditModal(analysis, { budgetName: budgetMeta.name });
+      showAuditModal(analysis, {
+        budgetName: budgetMeta.name,
+        budgetSummary: summary,
+        openaiKey: openaiKey
+      });
     } catch (err) {
       setStatus(err && err.message ? err.message : String(err), true);
     } finally {

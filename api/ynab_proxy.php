@@ -58,6 +58,21 @@ if (strlen($budget_summary) > 12000) {
     die(json_encode(['error' => 'Budget summary is too long.']));
 }
 
+$follow_up_question = isset($data['follow_up_question']) ? trim($data['follow_up_question']) : '';
+$conversation = isset($data['conversation']) && is_array($data['conversation']) ? $data['conversation'] : [];
+$is_follow_up = ($follow_up_question !== '');
+
+if ($is_follow_up) {
+    if (strlen($follow_up_question) > 2000) {
+        http_response_code(400);
+        die(json_encode(['error' => 'Follow-up question is too long.']));
+    }
+    if (count($conversation) > 20) {
+        http_response_code(400);
+        die(json_encode(['error' => 'Too many follow-up messages in this session.']));
+    }
+}
+
 $system_prompt =
     'You are an expert YNAB (You Need A Budget) analyst reviewing a zero-based budget export. ' .
     'Follow strict YNAB semantics — do not apply generic accounting intuition.' . "\n\n" .
@@ -72,15 +87,47 @@ $system_prompt =
     'Your tasks: identify categories with Available < $0, evaluate whether long-term savings buffers are growing, note genuine anomalies, ' .
     'and provide a concise, plain-English 3-bullet action plan for the month.';
 
-$user_prompt = 'Review this YNAB category data for the current month and provide your analysis:' . "\n\n" . $budget_summary;
+$messages = [['role' => 'system', 'content' => $system_prompt]];
+
+if ($is_follow_up) {
+    $system_prompt .= ' Answer only the follow-up question using the YNAB budget data and prior analysis. ' .
+        'Keep the answer concise (1–3 short paragraphs). Maintain strict YNAB semantics. ' .
+        'Do not invite further chat in prose.';
+    $messages[0]['content'] = $system_prompt;
+
+    $messages[] = [
+        'role' => 'user',
+        'content' => "YNAB budget data for this audit:\n\n" . $budget_summary,
+    ];
+
+    foreach ($conversation as $turn) {
+        if (!is_array($turn)) {
+            continue;
+        }
+        $role = isset($turn['role']) ? trim($turn['role']) : '';
+        $content = isset($turn['content']) ? trim($turn['content']) : '';
+        if ($content === '') {
+            continue;
+        }
+        if ($role !== 'user' && $role !== 'assistant') {
+            continue;
+        }
+        if (strlen($content) > 4000) {
+            $content = substr($content, 0, 4000);
+        }
+        $messages[] = ['role' => $role, 'content' => $content];
+    }
+
+    $messages[] = ['role' => 'user', 'content' => 'Follow-up question: ' . $follow_up_question];
+} else {
+    $user_prompt = 'Review this YNAB category data for the current month and provide your analysis:' . "\n\n" . $budget_summary;
+    $messages[] = ['role' => 'user', 'content' => $user_prompt];
+}
 
 $payload = [
     'model' => 'gpt-4o',
-    'messages' => [
-        ['role' => 'system', 'content' => $system_prompt],
-        ['role' => 'user', 'content' => $user_prompt],
-    ],
-    'max_tokens' => 900,
+    'messages' => $messages,
+    'max_tokens' => $is_follow_up ? 400 : 900,
     'temperature' => 0.5,
 ];
 
