@@ -192,21 +192,90 @@ $seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financ
       line-height:1.5;
     }
     .hero-welcome strong{color:var(--text)}
-    .brand-advisors{
-      font-size:14px;
-      color:var(--muted);
-      margin:18px 0 0;
-      padding-top:16px;
-      border-top:1px solid rgba(15,23,42,.12);
-      line-height:1.55;
-      max-width:680px;
+    .site-top-nav{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin:0 0 20px;
+      padding:0 0 16px;
+      border-bottom:1px solid rgba(15,23,42,.1);
     }
-    .brand-advisors a{
-      color:var(--accent);
+    .site-top-nav a{
+      display:inline-flex;
+      align-items:center;
+      padding:8px 16px;
+      border-radius:999px;
       text-decoration:none;
+      font-size:14px;
       font-weight:600;
+      color:var(--muted);
+      transition:background .15s ease,color .15s ease;
     }
-    .brand-advisors a:hover{text-decoration:underline}
+    .site-top-nav a:hover:not(.active){
+      background:rgba(15,23,42,.04);
+      color:var(--text);
+    }
+    .site-top-nav a.active{
+      background:rgba(29,78,216,.1);
+      color:var(--accent);
+    }
+    .calculator-tab-bar{
+      display:flex;
+      gap:4px;
+      flex-wrap:wrap;
+      background:#eef2f7;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:5px;
+      margin:0 0 28px;
+    }
+    .calculator-tab{
+      flex:1 1 220px;
+      border:none;
+      background:transparent;
+      padding:12px 14px;
+      border-radius:10px;
+      font-size:13px;
+      font-weight:700;
+      color:var(--muted);
+      cursor:pointer;
+      line-height:1.4;
+      text-align:center;
+      transition:background .15s ease,color .15s ease,box-shadow .15s ease;
+    }
+    .calculator-tab:hover:not(.active){
+      color:var(--text);
+      background:rgba(255,255,255,.55);
+    }
+    .calculator-tab.active{
+      background:#fff;
+      color:var(--accent);
+      box-shadow:0 2px 10px rgba(15,23,42,.08);
+    }
+    .tab-panel[hidden]{display:none !important}
+    .feature-badge{
+      display:inline-block;
+      margin-left:8px;
+      padding:3px 9px;
+      border-radius:999px;
+      font-size:10px;
+      font-weight:800;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+      vertical-align:middle;
+      color:#fff;
+      background:linear-gradient(135deg,#7c3aed 0%,#4f46e5 100%);
+      box-shadow:0 2px 8px rgba(79,70,229,.28);
+    }
+    .card.card-featured{
+      border:1px solid rgba(79,70,229,.28);
+      background:linear-gradient(180deg,#fff 0%,#f5f3ff 100%);
+      box-shadow:0 12px 28px rgba(79,70,229,.12);
+    }
+    .card.card-featured::after{
+      opacity:.12;
+    }
     
     /* Premium Banner */
     .premium-banner {
@@ -315,6 +384,15 @@ $seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financ
       .hero-btn {
         flex: 1 1 calc(50% - 10px);
         min-width: 120px;
+      }
+      .calculator-tab {
+        flex: 1 1 100%;
+        font-size: 12px;
+        padding: 10px 12px;
+      }
+      .site-top-nav a {
+        font-size: 13px;
+        padding: 7px 12px;
       }
       .premium-banner {
         padding: 20px 18px;
@@ -538,12 +616,15 @@ $seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financ
               <a href="premium.html" class="hero-btn hero-btn-premium">Premium</a>
             </div>
           <?php endif; ?>
-          <p class="brand-advisors">
-            For retirement professionals, including estate &amp; legacy advisors, we offer these calculators with your own branding. — <a href="https://calcforadvisors.com" target="_blank" rel="noopener">Click here to learn more</a>.
-          </p>
         </div>
       </div>
     </div>
+
+    <nav class="site-top-nav" aria-label="Site sections">
+      <a href="/" class="active" aria-current="page">Calculators</a>
+      <a href="https://ronbelisle.com/invest-guidance.ronbelisle.com/">Investing Guidance</a>
+      <a href="https://calcforadvisors.com" target="_blank" rel="noopener">Advisor Branding</a>
+    </nav>
     <?php endif; ?>
 
     <?php if ($is_premium): ?>
@@ -576,7 +657,15 @@ $seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financ
       </div>
     <?php endif; ?>
 
-    <?php if (!$hide_site_header): ?><h2 class="section-heading" id="retirement">For folks in or near retirement (Boomers and Gen X)</h2><?php endif; ?>
+    <?php if (!$hide_site_header): ?>
+    <div class="calculator-tab-bar" role="tablist" aria-label="Calculator categories">
+      <button type="button" class="calculator-tab active" role="tab" id="tab-retirement" data-tab="retirement" aria-selected="true" aria-controls="tab-panel-retirement">In or Near Retirement (Boomers &amp; Gen X)</button>
+      <button type="button" class="calculator-tab" role="tab" id="tab-ynab" data-tab="ynab" aria-selected="false" aria-controls="tab-panel-ynab">Active Budgeters &amp; Cash Flow (YNAB Community)</button>
+      <button type="button" class="calculator-tab" role="tab" id="tab-foundation" data-tab="foundation" aria-selected="false" aria-controls="tab-panel-foundation">Building or Strengthening Foundation (Millennials &amp; Gen Z)</button>
+    </div>
+    <?php endif; ?>
+
+    <div id="tab-panel-retirement" class="tab-panel active" data-tab="retirement" role="tabpanel" aria-labelledby="tab-retirement"<?php if ($hide_site_header): ?> style="display:block"<?php endif; ?>>
     <div class="tier" aria-label="Retirement app links">
       <div class="tier-title">Start here</div>
       <p class="tier-hint">Get the big building blocks in place first (Social Security, spending, and timeline). Then go deeper into sustainability, taxes, and optimization.</p>
@@ -603,19 +692,6 @@ $seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financ
           <h3>Social Security + Spending Gap Calculator</h3>
           <p>See how Social Security reduces the portfolio you need by identifying your real retirement spending gap.</p>
           <a class="btn" href="ss-gap/">Open</a>
-        </section>
-      </div>
-    </div>
-
-    <?php if (!$hide_site_header): ?><h2 class="section-heading" id="ynab-budgeting">For Active Budgeters &amp; Cash Flow Tracking (YNAB Community)</h2><?php endif; ?>
-    <div class="tier" aria-label="YNAB budgeting tools">
-      <div class="tier-title">Start here</div>
-      <p class="tier-hint">Analyze monthly cash flow, audit spending patterns, and optimize category balances using native YNAB data logic.</p>
-      <div class="grid tight ynab-tool-grid">
-        <section class="card">
-          <h3>AI Budget Auditor &amp; Financial Assistant</h3>
-          <p>Connect your YNAB budget to generate instant, rule-based category snapshots completely free. Upgrade to Premium to unlock interactive GPT-4o budget audits, overspending anomaly alerts, and personalized live chat follow-ups.</p>
-          <a class="btn" href="tools/ai-budget-auditor/">Open</a>
         </section>
       </div>
     </div>
@@ -709,10 +785,23 @@ $seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financ
         </section>
       </div>
     </div>
+    </div>
 
-    <?php if (!$hide_site_header): ?>
-    <div class="section-divider">
-    <h2 class="section-heading" id="early-career">For folks building or strengthening their foundation (Millennials and Gen Z)</h2>
+    <div id="tab-panel-ynab" class="tab-panel" data-tab="ynab" role="tabpanel" aria-labelledby="tab-ynab"<?php echo $hide_site_header ? '' : ' hidden'; ?>>
+    <div class="tier" aria-label="YNAB budgeting tools">
+      <div class="tier-title">Start here</div>
+      <p class="tier-hint">Analyze monthly cash flow, audit spending patterns, and optimize category balances using native YNAB data logic.</p>
+      <div class="grid tight ynab-tool-grid">
+        <section class="card card-featured">
+          <h3>AI Budget Auditor &amp; Financial Assistant <span class="feature-badge">AI-Powered</span></h3>
+          <p>Connect your YNAB budget to generate instant, rule-based category snapshots completely free. Upgrade to Premium to unlock interactive GPT-4o budget audits, overspending anomaly alerts, and personalized live chat follow-ups.</p>
+          <a class="btn" href="tools/ai-budget-auditor/">Open</a>
+        </section>
+      </div>
+    </div>
+    </div>
+
+    <div id="tab-panel-foundation" class="tab-panel" data-tab="foundation" role="tabpanel" aria-labelledby="tab-foundation"<?php echo $hide_site_header ? '' : ' hidden'; ?>>
     <div class="tier" aria-label="Early career app links">
       <div class="tier-title">Foundation (stabilize first)</div>
       <p class="tier-hint">Build a buffer, get control of debt, and make the “debt vs investing” trade-off with clear numbers.</p>
@@ -785,6 +874,56 @@ $seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financ
       </div>
     </div>
     </div>
+
+    <?php if (!$hide_site_header): ?>
+    <script>
+    (function () {
+      var tabBar = document.querySelector('.calculator-tab-bar');
+      if (!tabBar) return;
+
+      var tabs = tabBar.querySelectorAll('.calculator-tab');
+      var panels = document.querySelectorAll('.tab-panel');
+
+      function tabFromHash() {
+        var hash = (location.hash || '').toLowerCase();
+        if (hash === '#ynab' || hash === '#budget') return 'ynab';
+        if (hash === '#foundation' || hash === '#early-career') return 'foundation';
+        if (hash === '#retirement') return 'retirement';
+        return 'retirement';
+      }
+
+      function switchTab(tabId) {
+        tabs.forEach(function (tab) {
+          var active = tab.dataset.tab === tabId;
+          tab.classList.toggle('active', active);
+          tab.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+        panels.forEach(function (panel) {
+          var active = panel.dataset.tab === tabId;
+          panel.hidden = !active;
+          panel.classList.toggle('active', active);
+        });
+      }
+
+      tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          var tabId = tab.dataset.tab;
+          switchTab(tabId);
+          if (tabId === 'retirement') {
+            history.replaceState(null, '', location.pathname + location.search);
+          } else {
+            history.replaceState(null, '', location.pathname + location.search + '#' + tabId);
+          }
+        });
+      });
+
+      window.addEventListener('hashchange', function () {
+        switchTab(tabFromHash());
+      });
+
+      switchTab(tabFromHash());
+    })();
+    </script>
     <?php endif; ?>
 
     <?php if (!$isLoggedIn && !$hide_site_header): ?>
