@@ -220,38 +220,47 @@ $seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financ
       background:rgba(29,78,216,.1);
       color:var(--accent);
     }
+    .calculator-tab-shell{
+      margin:28px 0 32px;
+      padding:8px;
+      background:#f8fafc;
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:0 1px 2px rgba(15,23,42,.04);
+    }
     .calculator-tab-bar{
       display:flex;
-      gap:4px;
+      gap:6px;
       flex-wrap:wrap;
-      background:#eef2f7;
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:5px;
-      margin:0 0 28px;
+      background:transparent;
+      border:none;
+      border-radius:12px;
+      padding:0;
+      margin:0;
     }
     .calculator-tab{
       flex:1 1 220px;
       border:none;
       background:transparent;
-      padding:12px 14px;
+      padding:12px 16px;
       border-radius:10px;
       font-size:13px;
-      font-weight:700;
-      color:var(--muted);
+      font-weight:600;
+      color:#64748b;
       cursor:pointer;
       line-height:1.4;
       text-align:center;
-      transition:background .15s ease,color .15s ease,box-shadow .15s ease;
+      transition:background .2s ease,color .2s ease,box-shadow .2s ease;
     }
     .calculator-tab:hover:not(.active){
       color:var(--text);
-      background:rgba(255,255,255,.55);
+      background:rgba(255,255,255,.5);
     }
     .calculator-tab.active{
       background:#fff;
-      color:var(--accent);
-      box-shadow:0 2px 10px rgba(15,23,42,.08);
+      color:var(--text);
+      font-weight:800;
+      box-shadow:0 1px 3px rgba(0,0,0,.1);
     }
     .tab-panel[hidden]{display:none !important}
     .feature-badge{
@@ -384,6 +393,10 @@ $seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financ
       .hero-btn {
         flex: 1 1 calc(50% - 10px);
         min-width: 120px;
+      }
+      .calculator-tab-shell {
+        margin: 24px 0 28px;
+        padding: 6px;
       }
       .calculator-tab {
         flex: 1 1 100%;
@@ -658,10 +671,12 @@ $seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financ
     <?php endif; ?>
 
     <?php if (!$hide_site_header): ?>
-    <div class="calculator-tab-bar" role="tablist" aria-label="Calculator categories">
-      <button type="button" class="calculator-tab active" role="tab" id="tab-retirement" data-tab="retirement" aria-selected="true" aria-controls="tab-panel-retirement">In or Near Retirement (Boomers &amp; Gen X)</button>
-      <button type="button" class="calculator-tab" role="tab" id="tab-ynab" data-tab="ynab" aria-selected="false" aria-controls="tab-panel-ynab">Active Budgeters &amp; Cash Flow (YNAB Community)</button>
-      <button type="button" class="calculator-tab" role="tab" id="tab-foundation" data-tab="foundation" aria-selected="false" aria-controls="tab-panel-foundation">Building or Strengthening Foundation (Millennials &amp; Gen Z)</button>
+    <div class="calculator-tab-shell">
+      <div class="calculator-tab-bar" role="tablist" aria-label="Calculator categories">
+        <button type="button" class="calculator-tab active" role="tab" id="tab-retirement" data-tab="retirement" aria-selected="true" aria-controls="tab-panel-retirement">In or Near Retirement (Boomers &amp; Gen X)</button>
+        <button type="button" class="calculator-tab" role="tab" id="tab-ynab" data-tab="ynab" aria-selected="false" aria-controls="tab-panel-ynab">Active Budgeters &amp; Cash Flow (YNAB Community)</button>
+        <button type="button" class="calculator-tab" role="tab" id="tab-foundation" data-tab="foundation" aria-selected="false" aria-controls="tab-panel-foundation">Building or Strengthening Foundation (Millennials &amp; Gen Z)</button>
+      </div>
     </div>
     <?php endif; ?>
 
