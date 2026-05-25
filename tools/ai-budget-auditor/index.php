@@ -94,19 +94,6 @@ $premiumUpsellUrl = get_premium_upsell_url($isLoggedIn);
     #statusMessage.error { color: #b91c1c; font-weight: 600; }
     #previewSection { display: none; margin-top: 32px; }
     .overspend { color: #b91c1c; font-weight: 600; }
-    .tier-badge {
-      display: inline-block;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      color: #1e40af;
-      background: #dbeafe;
-      border: 1px solid #93c5fd;
-      border-radius: 999px;
-      padding: 4px 10px;
-      margin-bottom: 10px;
-    }
     .setup-card {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
@@ -241,7 +228,6 @@ $premiumUpsellUrl = get_premium_upsell_url($isLoggedIn);
     <p style="margin-bottom: 20px;"><a href="../../" style="text-decoration: none; color: #1d4ed8;">← Return to home page</a></p>
 
     <header>
-      <span class="tier-badge">Free snapshot · Premium AI</span>
       <h1>AI Budget Auditor</h1>
       <p class="sub">Connect YNAB for a free category snapshot with true overspending highlights (Available &lt; $0). Premium unlocks GPT-4o narrative analysis and follow-up questions — included in your $3/mo subscription.</p>
     </header>
