@@ -52,6 +52,51 @@ const STANDARD_DEDUCTION_2026 = {
 // (If future rules phase this out by income, we can add that later.)
 const SENIOR_DEDUCTION_65PLUS = 6000;
 
+// Medicare IRMAA — 2026 Part B + Part D monthly surcharge per person above standard premium.
+// Thresholds are based on MAGI from two years prior (CMS lookback). Base brackets = 2026 premiums / 2024 MAGI.
+const IRMAA_BASE_YEAR = 2026;
+const IRMAA_LOOKBACK_YEARS = 2;
+const IRMAA_TIERS_2026 = {
+  married: [
+    { maxMagi: 218000, monthlySurcharge: 0 },
+    { maxMagi: 274000, monthlySurcharge: 95.70 },
+    { maxMagi: 342000, monthlySurcharge: 240.40 },
+    { maxMagi: 410000, monthlySurcharge: 385.00 },
+    { maxMagi: 749999.99, monthlySurcharge: 529.60 },
+    { maxMagi: Infinity, monthlySurcharge: 578.00 }
+  ],
+  single: [
+    { maxMagi: 109000, monthlySurcharge: 0 },
+    { maxMagi: 137000, monthlySurcharge: 95.70 },
+    { maxMagi: 171000, monthlySurcharge: 240.40 },
+    { maxMagi: 205000, monthlySurcharge: 385.00 },
+    { maxMagi: 499999.99, monthlySurcharge: 529.60 },
+    { maxMagi: Infinity, monthlySurcharge: 578.00 }
+  ],
+  married_separate: [
+    { maxMagi: 109000, monthlySurcharge: 0 },
+    { maxMagi: 390999.99, monthlySurcharge: 529.60 },
+    { maxMagi: Infinity, monthlySurcharge: 578.00 }
+  ],
+  head: [
+    { maxMagi: 109000, monthlySurcharge: 0 },
+    { maxMagi: 137000, monthlySurcharge: 95.70 },
+    { maxMagi: 171000, monthlySurcharge: 240.40 },
+    { maxMagi: 205000, monthlySurcharge: 385.00 },
+    { maxMagi: 499999.99, monthlySurcharge: 529.60 },
+    { maxMagi: Infinity, monthlySurcharge: 578.00 }
+  ]
+};
+
+// Net Investment Income Tax (NIIT) — 3.8% on lesser of NII or MAGI above threshold. Thresholds are not inflation-indexed.
+const NIIT_RATE = 0.038;
+const NIIT_MAGI_THRESHOLDS = {
+  single: 200000,
+  married: 250000,
+  married_separate: 125000,
+  head: 200000
+};
+
 // RMD Divisors (Uniform Lifetime Table)
 const RMD_DIVISORS = {
   73: 26.5, 74: 25.5, 75: 24.6, 76: 23.7, 77: 22.9, 78: 22.0, 79: 21.1,
@@ -102,6 +147,90 @@ function calculateRMD(age, balance) {
   return balance / divisor;
 }
 
+/** Present value of a tax payment yearsFromStart years in the future. */
+function discountTaxToPresent(taxAmount, yearsFromStart, discountRate) {
+  if (!discountRate || discountRate <= 0 || yearsFromStart <= 0) return taxAmount;
+  return taxAmount / Math.pow(1 + discountRate, yearsFromStart);
+}
+
+/** All-in annual tax cost (federal + IRMAA + NIIT). */
+function calculateAllInTax(federalTax, irmaa, niit) {
+  return (federalTax || 0) + (irmaa || 0) + (niit || 0);
+}
+
+/** IRMAA filing status key (head of household uses single brackets). */
+function getIrmaaFilingKey(filingStatus) {
+  if (filingStatus === 'married') return 'married';
+  if (filingStatus === 'married_separate') return 'married_separate';
+  return 'single';
+}
+
+/** Monthly Part B + Part D IRMAA surcharge per Medicare enrollee. */
+function getIrmaaMonthlySurchargePerPerson(magi, filingStatus, premiumYear, inflationRate) {
+  const tiers = IRMAA_TIERS_2026[getIrmaaFilingKey(filingStatus)] || IRMAA_TIERS_2026.single;
+  const yearsFromBase = premiumYear - IRMAA_BASE_YEAR;
+  const factor = Math.pow(1 + (inflationRate || 0), yearsFromBase);
+
+  for (const tier of tiers) {
+    const maxMagi = tier.maxMagi === Infinity ? Infinity : tier.maxMagi * factor;
+    if (magi <= maxMagi) {
+      return tier.monthlySurcharge * factor;
+    }
+  }
+  const last = tiers[tiers.length - 1];
+  return last.monthlySurcharge * factor;
+}
+
+/** Annual household IRMAA cost for all enrolled Medicare beneficiaries. */
+function calculateIrmaaAnnual(magi, filingStatus, medicareEnrollees, premiumYear, inflationRate) {
+  if (!medicareEnrollees || medicareEnrollees <= 0) return 0;
+  const monthly = getIrmaaMonthlySurchargePerPerson(magi, filingStatus, premiumYear, inflationRate);
+  return monthly * 12 * medicareEnrollees;
+}
+
+/** MAGI for lookback year — uses projected history or pre-projection income estimate. */
+function getMagiForLookbackYear(lookbackYear, magiByYear, fallbackMagi) {
+  if (magiByYear[lookbackYear] != null) return magiByYear[lookbackYear];
+  const years = Object.keys(magiByYear).map(Number).sort((a, b) => a - b);
+  if (!years.length) return fallbackMagi;
+  if (lookbackYear < years[0]) return fallbackMagi;
+  let best = fallbackMagi;
+  for (const y of years) {
+    if (y <= lookbackYear) best = magiByYear[y];
+    else break;
+  }
+  return best;
+}
+
+/** Count household members on Medicare in a given projection year. */
+function getMedicareEnrollees(age, currentAge, spouseAge, filingStatus, medicareStartAge, includeIrmaa) {
+  if (!includeIrmaa) return 0;
+  let count = 0;
+  if (age >= medicareStartAge) count++;
+  if (filingStatus === 'married' && spouseAge != null) {
+    const spouseAgeNow = spouseAge + (age - currentAge);
+    if (spouseAgeNow >= medicareStartAge) count++;
+  }
+  return count;
+}
+
+/** Net Investment Income Tax — 3.8% on min(NII, MAGI − threshold). */
+function calculateNIIT(magi, netInvestmentIncome, filingStatus, includeNiit) {
+  if (!includeNiit || !netInvestmentIncome || netInvestmentIncome <= 0) return 0;
+  const threshold = NIIT_MAGI_THRESHOLDS[filingStatus] ?? NIIT_MAGI_THRESHOLDS.single;
+  const magiExcess = Math.max(0, magi - threshold);
+  if (magiExcess <= 0) return 0;
+  return Math.min(netInvestmentIncome, magiExcess) * NIIT_RATE;
+}
+
+/** Investment income (dividends, interest, capital gains) for a projection year. */
+function getNetInvestmentIncome(age, retirementAge, investmentIncome, retirementInvestmentIncome) {
+  if (age >= retirementAge && retirementInvestmentIncome != null && retirementInvestmentIncome !== '') {
+    return parseFloat(retirementInvestmentIncome) || 0;
+  }
+  return investmentIncome || 0;
+}
+
 /** Get current form values as an object (for save/load and runRothAnalysis). */
 function getRothFormData() {
   const el = id => document.getElementById(id);
@@ -122,7 +251,14 @@ function getRothFormData() {
     conversionAmount: el('conversionAmount')?.value,
     conversionYears: el('conversionYears')?.value,
     returnRate: el('returnRate')?.value,
-    inflationRate: el('inflationRate')?.value
+    inflationRate: el('inflationRate')?.value,
+    discountRate: el('discountRate')?.value,
+    includeIrmaa: el('includeIrmaa')?.checked,
+    medicareStartAge: el('medicareStartAge')?.value,
+    taxExemptInterest: el('taxExemptInterest')?.value,
+    includeNiit: el('includeNiit')?.checked,
+    investmentIncome: el('investmentIncome')?.value,
+    retirementInvestmentIncome: el('retirementInvestmentIncome')?.value
   };
 }
 
@@ -147,6 +283,16 @@ function runRothAnalysis(data) {
   const conversionYears = parseInt(data.conversionYears, 10) || 1;
   const returnRate = (parseFloat(data.returnRate) || 0) / 100;
   const inflationRate = (parseFloat(data.inflationRate) || 0) / 100;
+  const discountRate = (parseFloat(data.discountRate) || 0) / 100;
+  const includeIrmaa = data.includeIrmaa !== false && data.includeIrmaa !== 'false' && data.includeIrmaa !== '0';
+  const medicareStartAge = parseInt(data.medicareStartAge, 10) || 65;
+  const taxExemptInterest = parseFloat(data.taxExemptInterest) || 0;
+  const includeNiit = data.includeNiit !== false && data.includeNiit !== 'false' && data.includeNiit !== '0';
+  const investmentIncome = parseFloat(data.investmentIncome) || 0;
+  const retirementInvestmentIncomeRaw = data.retirementInvestmentIncome;
+  const hasRetirementInvestmentIncome = retirementInvestmentIncomeRaw !== undefined && retirementInvestmentIncomeRaw !== null && String(retirementInvestmentIncomeRaw).trim() !== '';
+  const retirementInvestmentIncome = hasRetirementInvestmentIncome ? (parseFloat(retirementInvestmentIncomeRaw) || 0) : investmentIncome;
+  const fallbackMagi = currentIncome + taxExemptInterest;
   const baseStandardDeduction = STANDARD_DEDUCTION_2026[filingStatus] || 0;
   const seniorCount =
     (currentAge >= 65 ? 1 : 0) +
@@ -202,19 +348,23 @@ function runRothAnalysis(data) {
       withdrawalOrder,
       traditionalBalance,
       rothBalance,
-      targetAfterTaxSpending
+      targetAfterTaxSpending,
+      irmaaThisYear,
+      includeNiit,
+      netInvestmentIncome,
+      taxExemptInterest
     } = opts;
 
-    // Net cash available = base cash income + forced cash (RMD) + withdrawals - federal tax.
-    // Tax is based on taxable income = taxable base + forced cash + taxable portion of withdrawals + conversion.
     function netCashForWithdrawal(w) {
       const applied = applyWithdrawals(w, withdrawalOrder, traditionalBalance, rothBalance);
       const taxableIncomeGross = taxableBaseIncome + forcedCashTraditional + applied.traditionalWithdrawal + conversionTaxable;
       const taxableIncome = Math.max(0, taxableIncomeGross - standardDeduction);
       const federalTax = calculateFederalTax(taxableIncome, filingStatus);
+      const magi = taxableIncomeGross + (taxExemptInterest || 0);
+      const niit = calculateNIIT(magi, netInvestmentIncome, filingStatus, includeNiit);
       const cashInflow = baseCashIncome + forcedCashTraditional + applied.totalWithdrawal;
-      const netCash = cashInflow - federalTax;
-      return { ...applied, taxableIncome, federalTax, cashInflow, netCash };
+      const netCash = cashInflow - federalTax - (irmaaThisYear || 0) - niit;
+      return { ...applied, taxableIncome, federalTax, magi, niit, cashInflow, netCash };
     }
 
     // Bisection search for w that makes netCash ~= targetAfterTaxSpending.
@@ -241,19 +391,32 @@ function runRothAnalysis(data) {
   function projectRetirement(doConversion) {
     let traditionalBalance = traditionalIRA;
     let rothBalance = rothIRA;
-    let totalTaxesPaid = 0;
     let totalRMDs = 0;
-    const yearlyData = [];
+    const draftRows = [];
+    const magiByYear = {};
+
     for (let age = currentAge; age <= lifeExpectancy; age++) {
+      const yearsFromStart = age - currentAge;
       const year = age - currentAge + 2026;
-      const baseIncome = age >= retirementAge ? retirementIncome : currentIncome; // cash income (and treated as taxable in this simplified model)
-      // Apply investment growth at start of year
+      const baseIncome = age >= retirementAge ? retirementIncome : currentIncome;
+      const netInvestmentIncome = getNetInvestmentIncome(
+        age, retirementAge, investmentIncome,
+        hasRetirementInvestmentIncome ? retirementInvestmentIncome : null
+      );
       traditionalBalance *= (1 + returnRate);
       rothBalance *= (1 + returnRate);
       let rmd = 0, conversion = 0;
       let traditionalWithdrawal = 0, rothWithdrawal = 0, totalWithdrawal = 0;
       let cashInflow = baseIncome;
       let taxableIncomeGross = baseIncome;
+
+      const lookbackYear = year - IRMAA_LOOKBACK_YEARS;
+      const lookbackMagi = getMagiForLookbackYear(lookbackYear, magiByYear, fallbackMagi);
+      const medicareEnrollees = getMedicareEnrollees(age, currentAge, spouseAge, filingStatus, medicareStartAge, includeIrmaa);
+      const irmaaThisYear = includeIrmaa
+        ? calculateIrmaaAnnual(lookbackMagi, filingStatus, medicareEnrollees, year, inflationRate)
+        : 0;
+
       if (age >= 73 && traditionalBalance > 0) {
         rmd = calculateRMD(age, traditionalBalance);
         traditionalBalance -= rmd;
@@ -265,11 +428,9 @@ function runRothAnalysis(data) {
         conversion = Math.min(conversionAmount, traditionalBalance);
         traditionalBalance -= conversion;
         rothBalance += conversion;
-        taxableIncomeGross += conversion; // taxable, but not cash
+        taxableIncomeGross += conversion;
       }
 
-      // Planned portfolio withdrawals for spending (optional).
-      // Treat withdrawals from Traditional as taxable ordinary income; Roth withdrawals are tax-free.
       if (age >= retirementAge) {
         if (withdrawalMode === 'target_after_tax' && targetAfterTaxSpending > 0) {
           const solved = solveWithdrawalForAfterTaxTarget({
@@ -282,7 +443,11 @@ function runRothAnalysis(data) {
             withdrawalOrder,
             traditionalBalance,
             rothBalance,
-            targetAfterTaxSpending
+            targetAfterTaxSpending,
+            irmaaThisYear,
+            includeNiit,
+            netInvestmentIncome,
+            taxExemptInterest
           });
           traditionalBalance = solved.traditionalBalance;
           rothBalance = solved.rothBalance;
@@ -311,19 +476,52 @@ function runRothAnalysis(data) {
 
       const taxableIncome = Math.max(0, taxableIncomeGross - standardDeduction);
       const federalTax = calculateFederalTax(taxableIncome, filingStatus);
-      totalTaxesPaid += federalTax;
-      const netCash = cashInflow - federalTax;
-      yearlyData.push({
-        age, year,
+      const magi = taxableIncomeGross + taxExemptInterest;
+      magiByYear[year] = magi;
+      const niit = calculateNIIT(magi, netInvestmentIncome, filingStatus, includeNiit);
+
+      draftRows.push({
+        age, year, yearsFromStart,
         traditionalBalance, rothBalance,
         conversion, rmd,
         traditionalWithdrawal, rothWithdrawal, totalWithdrawal,
-        income: taxableIncomeGross, taxableIncome, federalTax, totalTaxesPaid, totalRMDs,
-        cashInflow, netCash
+        income: taxableIncomeGross, taxableIncome, magi, netInvestmentIncome,
+        federalTax, irmaaThisYear, niit,
+        medicareEnrollees, lookbackYear, lookbackMagi,
+        cashInflow
       });
     }
+
+    let totalTaxesPaid = 0;
+    let totalDiscountedTaxesPaid = 0;
+    let totalIrmaaPaid = 0;
+    let totalNiitPaid = 0;
+    const yearlyData = draftRows.map(row => {
+      const irmaa = row.irmaaThisYear;
+      const niit = row.niit;
+      const allInTax = calculateAllInTax(row.federalTax, irmaa, niit);
+      const discountedTax = discountTaxToPresent(allInTax, row.yearsFromStart, discountRate);
+      totalTaxesPaid += allInTax;
+      totalDiscountedTaxesPaid += discountedTax;
+      totalIrmaaPaid += irmaa;
+      totalNiitPaid += niit;
+      const netCash = row.cashInflow - allInTax;
+      return {
+        ...row,
+        irmaa,
+        allInTax,
+        discountedTax,
+        totalTaxesPaid,
+        totalDiscountedTaxesPaid,
+        totalRMDs,
+        totalIrmaaPaid,
+        totalNiitPaid,
+        netCash
+      };
+    });
+
     return {
-      totalTaxesPaid, totalRMDs,
+      totalTaxesPaid, totalDiscountedTaxesPaid, totalIrmaaPaid, totalNiitPaid, totalRMDs,
       finalTraditionalBalance: yearlyData[yearlyData.length - 1].traditionalBalance,
       finalRothBalance: yearlyData[yearlyData.length - 1].rothBalance,
       yearlyData
@@ -333,12 +531,16 @@ function runRothAnalysis(data) {
   const withConversion = projectRetirement(true);
   const withoutConversion = projectRetirement(false);
   const taxSavings = withoutConversion.totalTaxesPaid - withConversion.totalTaxesPaid;
+  const discountedTaxSavings = withoutConversion.totalDiscountedTaxesPaid - withConversion.totalDiscountedTaxesPaid;
   const rmdReduction = withoutConversion.totalRMDs - withConversion.totalRMDs;
   let breakEvenAge = null;
+  let breakEvenAgeDiscounted = null;
   for (let i = 0; i < withConversion.yearlyData.length; i++) {
-    if (withConversion.yearlyData[i].totalTaxesPaid < withoutConversion.yearlyData[i].totalTaxesPaid) {
+    if (breakEvenAge == null && withConversion.yearlyData[i].totalTaxesPaid < withoutConversion.yearlyData[i].totalTaxesPaid) {
       breakEvenAge = withConversion.yearlyData[i].age;
-      break;
+    }
+    if (breakEvenAgeDiscounted == null && withConversion.yearlyData[i].totalDiscountedTaxesPaid < withoutConversion.yearlyData[i].totalDiscountedTaxesPaid) {
+      breakEvenAgeDiscounted = withConversion.yearlyData[i].age;
     }
   }
   const taxableIncome = Math.max(0, currentIncome - standardDeduction);
@@ -346,12 +548,18 @@ function runRothAnalysis(data) {
   const taxWithConversion = calculateFederalTax(taxableIncome + conversionAmount, filingStatus);
   const conversionTaxCost = taxWithConversion - taxWithoutConversion;
   const effectiveTaxRate = (conversionTaxCost / conversionAmount) * 100;
+  const irmaaReduction = withoutConversion.totalIrmaaPaid - withConversion.totalIrmaaPaid;
+  const niitReduction = withoutConversion.totalNiitPaid - withConversion.totalNiitPaid;
   return {
     conversionAmount, conversionYears, conversionStartAge, conversionEndAge,
     conversionTaxCost, effectiveTaxRate,
     currentMarginalRate: getMarginalRate(taxableIncome, filingStatus),
     marginalRateWithConversion: getMarginalRate(taxableIncome + conversionAmount, filingStatus),
-    taxableIncome, taxSavings, rmdReduction, netBenefit: taxSavings, breakEvenAge,
+    taxableIncome, taxSavings, discountedTaxSavings, rmdReduction, irmaaReduction, niitReduction,
+    netBenefit: taxSavings, discountedNetBenefit: discountedTaxSavings,
+    breakEvenAge, breakEvenAgeDiscounted, discountRate,
+    includeIrmaa, includeNiit, medicareStartAge, taxExemptInterest, investmentIncome, retirementInvestmentIncome: hasRetirementInvestmentIncome ? retirementInvestmentIncome : '',
+    filingStatus,
     baseStandardDeduction,
     standardDeduction,
     seniorCount,
@@ -372,21 +580,39 @@ function calculate() {
 function displayResults(data) {
     const resultsDiv = document.getElementById('results');
     const resultsContent = document.getElementById('resultsContent');
-    
+    const discountPct = (data.discountRate || 0) * 100;
+    const hasDiscount = discountPct > 0;
     const isWorthIt = data.netBenefit > 0;
-    const recommendation = isWorthIt 
-        ? `Converting appears beneficial! You could save approximately $${Math.abs(data.netBenefit).toLocaleString(undefined, {maximumFractionDigits: 0})} in lifetime taxes.`
-        : `Converting may not be optimal. You would pay approximately $${Math.abs(data.netBenefit).toLocaleString(undefined, {maximumFractionDigits: 0})} more in lifetime taxes.`;
-    
+    const isWorthItDiscounted = data.discountedNetBenefit > 0;
+
+    let recommendation = isWorthIt
+        ? `Converting appears beneficial on a <strong>nominal</strong> (undiscounted) basis. You could save approximately $${Math.abs(data.netBenefit).toLocaleString(undefined, {maximumFractionDigits: 0})} in lifetime all-in taxes.`
+        : `Converting may not be optimal on a <strong>nominal</strong> basis. You would pay approximately $${Math.abs(data.netBenefit).toLocaleString(undefined, {maximumFractionDigits: 0})} more in lifetime all-in taxes.`;
+
+    if (hasDiscount) {
+        recommendation += isWorthItDiscounted
+            ? ` After discounting future taxes at <strong>${discountPct.toFixed(1)}%</strong> (today's dollars), lifetime savings are about $${Math.abs(data.discountedNetBenefit).toLocaleString(undefined, {maximumFractionDigits: 0})}.`
+            : ` After discounting at <strong>${discountPct.toFixed(1)}%</strong>, converting would cost about $${Math.abs(data.discountedNetBenefit).toLocaleString(undefined, {maximumFractionDigits: 0})} more in present-value terms — paying taxes upfront has a real opportunity cost.`;
+    }
+
+    const breakEvenHtml = [
+        data.breakEvenAge ? `<strong>Nominal break-even age:</strong> ${data.breakEvenAge}` : '',
+        hasDiscount && data.breakEvenAgeDiscounted ? `<strong>Discounted break-even age:</strong> ${data.breakEvenAgeDiscounted}` : '',
+        hasDiscount && data.breakEvenAge && data.breakEvenAgeDiscounted && data.breakEvenAgeDiscounted > data.breakEvenAge
+            ? `<span style="color:#92400e;">Higher discount rates push the crossover later — future tax savings are worth less in today's dollars.</span>`
+            : ''
+    ].filter(Boolean).join('<br>');
+
     resultsContent.innerHTML = `
         <div class="info-box ${isWorthIt ? 'info-box-blue' : ''}" style="margin-bottom: 25px;">
             <h3>💡 Recommendation</h3>
             <p style="font-size: 16px; margin-top: 10px;">${recommendation}</p>
-            ${data.breakEvenAge ? `<p style="margin-top: 10px;"><strong>Break-even age:</strong> ${data.breakEvenAge}</p>` : ''}
+            ${breakEvenHtml ? `<p style="margin-top: 10px;">${breakEvenHtml}</p>` : ''}
         </div>
-        
+
         <div class="info-box" style="margin-bottom: 25px;">
-            <h3>Lifetime Tax Comparison</h3>
+            <h3>Lifetime All-In Tax Comparison</h3>
+            <p style="margin: 0 0 12px; font-size: 13px; color: #4b5563;">All-in tax cost includes <strong>federal income tax</strong>${data.includeIrmaa ? ', <strong>Medicare IRMAA</strong> (2-year lookback)' : ''}${data.includeNiit ? ', and <strong>NIIT</strong> (3.8% net investment income tax)' : ''}. MAGI ≈ gross income before deductions plus tax-exempt interest.</p>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
                 <div>
                     <strong>Without Conversion:</strong><br>
@@ -397,16 +623,67 @@ function displayResults(data) {
                     $${data.withConversion.totalTaxesPaid.toLocaleString(undefined, {maximumFractionDigits: 0})}
                 </div>
                 <div style="color: ${isWorthIt ? '#059669' : '#dc2626'};">
-                    <strong>Tax Savings:</strong><br>
+                    <strong>Nominal Tax Savings:</strong><br>
                     ${isWorthIt ? '+' : ''}$${data.taxSavings.toLocaleString(undefined, {maximumFractionDigits: 0})}
                 </div>
+            </div>
+            ${hasDiscount ? `
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
+                <div>
+                    <strong>Without Conversion (PV):</strong><br>
+                    $${data.withoutConversion.totalDiscountedTaxesPaid.toLocaleString(undefined, {maximumFractionDigits: 0})}
+                </div>
+                <div>
+                    <strong>With Conversion (PV):</strong><br>
+                    $${data.withConversion.totalDiscountedTaxesPaid.toLocaleString(undefined, {maximumFractionDigits: 0})}
+                </div>
+                <div style="color: ${isWorthItDiscounted ? '#059669' : '#dc2626'};">
+                    <strong>Discounted Tax Savings (${discountPct.toFixed(1)}%):</strong><br>
+                    ${isWorthItDiscounted ? '+' : ''}$${data.discountedTaxSavings.toLocaleString(undefined, {maximumFractionDigits: 0})}
+                </div>
+            </div>
+            ` : ''}
+        </div>
+
+        <div class="info-box" style="margin-bottom: 25px;">
+            <h3>Lifetime All-In Tax Breakdown</h3>
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Component</th>
+                            <th>No Conversion</th>
+                            <th>With Conversion</th>
+                            <th>Difference</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${generateLifetimeBreakdownRows(data)}
+                    </tbody>
+                </table>
             </div>
         </div>
 
         <div class="chart-section" style="margin-bottom: 30px;">
-            <h3>Cumulative Taxes Paid Over Time</h3>
+            <h3>Cumulative All-In Taxes Paid Over Time</h3>
+            <p style="margin: 0 0 10px; font-size: 13px; color: #4b5563;">Federal = dark blue · IRMAA = light blue · NIIT = orange in the annual charts below.${hasDiscount ? ` Solid lines = nominal; dashed = present value at ${discountPct.toFixed(1)}%.` : ''}</p>
             <div class="chart-wrapper">
                 <canvas id="cumulativeTaxChart"></canvas>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-bottom: 30px;">
+            <div class="chart-section">
+                <h3>Annual All-In Tax Cost — No Conversion</h3>
+                <div class="chart-wrapper">
+                    <canvas id="annualTaxNoConvChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-section">
+                <h3>Annual All-In Tax Cost — With Conversion</h3>
+                <div class="chart-wrapper">
+                    <canvas id="annualTaxWithConvChart"></canvas>
+                </div>
             </div>
         </div>
         
@@ -434,6 +711,48 @@ function displayResults(data) {
                 </div>
             </div>
         </div>
+
+        ${data.includeIrmaa ? `
+        <div class="info-box" style="margin-bottom: 25px;">
+            <h3>Medicare IRMAA Impact</h3>
+            <p style="margin: 0 0 12px; font-size: 13px; color: #4b5563;">Premiums use income from <strong>${IRMAA_LOOKBACK_YEARS} years earlier</strong>. Conversion-year income can trigger surcharges ${IRMAA_LOOKBACK_YEARS} years later. Medicare enrollment assumed at age <strong>${data.medicareStartAge}</strong>.</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+                <div>
+                    <strong>Lifetime IRMAA (No Conversion):</strong><br>
+                    $${data.withoutConversion.totalIrmaaPaid.toLocaleString(undefined, {maximumFractionDigits: 0})}
+                </div>
+                <div>
+                    <strong>Lifetime IRMAA (With Conversion):</strong><br>
+                    $${data.withConversion.totalIrmaaPaid.toLocaleString(undefined, {maximumFractionDigits: 0})}
+                </div>
+                <div style="color: ${data.irmaaReduction > 0 ? '#059669' : data.irmaaReduction < 0 ? '#dc2626' : '#4b5563'};">
+                    <strong>IRMAA ${data.irmaaReduction >= 0 ? 'Reduction' : 'Increase'}:</strong><br>
+                    ${data.irmaaReduction >= 0 ? '' : '-'}$${Math.abs(data.irmaaReduction).toLocaleString(undefined, {maximumFractionDigits: 0})}
+                </div>
+            </div>
+        </div>
+        ` : ''}
+
+        ${data.includeNiit ? `
+        <div class="info-box" style="margin-bottom: 25px;">
+            <h3>NIIT Impact</h3>
+            <p style="margin: 0 0 12px; font-size: 13px; color: #4b5563;">3.8% on the lesser of net investment income or MAGI above <strong>$${(data.filingStatus === 'married' ? 250000 : data.filingStatus === 'married_separate' ? 125000 : 200000).toLocaleString()}</strong> (${data.filingStatus === 'married' ? 'MFJ' : data.filingStatus === 'married_separate' ? 'MFS' : 'single/HOH'}). Roth conversions can push MAGI over the threshold and trigger NIIT on dividends, interest, and capital gains.</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+                <div>
+                    <strong>Lifetime NIIT (No Conversion):</strong><br>
+                    $${data.withoutConversion.totalNiitPaid.toLocaleString(undefined, {maximumFractionDigits: 0})}
+                </div>
+                <div>
+                    <strong>Lifetime NIIT (With Conversion):</strong><br>
+                    $${data.withConversion.totalNiitPaid.toLocaleString(undefined, {maximumFractionDigits: 0})}
+                </div>
+                <div style="color: ${data.niitReduction > 0 ? '#059669' : data.niitReduction < 0 ? '#dc2626' : '#4b5563'};">
+                    <strong>NIIT ${data.niitReduction >= 0 ? 'Reduction' : 'Increase'}:</strong><br>
+                    ${data.niitReduction >= 0 ? '' : '-'}$${Math.abs(data.niitReduction).toLocaleString(undefined, {maximumFractionDigits: 0})}
+                </div>
+            </div>
+        </div>
+        ` : ''}
         
         <div class="info-box" style="margin-bottom: 25px;">
             <h3>First Year Conversion Details</h3>
@@ -481,7 +800,7 @@ function displayResults(data) {
             ` : ``}
             ${data.withdrawalMode === 'target_after_tax' && data.targetAfterTaxSpending > 0 ? `
               <p style="margin: 10px 0 0; font-size: 13px; color: #4b5563;">
-                Note: Withdrawal mode is set to <strong>Target after‑tax spending</strong> — the model automatically increases portfolio withdrawals as needed to cover federal taxes (including Roth conversion and RMD taxes) while targeting <strong>$${data.targetAfterTaxSpending.toLocaleString()}</strong> per year after tax.
+                Note: Withdrawal mode is set to <strong>Target after‑tax spending</strong> — the model automatically increases portfolio withdrawals as needed to cover federal taxes${data.includeIrmaa ? ', IRMAA' : ''}${data.includeNiit ? ', NIIT' : ''} (including Roth conversion and RMD taxes) while targeting <strong>$${data.targetAfterTaxSpending.toLocaleString()}</strong> per year after tax.
               </p>
             ` : ``}
         </div>
@@ -505,7 +824,7 @@ function displayResults(data) {
         </div>
         
         <div class="table-section" style="margin-top: 30px;">
-            <h3>Year-by-Year Projection (With Conversion)</h3>
+            <h3>Year-by-Year Projection — With Conversion</h3>
             <div class="table-wrapper">
                 <table class="data-table">
                     <thead>
@@ -516,14 +835,51 @@ function displayResults(data) {
                             <th>RMD</th>
                             <th>Portfolio Withdrawal</th>
                             <th>Total Income (tax)</th>
+                            <th>MAGI</th>
                             <th>Federal Tax</th>
-                            <th>Net Cash (after tax)</th>
+                            ${data.includeIrmaa ? '<th>IRMAA</th>' : ''}
+                            ${data.includeNiit ? '<th>NIIT</th>' : ''}
+                            <th>All-In Tax</th>
+                            <th>Cumulative All-In</th>
+                            ${hasDiscount ? '<th>Cumulative (PV)</th>' : ''}
+                            <th>Net Cash</th>
                             <th>Traditional IRA</th>
                             <th>Roth IRA</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${generateTableRows(data.withConversion.yearlyData)}
+                        ${generateTableRows(data.withConversion.yearlyData, hasDiscount, data.includeIrmaa, data.includeNiit)}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="table-section" style="margin-top: 30px;">
+            <h3>Year-by-Year Projection — No Conversion</h3>
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Age</th>
+                            <th>Year</th>
+                            <th>Conversion</th>
+                            <th>RMD</th>
+                            <th>Portfolio Withdrawal</th>
+                            <th>Total Income (tax)</th>
+                            <th>MAGI</th>
+                            <th>Federal Tax</th>
+                            ${data.includeIrmaa ? '<th>IRMAA</th>' : ''}
+                            ${data.includeNiit ? '<th>NIIT</th>' : ''}
+                            <th>All-In Tax</th>
+                            <th>Cumulative All-In</th>
+                            ${hasDiscount ? '<th>Cumulative (PV)</th>' : ''}
+                            <th>Net Cash</th>
+                            <th>Traditional IRA</th>
+                            <th>Roth IRA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${generateTableRows(data.withoutConversion.yearlyData, hasDiscount, data.includeIrmaa, data.includeNiit)}
                     </tbody>
                 </table>
             </div>
@@ -536,11 +892,46 @@ function displayResults(data) {
     // Create charts after DOM is updated
     setTimeout(() => {
         createCumulativeTaxChart(data);
+        createAnnualAllInTaxChart('annualTaxNoConvChart', data.withoutConversion.yearlyData, {
+            includeIrmaa: data.includeIrmaa,
+            includeNiit: data.includeNiit
+        });
+        createAnnualAllInTaxChart('annualTaxWithConvChart', data.withConversion.yearlyData, {
+            includeIrmaa: data.includeIrmaa,
+            includeNiit: data.includeNiit
+        });
         createAccountBalanceChart(data);
     }, 100);
 }
 
-function generateTableRows(yearlyData) {
+function sumLifetimeComponent(yearlyData, field) {
+    return (yearlyData || []).reduce((sum, row) => sum + (row[field] || 0), 0);
+}
+
+function generateLifetimeBreakdownRows(data) {
+    const noConv = data.withoutConversion.yearlyData;
+    const withConv = data.withConversion.yearlyData;
+    const rows = [
+        { label: 'Federal income tax', field: 'federalTax' },
+        { label: 'Medicare IRMAA', field: 'irmaa', show: data.includeIrmaa },
+        { label: 'NIIT (3.8%)', field: 'niit', show: data.includeNiit },
+        { label: 'Total all-in tax', field: 'allInTax', bold: true }
+    ];
+    return rows.filter(r => r.show !== false).map(r => {
+        const noVal = sumLifetimeComponent(noConv, r.field);
+        const withVal = sumLifetimeComponent(withConv, r.field);
+        const diff = noVal - withVal;
+        const diffColor = diff > 0 ? '#059669' : diff < 0 ? '#dc2626' : '#4b5563';
+        return `<tr${r.bold ? ' style="font-weight:600;background:#f9fafb;"' : ''}>
+            <td>${r.label}</td>
+            <td>$${noVal.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+            <td>$${withVal.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+            <td style="color:${diffColor};">${diff >= 0 ? '+' : ''}$${diff.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+        </tr>`;
+    }).join('');
+}
+
+function generateTableRows(yearlyData, includeDiscounted, includeIrmaa, includeNiit) {
     return yearlyData.map(row => `
         <tr>
             <td>${row.age}</td>
@@ -549,7 +940,13 @@ function generateTableRows(yearlyData) {
             <td>$${row.rmd.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
             <td>$${(row.totalWithdrawal || 0).toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
             <td>$${row.income.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+            <td>$${(row.magi || row.income).toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
             <td>$${row.federalTax.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+            ${includeIrmaa ? `<td>$${(row.irmaa || 0).toLocaleString(undefined, {maximumFractionDigits: 0})}</td>` : ''}
+            ${includeNiit ? `<td>$${(row.niit || 0).toLocaleString(undefined, {maximumFractionDigits: 0})}</td>` : ''}
+            <td>$${row.allInTax.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+            <td>$${row.totalTaxesPaid.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+            ${includeDiscounted ? `<td>$${row.totalDiscountedTaxesPaid.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>` : ''}
             <td>$${(row.netCash || 0).toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
             <td>$${row.traditionalBalance.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
             <td>$${row.rothBalance.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
@@ -557,50 +954,104 @@ function generateTableRows(yearlyData) {
     `).join('');
 }
 
+function buildAllInTaxChartDatasets(yearlyData, options) {
+    const { includeIrmaa = true, includeNiit = true } = options || {};
+    const datasets = [
+        {
+            label: 'Federal Tax',
+            data: yearlyData.map(d => d.federalTax),
+            backgroundColor: '#1e40af',
+            stack: 'tax'
+        }
+    ];
+    if (includeIrmaa) {
+        datasets.push({
+            label: 'IRMAA',
+            data: yearlyData.map(d => d.irmaa || 0),
+            backgroundColor: '#38bdf8',
+            stack: 'tax'
+        });
+    }
+    if (includeNiit) {
+        datasets.push({
+            label: 'NIIT',
+            data: yearlyData.map(d => d.niit || 0),
+            backgroundColor: '#f97316',
+            stack: 'tax'
+        });
+    }
+    return datasets;
+}
+
+function chartCanvasToDataUrl(canvasId) {
+    const canvas = document.getElementById(canvasId);
+    return canvas && window.Chart ? canvas.toDataURL('image/png') : null;
+}
+
 // Chart creation function
 function createCumulativeTaxChart(data) {
     const ctx = document.getElementById('cumulativeTaxChart');
     if (!ctx) return;
-    
+
     if (window.cumulativeTaxChart instanceof Chart) {
         window.cumulativeTaxChart.destroy();
     }
-    
+
     const ages = data.withConversion.yearlyData.map(d => d.age);
     const withConversionTaxes = data.withConversion.yearlyData.map(d => d.totalTaxesPaid);
     const withoutConversionTaxes = data.withoutConversion.yearlyData.map(d => d.totalTaxesPaid);
-    
+    const hasDiscount = (data.discountRate || 0) > 0;
+
+    const datasets = [
+        {
+            label: 'With Conversion (nominal)',
+            data: withConversionTaxes,
+            borderColor: '#059669',
+            backgroundColor: 'rgba(5, 150, 105, 0.1)',
+            tension: 0.1,
+            fill: false
+        },
+        {
+            label: 'Without Conversion (nominal)',
+            data: withoutConversionTaxes,
+            borderColor: '#dc2626',
+            backgroundColor: 'rgba(220, 38, 38, 0.1)',
+            tension: 0.1,
+            fill: false
+        }
+    ];
+
+    if (hasDiscount) {
+        datasets.push(
+            {
+                label: 'With Conversion (discounted)',
+                data: data.withConversion.yearlyData.map(d => d.totalDiscountedTaxesPaid),
+                borderColor: '#047857',
+                backgroundColor: 'transparent',
+                tension: 0.1,
+                fill: false,
+                borderDash: [6, 4]
+            },
+            {
+                label: 'Without Conversion (discounted)',
+                data: data.withoutConversion.yearlyData.map(d => d.totalDiscountedTaxesPaid),
+                borderColor: '#b91c1c',
+                backgroundColor: 'transparent',
+                tension: 0.1,
+                fill: false,
+                borderDash: [6, 4]
+            }
+        );
+    }
+
     window.cumulativeTaxChart = new Chart(ctx, {
         type: 'line',
-        data: {
-            labels: ages,
-            datasets: [
-                {
-                    label: 'With Conversion',
-                    data: withConversionTaxes,
-                    borderColor: '#059669',
-                    backgroundColor: 'rgba(5, 150, 105, 0.1)',
-                    tension: 0.1,
-                    fill: false
-                },
-                {
-                    label: 'Without Conversion',
-                    data: withoutConversionTaxes,
-                    borderColor: '#dc2626',
-                    backgroundColor: 'rgba(220, 38, 38, 0.1)',
-                    tension: 0.1,
-                    fill: false
-                }
-            ]
-        },
+        data: { labels: ages, datasets },
         options: {
             responsive: true,
             maintainAspectRatio: true,
             plugins: {
-                legend: {
-                    display: true,
-                    position: 'top'
-                },
+                legend: { display: true, position: 'top' },
                 tooltip: {
                     callbacks: {
                         label: function(context) {
@@ -610,17 +1061,64 @@ function createCumulativeTaxChart(data) {
                 }
             },
             scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Age'
+                x: { title: { display: true, text: 'Age' } },
+                y: {
+                    title: { display: true, text: 'Cumulative All-In Taxes' },
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
                     }
+                }
+            }
+        }
+    });
+}
+
+function createAnnualAllInTaxChart(canvasId, yearlyData, options) {
+    const ctx = document.getElementById(canvasId);
+    if (!ctx) return;
+
+    const chartKey = canvasId + 'Chart';
+    if (window[chartKey] instanceof Chart) {
+        window[chartKey].destroy();
+    }
+
+    const years = yearlyData.map(d => d.year);
+    window[chartKey] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: years,
+            datasets: buildAllInTaxChartDatasets(yearlyData, options)
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: true, position: 'top' },
+                tooltip: {
+                    callbacks: {
+                        footer: function(items) {
+                            const total = items.reduce((sum, item) => sum + item.parsed.y, 0);
+                            return 'All-in total: $' + total.toLocaleString(undefined, {maximumFractionDigits: 0});
+                        },
+                        label: function(context) {
+                            if (context.parsed.y === 0) return null;
+                            return context.dataset.label + ': $' + context.parsed.y.toLocaleString(undefined, {maximumFractionDigits: 0});
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    stacked: true,
+                    title: { display: true, text: 'Year' },
+                    ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 14 }
                 },
                 y: {
-                    title: {
-                        display: true,
-                        text: 'Cumulative Taxes Paid'
-                    },
+                    title: { display: true, text: 'Annual All-In Tax Cost' },
+                    stacked: true,
                     ticks: {
                         callback: function(value) {
                             return '$' + value.toLocaleString();
@@ -845,11 +1343,26 @@ function explainResults() {
     summary += 'Current marginal tax rate: ' + (r.currentMarginalRate * 100).toFixed(0) + '%. ';
     summary += 'Marginal rate with conversion: ' + (r.marginalRateWithConversion * 100).toFixed(0) + '%.\n\n';
     summary += 'First-year conversion tax cost: ' + fmt(r.conversionTaxCost) + ' (effective rate ' + r.effectiveTaxRate.toFixed(1) + '%). ';
-    summary += 'Lifetime taxes without conversion: ' + fmt(r.withoutConversion.totalTaxesPaid) + '. ';
-    summary += 'Lifetime taxes with conversion: ' + fmt(r.withConversion.totalTaxesPaid) + '. ';
-    summary += 'Lifetime tax ' + (r.netBenefit > 0 ? 'savings: ' + fmt(r.netBenefit) : 'cost: ' + fmt(-r.netBenefit)) + '. ';
+    summary += 'Lifetime all-in taxes without conversion: ' + fmt(r.withoutConversion.totalTaxesPaid) + '. ';
+    summary += 'Lifetime all-in taxes with conversion: ' + fmt(r.withConversion.totalTaxesPaid) + '. ';
+    summary += 'Nominal lifetime tax ' + (r.netBenefit > 0 ? 'savings: ' + fmt(r.netBenefit) : 'cost: ' + fmt(-r.netBenefit)) + '. ';
+    if ((r.discountRate || 0) > 0) {
+        summary += 'Discount rate: ' + (r.discountRate * 100).toFixed(1) + '%. ';
+        summary += 'Discounted lifetime tax ' + (r.discountedNetBenefit > 0 ? 'savings: ' + fmt(r.discountedNetBenefit) : 'cost: ' + fmt(-r.discountedNetBenefit)) + '. ';
+        if (r.breakEvenAgeDiscounted) summary += 'Discounted break-even age: ' + r.breakEvenAgeDiscounted + '. ';
+    }
     summary += 'RMD reduction from conversion: ' + fmt(r.rmdReduction) + '. ';
-    if (r.breakEvenAge) summary += 'Break-even age: ' + r.breakEvenAge + '.';
+    if (r.includeIrmaa) {
+        summary += 'Lifetime IRMAA without conversion: ' + fmt(r.withoutConversion.totalIrmaaPaid) + '. ';
+        summary += 'Lifetime IRMAA with conversion: ' + fmt(r.withConversion.totalIrmaaPaid) + '. ';
+        summary += 'IRMAA ' + (r.irmaaReduction >= 0 ? 'reduction: ' + fmt(r.irmaaReduction) : 'increase: ' + fmt(-r.irmaaReduction)) + '. ';
+    }
+    if (r.includeNiit) {
+        summary += 'Lifetime NIIT without conversion: ' + fmt(r.withoutConversion.totalNiitPaid) + '. ';
+        summary += 'Lifetime NIIT with conversion: ' + fmt(r.withConversion.totalNiitPaid) + '. ';
+        summary += 'NIIT ' + (r.niitReduction >= 0 ? 'reduction: ' + fmt(r.niitReduction) : 'increase: ' + fmt(-r.niitReduction)) + '. ';
+    }
+    if (r.breakEvenAge) summary += 'Nominal break-even age: ' + r.breakEvenAge + '.';
 
     const btn = document.getElementById('explainResultsBtnInResults');
     const origText = btn ? btn.textContent : '';
@@ -959,7 +1472,12 @@ function loadScenario() {
                 const scenario = data.scenarios[index];
                 Object.keys(scenario.data).forEach(key => {
                     const input = document.getElementById(key);
-                    if (input) input.value = scenario.data[key];
+                    if (!input) return;
+                    if (input.type === 'checkbox') {
+                        input.checked = scenario.data[key] === true || scenario.data[key] === 'true' || scenario.data[key] === 'on';
+                    } else {
+                        input.value = scenario.data[key];
+                    }
                 });
                 alert('Scenario loaded! Click Calculate to see results.');
             }
@@ -1028,7 +1546,12 @@ function showRothComparison(name1, name2, result1, result2, data1, data2) {
                 <tr style="background: #f0f0f0;"><th>Metric</th><th>${name1}</th><th>${name2}</th><th>Difference</th></tr>
                 <tr><td>Lifetime tax (with conversion)</td><td>$${result1.withConversion.totalTaxesPaid.toLocaleString(0)}</td><td>$${result2.withConversion.totalTaxesPaid.toLocaleString(0)}</td><td>$${(result2.withConversion.totalTaxesPaid - result1.withConversion.totalTaxesPaid).toLocaleString(0)}</td></tr>
                 <tr><td>Tax savings</td><td>$${result1.taxSavings.toLocaleString(0)}</td><td>$${result2.taxSavings.toLocaleString(0)}</td><td>$${(result2.taxSavings - result1.taxSavings).toLocaleString(0)}</td></tr>
-                <tr><td>Break-even age</td><td>${result1.breakEvenAge || '-'}</td><td>${result2.breakEvenAge || '-'}</td><td>-</td></tr>
+                <tr><td>Lifetime IRMAA (no conversion)</td><td>$${result1.withoutConversion.totalIrmaaPaid.toLocaleString(0)}</td><td>$${result2.withoutConversion.totalIrmaaPaid.toLocaleString(0)}</td><td>-</td></tr>
+                <tr><td>IRMAA reduction</td><td>$${result1.irmaaReduction.toLocaleString(0)}</td><td>$${result2.irmaaReduction.toLocaleString(0)}</td><td>$${(result2.irmaaReduction - result1.irmaaReduction).toLocaleString(0)}</td></tr>
+                <tr><td>Lifetime NIIT (no conversion)</td><td>$${result1.withoutConversion.totalNiitPaid.toLocaleString(0)}</td><td>$${result2.withoutConversion.totalNiitPaid.toLocaleString(0)}</td><td>-</td></tr>
+                <tr><td>NIIT reduction</td><td>$${result1.niitReduction.toLocaleString(0)}</td><td>$${result2.niitReduction.toLocaleString(0)}</td><td>$${(result2.niitReduction - result1.niitReduction).toLocaleString(0)}</td></tr>
+                <tr><td>Break-even age (nominal)</td><td>${result1.breakEvenAge || '-'}</td><td>${result2.breakEvenAge || '-'}</td><td>-</td></tr>
+                <tr><td>Break-even age (discounted)</td><td>${result1.breakEvenAgeDiscounted || '-'}</td><td>${result2.breakEvenAgeDiscounted || '-'}</td><td>-</td></tr>
             </table>
         </div>
     `;
@@ -1047,8 +1570,6 @@ function downloadPDF() {
         alert('Please run Calculate first, then download the PDF.');
         return;
     }
-    const chartCanvas = document.getElementById('cumulativeTaxChart');
-    const chartImage = chartCanvas && window.Chart ? chartCanvas.toDataURL('image/png') : null;
     const payload = {
         ...getRothFormData(),
         withConversion: res.withConversion,
@@ -1058,11 +1579,20 @@ function downloadPDF() {
         conversionStartAge: res.conversionStartAge,
         conversionEndAge: res.conversionEndAge,
         taxSavings: res.taxSavings,
+        discountedTaxSavings: res.discountedTaxSavings,
         rmdReduction: res.rmdReduction,
         breakEvenAge: res.breakEvenAge,
+        breakEvenAgeDiscounted: res.breakEvenAgeDiscounted,
+        discountRate: res.discountRate,
+        irmaaReduction: res.irmaaReduction,
+        niitReduction: res.niitReduction,
+        includeIrmaa: res.includeIrmaa,
+        includeNiit: res.includeNiit,
         conversionTaxCost: res.conversionTaxCost,
         effectiveTaxRate: res.effectiveTaxRate,
-        chartImage: chartImage
+        chartImage: chartCanvasToDataUrl('cumulativeTaxChart'),
+        chartNoConvImage: chartCanvasToDataUrl('annualTaxNoConvChart'),
+        chartWithConvImage: chartCanvasToDataUrl('annualTaxWithConvChart')
     };
     fetch(RC_API_BASE + 'api/generate_roth_pdf.php', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) })
     .then(r => {
@@ -1089,7 +1619,16 @@ function downloadCSV() {
     }
     const payload = {
         withConversion: res.withConversion,
-        withoutConversion: res.withoutConversion
+        withoutConversion: res.withoutConversion,
+        includeIrmaa: res.includeIrmaa,
+        includeNiit: res.includeNiit,
+        discountRate: res.discountRate,
+        taxSavings: res.taxSavings,
+        discountedTaxSavings: res.discountedTaxSavings,
+        breakEvenAge: res.breakEvenAge,
+        breakEvenAgeDiscounted: res.breakEvenAgeDiscounted,
+        irmaaReduction: res.irmaaReduction,
+        niitReduction: res.niitReduction
     };
     fetch(RC_API_BASE + 'api/export_roth_csv.php', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) })
     .then(r => {

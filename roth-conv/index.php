@@ -32,7 +32,7 @@ $isPremium = has_premium_access();
 
         <div class="info-box-blue" style="margin-bottom: 30px;">
             <h2>Understanding Roth Conversions</h2>
-            <p>Converting traditional IRA funds to a Roth IRA means paying taxes now on the converted amount, but all future growth and withdrawals will be tax-free. This calculator helps you analyze whether converting makes sense by comparing the tax cost today versus the tax savings in retirement, while considering Required Minimum Distributions (RMDs) and Medicare IRMAA surcharges.</p>
+            <p>Converting traditional IRA funds to a Roth IRA means paying taxes now on the converted amount, but all future growth and withdrawals will be tax-free. This calculator helps you analyze whether converting makes sense by comparing the tax cost today versus the tax savings in retirement, while considering Required Minimum Distributions (RMDs), Medicare IRMAA surcharges (2-year lookback), the 3.8% Net Investment Income Tax (NIIT), and the opportunity cost of paying taxes early (discount rate).</p>
         </div>
 
 <?php if ($isPremium): ?>
@@ -152,6 +152,48 @@ $isPremium = has_premium_access();
                 </div>
             </div>
 
+            <h3 style="margin-top: 30px;">Medicare IRMAA</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                <div>
+                    <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; cursor: pointer;">
+                        <input type="checkbox" id="includeIrmaa" checked>
+                        Include Medicare IRMAA surcharges
+                    </label>
+                    <small style="color: #666; display: block; margin-top: 6px;">Adds Part B &amp; Part D income-related premium surcharges to all-in tax cost. Uses a 2-year income lookback (same as Social Security / Medicare).</small>
+                </div>
+                <div>
+                    <label for="medicareStartAge" style="display: block; margin-bottom: 5px; font-weight: 600;">Medicare Enrollment Age</label>
+                    <input type="number" id="medicareStartAge" value="65" min="62" max="70" required style="width: 100%;">
+                    <small style="color: #666;">Age when you (and spouse, if married) enroll in Medicare Part B. IRMAA applies once enrolled.</small>
+                </div>
+                <div>
+                    <label for="taxExemptInterest" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Tax-Exempt Interest ($)</label>
+                    <input type="number" id="taxExemptInterest" value="0" min="0" step="100" style="width: 100%;">
+                    <small style="color: #666;">Municipal bond interest (Form 1040 line 2a). Added to gross income for MAGI / IRMAA thresholds.</small>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 30px;">Net Investment Income Tax (NIIT)</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                <div>
+                    <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; cursor: pointer;">
+                        <input type="checkbox" id="includeNiit" checked>
+                        Include NIIT (3.8% surtax)
+                    </label>
+                    <small style="color: #666; display: block; margin-top: 6px;">Applies when MAGI exceeds $200k (single/HOH), $250k (MFJ), or $125k (MFS). Tax is 3.8% on the lesser of net investment income or MAGI above the threshold.</small>
+                </div>
+                <div>
+                    <label for="investmentIncome" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Investment Income ($)</label>
+                    <input type="number" id="investmentIncome" value="15000" min="0" step="500" style="width: 100%;">
+                    <small style="color: #666;">Dividends, taxable interest, capital gains, and other net investment income (not wages, pensions, or RMDs).</small>
+                </div>
+                <div>
+                    <label for="retirementInvestmentIncome" style="display: block; margin-bottom: 5px; font-weight: 600;">Retirement Investment Income ($) — Optional</label>
+                    <input type="number" id="retirementInvestmentIncome" value="" min="0" step="500" placeholder="Same as above if blank" style="width: 100%;">
+                    <small style="color: #666;">Investment income after retirement if different from pre-retirement. Leave blank to use the same amount every year.</small>
+                </div>
+            </div>
+
             <h3 style="margin-top: 30px;">Assumptions</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                 <div>
@@ -163,6 +205,11 @@ $isPremium = has_premium_access();
                     <label for="inflationRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Expected Annual Inflation Rate (%)</label>
                     <input type="number" id="inflationRate" value="2.5" min="0" max="10" step="0.1" required style="width: 100%;">
                     <small style="color: #666;">For adjusting brackets over time</small>
+                </div>
+                <div>
+                    <label for="discountRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Tax Discount Rate (%) — Optional</label>
+                    <input type="number" id="discountRate" value="0" min="0" max="15" step="0.1" style="width: 100%;">
+                    <small style="color: #666;">Opportunity cost of paying taxes now vs. later. Tax dollars paid today could stay invested (e.g., in an index fund). A higher rate makes future tax savings worth less in today&rsquo;s dollars. Try 3&ndash;7% to match expected portfolio returns. Leave at 0 for nominal (undiscounted) totals only.</small>
                 </div>
             </div>
 
