@@ -56,8 +56,8 @@ $hide_site_header = isset($_GET['embed'])
 
 // SEO: homepage
 require_once __DIR__ . '/includes/seo_public_url.php';
-$seo_title = "Ron Belisle Financial Calculators | Retirement & Planning Tools";
-$seo_description = "Free retirement and financial calculators: 401(k) on track, Roth conversion, Social Security claiming, RMD impact, pension vs lump sum, and more. Plan your retirement with confidence.";
+$seo_title = "Smart Tools & AI Insights for Secure Financial Planning";
+$seo_description = "Explore interactive workspaces for retirement timeline planning, active YNAB budget auditing, and custom-branded advisor financial tracking solutions.";
 $seo_url = rb_seo_public_url();
 $seo_site_name = "Ron Belisle Financial Calculators";
 $seo_og_image = rb_seo_site_base_url() . '/images/og-default.jpg';
