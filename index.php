@@ -61,7 +61,7 @@ $seo_description = "Free retirement and financial calculators: 401(k) on track, 
 $seo_url = rb_seo_public_url();
 $seo_site_name = "Ron Belisle Financial Calculators";
 $seo_og_image = rb_seo_site_base_url() . '/images/og-default.jpg';
-$seo_og_image_alt = 'Ron Belisle Financial Calculators — retirement and financial planning tools';
+$seo_og_image_alt = 'Ron Belisle — Smart Tools & AI Insights for secure financial planning';
 ?>
 <!DOCTYPE html>
 <html lang="en">

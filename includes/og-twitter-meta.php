@@ -5,6 +5,7 @@
  * Optional: $og_image (absolute URL), $og_image_alt, $og_site_name
  *
  * Default share image: /images/og-default.jpg (1200×630 JPEG; also keep og-default.png if needed).
+ * Source/master artwork: /images/og-default.base.png — regenerate with tools/update_og_default_image.py
  */
 require_once __DIR__ . '/seo_public_url.php';
 if (empty($og_title)) $og_title = '';
