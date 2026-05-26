@@ -335,5 +335,6 @@ $premiumUpsellUrl = get_premium_upsell_url($isLoggedIn);
 
   <script>const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;</script>
   <script src="app.js"></script>
+    <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/calculator-footer.php'; ?>
 </body>
 </html>

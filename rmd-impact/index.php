@@ -200,5 +200,6 @@ $isPremium = has_premium_access();
     const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
 </script>
 <script src="calculator.js"></script>
+    <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/calculator-footer.php'; ?>
 </body>
 </html>

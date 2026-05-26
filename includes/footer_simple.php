@@ -23,7 +23,7 @@
 
   <!-- Bottom Line: Copyright + Premium -->
   <div style="text-align: center; padding-top: 15px; border-top: 1px solid #e2e8f0; font-size: 14px; color: #666;">
-    <div>© <?php echo date('Y'); ?> Ron Belisle | <a href="/premium.html" style="color: #1d4ed8; text-decoration: none; font-weight: 600;">Premium</a> (Save, PDF, AI Explain &amp; more)</div>
+    <div>© <?php echo date('Y'); ?> Ron Belisle | <a href="/premium.html" style="color: #1d4ed8; text-decoration: none; font-weight: 600;">Premium</a> — 7-day free trial, $3/mo or $30/yr (save, PDF, AI explain &amp; more)</div>
   </div>
 
   <!-- Mobile Stack -->

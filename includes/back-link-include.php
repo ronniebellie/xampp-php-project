@@ -6,4 +6,7 @@ if (!empty($_GET['return_url']) && preg_match('#^https?://#', $_GET['return_url'
     $backText = '← Return to home page';
 }
 ?>
-<p style="margin-bottom: 20px;"><a href="<?php echo htmlspecialchars($backHref); ?>" style="text-decoration: none; color: #1d4ed8;"><?php echo htmlspecialchars($backText); ?></a></p>
+<p style="margin-bottom: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px;">
+  <a href="<?php echo htmlspecialchars($backHref); ?>" style="text-decoration: none; color: #1d4ed8;"><?php echo htmlspecialchars($backText); ?></a>
+  <a href="/premium.html" style="text-decoration: none; color: #1d4ed8; font-weight: 600;">Premium</a>
+</p>

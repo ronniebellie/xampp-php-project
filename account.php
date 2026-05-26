@@ -188,7 +188,7 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
                     <p style="color: #64748b; margin-top: 15px;">
                         Upgrade to Premium to unlock scenario saving, PDF exports, AI-generated plain-language explanations of your specific results, and advanced projections.
                     </p>
-                    <a href="subscribe.php" class="btn">Upgrade to Premium</a>
+                    <a href="premium.html" class="btn">Upgrade to Premium</a>
                 <?php endif; ?>
             </div>
 

@@ -792,5 +792,6 @@ $isPremium = has_premium_access();
             alert('CSV export: Please run a calculation first, then use the CSV button.');
         }
     </script>
+    <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/calculator-footer.php'; ?>
 </body>
 </html>

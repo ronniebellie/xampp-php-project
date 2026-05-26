@@ -33,6 +33,8 @@ if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'business.ronbelis
 }
 
 require_once 'includes/db_config.php';
+require_once __DIR__ . '/includes/has_premium_access.php';
+$premium_pricing_blurb = get_premium_pricing_blurb();
 $isLoggedIn = isset($_SESSION['user_id']);
 $userName = $isLoggedIn ? $_SESSION['user_name'] : '';
 
@@ -316,6 +318,16 @@ $seo_og_image_alt = 'Ron Belisle — Smart Tools & AI Insights for secure financ
       opacity: 0.95;
       font-size: 15px;
       line-height: 1.5;
+    }
+    .premium-banner-pricing {
+      margin: 10px 0 14px;
+      font-size: 14px;
+      font-weight: 600;
+      opacity: 0.95;
+    }
+    .premium-banner-pricing a {
+      color: #fff;
+      text-decoration: underline;
     }
     .premium-banner-features {
       display: flex;
@@ -617,7 +629,7 @@ $seo_og_image_alt = 'Ron Belisle — Smart Tools & AI Insights for secure financ
               <p class="hero-welcome">Welcome back, <strong><?php echo htmlspecialchars($userName); ?></strong></p>
               <a href="auth/logout.php" class="hero-btn hero-btn-secondary">Log Out</a>
               <?php if (!$is_premium): ?>
-                <a href="subscribe.php" class="hero-btn hero-btn-premium">Upgrade to Premium</a>
+                <a href="premium.html" class="hero-btn hero-btn-premium">Upgrade to Premium</a>
               <?php else: ?>
                 <span class="premium-badge">✨ Premium Member</span>
               <?php endif; ?>
@@ -658,6 +670,7 @@ $seo_og_image_alt = 'Ron Belisle — Smart Tools & AI Insights for secure financ
           <div class="premium-banner-text">
             <h2>Unlock Premium Features</h2>
             <p>Save and compare scenarios, export PDF and CSV reports, AI-generated plain-language explanations of your specific results, and advanced projections.</p>
+            <p class="premium-banner-pricing"><?php echo htmlspecialchars($premium_pricing_blurb); ?> <a href="premium.html#pricing">See pricing</a></p>
             <div class="premium-banner-features">
               <div class="premium-feature-item">Save & Compare Scenarios</div>
               <div class="premium-feature-item">PDF Reports</div>
@@ -948,6 +961,7 @@ $seo_og_image_alt = 'Ron Belisle — Smart Tools & AI Insights for secure financ
           <div class="premium-banner-text">
             <h2>Professional Planning Tools, Now with Premium Features</h2>
             <p>All calculators above are free to use. Upgrade to Premium for the following features:</p>
+            <p class="premium-banner-pricing"><?php echo htmlspecialchars($premium_pricing_blurb); ?> <a href="premium.html#pricing">See pricing</a></p>
             <div class="premium-banner-features">
               <div class="premium-feature-item">Save and compare scenarios</div>
               <div class="premium-feature-item">Export PDF and CSV reports</div>

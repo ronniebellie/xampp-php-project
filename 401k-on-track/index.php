@@ -180,5 +180,6 @@ $isPremium = has_premium_access();
     <script src="../js/explain-results-modal.js"></script>
   <script>const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;</script>
   <script src="calculator.js"></script>
+    <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/calculator-footer.php'; ?>
 </body>
 </html>

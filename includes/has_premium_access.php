@@ -43,16 +43,21 @@ if (!defined('HAS_PREMIUM_ACCESS_LOADED')) {
         return false;
     }
 
+    /** Short pricing line for upsell banners (matches premium.html). */
+    function get_premium_pricing_blurb() {
+        return '7-day free trial, then $3/month or $30/year.';
+    }
+
     /**
-     * Returns the URL for Premium upsell (subscribe or upgrade).
+     * Returns the URL for Premium upsell.
      * For calcforadvisors free users → calcforadvisors.com pricing.
-     * Otherwise → ronbelisle subscribe or auth/register.
+     * Otherwise → premium features & pricing page.
      */
     function get_premium_upsell_url($isLoggedIn) {
         if (!empty($_SESSION['calcforadvisors_plan']) && $_SESSION['calcforadvisors_plan'] === 'free') {
             return 'https://calcforadvisors.com/index.html#pricing';
         }
-        return $isLoggedIn ? '/subscribe.php' : '/auth/register.php';
+        return '/premium.html';
     }
 
     /**

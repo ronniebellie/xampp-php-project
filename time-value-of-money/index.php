@@ -75,7 +75,7 @@ $isPremium = has_premium_access();
       <a class="btn" href="/index.php">Return to Home</a>
     </main>
     <footer>
-      <p>&copy; 2026 Ron Belisle</p>
+      <p>&copy; <?php echo date('Y'); ?> Ron Belisle | <a href="/premium.html" style="color: #1d4ed8; text-decoration: none; font-weight: 600;">Premium</a> — 7-day free trial, $3/mo or $30/yr</p>
     </footer>
   </div>
 </body>
