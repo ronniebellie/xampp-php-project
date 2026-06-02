@@ -11,5 +11,5 @@ echo '<div class="premium-upsell-banner" style="margin-top: 24px; margin-bottom:
 echo '<h3 style="margin: 0 0 12px 0; font-size: 1.25rem; color: #ffffff; font-weight: 600;">🔒 ' . htmlspecialchars($premium_upsell_headline) . '</h3>';
 echo '<p style="margin: 0 0 8px 0; opacity: 0.95; font-size: 0.95rem; color: #ffffff;">' . htmlspecialchars($premium_upsell_text) . '</p>';
 echo '<p style="margin: 0 0 16px 0; opacity: 0.9; font-size: 0.875rem; color: #ffffff;">' . htmlspecialchars($premium_pricing_blurb) . ' <a href="/premium.html#pricing" style="color: #ffffff; text-decoration: underline;">See pricing</a></p>';
-echo '<a href="' . htmlspecialchars($premium_upsell_link) . '" style="display: inline-block; background: white; color: #667eea; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 700;">Upgrade to Premium</a>';
+echo '<a href="' . htmlspecialchars($premium_upsell_link) . '" data-rb-event="premium_upsell_click" data-rb-param-location="calculator_banner" data-rb-param-page="' . htmlspecialchars($premium_upsell_headline) . '" style="display: inline-block; background: white; color: #667eea; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 700;">Upgrade to Premium</a>';
 echo '</div>';

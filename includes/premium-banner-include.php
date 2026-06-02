@@ -64,6 +64,6 @@ if ($isEmbed) {
 <!-- Free User - Invite to premium -->
 <div class="premium-banner coming-soon">
     <h3>✨ Premium Features Available</h3>
-    <p>Save and compare scenarios, export PDF and CSV reports, AI-generated plain-language explanations of your specific results, and advanced projections. <?php echo htmlspecialchars($premiumPricingBlurb); ?> <a href="<?php echo htmlspecialchars($premiumUpsellUrl); ?>" style="color: white; text-decoration: underline; font-weight: 600;">Learn about Premium</a> · <a href="/premium.html#pricing" style="color: white; text-decoration: underline; font-weight: 600;">Pricing</a>. Free tools remain free forever.</p>
+    <p>Save and compare scenarios, export PDF and CSV reports, AI-generated plain-language explanations of your specific results, and advanced projections. <?php echo htmlspecialchars($premiumPricingBlurb); ?> <a href="<?php echo htmlspecialchars($premiumUpsellUrl); ?>" data-rb-event="premium_upsell_click" data-rb-param-location="premium_banner" data-rb-param-cta="learn" style="color: white; text-decoration: underline; font-weight: 600;">Learn about Premium</a> · <a href="/premium.html#pricing" data-rb-event="premium_upsell_click" data-rb-param-location="premium_banner" data-rb-param-cta="pricing" style="color: white; text-decoration: underline; font-weight: 600;">Pricing</a>. Free tools remain free forever.</p>
 </div>
 <?php } ?>
