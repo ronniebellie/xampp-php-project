@@ -7,3 +7,9 @@ vendor/
 composer.lock
 Do-not-upload-to-server/
 includes/db_config.php.DS_Store
+
+# Local Python dependency cache (vendored Pillow, etc.) — never deploy
+.pydeps/
+
+# Personal finance utility; kept local, not part of the public site
+tools/fidelity_cma_to_ynab.py
