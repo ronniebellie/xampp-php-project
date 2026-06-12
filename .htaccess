@@ -15,6 +15,11 @@ RewriteCond %{HTTPS} !=on
 RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
 RewriteRule ^ https://ronbelisle.com%{REQUEST_URI} [L,R=301]
 
+# Legacy retirement-app removed: 301 all paths (incl. index.html) to home.
+# Server-level rule so crawlers don't depend on DirectoryIndex finding index.php.
+RewriteCond %{HTTP_HOST} ^ronbelisle\.com$ [NC]
+RewriteRule ^retirement-app(/.*)?$ / [R=301,L]
+
 # Canonical homepage URL: /index.php -> / (301)
 # Use THE_REQUEST so we only redirect real /index.php requests (not internal rewrites).
 RewriteCond %{HTTP_HOST} ^ronbelisle\.com$ [NC]
