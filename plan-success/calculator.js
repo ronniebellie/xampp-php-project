@@ -4,10 +4,24 @@
   const resultsEl = document.getElementById('results');
   const summaryBox = document.getElementById('summaryBox');
 
+  // Deterministic PRNG (mulberry32). Seeding the run means every simulation
+  // draws the SAME set of market scenarios, so changing one input (e.g.
+  // withdrawal timing) is a true apples-to-apples comparison instead of being
+  // masked by fresh random sampling each run. Results are reproducible.
+  var RNG_SEED = 0x9E3779B9;
+  var rngState = RNG_SEED;
+  function resetRng() { rngState = RNG_SEED | 0; }
+  function rng() {
+    rngState = (rngState + 0x6D2B79F5) | 0;
+    var t = Math.imul(rngState ^ (rngState >>> 15), 1 | rngState);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+
   // Approximate normal random (Box-Muller)
   function normalRandom(mean, stdDev) {
-    var u1 = Math.random();
-    var u2 = Math.random();
+    var u1 = rng();
+    var u2 = rng();
     if (u1 < 1e-10) u1 = 1e-10;
     var z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
     return mean + stdDev * z;
@@ -147,6 +161,9 @@
     var fullDelay = Math.floor(delayYears);
     var fracDelay = delayYears - fullDelay;
 
+    // Use the same scenario set every run so input changes are comparable.
+    resetRng();
+
     var successCount = 0;
     var endingBalances = [];
 
@@ -154,20 +171,30 @@
       var bal = portfolio;
       var failed = false;
 
+      // Pre-draw this path's entire return sequence up front. This keeps the
+      // per-path random draw count fixed, so an early failure can't shift the
+      // RNG stream — the scenario set stays identical across timing modes and
+      // reruns (true common random numbers).
+      var delayRets = [];
+      for (var dg = 0; dg < fullDelay; dg++) delayRets.push(normalRandom(mean, stdDev));
+      var fracRet = fracDelay > 0 ? normalRandom(mean * fracDelay, stdDev * Math.sqrt(fracDelay)) : null;
+      var yearRets = [];
+      for (var yr = 0; yr < years; yr++) yearRets.push(normalRandom(mean, stdDev));
+
       // Growth-only phase: portfolio compounds untouched until withdrawals start.
       for (var g = 0; g < fullDelay && !failed; g++) {
-        bal = bal * (1 + normalRandom(mean, stdDev));
+        bal = bal * (1 + delayRets[g]);
         if (bal <= 0) { failed = true; endingBalances.push(bal); }
       }
-      // Partial first year (e.g. ~6 months). Scale drift/vol by sqrt of time.
-      if (!failed && fracDelay > 0) {
-        bal = bal * (1 + normalRandom(mean * fracDelay, stdDev * Math.sqrt(fracDelay)));
+      // Partial first year (e.g. ~6 months); drift/vol already scaled by sqrt(t).
+      if (!failed && fracRet !== null) {
+        bal = bal * (1 + fracRet);
         if (bal <= 0) { failed = true; endingBalances.push(bal); }
       }
 
       // Withdrawal phase.
       for (var y = 0; y < years && !failed; y++) {
-        var ret = normalRandom(mean, stdDev);
+        var ret = yearRets[y];
         var withdrawalThisYear = withdrawal;
         if (infl > 0) {
           withdrawalThisYear = withdrawal * Math.pow(1 + infl, y);
