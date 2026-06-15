@@ -74,7 +74,7 @@ $isPremium = has_premium_access();
         <div class="slider-row">
           <div class="slider-label"><span>Annual Withdrawal</span></div>
           <div class="amount-field"><span class="currency-prefix">$</span><input type="text" inputmode="numeric" id="withdrawal" value="40,000" aria-label="Annual withdrawal in dollars"></div>
-          <small style="color: #666;">First-year withdrawal. Optionally grow with inflation below.</small>
+          <small style="color: #666;">First-year withdrawal. Optionally grow with inflation specified.</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Inflation Rate for Withdrawals (%)</span><span class="value" id="inflationRateLabel">0%</span></div>
