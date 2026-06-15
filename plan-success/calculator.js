@@ -14,8 +14,8 @@
   }
 
   var LIMITS = {
-    portfolio: { min: 50000, max: 5000000 },
-    withdrawal: { min: 10000, max: 500000 },
+    portfolio: { min: 1000, max: 50000000 },
+    withdrawal: { min: 0, max: 5000000 },
     years: { min: 5, max: 50 },
     expectedReturn: { min: 0, max: 20 },
     volatility: { min: 0, max: 50 },
@@ -27,23 +27,34 @@
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0, minimumFractionDigits: 0 }).format(n);
   }
 
+  // Read a dollar amount from a free-text field, ignoring $, commas, spaces.
+  function parseAmount(id) {
+    var el = document.getElementById(id);
+    if (!el) return NaN;
+    var raw = String(el.value).replace(/[^0-9.]/g, '');
+    if (raw === '') return NaN;
+    return parseFloat(raw);
+  }
+
+  // Re-display a dollar field with thousands separators (whole dollars).
+  function formatAmountField(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var n = parseAmount(id);
+    el.value = isNaN(n) ? '' : Math.round(n).toLocaleString('en-US');
+  }
+
   function updateLabels() {
-    var portfolio = parseFloat(document.getElementById('portfolio').value);
-    var withdrawal = parseFloat(document.getElementById('withdrawal').value);
     var inflationRatePct = parseFloat(document.getElementById('inflationRate').value);
     var years = parseInt(document.getElementById('years').value, 10);
     var expectedReturnPct = parseFloat(document.getElementById('expectedReturn').value);
     var volatilityPct = parseFloat(document.getElementById('volatility').value);
     var numSims = parseInt(document.getElementById('simulations').value, 10);
-    var portfolioLabel = document.getElementById('portfolioLabel');
-    var withdrawalLabel = document.getElementById('withdrawalLabel');
     var inflationRateLabel = document.getElementById('inflationRateLabel');
     var yearsLabel = document.getElementById('yearsLabel');
     var expectedReturnLabel = document.getElementById('expectedReturnLabel');
     var volatilityLabel = document.getElementById('volatilityLabel');
     var simulationsLabel = document.getElementById('simulationsLabel');
-    if (portfolioLabel) portfolioLabel.textContent = isNaN(portfolio) ? '' : fmtCurrency(portfolio);
-    if (withdrawalLabel) withdrawalLabel.textContent = isNaN(withdrawal) ? '' : fmtCurrency(withdrawal);
     if (inflationRateLabel) inflationRateLabel.textContent = isNaN(inflationRatePct) ? '' : inflationRatePct.toFixed(1) + '%';
     if (yearsLabel) yearsLabel.textContent = isNaN(years) ? '' : years + ' yrs';
     if (expectedReturnLabel) expectedReturnLabel.textContent = isNaN(expectedReturnPct) ? '' : expectedReturnPct.toFixed(2).replace(/\.00$/, '') + '%';
@@ -52,16 +63,16 @@
   }
 
   function validateInputs() {
-    var portfolio = parseFloat(document.getElementById('portfolio').value);
-    var withdrawal = parseFloat(document.getElementById('withdrawal').value);
+    var portfolio = parseAmount('portfolio');
+    var withdrawal = parseAmount('withdrawal');
     var years = parseInt(document.getElementById('years').value, 10);
     var expectedReturnPct = parseFloat(document.getElementById('expectedReturn').value);
     var volatilityPct = parseFloat(document.getElementById('volatility').value);
     var numSims = parseInt(document.getElementById('simulations').value, 10);
     var inflationRatePct = parseFloat(document.getElementById('inflationRate').value);
     var err = [];
-    if (isNaN(portfolio) || portfolio < LIMITS.portfolio.min || portfolio > LIMITS.portfolio.max) err.push('Starting portfolio: $50,000 to $5,000,000');
-    if (isNaN(withdrawal) || withdrawal < LIMITS.withdrawal.min || withdrawal > LIMITS.withdrawal.max) err.push('Annual withdrawal: $10,000 to $500,000');
+    if (isNaN(portfolio) || portfolio < LIMITS.portfolio.min || portfolio > LIMITS.portfolio.max) err.push('Starting portfolio: $1,000 to $50,000,000');
+    if (isNaN(withdrawal) || withdrawal < LIMITS.withdrawal.min || withdrawal > LIMITS.withdrawal.max) err.push('Annual withdrawal: $0 to $5,000,000');
     if (isNaN(years) || years < LIMITS.years.min || years > LIMITS.years.max) err.push('Years to model: 5 to 50');
     if (isNaN(expectedReturnPct) || expectedReturnPct < LIMITS.expectedReturn.min || expectedReturnPct > LIMITS.expectedReturn.max) err.push('Expected return: 0% to 20%');
     if (isNaN(volatilityPct) || volatilityPct < LIMITS.volatility.min || volatilityPct > LIMITS.volatility.max) err.push('Volatility: 0% to 50%');
@@ -247,6 +258,14 @@
   inputIds.forEach(function (id) {
     var el = document.getElementById(id);
     if (el) el.addEventListener('input', scheduleRun);
+  });
+
+  ['portfolio', 'withdrawal'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('blur', function () { formatAmountField(id); });
+      formatAmountField(id);
+    }
   });
 
   updateLabels();

@@ -24,6 +24,11 @@ $isPremium = has_premium_access();
     input[type="range"]::-moz-range-track { height: 6px; background: #e5e7eb; border-radius: 999px; }
     input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 999px; background: #1d4ed8; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(37,99,235,.5), 0 6px 12px rgba(15,23,42,.15); margin-top: -6px; }
     input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 999px; background: #1d4ed8; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(37,99,235,.5), 0 6px 12px rgba(15,23,42,.15); }
+    .amount-field { display: flex; align-items: center; border: 1px solid #d1d5db; border-radius: 8px; padding: 9px 12px; background: #fff; transition: border-color .15s, box-shadow .15s; }
+    .amount-field:focus-within { border-color: #1d4ed8; box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
+    .amount-field .currency-prefix { color: #6b7280; font-weight: 600; font-size: 16px; margin-right: 6px; }
+    .amount-field input { border: none; outline: none; width: 100%; padding: 0; font-size: 16px; font-weight: 600; color: #111827; background: transparent; }
+    .amount-field input::-webkit-outer-spin-button, .amount-field input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   </style>
 </head>
 <body>
@@ -60,13 +65,13 @@ $isPremium = has_premium_access();
       <div id="validationError" role="alert" style="display: none; margin-bottom: 15px; padding: 12px 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #b91c1c; font-size: 14px;"></div>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-bottom: 25px;">
         <div class="slider-row">
-          <div class="slider-label"><span>Starting Portfolio</span><span class="value" id="portfolioLabel">$1,000,000</span></div>
-          <input type="range" id="portfolio" min="50000" max="5000000" step="50000" value="1000000">
-          <small style="color: #666;">Today’s portfolio value</small>
+          <div class="slider-label"><span>Starting Portfolio</span></div>
+          <div class="amount-field"><span class="currency-prefix">$</span><input type="text" inputmode="numeric" id="portfolio" value="1,000,000" aria-label="Starting portfolio in dollars"></div>
+          <small style="color: #666;">Portfolio value when withdrawals begin — this year or a future year (e.g. 2027).</small>
         </div>
         <div class="slider-row">
-          <div class="slider-label"><span>Annual Withdrawal</span><span class="value" id="withdrawalLabel">$40,000</span></div>
-          <input type="range" id="withdrawal" min="10000" max="500000" step="5000" value="40000">
+          <div class="slider-label"><span>Annual Withdrawal</span></div>
+          <div class="amount-field"><span class="currency-prefix">$</span><input type="text" inputmode="numeric" id="withdrawal" value="40,000" aria-label="Annual withdrawal in dollars"></div>
           <small style="color: #666;">First-year withdrawal. Optionally grow with inflation below.</small>
         </div>
         <div class="slider-row">
