@@ -29,6 +29,8 @@ $isPremium = has_premium_access();
     .amount-field .currency-prefix { color: #6b7280; font-weight: 600; font-size: 16px; margin-right: 6px; }
     .amount-field input { border: none; outline: none; width: 100%; padding: 0; font-size: 16px; font-weight: 600; color: #111827; background: transparent; }
     .amount-field input::-webkit-outer-spin-button, .amount-field input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .date-field { width: 100%; box-sizing: border-box; border: 1px solid #d1d5db; border-radius: 8px; padding: 9px 12px; font-size: 16px; font-weight: 600; color: #111827; background: #fff; font-family: inherit; transition: border-color .15s, box-shadow .15s; }
+    .date-field:focus { outline: none; border-color: #1d4ed8; box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
   </style>
 </head>
 <body>
@@ -80,9 +82,14 @@ $isPremium = has_premium_access();
           <small style="color: #666;">0–10%. Set to 0 for flat withdrawals. Typical U.S. ~3%.</small>
         </div>
         <div class="slider-row">
+          <div class="slider-label"><span>Withdrawals Start Date</span><span class="value" id="delayYearsLabel">Starts now</span></div>
+          <input type="date" id="withdrawalStartDate" class="date-field" aria-label="Date withdrawals begin">
+          <small style="color: #666;">When withdrawals begin. Portfolio grows untouched until this date. Defaults to today.</small>
+        </div>
+        <div class="slider-row">
           <div class="slider-label"><span>Years to Model</span><span class="value" id="yearsLabel">30 yrs</span></div>
           <input type="range" id="years" min="5" max="50" step="1" value="30">
-          <small style="color: #666;">e.g. 30 for a 30-year retirement</small>
+          <small style="color: #666;">Years of withdrawals after the start date (e.g. 30 for a 30-year retirement)</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Expected Annual Return (%)</span><span class="value" id="expectedReturnLabel">6%</span></div>

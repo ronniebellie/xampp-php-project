@@ -20,7 +20,8 @@
     expectedReturn: { min: 0, max: 20 },
     volatility: { min: 0, max: 50 },
     simulations: { min: 100, max: 10000 },
-    inflationRate: { min: 0, max: 10 }
+    inflationRate: { min: 0, max: 10 },
+    delayYears: { min: 0, max: 40 }
   };
 
   function fmtCurrency(n) {
@@ -44,6 +45,35 @@
     el.value = isNaN(n) ? '' : Math.round(n).toLocaleString('en-US');
   }
 
+  function localTodayISO() {
+    var d = new Date();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '-' + m + '-' + day;
+  }
+
+  // Fractional years from today until the chosen "withdrawals start" date.
+  // Past/empty dates mean withdrawals start now (0). Capped for sanity.
+  function getDelayYears() {
+    var el = document.getElementById('withdrawalStartDate');
+    if (!el || !el.value) return 0;
+    var p = el.value.split('-');
+    if (p.length !== 3) return 0;
+    var start = new Date(+p[0], +p[1] - 1, +p[2]);
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var yrs = (start.getTime() - today.getTime()) / (365.25 * 24 * 3600 * 1000);
+    if (isNaN(yrs) || yrs < 0) return 0;
+    return Math.min(yrs, LIMITS.delayYears.max);
+  }
+
+  function formatDelay(yrs) {
+    if (yrs <= 0.02) return 'Starts now';
+    var months = Math.round(yrs * 12);
+    if (months < 24) return 'In ~' + months + ' mo';
+    return 'In ~' + yrs.toFixed(1) + ' yrs';
+  }
+
   function updateLabels() {
     var inflationRatePct = parseFloat(document.getElementById('inflationRate').value);
     var years = parseInt(document.getElementById('years').value, 10);
@@ -52,11 +82,13 @@
     var numSims = parseInt(document.getElementById('simulations').value, 10);
     var inflationRateLabel = document.getElementById('inflationRateLabel');
     var yearsLabel = document.getElementById('yearsLabel');
+    var delayYearsLabel = document.getElementById('delayYearsLabel');
     var expectedReturnLabel = document.getElementById('expectedReturnLabel');
     var volatilityLabel = document.getElementById('volatilityLabel');
     var simulationsLabel = document.getElementById('simulationsLabel');
     if (inflationRateLabel) inflationRateLabel.textContent = isNaN(inflationRatePct) ? '' : inflationRatePct.toFixed(1) + '%';
     if (yearsLabel) yearsLabel.textContent = isNaN(years) ? '' : years + ' yrs';
+    if (delayYearsLabel) delayYearsLabel.textContent = formatDelay(getDelayYears());
     if (expectedReturnLabel) expectedReturnLabel.textContent = isNaN(expectedReturnPct) ? '' : expectedReturnPct.toFixed(2).replace(/\.00$/, '') + '%';
     if (volatilityLabel) volatilityLabel.textContent = isNaN(volatilityPct) ? '' : volatilityPct.toFixed(1) + '%';
     if (simulationsLabel) simulationsLabel.textContent = isNaN(numSims) ? '' : numSims.toLocaleString() + ' sims';
@@ -78,7 +110,7 @@
     if (isNaN(volatilityPct) || volatilityPct < LIMITS.volatility.min || volatilityPct > LIMITS.volatility.max) err.push('Volatility: 0% to 50%');
     if (isNaN(numSims) || numSims < LIMITS.simulations.min || numSims > LIMITS.simulations.max) err.push('Simulations: 100 to 10,000');
     if (isNaN(inflationRatePct) || inflationRatePct < LIMITS.inflationRate.min || inflationRatePct > LIMITS.inflationRate.max) err.push('Inflation rate: 0% to 10%');
-    return { err: err, portfolio: portfolio, withdrawal: withdrawal, years: years, expectedReturnPct: expectedReturnPct, volatilityPct: volatilityPct, numSims: numSims, inflationRatePct: inflationRatePct };
+    return { err: err, portfolio: portfolio, withdrawal: withdrawal, years: years, expectedReturnPct: expectedReturnPct, volatilityPct: volatilityPct, numSims: numSims, inflationRatePct: inflationRatePct, delayYears: getDelayYears() };
   }
 
   function runMonteCarlo(shouldScroll) {
@@ -100,10 +132,14 @@
     var volatilityPct = v.volatilityPct;
     var numSims = v.numSims;
     var inflationRatePct = v.inflationRatePct;
+    var delayYears = v.delayYears;
 
     var mean = expectedReturnPct / 100;
     var stdDev = volatilityPct / 100;
     var infl = inflationRatePct / 100;
+
+    var fullDelay = Math.floor(delayYears);
+    var fracDelay = delayYears - fullDelay;
 
     var successCount = 0;
     var endingBalances = [];
@@ -111,7 +147,20 @@
     for (var s = 0; s < numSims; s++) {
       var bal = portfolio;
       var failed = false;
-      for (var y = 0; y < years; y++) {
+
+      // Growth-only phase: portfolio compounds untouched until withdrawals start.
+      for (var g = 0; g < fullDelay && !failed; g++) {
+        bal = bal * (1 + normalRandom(mean, stdDev));
+        if (bal <= 0) { failed = true; endingBalances.push(bal); }
+      }
+      // Partial first year (e.g. ~6 months). Scale drift/vol by sqrt of time.
+      if (!failed && fracDelay > 0) {
+        bal = bal * (1 + normalRandom(mean * fracDelay, stdDev * Math.sqrt(fracDelay)));
+        if (bal <= 0) { failed = true; endingBalances.push(bal); }
+      }
+
+      // Withdrawal phase.
+      for (var y = 0; y < years && !failed; y++) {
         var ret = normalRandom(mean, stdDev);
         var withdrawalThisYear = withdrawal;
         if (infl > 0) {
@@ -121,7 +170,6 @@
         if (bal <= 0) {
           failed = true;
           endingBalances.push(bal);
-          break;
         }
       }
       if (!failed) {
@@ -150,8 +198,11 @@
       return fmtCurrency(n);
     }
 
+    var delayNote = delayYears > 0.02
+      ? ' (after growing untouched for ' + (formatDelay(delayYears).replace(/^In ~/, '~')) + ')'
+      : '';
     summaryBox.innerHTML =
-      '<p><strong>Success rate:</strong> Your plan lasted all ' + years + ' years in <strong>' + successRate + '%</strong> of ' + numSims.toLocaleString() + ' simulations.</p>' +
+      '<p><strong>Success rate:</strong> Your plan lasted all ' + years + ' years of withdrawals' + delayNote + ' in <strong>' + successRate + '%</strong> of ' + numSims.toLocaleString() + ' simulations.</p>' +
       '<p><strong>Ending portfolio percentiles:</strong> 25th = ' + fmt(p25) + ', 50th (median) = ' + fmt(p50) + ', 75th = ' + fmt(p75) + '.</p>' +
       '<p>Lower percentiles include runs that ran out of money (negative ending balance).</p>';
 
@@ -186,9 +237,10 @@
       volatilityPct,
       numSims,
       inflationRatePct,
+      delayYears,
       successRate,
       p25, p50, p75,
-      summary: 'Plan Success (Monte Carlo). Starting portfolio $' + portfolio.toLocaleString() + ', annual withdrawal $' + withdrawal.toLocaleString() + ' for ' + years + ' years. Expected return ' + expectedReturnPct + '%, volatility ' + volatilityPct + '%. Success rate: ' + successRate + '% of ' + numSims.toLocaleString() + ' simulations. Ending portfolio percentiles: 25th ' + fmt(p25) + ', median ' + fmt(p50) + ', 75th ' + fmt(p75) + '.'
+      summary: 'Plan Success (Monte Carlo). Starting portfolio $' + portfolio.toLocaleString() + (delayYears > 0.02 ? ', growing untouched for about ' + (delayYears < 2 ? Math.round(delayYears * 12) + ' months' : delayYears.toFixed(1) + ' years') + ' before withdrawals begin' : '') + ', annual withdrawal $' + withdrawal.toLocaleString() + ' for ' + years + ' years. Expected return ' + expectedReturnPct + '%, volatility ' + volatilityPct + '%. Success rate: ' + successRate + '% of ' + numSims.toLocaleString() + ' simulations. Ending portfolio percentiles: 25th ' + fmt(p25) + ', median ' + fmt(p50) + ', 75th ' + fmt(p75) + '.'
     };
 
     if (shouldScroll) {
@@ -245,7 +297,7 @@
   var runBtn = document.getElementById('runMonteCarloBtn');
   if (runBtn) runBtn.addEventListener('click', function () { runMonteCarlo(true); });
 
-  var inputIds = ['portfolio', 'withdrawal', 'inflationRate', 'years', 'expectedReturn', 'volatility', 'simulations'];
+  var inputIds = ['portfolio', 'withdrawal', 'inflationRate', 'years', 'expectedReturn', 'volatility', 'simulations', 'withdrawalStartDate'];
   var runTimeout = null;
   function scheduleRun() {
     updateLabels();
@@ -267,6 +319,13 @@
       formatAmountField(id);
     }
   });
+
+  var startDateEl = document.getElementById('withdrawalStartDate');
+  if (startDateEl) {
+    startDateEl.min = localTodayISO();
+    if (!startDateEl.value) startDateEl.value = localTodayISO();
+    startDateEl.addEventListener('change', scheduleRun);
+  }
 
   updateLabels();
 
