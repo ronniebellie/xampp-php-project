@@ -31,6 +31,8 @@ $isPremium = has_premium_access();
     .amount-field input::-webkit-outer-spin-button, .amount-field input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     .date-field { width: 100%; box-sizing: border-box; border: 1px solid #d1d5db; border-radius: 8px; padding: 9px 12px; font-size: 16px; font-weight: 600; color: #111827; background: #fff; font-family: inherit; transition: border-color .15s, box-shadow .15s; }
     .date-field:focus { outline: none; border-color: #1d4ed8; box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
+    .select-field { width: 100%; box-sizing: border-box; border: 1px solid #d1d5db; border-radius: 8px; padding: 9px 12px; font-size: 16px; font-weight: 600; color: #111827; background: #fff; font-family: inherit; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+    .select-field:focus { outline: none; border-color: #1d4ed8; box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
   </style>
 </head>
 <body>
@@ -75,6 +77,14 @@ $isPremium = has_premium_access();
           <div class="slider-label"><span>Annual Withdrawal</span></div>
           <div class="amount-field"><span class="currency-prefix">$</span><input type="text" inputmode="numeric" id="withdrawal" value="40,000" aria-label="Annual withdrawal in dollars"></div>
           <small style="color: #666;">First-year withdrawal. Optionally grow with inflation specified.</small>
+        </div>
+        <div class="slider-row">
+          <div class="slider-label"><span>Withdrawal Timing</span></div>
+          <select id="withdrawalTiming" class="select-field" aria-label="Withdrawal timing">
+            <option value="monthly" selected>Monthly (1/12 each month)</option>
+            <option value="annual">Annual (lump sum on Jan 1)</option>
+          </select>
+          <small style="color: #666;">How the annual amount is taken. Monthly is more realistic and slightly more favorable.</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Inflation Rate for Withdrawals (%)</span><span class="value" id="inflationRateLabel">0%</span></div>

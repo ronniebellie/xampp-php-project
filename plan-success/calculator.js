@@ -74,6 +74,11 @@
     return 'In ~' + yrs.toFixed(1) + ' yrs';
   }
 
+  function getTiming() {
+    var el = document.getElementById('withdrawalTiming');
+    return el && el.value === 'annual' ? 'annual' : 'monthly';
+  }
+
   function updateLabels() {
     var inflationRatePct = parseFloat(document.getElementById('inflationRate').value);
     var years = parseInt(document.getElementById('years').value, 10);
@@ -110,7 +115,7 @@
     if (isNaN(volatilityPct) || volatilityPct < LIMITS.volatility.min || volatilityPct > LIMITS.volatility.max) err.push('Volatility: 0% to 50%');
     if (isNaN(numSims) || numSims < LIMITS.simulations.min || numSims > LIMITS.simulations.max) err.push('Simulations: 100 to 10,000');
     if (isNaN(inflationRatePct) || inflationRatePct < LIMITS.inflationRate.min || inflationRatePct > LIMITS.inflationRate.max) err.push('Inflation rate: 0% to 10%');
-    return { err: err, portfolio: portfolio, withdrawal: withdrawal, years: years, expectedReturnPct: expectedReturnPct, volatilityPct: volatilityPct, numSims: numSims, inflationRatePct: inflationRatePct, delayYears: getDelayYears() };
+    return { err: err, portfolio: portfolio, withdrawal: withdrawal, years: years, expectedReturnPct: expectedReturnPct, volatilityPct: volatilityPct, numSims: numSims, inflationRatePct: inflationRatePct, delayYears: getDelayYears(), timing: getTiming() };
   }
 
   function runMonteCarlo(shouldScroll) {
@@ -133,6 +138,7 @@
     var numSims = v.numSims;
     var inflationRatePct = v.inflationRatePct;
     var delayYears = v.delayYears;
+    var timing = v.timing;
 
     var mean = expectedReturnPct / 100;
     var stdDev = volatilityPct / 100;
@@ -166,10 +172,26 @@
         if (infl > 0) {
           withdrawalThisYear = withdrawal * Math.pow(1 + infl, y);
         }
-        bal = (bal - withdrawalThisYear) * (1 + ret);
-        if (bal <= 0) {
-          failed = true;
-          endingBalances.push(bal);
+        if (timing === 'annual') {
+          // Full year's withdrawal taken on Jan 1, remainder grows all year.
+          bal = (bal - withdrawalThisYear) * (1 + ret);
+          if (bal <= 0) {
+            failed = true;
+            endingBalances.push(bal);
+          }
+        } else {
+          // Monthly: take 1/12 at the start of each month, grow by the
+          // monthly-equivalent of the same annual return draw.
+          var oneplus = 1 + ret;
+          var mFactor = oneplus <= 0 ? 0 : Math.pow(oneplus, 1 / 12);
+          var monthlyW = withdrawalThisYear / 12;
+          for (var m = 0; m < 12 && !failed; m++) {
+            bal = (bal - monthlyW) * mFactor;
+            if (bal <= 0) {
+              failed = true;
+              endingBalances.push(bal);
+            }
+          }
         }
       }
       if (!failed) {
@@ -201,8 +223,10 @@
     var delayNote = delayYears > 0.02
       ? ' (after growing untouched for ' + (formatDelay(delayYears).replace(/^In ~/, '~')) + ')'
       : '';
+    var timingNote = timing === 'annual' ? 'annually on January 1' : 'monthly';
     summaryBox.innerHTML =
       '<p><strong>Success rate:</strong> Your plan lasted all ' + years + ' years of withdrawals' + delayNote + ' in <strong>' + successRate + '%</strong> of ' + numSims.toLocaleString() + ' simulations.</p>' +
+      '<p style="font-size: 13px; color: #4b5563;">Withdrawals taken <strong>' + timingNote + '</strong>.</p>' +
       '<p><strong>Ending portfolio percentiles:</strong> 25th = ' + fmt(p25) + ', 50th (median) = ' + fmt(p50) + ', 75th = ' + fmt(p75) + '.</p>' +
       '<p>Lower percentiles include runs that ran out of money (negative ending balance).</p>';
 
@@ -238,9 +262,10 @@
       numSims,
       inflationRatePct,
       delayYears,
+      timing,
       successRate,
       p25, p50, p75,
-      summary: 'Plan Success (Monte Carlo). Starting portfolio $' + portfolio.toLocaleString() + (delayYears > 0.02 ? ', growing untouched for about ' + (delayYears < 2 ? Math.round(delayYears * 12) + ' months' : delayYears.toFixed(1) + ' years') + ' before withdrawals begin' : '') + ', annual withdrawal $' + withdrawal.toLocaleString() + ' for ' + years + ' years. Expected return ' + expectedReturnPct + '%, volatility ' + volatilityPct + '%. Success rate: ' + successRate + '% of ' + numSims.toLocaleString() + ' simulations. Ending portfolio percentiles: 25th ' + fmt(p25) + ', median ' + fmt(p50) + ', 75th ' + fmt(p75) + '.'
+      summary: 'Plan Success (Monte Carlo). Starting portfolio $' + portfolio.toLocaleString() + (delayYears > 0.02 ? ', growing untouched for about ' + (delayYears < 2 ? Math.round(delayYears * 12) + ' months' : delayYears.toFixed(1) + ' years') + ' before withdrawals begin' : '') + ', annual withdrawal $' + withdrawal.toLocaleString() + ' (' + (timing === 'annual' ? 'taken annually on January 1' : 'taken monthly') + ') for ' + years + ' years. Expected return ' + expectedReturnPct + '%, volatility ' + volatilityPct + '%. Success rate: ' + successRate + '% of ' + numSims.toLocaleString() + ' simulations. Ending portfolio percentiles: 25th ' + fmt(p25) + ', median ' + fmt(p50) + ', 75th ' + fmt(p75) + '.'
     };
 
     if (shouldScroll) {
@@ -297,7 +322,7 @@
   var runBtn = document.getElementById('runMonteCarloBtn');
   if (runBtn) runBtn.addEventListener('click', function () { runMonteCarlo(true); });
 
-  var inputIds = ['portfolio', 'withdrawal', 'inflationRate', 'years', 'expectedReturn', 'volatility', 'simulations', 'withdrawalStartDate'];
+  var inputIds = ['portfolio', 'withdrawal', 'inflationRate', 'years', 'expectedReturn', 'volatility', 'simulations', 'withdrawalStartDate', 'withdrawalTiming'];
   var runTimeout = null;
   function scheduleRun() {
     updateLabels();
@@ -326,6 +351,9 @@
     if (!startDateEl.value) startDateEl.value = localTodayISO();
     startDateEl.addEventListener('change', scheduleRun);
   }
+
+  var timingEl = document.getElementById('withdrawalTiming');
+  if (timingEl) timingEl.addEventListener('change', scheduleRun);
 
   updateLabels();
 
