@@ -20,6 +20,12 @@ RewriteRule ^ https://ronbelisle.com%{REQUEST_URI} [L,R=301]
 RewriteCond %{HTTP_HOST} ^ronbelisle\.com$ [NC]
 RewriteRule ^retirement-app(/.*)?$ / [R=301,L]
 
+# Calculator footers used relative about/disclaimer links; redirect nested copies to root.
+RewriteCond %{HTTP_HOST} ^ronbelisle\.com$ [NC]
+RewriteRule ^.+/about\.php$ /about.php [R=301,L]
+RewriteCond %{HTTP_HOST} ^ronbelisle\.com$ [NC]
+RewriteRule ^.+/disclaimer\.php$ /disclaimer.php [R=301,L]
+
 # Canonical homepage URL: /index.php -> / (301)
 # Use THE_REQUEST so we only redirect real /index.php requests (not internal rewrites).
 RewriteCond %{HTTP_HOST} ^ronbelisle\.com$ [NC]
