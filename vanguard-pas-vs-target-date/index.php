@@ -99,14 +99,14 @@ $isPremium = has_premium_access();
                 <div class="input-group">
                     <div class="slider-label">
                         <span>Annual Withdrawal (% of portfolio)</span>
-                        <span class="value" id="withdrawalPctLabel">0%</span>
+                        <span class="value" id="withdrawalPctLabel">4.2%</span>
                     </div>
-                    <input type="range" id="withdrawalPct" value="0" min="0" max="10" step="0.1">
+                    <input type="range" id="withdrawalPct" value="4.2" min="0" max="10" step="0.1">
                     <span class="help-text">Set to 0 for no withdrawal. Many retirees use ~4% (e.g. 4.2% starting in a given year).</span>
                 </div>
                 <div class="input-group">
                     <label for="withdrawalsStartYear">Withdrawals start year</label>
-                    <input type="number" id="withdrawalsStartYear" value="<?php echo (int)date('Y'); ?>" min="2000" max="2100" step="1">
+                    <input type="number" id="withdrawalsStartYear" value="2027" min="2000" max="2100" step="1">
                     <span class="help-text">Calendar year when you begin taking the annual withdrawal % above. Example: 2027 if you won&rsquo;t withdraw until then.</span>
                 </div>
 
@@ -116,25 +116,25 @@ $isPremium = has_premium_access();
                 <div class="input-group">
                     <div class="slider-label">
                         <span>Conservative (Income / 2020)</span>
-                        <span class="value" id="pctConservativeLabel">40%</span>
+                        <span class="value" id="pctConservativeLabel">33.3%</span>
                     </div>
-                    <input type="range" id="pctConservative" value="40" min="0" max="100" step="5">
+                    <input type="range" id="pctConservative" value="20" min="0" max="100" step="5">
                     <span class="help-text">VTINX, VTWNX</span>
                 </div>
 
                 <div class="input-group">
                     <div class="slider-label">
                         <span>Moderate (2025–2035)</span>
-                        <span class="value" id="pctModerateLabel">40%</span>
+                        <span class="value" id="pctModerateLabel">33.3%</span>
                     </div>
-                    <input type="range" id="pctModerate" value="40" min="0" max="100" step="5">
+                    <input type="range" id="pctModerate" value="20" min="0" max="100" step="5">
                     <span class="help-text">VTTVX, VTHRX, VTTHX</span>
                 </div>
 
                 <div class="input-group">
                     <div class="slider-label">
                         <span>Aggressive (2040–2070)</span>
-                        <span class="value" id="pctAggressiveLabel">20%</span>
+                        <span class="value" id="pctAggressiveLabel">33.3%</span>
                     </div>
                     <input type="range" id="pctAggressive" value="20" min="0" max="100" step="5">
                     <span class="help-text">VFORX, VTIVX, VFIFX, VFFVX, VTTSX, VLXVX, VSVNX</span>
