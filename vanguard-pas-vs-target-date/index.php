@@ -55,11 +55,9 @@ $isPremium = has_premium_access();
                 <h2>Your Portfolio &amp; Assumptions</h2>
 
                 <div class="input-group">
-                    <div class="slider-label">
-                        <span>Current Portfolio Value</span>
-                        <span class="value" id="portfolioValueLabel">$1,000,000</span>
-                    </div>
-                    <input type="range" id="portfolioValue" value="1000000" min="50000" max="5000000" step="25000">
+                    <label for="portfolioValue">Current Portfolio Value ($)</label>
+                    <input type="number" id="portfolioValue" value="1000000" min="0" step="1000">
+                    <span class="help-text">Enter your exact portfolio value (e.g. 1,325,000 &rarr; 1325000).</span>
                 </div>
 
                 <div class="input-group">
@@ -152,6 +150,13 @@ $isPremium = has_premium_access();
                     <div class="cost-label">Total Opportunity Cost Over <span id="resultYears"></span> Years:</div>
                     <div class="cost-amount" id="opportunityCost">$0</div>
                     <div class="cost-average">≈ <span id="avgAnnualCost">$0</span> per year on average</div>
+                    <div class="cost-breakdown" id="costBreakdown">
+                        <span class="cb-part"><span class="cb-num" id="breakdownFees">$0</span><span class="cb-desc">extra advisor fees</span></span>
+                        <span class="cb-op">+</span>
+                        <span class="cb-part"><span class="cb-num" id="breakdownGrowth">$0</span><span class="cb-desc">lost investment growth</span></span>
+                        <span class="cb-op">=</span>
+                        <span class="cb-part cb-total"><span class="cb-num" id="breakdownTotal">$0</span><span class="cb-desc">total opportunity cost</span></span>
+                    </div>
                     <div class="cost-explanation">Extra amount you could have by self-managing with Target Date funds instead of PAS</div>
                 </div>
 
@@ -184,6 +189,13 @@ $isPremium = has_premium_access();
                         <div class="col-difference negative large" id="finalValueDiff"></div>
                     </div>
 
+                    <div class="comparison-row" id="incomeRow">
+                        <div class="row-label">Retirement Income Taken</div>
+                        <div class="col-managed" id="pasTotalIncome"></div>
+                        <div class="col-vanguard" id="targetTotalIncome"></div>
+                        <div class="col-difference neutral" id="totalIncomeDiff"></div>
+                    </div>
+
                     <div class="comparison-row">
                         <div class="row-label">Total Fees Paid</div>
                         <div class="col-managed" id="pasTotalFees"></div>
@@ -213,7 +225,7 @@ $isPremium = has_premium_access();
                     <div class="insight-box">
                         <div class="insight-icon">📈</div>
                         <div class="insight-content">
-                            <strong>Lost Growth:</strong> Those fee dollars would have grown to <span id="insightLostGrowth"></span> in the Target Date blend.
+                            <strong>Lost Growth:</strong> Beyond the fees themselves, you miss about <span id="insightLostGrowth"></span> of compounding those dollars could have earned in the market.
                         </div>
                     </div>
                     <div class="insight-box">
@@ -250,7 +262,7 @@ $isPremium = has_premium_access();
     <script>
     const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
     </script>
-    <script src="calculator.js?v=5"></script>
+    <script src="calculator.js?v=7"></script>
     <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/calculator-footer.php'; ?>
 </body>
 </html>

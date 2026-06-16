@@ -144,16 +144,38 @@
     document.getElementById('targetFinalValue').textContent = formatCurrency(targetFinal);
     document.getElementById('finalValueDiff').textContent = formatCurrency(opportunityCost);
 
+    var pasIncome = pasData[years].totalWithdrawals;
+    var targetIncome = targetData[years].totalWithdrawals;
+    var incomeRow = document.getElementById('incomeRow');
+    if (incomeRow) incomeRow.style.display = withdrawalPct > 0 ? '' : 'none';
+    var pasIncomeEl = document.getElementById('pasTotalIncome');
+    var targetIncomeEl = document.getElementById('targetTotalIncome');
+    var incomeDiffEl = document.getElementById('totalIncomeDiff');
+    if (pasIncomeEl) pasIncomeEl.textContent = formatCurrency(pasIncome);
+    if (targetIncomeEl) targetIncomeEl.textContent = formatCurrency(targetIncome);
+    if (incomeDiffEl) {
+      var incomeDiff = targetIncome - pasIncome;
+      incomeDiffEl.textContent = (incomeDiff > 0 ? '+' : '') + formatCurrency(incomeDiff);
+    }
+
     var directFeeDiff = pasData[years].totalFees - targetData[years].totalFees;
     document.getElementById('pasTotalFees').textContent = formatCurrency(pasData[years].totalFees);
     document.getElementById('targetTotalFees').textContent = formatCurrency(targetData[years].totalFees);
     document.getElementById('totalFeesDiff').textContent = formatCurrency(directFeeDiff);
 
     var lostGrowth = opportunityCost - directFeeDiff;
+    var lostGrowthDisplay = Math.max(0, lostGrowth);
     document.getElementById('insightDirectFees').textContent = formatCurrency(directFeeDiff);
     document.getElementById('insightYears').textContent = years;
-    document.getElementById('insightLostGrowth').textContent = formatCurrency(lostGrowth > 0 ? lostGrowth : opportunityCost);
+    document.getElementById('insightLostGrowth').textContent = formatCurrency(lostGrowthDisplay);
     document.getElementById('insightAllocation').textContent = alloc.c + '% / ' + alloc.m + '% / ' + alloc.a + '%';
+
+    var breakdownFeesEl = document.getElementById('breakdownFees');
+    var breakdownGrowthEl = document.getElementById('breakdownGrowth');
+    var breakdownTotalEl = document.getElementById('breakdownTotal');
+    if (breakdownFeesEl) breakdownFeesEl.textContent = formatCurrency(directFeeDiff);
+    if (breakdownGrowthEl) breakdownGrowthEl.textContent = formatCurrency(lostGrowthDisplay);
+    if (breakdownTotalEl) breakdownTotalEl.textContent = formatCurrency(opportunityCost);
 
     createChart(pasData, targetData, years);
     createFeesChart(pasData, targetData, years);

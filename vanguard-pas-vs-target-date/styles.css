@@ -175,6 +175,33 @@ input[type="number"][readonly]::-webkit-inner-spin-button {
 .cost-average { font-size: 20px; font-weight: 700; margin-bottom: 12px; opacity: 0.95; }
 .cost-explanation { font-size: 15px; opacity: 0.9; }
 
+.cost-breakdown {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: stretch;
+    gap: 10px;
+    max-width: 580px;
+    margin: 0 auto 16px;
+}
+.cost-breakdown .cb-part {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 0;
+    min-width: 120px;
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 8px;
+}
+.cost-breakdown .cb-total { background: rgba(255,255,255,0.28); }
+.cost-breakdown .cb-num { font-size: 20px; font-weight: 800; line-height: 1.2; }
+.cost-breakdown .cb-desc { font-size: 12px; font-weight: 600; opacity: 0.9; margin-top: 3px; }
+.cost-breakdown .cb-op { display: flex; align-items: center; font-size: 22px; font-weight: 800; opacity: 0.9; }
+
+.col-difference.neutral { color: #0f766e; font-weight: 700; }
+
 .comparison-table { margin-bottom: 40px; }
 
 .comparison-header,
@@ -283,6 +310,8 @@ input[type="number"][readonly]::-webkit-inner-spin-button {
     .comparison-header, .comparison-row { grid-template-columns: 1fr; gap: 8px; text-align: left !important; }
     .comparison-header > div, .comparison-row > div { text-align: left !important; }
     .cost-amount { font-size: 36px; }
+    .cost-breakdown { flex-direction: column; gap: 6px; }
+    .cost-breakdown .cb-op { justify-content: center; }
     .insight-box { flex-direction: column; text-align: center; }
 }
 
