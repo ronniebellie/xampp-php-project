@@ -15,7 +15,7 @@ $isPremium = has_premium_access();
     <title>Vanguard Personal Advisor vs Target Date Funds</title>
     <?php $og_title = $ld_name = 'Vanguard Personal Advisor vs Target Date Funds'; $og_description = $ld_description = 'Compare Vanguard PAS fees with a self-managed mix of Vanguard Target Date funds. See your opportunity cost.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
     <link rel="stylesheet" href="../css/styles.css">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=2">
 </head>
 <body>
     <?php include('../includes/premium-banner-include.php'); ?>
