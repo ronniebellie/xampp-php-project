@@ -15,7 +15,7 @@ $isPremium = has_premium_access();
     <title>Vanguard Personal Advisor vs Target Date Funds</title>
     <?php $og_title = $ld_name = 'Vanguard Personal Advisor vs Target Date Funds'; $og_description = $ld_description = 'Compare Vanguard PAS fees with a self-managed mix of Vanguard Target Date funds. See your opportunity cost.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
     <link rel="stylesheet" href="../css/styles.css">
-    <link rel="stylesheet" href="styles.css?v=2">
+    <link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
     <?php include('../includes/premium-banner-include.php'); ?>
@@ -160,47 +160,62 @@ $isPremium = has_premium_access();
                     <div class="cost-explanation">Extra amount you could have by self-managing with Target Date funds instead of PAS</div>
                 </div>
 
-                <div class="comparison-table">
-                    <div class="comparison-header">
-                        <div class="col-label"></div>
-                        <div class="col-managed">Vanguard PAS<br><span class="fee-label" id="pasFeeResultLabel"></span></div>
-                        <div class="col-vanguard">Target Date Blend<br><span class="fee-label">~0.08% fee</span></div>
-                        <div class="col-difference">You're Giving Up</div>
-                    </div>
+                <div class="comparison-section">
+                    <h3 class="comparison-section-title">Fees &amp; Costs</h3>
+                    <div class="comparison-table">
+                        <div class="comparison-header">
+                            <div class="col-label"></div>
+                            <div class="col-managed">Vanguard PAS<br><span class="fee-label" id="pasFeeResultLabel"></span></div>
+                            <div class="col-vanguard">Target Date Blend<br><span class="fee-label">~0.08% fee</span></div>
+                            <div class="col-difference">You're Giving Up</div>
+                        </div>
 
-                    <div class="comparison-row">
-                        <div class="row-label">Year 1 Fee</div>
-                        <div class="col-managed" id="pasYear1Fee"></div>
-                        <div class="col-vanguard" id="targetYear1Fee"></div>
-                        <div class="col-difference negative" id="year1FeeDiff"></div>
-                    </div>
+                        <div class="comparison-row">
+                            <div class="row-label">Year 1 Fee</div>
+                            <div class="col-managed" id="pasYear1Fee"></div>
+                            <div class="col-vanguard" id="targetYear1Fee"></div>
+                            <div class="col-difference negative" id="year1FeeDiff"></div>
+                        </div>
 
-                    <div class="comparison-row">
-                        <div class="row-label">Year <span id="midYearLabel"></span> Portfolio</div>
-                        <div class="col-managed" id="pasMidValue"></div>
-                        <div class="col-vanguard" id="targetMidValue"></div>
-                        <div class="col-difference negative" id="midValueDiff"></div>
+                        <div class="comparison-row">
+                            <div class="row-label">Total Fees Paid</div>
+                            <div class="col-managed" id="pasTotalFees"></div>
+                            <div class="col-vanguard" id="targetTotalFees"></div>
+                            <div class="col-difference negative" id="totalFeesDiff"></div>
+                        </div>
                     </div>
+                </div>
 
-                    <div class="comparison-row highlight">
-                        <div class="row-label">Year <span id="finalYearLabel"></span> Portfolio</div>
-                        <div class="col-managed" id="pasFinalValue"></div>
-                        <div class="col-vanguard" id="targetFinalValue"></div>
-                        <div class="col-difference negative large" id="finalValueDiff"></div>
-                    </div>
+                <div class="comparison-section">
+                    <h3 class="comparison-section-title">Portfolio &amp; Income</h3>
+                    <div class="comparison-table">
+                        <div class="comparison-header">
+                            <div class="col-label"></div>
+                            <div class="col-managed">Vanguard PAS<br><span class="fee-label">0.30% fee</span></div>
+                            <div class="col-vanguard">Target Date Blend<br><span class="fee-label">~0.08% fee</span></div>
+                            <div class="col-difference">You're Giving Up</div>
+                        </div>
 
-                    <div class="comparison-row" id="incomeRow">
-                        <div class="row-label">Retirement Income Taken</div>
-                        <div class="col-managed" id="pasTotalIncome"></div>
-                        <div class="col-vanguard" id="targetTotalIncome"></div>
-                        <div class="col-difference neutral" id="totalIncomeDiff"></div>
-                    </div>
+                        <div class="comparison-row">
+                            <div class="row-label">Year <span id="midYearLabel"></span> Portfolio</div>
+                            <div class="col-managed" id="pasMidValue"></div>
+                            <div class="col-vanguard" id="targetMidValue"></div>
+                            <div class="col-difference negative" id="midValueDiff"></div>
+                        </div>
 
-                    <div class="comparison-row">
-                        <div class="row-label">Total Fees Paid</div>
-                        <div class="col-managed" id="pasTotalFees"></div>
-                        <div class="col-vanguard" id="targetTotalFees"></div>
-                        <div class="col-difference negative" id="totalFeesDiff"></div>
+                        <div class="comparison-row highlight">
+                            <div class="row-label">Year <span id="finalYearLabel"></span> Portfolio</div>
+                            <div class="col-managed" id="pasFinalValue"></div>
+                            <div class="col-vanguard" id="targetFinalValue"></div>
+                            <div class="col-difference negative large" id="finalValueDiff"></div>
+                        </div>
+
+                        <div class="comparison-row" id="incomeRow">
+                            <div class="row-label">Retirement Income Taken</div>
+                            <div class="col-managed" id="pasTotalIncome"></div>
+                            <div class="col-vanguard" id="targetTotalIncome"></div>
+                            <div class="col-difference neutral" id="totalIncomeDiff"></div>
+                        </div>
                     </div>
                 </div>
 

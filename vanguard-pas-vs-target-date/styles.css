@@ -202,7 +202,16 @@ input[type="number"][readonly]::-webkit-inner-spin-button {
 
 .col-difference.neutral { color: #0f766e; font-weight: 700; }
 
-.comparison-table { margin-bottom: 40px; }
+.comparison-section { margin-bottom: 36px; }
+.comparison-section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e2e8f0;
+}
+.comparison-table { margin-bottom: 0; }
 
 .comparison-header,
 .comparison-row {
