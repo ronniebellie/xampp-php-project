@@ -171,7 +171,8 @@ input[type="number"][readonly]::-webkit-inner-spin-button {
 }
 
 .cost-label { font-size: 18px; font-weight: 600; margin-bottom: 10px; opacity: 0.95; }
-.cost-amount { font-size: 48px; font-weight: 800; margin-bottom: 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.cost-amount { font-size: 48px; font-weight: 800; margin-bottom: 4px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.cost-average { font-size: 20px; font-weight: 700; margin-bottom: 12px; opacity: 0.95; }
 .cost-explanation { font-size: 15px; opacity: 0.9; }
 
 .comparison-table { margin-bottom: 40px; }

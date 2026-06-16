@@ -126,6 +126,8 @@
 
     document.getElementById('resultYears').textContent = years;
     document.getElementById('opportunityCost').textContent = formatCurrency(opportunityCost);
+    var avgAnnualEl = document.getElementById('avgAnnualCost');
+    if (avgAnnualEl) avgAnnualEl.textContent = formatCurrency(years > 0 ? opportunityCost / years : 0);
     document.getElementById('pasFeeResultLabel').textContent = pasFee.toFixed(2) + '% fee';
 
     document.getElementById('pasYear1Fee').textContent = formatCurrency(pasData[1].fee);

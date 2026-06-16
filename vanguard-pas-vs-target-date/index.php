@@ -151,6 +151,7 @@ $isPremium = has_premium_access();
                 <div class="opportunity-cost-banner">
                     <div class="cost-label">Total Opportunity Cost Over <span id="resultYears"></span> Years:</div>
                     <div class="cost-amount" id="opportunityCost">$0</div>
+                    <div class="cost-average">≈ <span id="avgAnnualCost">$0</span> per year on average</div>
                     <div class="cost-explanation">Extra amount you could have by self-managing with Target Date funds instead of PAS</div>
                 </div>
 
@@ -249,7 +250,7 @@ $isPremium = has_premium_access();
     <script>
     const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
     </script>
-    <script src="calculator.js?v=4"></script>
+    <script src="calculator.js?v=5"></script>
     <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/calculator-footer.php'; ?>
 </body>
 </html>
