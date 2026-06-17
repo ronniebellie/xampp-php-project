@@ -341,8 +341,8 @@ $defaultRetirementAge = 67;
           </div>
           <div>
             <label class="field-label" for="volatility">Return volatility for stress test (%)</label>
-            <input type="number" id="volatility" min="0" max="50" step="0.5" value="12">
-            <small>Standard deviation of annual returns (Premium Monte Carlo). Typical: 10–15%.</small>
+            <input type="number" id="volatility" min="0" max="50" step="0.5" value="10">
+            <small>Standard deviation of annual returns (Premium Monte Carlo). Typical: 8% balanced, 10% moderate equity, 12% all-equity.</small>
           </div>
           <div>
             <label class="field-label" for="simulations">Monte Carlo simulations</label>
@@ -439,8 +439,9 @@ $defaultRetirementAge = 67;
         <h3>Monte Carlo stress test <?php if ($isPremium): ?><span style="font-size:14px;color:#0d9488;font-weight:600;">Premium</span><?php endif; ?></h3>
         <p style="color:#4b5563;margin-bottom:12px;">
           Thousands of random market scenarios test whether <strong>portfolio withdrawals can cover your spending gap</strong>
-          (after Social Security and other income) through your plan end age. The fixed-return chart above can show you on track while
-          volatility still produces a 70–85% success rate over 25+ years at 12% volatility — that is normal, not a contradiction.
+          (after Social Security and other income) through your plan end age, using the same monthly timing as our
+          <a href="../plan-success/" target="_blank" rel="noopener">Plan Success</a> calculator. At <strong>10% volatility</strong>
+          a ~3.8% initial gap rate often lands near <strong>80–85%</strong>; at <strong>12%</strong> all-equity volatility, <strong>72–78%</strong> is typical.
         </p>
         <div id="mcResultsWrap">
           <div id="mcPremiumResults" style="<?php echo $isPremium ? '' : 'display:none;'; ?>">

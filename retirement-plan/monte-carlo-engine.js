@@ -98,17 +98,35 @@
     var withdrawalStartAge = portfolioWithdrawalStartAge(inputs);
     var spendingGap = Math.max(0, spending - ssAnnual - spouseSsAnnual - otherIncome);
     var spendingGapWithdrawal = age >= withdrawalStartAge ? spendingGap : 0;
-    var spendingShortfall = age >= withdrawalStartAge && spendingGapWithdrawal > 0 &&
-      balanceStart < spendingGapWithdrawal;
-    // Stress-test spending-gap funding only. Mandatory RMDs above the spending gap are
-    // still modeled in the deterministic timeline; excess RMD cash stays in the household
-    // and does not reduce future spending capacity in this volatility test.
-    var portfolioWithdrawal = spendingGapWithdrawal;
-    if (portfolioWithdrawal > balanceStart) portfolioWithdrawal = balanceStart;
-    var balanceEnd = Math.max(0, balanceStart - portfolioWithdrawal) * (1 + returnRate);
+
+    if (spendingGapWithdrawal <= 0) {
+      return {
+        balanceEnd: balanceStart * (1 + returnRate),
+        depleted: false,
+        spendingShortfall: false
+      };
+    }
+
+    // Match Plan Success (monthly): portfolio grows through the year; spending gap is
+    // withdrawn in 12 monthly slices. Failure only if the balance cannot fund a slice.
+    var balance = balanceStart;
+    var monthlyGap = spendingGapWithdrawal / 12;
+    var onePlus = 1 + returnRate;
+    var monthFactor = onePlus <= 0 ? 0 : Math.pow(onePlus, 1 / 12);
+    var spendingShortfall = false;
+
+    for (var m = 0; m < 12; m++) {
+      if (balance < monthlyGap) {
+        spendingShortfall = true;
+        balance = Math.max(0, (balance - monthlyGap) * monthFactor);
+        break;
+      }
+      balance = (balance - monthlyGap) * monthFactor;
+    }
+
     return {
-      balanceEnd: balanceEnd,
-      depleted: balanceEnd <= 0,
+      balanceEnd: Math.max(0, balance),
+      depleted: balance <= 0,
       spendingShortfall: spendingShortfall
     };
   }
@@ -146,6 +164,17 @@
 
     var startRow = deterministic.years.find(function (y) { return y.age === startAge; });
     var startBalance = startRow ? startRow.balanceStart : inputs.balance;
+    var firstGapRow = deterministic.years.find(function (y) {
+      return y.age >= withdrawalStartAge && y.spending > 0;
+    });
+    var initialGapWithdrawal = 0;
+    if (firstGapRow) {
+      initialGapWithdrawal = Math.max(0, firstGapRow.spending - (firstGapRow.socialSecurity || 0) -
+        (firstGapRow.otherIncome || 0));
+    }
+    var gapWithdrawalRatePct = startBalance > 0
+      ? parseFloat((initialGapWithdrawal / startBalance * 100).toFixed(2))
+      : 0;
 
     var ssMonthlyBaseline = inputs.ssAlreadyReceiving
       ? (inputs.ssCurrentMonthly || 0)
@@ -228,6 +257,8 @@
       endingBalances: endingBalances,
       startAge: startAge,
       startBalance: startBalance,
+      initialGapWithdrawal: initialGapWithdrawal,
+      gapWithdrawalRatePct: gapWithdrawalRatePct,
       yearsToModel: yearsToModel,
       expectedReturnPct: options.expectedReturnPct || inputs.returnRetirement,
       volatilityPct: options.volatilityPct || 12,

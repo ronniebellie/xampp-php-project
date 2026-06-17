@@ -220,7 +220,7 @@
         ? readNumber('spouseAge', 0) || null
         : null,
       useStandardDeduction: true,
-      volatilityPct: FC.clamp(readNumber('volatility', 12), 0, 50),
+      volatilityPct: FC.clamp(readNumber('volatility', 10), 0, 50),
       numSims: FC.clamp(readNumber('simulations', 1000), 100, 5000)
     };
   }
@@ -336,13 +336,16 @@
       var mcStartNote = mc.startAge > inputs.currentAge
         ? (' when portfolio withdrawals begin at age ' + mc.startAge)
         : '';
+      var gapRateNote = mc.gapWithdrawalRatePct > 0
+        ? (' Initial spending-gap withdrawal rate: <strong>' + mc.gapWithdrawalRatePct + '%</strong> of portfolio.')
+        : '';
       summaryEl.innerHTML =
         'Your plan funded the <strong>spending gap from portfolio withdrawals</strong>' + mcStartNote +
         ' through age <strong>' + inputs.planEndAge + '</strong> in <strong>' + mc.successRate + '%</strong> of ' +
         mc.numSims.toLocaleString() + ' simulations (starting portfolio ' + fmt(mc.startBalance) + ', return ' +
-        mc.expectedReturnPct + '%, volatility ' + mc.volatilityPct + '%).<br><br>' +
-        '<span style="font-size:13px;color:#4b5563;">The deterministic chart above uses a <strong>fixed</strong> return each year. ' +
-        'Monte Carlo randomizes annual returns, so a plan can be <strong>on track</strong> at fixed returns and still show a 70–85% success rate with 12% volatility over 25+ years.</span><br><br>' +
+        mc.expectedReturnPct + '%, volatility ' + mc.volatilityPct + '%).' + gapRateNote + '<br><br>' +
+        '<span style="font-size:13px;color:#4b5563;">The deterministic chart uses a <strong>fixed</strong> return each year. Monte Carlo randomizes returns — ' +
+        'being <strong>on track</strong> there does not require a 90%+ success rate here. Lower volatility (e.g. 8–10%) raises the score; 12% reflects an all-equity path.</span><br><br>' +
         '<strong>Ending balance at age ' + inputs.planEndAge + ':</strong> 25th percentile = ' + fmt(mc.p25) +
         ', median = ' + fmt(mc.p50) + ', 75th = ' + fmt(mc.p75) +
         '. Failures mean the portfolio could not cover the spending gap in at least one year.';
