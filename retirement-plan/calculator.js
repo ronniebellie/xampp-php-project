@@ -140,6 +140,10 @@
       planEndAge: 90,
       birthYear: birthYear,
       balance: readNumber('balance'),
+      portfolioWithdrawalStartAge: (function () {
+        var v = readNumber('portfolioWithdrawalStartAge', NaN);
+        return isNaN(v) || v <= 0 ? retirementAge : v;
+      })(),
       annualContribution: readNumber('annualContribution'),
       returnPreRetirement: FC.clamp(readNumber('returnPreRetirement', 6), 0, 15),
       returnRetirement: FC.clamp(readNumber('returnRetirement', 5), 0, 12),
@@ -173,6 +177,9 @@
     if (inputs.balance < 0) errors.push('retirement savings');
     if (inputs.baseAnnualSpending <= 0) errors.push('retirement spending');
     if (inputs.birthYear < 1900 || inputs.birthYear > new Date().getFullYear()) errors.push('birth year');
+    if (inputs.portfolioWithdrawalStartAge < inputs.currentAge) {
+      errors.push('portfolio withdrawal start age (must be at or after your current age)');
+    }
     return errors;
   }
 
@@ -192,7 +199,30 @@
     el('statusHeadline').textContent = s.status.headline;
     el('statusDetail').textContent = s.status.detail;
 
-    el('metricProjected').textContent = fmt(s.balanceAtRetirement);
+    var projectedLabel = el('metricProjectedLabel');
+    var withdrawalsFuture = s.portfolioWithdrawalStartAge > lastInputs.currentAge;
+    if (projectedLabel) {
+      projectedLabel.textContent = withdrawalsFuture
+        ? 'Portfolio today'
+        : (lastInputs.currentAge === lastInputs.retirementAge ? 'Portfolio (current year)' : 'Projected at retirement');
+    }
+    el('metricProjected').textContent = withdrawalsFuture
+      ? fmt(lastInputs.balance)
+      : fmt(s.balanceAtRetirement);
+
+    var portfolioNote = el('portfolioWithdrawalNote');
+    if (portfolioNote) {
+      if (withdrawalsFuture) {
+        portfolioNote.style.display = 'block';
+        portfolioNote.textContent =
+          'Spending-gap withdrawals from your portfolio begin at age ' + s.portfolioWithdrawalStartAge +
+          ' (projected balance then: ' + fmt(s.balanceAtWithdrawalStart) + '). Until then, only investment growth and any required RMDs affect the balance in this model.';
+      } else {
+        portfolioNote.style.display = 'none';
+        portfolioNote.textContent = '';
+      }
+    }
+
     el('metricTarget').textContent = s.targetNestEgg > 0 ? fmt(s.targetNestEgg) : 'Not required';
     el('metricIncome').textContent = fmt(s.retirementAnnualIncome);
     el('metricLifetimeTax').textContent = fmt(s.lifetimeFederalTax);
@@ -440,6 +470,7 @@
       birthYear: readNumber('birthYear'),
       retirementAge: readNumber('retirementAge'),
       balance: readNumber('balance'),
+      portfolioWithdrawalStartAge: readNumber('portfolioWithdrawalStartAge'),
       annualContribution: readNumber('annualContribution'),
       returnPreRetirement: readNumber('returnPreRetirement'),
       returnRetirement: readNumber('returnRetirement'),
@@ -592,6 +623,7 @@
         planEndAge: lastInputs.planEndAge,
         balance: lastInputs.balance,
         annualContribution: lastInputs.annualContribution,
+        portfolioWithdrawalStartAge: lastInputs.portfolioWithdrawalStartAge,
         baseAnnualSpending: lastInputs.baseAnnualSpending,
         ssPiaMonthly: lastInputs.ssPiaMonthly,
         ssClaimAge: lastInputs.ssClaimAge,

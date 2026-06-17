@@ -146,6 +146,7 @@ $inputRows = [
     ['Retirement age', $inputs['retirementAge'] ?? '—'],
     ['Plan through age', $inputs['planEndAge'] ?? '90'],
     ['Retirement savings today', rp_money($inputs['balance'] ?? 0)],
+    ['Portfolio withdrawals begin at age', $inputs['portfolioWithdrawalStartAge'] ?? '—'],
     ['Annual contributions (pre-retirement)', rp_money($inputs['annualContribution'] ?? 0)],
     ['Annual spending in retirement', rp_money($inputs['baseAnnualSpending'] ?? 0)],
     ['Your Social Security at FRA (monthly)', rp_money($inputs['ssPiaMonthly'] ?? 0)],

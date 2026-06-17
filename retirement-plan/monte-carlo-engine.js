@@ -58,6 +58,12 @@
     return monthly * 12;
   }
 
+  function portfolioWithdrawalStartAge(inputs) {
+    var start = inputs.portfolioWithdrawalStartAge;
+    if (start != null && !isNaN(start) && start > 0) return start;
+    return inputs.retirementAge;
+  }
+
   function annualSpendingAtAge(age, inputs) {
     var yearsSinceRetirement = age - inputs.retirementAge;
     return inputs.baseAnnualSpending * Math.pow(1 + inputs.inflation / 100, yearsSinceRetirement);
@@ -70,7 +76,10 @@
     var ssAnnual = annualSocialSecurity(age, inputs, ssMonthlyAtClaim);
     var spouseSsAnnual = annualSpouseSocialSecurity(age, inputs);
     var otherIncome = inputs.otherGuaranteedAnnual;
-    var portfolioWithdrawal = Math.max(rmd, Math.max(0, spending - ssAnnual - spouseSsAnnual - otherIncome));
+    var withdrawalStartAge = portfolioWithdrawalStartAge(inputs);
+    var spendingGap = Math.max(0, spending - ssAnnual - spouseSsAnnual - otherIncome);
+    var spendingGapWithdrawal = age >= withdrawalStartAge ? spendingGap : 0;
+    var portfolioWithdrawal = Math.max(rmd, spendingGapWithdrawal);
     if (portfolioWithdrawal > balanceStart) portfolioWithdrawal = balanceStart;
     var balanceEnd = Math.max(0, balanceStart - portfolioWithdrawal) * (1 + returnRate);
     return { balanceEnd: balanceEnd, depleted: balanceEnd <= 0 };
@@ -84,7 +93,7 @@
    * @param {object} options - { expectedReturnPct, volatilityPct, numSims }
    */
   function runRetirementStressTest(inputs, deterministic, options) {
-    var startAge = Math.max(inputs.currentAge, inputs.retirementAge);
+    var startAge = Math.max(inputs.currentAge, inputs.retirementAge, portfolioWithdrawalStartAge(inputs));
     var yearsToModel = inputs.planEndAge - startAge;
     if (yearsToModel <= 0) {
       return {

@@ -44,12 +44,16 @@
       (result.summary.ssMonthlyAtClaim || inputs.ssPiaMonthly || 0) + (inputs.spouseSsMonthly || 0)
     );
     var householdSsAnnual = householdSsMonthly * 12;
-    var mcStartAge = Math.max(inputs.currentAge, inputs.retirementAge);
+    var withdrawStartAge = inputs.portfolioWithdrawalStartAge || inputs.retirementAge;
+    var mcStartAge = Math.max(inputs.currentAge, inputs.retirementAge, withdrawStartAge);
     var yearsToModel = Math.max(1, inputs.planEndAge - mcStartAge);
     var startRow = result.years.find(function (y) { return y.age === mcStartAge; });
     var portfolioForMc = startRow ? Math.round(startRow.balanceStart) : Math.round(inputs.balance);
     var retireRow = firstRetirementYearRow(result);
-    var annualWithdrawal = retireRow ? Math.round(retireRow.withdrawal || 0) : 0;
+    var withdrawRow = result.years.find(function (y) {
+      return y.age >= withdrawStartAge && (y.withdrawal || 0) > 0;
+    }) || retireRow;
+    var annualWithdrawal = withdrawRow ? Math.round(withdrawRow.withdrawal || 0) : 0;
     var guaranteedMonthly = Math.round((inputs.otherGuaranteedAnnual || 0) / 12);
     var ssMonthly = householdSsMonthly;
 

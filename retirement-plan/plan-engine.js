@@ -38,6 +38,12 @@
       annualSpouseSocialSecurity(age, inputs);
   }
 
+  function portfolioWithdrawalStartAge(inputs) {
+    var start = inputs.portfolioWithdrawalStartAge;
+    if (start != null && !isNaN(start) && start > 0) return start;
+    return inputs.retirementAge;
+  }
+
   function annualSpendingAtAge(age, inputs) {
     if (age < inputs.retirementAge) return 0;
     var yearsSinceRetirement = age - inputs.retirementAge;
@@ -161,8 +167,10 @@
         var spouseSsAnnual = annualSpouseSocialSecurity(age, inputs);
         var householdSsAnnual = ssAnnual + spouseSsAnnual;
         var otherIncome = inputs.otherGuaranteedAnnual;
+        var withdrawalStartAge = portfolioWithdrawalStartAge(inputs);
         var spendingGap = Math.max(0, spending - householdSsAnnual - otherIncome);
-        var portfolioWithdrawal = Math.max(rmd, spendingGap);
+        var spendingGapWithdrawal = age >= withdrawalStartAge ? spendingGap : 0;
+        var portfolioWithdrawal = Math.max(rmd, spendingGapWithdrawal);
         if (portfolioWithdrawal > balanceStart) portfolioWithdrawal = balanceStart;
 
         var taxableIncome = TR.estimateTaxableIncome(
@@ -203,10 +211,16 @@
       if (spouseAge) spouseAge++;
     }
 
+    var withdrawalStartAge = portfolioWithdrawalStartAge(inputs);
     var retirementRow = years.find(function (y) { return y.age === inputs.retirementAge; });
+    var withdrawalStartRow = years.find(function (y) { return y.age === withdrawalStartAge; });
     var balanceAtRetirement = retirementRow ? retirementRow.balanceEnd : balance;
+    var balanceAtWithdrawalStart = withdrawalStartRow
+      ? withdrawalStartRow.balanceStart
+      : (withdrawalStartAge > inputs.currentAge ? inputs.balance : balanceAtRetirement);
+    var compareBalance = withdrawalStartAge > inputs.currentAge ? inputs.balance : balanceAtRetirement;
     var targetNestEgg = targetNestEggAtRetirement(inputs, ssMonthlyAtClaim);
-    var status = describeStatus(balanceAtRetirement, targetNestEgg);
+    var status = describeStatus(compareBalance, targetNestEgg);
 
     var milestoneAges = pickMilestoneAges(inputs);
     var milestones = milestoneAges.map(function (a) {
@@ -214,7 +228,7 @@
     }).filter(Boolean);
 
     var retirementIncomeRow = years.find(function (y) {
-      return y.age === Math.max(inputs.retirementAge, inputs.ssClaimAge);
+      return y.age === Math.max(inputs.retirementAge, inputs.ssClaimAge, withdrawalStartAge);
     }) || retirementRow;
 
     var firstRmdRow = years.find(function (y) { return y.age === RMD_START_AGE; });
@@ -225,6 +239,8 @@
       summary: {
         status: status,
         balanceAtRetirement: balanceAtRetirement,
+        balanceAtWithdrawalStart: balanceAtWithdrawalStart,
+        portfolioWithdrawalStartAge: withdrawalStartAge,
         targetNestEgg: targetNestEgg,
         ssMonthlyAtClaim: ssMonthlyAtClaim,
         ssAnnualAtClaim: ssMonthlyAtClaim * 12,

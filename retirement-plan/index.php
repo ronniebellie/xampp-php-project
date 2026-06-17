@@ -161,6 +161,11 @@ $defaultBirthYear = (int) date('Y') - 62;
           <input type="number" id="balance" min="0" step="1000" value="850000" required>
           <small>401(k), IRA, brokerage — one combined total for this snapshot.</small>
         </div>
+        <div>
+          <label class="field-label" for="portfolioWithdrawalStartAge">Portfolio withdrawals for spending begin at age</label>
+          <input type="number" id="portfolioWithdrawalStartAge" min="18" max="100" step="1" value="">
+          <small>When you'll start drawing from savings to cover spending (after Social Security). RMDs still apply when required. For a calendar date (e.g. Jan 2027), use the age you'll be that year.</small>
+        </div>
         <div id="annualContributionWrap">
           <label class="field-label" for="annualContribution">Annual contributions until retirement ($)</label>
           <input type="number" id="annualContribution" min="0" step="500" value="12000">
@@ -322,7 +327,7 @@ $defaultBirthYear = (int) date('Y') - 62;
         <div id="statusDetail" style="color: #374151; line-height: 1.55;"></div>
         <div class="metrics-grid">
           <div class="metric-box">
-            <div class="label">Projected at retirement</div>
+            <div class="label" id="metricProjectedLabel">Projected at retirement</div>
             <div class="value" id="metricProjected">—</div>
           </div>
           <div class="metric-box">
@@ -338,6 +343,7 @@ $defaultBirthYear = (int) date('Y') - 62;
             <div class="value" id="metricLifetimeTax">—</div>
           </div>
         </div>
+        <p id="portfolioWithdrawalNote" style="margin: 8px 0 0; font-size: 14px; color: #4b5563; display: none;"></p>
         <p id="rmdNote" style="margin: 8px 0 0; font-size: 14px; color: #4b5563;"></p>
         <p id="depletedNote" style="margin: 12px 0 0; font-size: 14px; color: #4b5563;"></p>
       </div>
