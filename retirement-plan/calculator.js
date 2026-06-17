@@ -268,11 +268,11 @@
     var withdrawalsFuture = s.portfolioWithdrawalStartAge > lastInputs.currentAge;
     if (projectedLabel) {
       projectedLabel.textContent = withdrawalsFuture
-        ? 'Portfolio today'
+        ? ('Portfolio at age ' + s.portfolioWithdrawalStartAge + ' (withdrawals start)')
         : (lastInputs.currentAge === lastInputs.retirementAge ? 'Portfolio (current year)' : 'Projected at retirement');
     }
     el('metricProjected').textContent = withdrawalsFuture
-      ? fmt(lastInputs.balance)
+      ? fmt(s.balanceAtWithdrawalStart)
       : fmt(s.balanceAtRetirement);
 
     var portfolioNote = el('portfolioWithdrawalNote');
@@ -719,6 +719,9 @@
         statusHeadline: lastResult.summary.status.headline,
         statusDetail: lastResult.summary.status.detail,
         balanceAtRetirement: lastResult.summary.balanceAtRetirement,
+        balanceAtWithdrawalStart: lastResult.summary.balanceAtWithdrawalStart,
+        compareBalanceForStatus: lastResult.summary.compareBalanceForStatus,
+        portfolioWithdrawalStartAge: lastResult.summary.portfolioWithdrawalStartAge,
         targetNestEgg: lastResult.summary.targetNestEgg,
         retirementAnnualIncome: lastResult.summary.retirementAnnualIncome,
         lifetimeFederalTax: lastResult.summary.lifetimeFederalTax

@@ -114,10 +114,20 @@ $snapshotHtml = '<div style="background-color:#f8fafc;border-left:4px solid #667
     . '<p style="font-size:14px;font-weight:bold;margin:0 0 6px 0;">' . rp_h($statusHeadline) . '</p>'
     . '<p style="font-size:10px;color:#374151;margin:0;">' . rp_h($statusDetail) . '</p></div>';
 
+$withdrawalStartAge = isset($inputs['portfolioWithdrawalStartAge']) ? (int) $inputs['portfolioWithdrawalStartAge'] : null;
+$currentAge = isset($inputs['currentAge']) ? (int) $inputs['currentAge'] : null;
+$withdrawalsFuture = $withdrawalStartAge && $currentAge && $withdrawalStartAge > $currentAge;
+$compareBalance = $withdrawalsFuture
+    ? ($summary['balanceAtWithdrawalStart'] ?? $summary['compareBalanceForStatus'] ?? $summary['balanceAtRetirement'] ?? 0)
+    : ($summary['balanceAtRetirement'] ?? 0);
+$compareLabel = $withdrawalsFuture
+    ? 'Portfolio at age ' . $withdrawalStartAge . ' (withdrawals start)'
+    : 'Projected at retirement';
+
 $snapshotHtml .= '<table border="0" cellpadding="8"><tr>'
     . '<td width="50%" style="background-color:#f0f9ff;border:2px solid #667eea;"><div style="text-align:center;">'
-    . '<div style="font-size:10px;color:#666;">Projected at retirement</div>'
-    . '<div style="font-size:18px;font-weight:bold;color:#667eea;">' . rp_money($summary['balanceAtRetirement'] ?? 0) . '</div></div></td>'
+    . '<div style="font-size:10px;color:#666;">' . rp_h($compareLabel) . '</div>'
+    . '<div style="font-size:18px;font-weight:bold;color:#667eea;">' . rp_money($compareBalance) . '</div></div></td>'
     . '<td width="50%" style="background-color:#f0fdf4;border:2px solid #10b981;"><div style="text-align:center;">'
     . '<div style="font-size:10px;color:#666;">Rule-of-thumb target</div>'
     . '<div style="font-size:18px;font-weight:bold;color:#10b981;">'

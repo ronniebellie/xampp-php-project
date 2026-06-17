@@ -240,7 +240,9 @@
     var balanceAtWithdrawalStart = withdrawalStartRow
       ? withdrawalStartRow.balanceStart
       : (withdrawalStartAge > inputs.currentAge ? inputs.balance : balanceAtRetirement);
-    var compareBalance = withdrawalStartAge > inputs.currentAge ? inputs.balance : balanceAtRetirement;
+    var compareBalance = withdrawalStartAge > inputs.currentAge
+      ? balanceAtWithdrawalStart
+      : balanceAtRetirement;
     var targetNestEgg = targetNestEggAtRetirement(inputs, ssMonthlyBaseline);
     var status = describeStatus(compareBalance, targetNestEgg);
 
@@ -266,6 +268,7 @@
         status: status,
         balanceAtRetirement: balanceAtRetirement,
         balanceAtWithdrawalStart: balanceAtWithdrawalStart,
+        compareBalanceForStatus: compareBalance,
         portfolioWithdrawalStartAge: withdrawalStartAge,
         targetNestEgg: targetNestEgg,
         ssMonthlyAtClaim: summaryUserMonthly,
