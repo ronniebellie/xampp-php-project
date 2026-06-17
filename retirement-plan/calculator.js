@@ -569,6 +569,8 @@
     syncRetiredState();
     syncFraClaimAge();
   }
+
+  function saveScenario() {
     var name = prompt('Name this scenario:');
     if (!name) return;
     fetch(API_BASE + 'api/save_scenario.php', {
