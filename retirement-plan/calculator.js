@@ -190,7 +190,7 @@
     return {
       currentAge: currentAge,
       retirementAge: retirementAge,
-      planEndAge: 90,
+      planEndAge: FC.clamp(readNumber('planEndAge', 95), Math.max(currentAge + 1, 80), 100),
       birthYear: birthYear,
       balance: readNumber('balance'),
       portfolioWithdrawalStartAge: (function () {
@@ -239,6 +239,9 @@
     if (inputs.birthYear < 1900 || inputs.birthYear > new Date().getFullYear()) errors.push('birth year');
     if (inputs.portfolioWithdrawalStartAge < inputs.currentAge) {
       errors.push('portfolio withdrawal start age (must be at or after your current age)');
+    }
+    if (inputs.planEndAge <= inputs.currentAge) {
+      errors.push('plan through age (must be after your current age)');
     }
     if (inputs.ssAlreadyReceiving) {
       if (inputs.ssCurrentMonthly <= 0) errors.push('your current monthly Social Security benefit');
@@ -552,6 +555,7 @@
       spouseSsMonthly: readNumber('spouseSsMonthly'),
       spouseSsClaimAge: el('spouseSsClaimAge').value,
       otherGuaranteedAnnual: readNumber('otherGuaranteedAnnual'),
+      planEndAge: readNumber('planEndAge', 95),
       withdrawalRate: readNumber('withdrawalRate'),
       inflation: readNumber('inflation'),
       colaRate: readNumber('colaRate'),

@@ -319,6 +319,11 @@ $defaultRetirementAge = 67;
         <summary>Other advanced assumptions</summary>
         <div class="form-grid" style="margin-top: 14px;">
           <div>
+            <label class="field-label" for="planEndAge">Plan through age</label>
+            <input type="number" id="planEndAge" min="80" max="100" step="1" value="95">
+            <small>How far to project spending, RMDs, and Monte Carlo. Many planners use 90–95; Vanguard often uses 100.</small>
+          </div>
+          <div>
             <label class="field-label" for="withdrawalRate">Withdrawal rate for on-track check (%)</label>
             <input type="number" id="withdrawalRate" min="0.5" max="10" step="0.1" value="4">
           </div>
@@ -433,7 +438,7 @@ $defaultRetirementAge = 67;
       <div class="chart-section" id="monteCarloSection">
         <h3>Monte Carlo stress test <?php if ($isPremium): ?><span style="font-size:14px;color:#0d9488;font-weight:600;">Premium</span><?php endif; ?></h3>
         <p style="color:#4b5563;margin-bottom:12px;">
-          Thousands of random market scenarios test whether your plan lasts through age 90,
+          Thousands of random market scenarios test whether your plan lasts through your chosen plan end age,
           using the same spending, Social Security, and RMD rules as your timeline above.
         </p>
         <div id="mcResultsWrap">
@@ -447,7 +452,7 @@ $defaultRetirementAge = 67;
           <?php if (!$isPremium): ?>
           <div id="mcFreeUpsell" style="padding:24px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-radius:12px;color:#fff;text-align:center;">
             <p style="margin:0 0 8px;font-size:28px;font-weight:800;" class="mc-locked">72.4%</p>
-            <p style="margin:0 0 16px;opacity:0.95;">See the probability your plan lasts through age 90 under thousands of market scenarios.</p>
+            <p style="margin:0 0 16px;opacity:0.95;">See the probability your plan lasts through your plan end age under thousands of market scenarios.</p>
             <a href="/premium.html" style="display:inline-block;background:#fff;color:#667eea;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;">Upgrade to Premium</a>
           </div>
           <?php endif; ?>
@@ -492,7 +497,7 @@ $defaultRetirementAge = 67;
     <?php if (!$isPremium): ?>
     <?php
       $premium_upsell_headline = 'See Your Complete Retirement Timeline';
-      $premium_upsell_text = 'Upgrade to Premium for the full year-by-year table through age 90, Monte Carlo stress test, PDF report, save and compare scenarios, CSV export, and AI explanations of your plan.';
+      $premium_upsell_text = 'Upgrade to Premium for the full year-by-year table through your plan end age, Monte Carlo stress test, PDF report, save and compare scenarios, CSV export, and AI explanations of your plan.';
       include(__DIR__ . '/../includes/premium-upsell-banner.php');
     ?>
     <?php endif; ?>
