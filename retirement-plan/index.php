@@ -192,7 +192,7 @@ $defaultBirthYear = (int) date('Y') - 62;
           <input type="number" id="currentMonthlySpending" min="0" step="50" value="6000">
           <small>What your household spends now (or expects to spend in retirement) — not gross income.</small>
         </div>
-        <div>
+        <div id="retirementSpendingPctWrap">
           <label class="field-label" for="retirementSpendingPct">Retirement spending (% of current)</label>
           <input type="number" id="retirementSpendingPct" min="40" max="120" value="80">
           <small>Many planners use 70–80% while still working. Already retired? This is set to 100%.</small>
