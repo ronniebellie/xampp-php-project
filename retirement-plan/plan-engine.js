@@ -70,10 +70,11 @@
     return inputs.baseAnnualSpending * Math.pow(1 + inputs.inflation / 100, yearsSinceRetirement);
   }
 
-  function targetNestEggAtRetirement(inputs, ssMonthlyAtClaim) {
-    var spending = inputs.baseAnnualSpending;
-    var ssAnnual = annualSocialSecurity(inputs.retirementAge, inputs, ssMonthlyAtClaim);
-    var spouseSsAnnual = annualSpouseSocialSecurity(inputs.retirementAge, inputs);
+  function targetNestEggAtRetirement(inputs, ssMonthlyBaseline) {
+    var startAge = Math.max(inputs.retirementAge, portfolioWithdrawalStartAge(inputs));
+    var spending = annualSpendingAtAge(startAge, inputs);
+    var ssAnnual = annualSocialSecurity(startAge, inputs, ssMonthlyBaseline);
+    var spouseSsAnnual = annualSpouseSocialSecurity(startAge, inputs);
     var guaranteed = ssAnnual + spouseSsAnnual + inputs.otherGuaranteedAnnual;
     var needed = Math.max(0, spending - guaranteed);
     if (needed <= 0 || inputs.withdrawalRate <= 0) return 0;
@@ -93,7 +94,8 @@
     }).sort(function (a, b) { return a - b; });
   }
 
-  function describeStatus(balanceAtRetirement, targetNestEgg) {
+  function describeStatus(compareBalance, targetNestEgg, context) {
+    context = context || {};
     if (targetNestEgg <= 0) {
       return {
         code: 'covered',
@@ -102,7 +104,7 @@
         tone: 'good'
       };
     }
-    if (!isFinite(balanceAtRetirement) || balanceAtRetirement <= 0) {
+    if (!isFinite(compareBalance) || compareBalance <= 0) {
       return {
         code: 'shortfall',
         headline: 'Likely shortfall at retirement',
@@ -110,27 +112,49 @@
         tone: 'bad'
       };
     }
-    var ratio = balanceAtRetirement / targetNestEgg;
+    var ratio = compareBalance / targetNestEgg;
+    var cushionPct = Math.round((ratio - 1) * 100);
+    var planEndAge = context.planEndAge || 90;
+    var inRetirementPhase = !!context.inRetirementPhase;
+    var planSustainable = context.depletedAge === null || context.depletedAge === undefined;
+
+    if (inRetirementPhase && planSustainable && ratio >= 1) {
+      return {
+        code: 'on_track',
+        headline: 'On track — plan lasts through age ' + planEndAge,
+        detail: 'Your year-by-year plan funds spending through age ' + planEndAge +
+          (context.endingBalance > 0 ? ' with about ' + FC.formatCurrency(context.endingBalance) + ' remaining.' : '.') +
+          ' Portfolio at withdrawal start is about ' + cushionPct + '% above the rule-of-thumb target.',
+        tone: 'good'
+      };
+    }
+
     if (ratio >= 1.1) {
       return {
         code: 'on_track',
         headline: 'On track (with cushion)',
-        detail: 'Projected savings at retirement are about ' + Math.round((ratio - 1) * 100) + '% above the rule-of-thumb target.',
+        detail: 'Projected savings at retirement are about ' + cushionPct + '% above the rule-of-thumb target.',
         tone: 'good'
       };
     }
     if (ratio >= 0.9) {
+      var closeDetail = inRetirementPhase
+        ? 'You are within about 10% of the rule-of-thumb target nest egg. Small spending trims or a modest return cushion could add margin.'
+        : 'You are within about 10% of the target nest egg. Retiring a year or two later, saving more, or trimming spending could close the gap.';
+      if (inRetirementPhase && planSustainable) {
+        closeDetail += ' Your full timeline still funds spending through age ' + planEndAge + '.';
+      }
       return {
         code: 'close',
         headline: 'Close — small adjustments may help',
-        detail: 'You are within about 10% of the target nest egg. Retiring a year or two later, saving more, or trimming spending could close the gap.',
+        detail: closeDetail,
         tone: 'warn'
       };
     }
     return {
       code: 'shortfall',
       headline: 'Likely shortfall at retirement',
-      detail: 'Projected savings at retirement are about ' + FC.formatCurrency(targetNestEgg - balanceAtRetirement) + ' below the rule-of-thumb target.',
+      detail: 'Projected savings at retirement are about ' + FC.formatCurrency(targetNestEgg - compareBalance) + ' below the rule-of-thumb target.',
       tone: 'bad'
     };
   }
@@ -244,7 +268,14 @@
       ? balanceAtWithdrawalStart
       : balanceAtRetirement;
     var targetNestEgg = targetNestEggAtRetirement(inputs, ssMonthlyBaseline);
-    var status = describeStatus(compareBalance, targetNestEgg);
+    var endingBalance = years.length ? years[years.length - 1].balanceEnd : balance;
+    var status = describeStatus(compareBalance, targetNestEgg, {
+      inRetirementPhase: inputs.currentAge >= inputs.retirementAge,
+      depletedAge: depletedAge,
+      planEndAge: inputs.planEndAge,
+      endingBalance: endingBalance,
+      withdrawalStartAge: withdrawalStartAge
+    });
 
     var milestoneAges = pickMilestoneAges(inputs);
     var milestones = milestoneAges.map(function (a) {
