@@ -139,6 +139,7 @@
     var birthYear = readNumber('birthYear', currentCalendarYear() - 60);
     var age = ageFromBirthYear(birthYear);
     var fra = FC.fraAgeFromBirthYear(birthYear);
+    var fraRounded = Math.round(fra);
     var fraHint = el('fraHint');
     var claimSelect = el('ssClaimAge');
     var retirementAge = el('retirementAge');
@@ -149,11 +150,20 @@
         fra.toFixed(1).replace(/\.0$/, '') + '.';
     }
     if (claimSelect && !claimSelect.dataset.userTouched) {
-      claimSelect.value = String(Math.round(fra));
+      claimSelect.value = String(fraRounded);
     }
     if (retirementAge && !isAlreadyRetired()) {
       retirementAge.min = Math.max(18, age);
-      if (readNumber('retirementAge') < age) retirementAge.value = age;
+      var raw = readNumber('retirementAge', NaN);
+      var looksLikeYear = raw > 100;
+      var invalid = isNaN(raw) || raw < 18 || looksLikeYear;
+      if (!retirementAge.dataset.userTouched && (invalid || raw < Math.max(age, fraRounded))) {
+        retirementAge.value = Math.max(age, fraRounded);
+      } else if (looksLikeYear) {
+        retirementAge.value = Math.max(age, fraRounded);
+      } else if (raw < age) {
+        retirementAge.value = age;
+      }
     }
   }
 
@@ -220,6 +230,9 @@
     if (inputs.currentAge < 18 || inputs.currentAge > 100) errors.push('birth year (implies age 18–100)');
     if (!isAlreadyRetired() && inputs.retirementAge < inputs.currentAge) {
       errors.push('planned retirement age (must be at or after your current age)');
+    }
+    if (!isAlreadyRetired() && inputs.retirementAge > 100) {
+      errors.push('planned retirement age (enter an age such as 67, not a calendar year)');
     }
     if (inputs.balance < 0) errors.push('retirement savings');
     if (inputs.baseAnnualSpending <= 0) errors.push('retirement spending');
@@ -838,6 +851,15 @@
     if (claimSelect) {
       claimSelect.addEventListener('change', function () {
         claimSelect.dataset.userTouched = '1';
+      });
+    }
+    var retirementAgeInput = el('retirementAge');
+    if (retirementAgeInput) {
+      retirementAgeInput.addEventListener('change', function () {
+        retirementAgeInput.dataset.userTouched = '1';
+      });
+      retirementAgeInput.addEventListener('input', function () {
+        retirementAgeInput.dataset.userTouched = '1';
       });
     }
     var retired = el('alreadyRetired');

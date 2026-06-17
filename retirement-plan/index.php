@@ -5,6 +5,7 @@ require_once __DIR__ . '/../includes/has_premium_access.php';
 $isLoggedIn = isset($_SESSION['user_id']) || !empty($_SESSION['calcforadvisors_subscriber_id']);
 $isPremium = has_premium_access();
 $defaultBirthYear = (int) date('Y') - 62;
+$defaultRetirementAge = 67;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -150,7 +151,7 @@ $defaultBirthYear = (int) date('Y') - 62;
         </div>
         <div id="retirementAgeWrap">
           <label class="field-label" for="retirementAge">Planned retirement age</label>
-          <input type="number" id="retirementAge" min="18" max="100" value="65" required>
+          <input type="number" id="retirementAge" min="18" max="100" step="1" value="<?php echo $defaultRetirementAge; ?>" autocomplete="off" inputmode="numeric" required>
           <small>When you expect to stop working and start drawing from savings.</small>
         </div>
       </div>
