@@ -146,6 +146,8 @@
       baseAnnualSpending: baseAnnualSpending,
       ssPiaMonthly: readNumber('ssPiaMonthly'),
       ssClaimAge: parseInt(el('ssClaimAge').value, 10) || Math.round(FC.fraAgeFromBirthYear(birthYear)),
+      spouseSsMonthly: readNumber('spouseSsMonthly'),
+      spouseSsClaimAge: parseInt(el('spouseSsClaimAge').value, 10) || parseInt(el('ssClaimAge').value, 10) || 67,
       otherGuaranteedAnnual: readNumber('otherGuaranteedAnnual'),
       withdrawalRate: FC.clamp(readNumber('withdrawalRate', 4), 0.5, 10) / 100,
       inflation: FC.clamp(readNumber('inflation', 2.5), 0, 8),
@@ -392,8 +394,8 @@
     return 'Retirement Plan Builder. Age ' + lastInputs.currentAge + ' to ' + lastInputs.planEndAge +
       '. Retire at ' + lastInputs.retirementAge + '. Projected balance at retirement ' + fmt(s.balanceAtRetirement) +
       '. Target nest egg ' + (s.targetNestEgg > 0 ? fmt(s.targetNestEgg) : 'not required') +
-      '. Status: ' + s.status.headline + '. SS at claim age ' + lastInputs.ssClaimAge + ': ' +
-      fmt(s.ssAnnualAtClaim) + '/year. Lifetime est. federal tax in retirement years: ' +
+      '. Status: ' + s.status.headline + '. Household SS at claim (approx.): ' +
+      fmt((s.householdSsMonthlyAtClaim || s.ssMonthlyAtClaim) * 12) + '/year. Lifetime est. federal tax in retirement years: ' +
       fmt(s.lifetimeFederalTax) + '. First RMD at age ' + s.rmdStartAge + ': ' +
       (s.firstRmdAmount > 0 ? fmt(s.firstRmdAmount) : 'n/a') + '.' +
       (lastMcResult ? ' Monte Carlo success rate (age ' + lastMcResult.startAge + ' to ' + lastInputs.planEndAge + '): ' +
@@ -447,6 +449,8 @@
       retirementSpendingPct: readNumber('retirementSpendingPct'),
       ssPiaMonthly: readNumber('ssPiaMonthly'),
       ssClaimAge: el('ssClaimAge').value,
+      spouseSsMonthly: readNumber('spouseSsMonthly'),
+      spouseSsClaimAge: el('spouseSsClaimAge').value,
       otherGuaranteedAnnual: readNumber('otherGuaranteedAnnual'),
       withdrawalRate: readNumber('withdrawalRate'),
       inflation: readNumber('inflation'),
@@ -537,7 +541,7 @@
 
   function exportCsv() {
     if (!lastResult || !lastInputs) return;
-    var header = ['Age', 'Portfolio', 'Withdrawal', 'Social Security', 'Other Income', 'RMD', 'Est Federal Tax', 'Total Income'];
+    var header = ['Age', 'Portfolio', 'Withdrawal', 'Social Security (household)', 'Other Income', 'RMD', 'Est Federal Tax', 'Total Income'];
     var lines = [header.join(',')];
     lastResult.years.forEach(function (y) {
       lines.push([
@@ -591,6 +595,8 @@
         baseAnnualSpending: lastInputs.baseAnnualSpending,
         ssPiaMonthly: lastInputs.ssPiaMonthly,
         ssClaimAge: lastInputs.ssClaimAge,
+        spouseSsMonthly: lastInputs.spouseSsMonthly,
+        spouseSsClaimAge: lastInputs.spouseSsClaimAge,
         otherGuaranteedAnnual: lastInputs.otherGuaranteedAnnual,
         filingStatus: lastInputs.filingStatus,
         taxDeferredPct: lastInputs.taxDeferredPct,

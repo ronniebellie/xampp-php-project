@@ -39,6 +39,11 @@
     var taxDeferred = Math.round(inputs.balance * (inputs.taxDeferredPct / 100));
     var rothPortion = Math.round(inputs.balance - taxDeferred);
     var ssAnnual = Math.round(result.summary.ssAnnualAtClaim || 0);
+    var householdSsMonthly = Math.round(
+      result.summary.householdSsMonthlyAtClaim ||
+      (result.summary.ssMonthlyAtClaim || inputs.ssPiaMonthly || 0) + (inputs.spouseSsMonthly || 0)
+    );
+    var householdSsAnnual = householdSsMonthly * 12;
     var mcStartAge = Math.max(inputs.currentAge, inputs.retirementAge);
     var yearsToModel = Math.max(1, inputs.planEndAge - mcStartAge);
     var startRow = result.years.find(function (y) { return y.age === mcStartAge; });
@@ -46,7 +51,7 @@
     var retireRow = firstRetirementYearRow(result);
     var annualWithdrawal = retireRow ? Math.round(retireRow.withdrawal || 0) : 0;
     var guaranteedMonthly = Math.round((inputs.otherGuaranteedAnnual || 0) / 12);
-    var ssMonthly = Math.round(result.summary.ssMonthlyAtClaim || inputs.ssPiaMonthly || 0);
+    var ssMonthly = householdSsMonthly;
 
     var common = { fromPlan: 1 };
 
@@ -76,7 +81,7 @@
         filingStatus: mapFilingForRoth(inputs.filingStatus),
         traditionalIRA: taxDeferred,
         rothIRA: rothPortion,
-        retirementIncome: ssAnnual + Math.round(inputs.otherGuaranteedAnnual || 0),
+        retirementIncome: householdSsAnnual + Math.round(inputs.otherGuaranteedAnnual || 0),
         annualPortfolioWithdrawalRate: (inputs.withdrawalRate * 100).toFixed(2),
         spouseAge: inputs.spouseIsBeneficiary && inputs.spouseAge ? inputs.spouseAge : ''
       })),
@@ -84,7 +89,7 @@
         currentAge: inputs.currentAge,
         accountBalance: taxDeferred,
         growthRate: inputs.returnRetirement,
-        socialSecurity: ssAnnual,
+        socialSecurity: householdSsAnnual,
         pension: Math.round(inputs.otherGuaranteedAnnual || 0),
         otherIncome: 0,
         filingStatus: inputs.filingStatus === 'hoh' ? 'hoh' : inputs.filingStatus,
@@ -109,7 +114,7 @@
       deepLinkNestEgg: UP.buildUrl('../nest-egg-target/', Object.assign({}, common, {
         incomeMethod: 'direct',
         desiredAnnualIncome: clampRound(inputs.baseAnnualSpending, 20000, 200000, 5000),
-        guaranteedAnnualIncome: clampRound(ssAnnual + Math.round(inputs.otherGuaranteedAnnual || 0), 0, 120000, 5000),
+        guaranteedAnnualIncome: clampRound(householdSsAnnual + Math.round(inputs.otherGuaranteedAnnual || 0), 0, 120000, 5000),
         withdrawalRate: clampRound(inputs.withdrawalRate * 100, 2, 8, 0.25),
         currentSavings: Math.round(inputs.balance)
       }))

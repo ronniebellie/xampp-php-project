@@ -172,7 +172,10 @@ $defaultBirthYear = (int) date('Y') - 62;
         </div>
       </div>
 
-      <h3>Income in retirement</h3>
+      <h3>Spending in retirement</h3>
+      <p style="color:#4b5563;margin:0 0 14px;font-size:14px;line-height:1.5;">
+        What you expect to <strong>spend</strong> each year — household expenses, not your income.
+      </p>
       <div style="margin-bottom: 12px;">
         <label style="margin-right: 16px;"><input type="radio" name="spendingMethod" value="estimate" checked> Estimate from current spending</label>
         <label><input type="radio" name="spendingMethod" value="direct"> Enter annual spending directly</label>
@@ -180,32 +183,57 @@ $defaultBirthYear = (int) date('Y') - 62;
 
       <div id="estimateSpendingWrap" class="form-grid">
         <div>
-          <label class="field-label" for="currentMonthlySpending">Current monthly spending ($)</label>
+          <label class="field-label" for="currentMonthlySpending">Household monthly spending ($)</label>
           <input type="number" id="currentMonthlySpending" min="0" step="50" value="6000">
+          <small>What your household spends now (or expects to spend in retirement) — not gross income.</small>
         </div>
         <div>
           <label class="field-label" for="retirementSpendingPct">Retirement spending (% of current)</label>
           <input type="number" id="retirementSpendingPct" min="40" max="120" value="80">
-          <small>Many planners use 70–80% while still working.</small>
+          <small>Many planners use 70–80% while still working. Already retired? This is set to 100%.</small>
         </div>
       </div>
 
       <div id="directSpendingWrap" class="form-grid" style="display:none;">
         <div>
-          <label class="field-label" for="annualSpendingDirect">Annual spending in retirement ($)</label>
+          <label class="field-label" for="annualSpendingDirect">Annual household spending in retirement ($)</label>
           <input type="number" id="annualSpendingDirect" min="0" step="1000" value="72000">
+          <small>Total yearly expenses for your household — not income.</small>
         </div>
       </div>
 
+      <h3 style="margin-top: 28px;">Guaranteed income in retirement</h3>
+      <p style="color:#4b5563;margin:0 0 14px;font-size:14px;line-height:1.5;">
+        Steady income from Social Security, pensions, and similar sources. Each person's Social Security is entered separately.
+      </p>
+
+      <h4 style="margin: 0 0 12px; font-size: 15px; color: #374151;">Your Social Security</h4>
       <div class="form-grid">
         <div>
-          <label class="field-label" for="ssPiaMonthly">Social Security at Full Retirement Age ($/month)</label>
+          <label class="field-label" for="ssPiaMonthly">Your benefit at Full Retirement Age ($/month)</label>
           <input type="number" id="ssPiaMonthly" min="0" step="50" value="2800">
-          <small>From your SSA statement (estimated benefit at FRA).</small>
+          <small>From <em>your</em> SSA statement (PIA at FRA) — not household total.</small>
         </div>
         <div>
-          <label class="field-label" for="ssClaimAge">Claim Social Security at age</label>
+          <label class="field-label" for="ssClaimAge">You claim benefits at age</label>
           <select id="ssClaimAge">
+            <?php for ($a = 62; $a <= 70; $a++): ?>
+              <option value="<?php echo $a; ?>"<?php echo $a === 67 ? ' selected' : ''; ?>><?php echo $a; ?></option>
+            <?php endfor; ?>
+          </select>
+        </div>
+      </div>
+
+      <h4 style="margin: 18px 0 12px; font-size: 15px; color: #374151;">Spouse's Social Security <span style="font-weight: 400; color: #6b7280;">(optional)</span></h4>
+      <div class="form-grid">
+        <div>
+          <label class="field-label" for="spouseSsMonthly">Spouse's benefit at Full Retirement Age ($/month)</label>
+          <input type="number" id="spouseSsMonthly" min="0" step="50" value="0">
+          <small>From <em>spouse's</em> SSA statement. Leave at 0 if not applicable.</small>
+        </div>
+        <div>
+          <label class="field-label" for="spouseSsClaimAge">Spouse claims benefits at age</label>
+          <select id="spouseSsClaimAge">
             <?php for ($a = 62; $a <= 70; $a++): ?>
               <option value="<?php echo $a; ?>"<?php echo $a === 67 ? ' selected' : ''; ?>><?php echo $a; ?></option>
             <?php endfor; ?>
@@ -214,7 +242,7 @@ $defaultBirthYear = (int) date('Y') - 62;
         <div>
           <label class="field-label" for="otherGuaranteedAnnual">Other guaranteed income ($/year)</label>
           <input type="number" id="otherGuaranteedAnnual" min="0" step="1000" value="0">
-          <small>Pension, annuity, rental, etc.</small>
+          <small>Pension, annuity, rental, etc. — do not include Social Security here.</small>
         </div>
       </div>
 
@@ -330,7 +358,7 @@ $defaultBirthYear = (int) date('Y') - 62;
                 <th>Age</th>
                 <th>Portfolio</th>
                 <th>Withdrawal</th>
-                <th>Social Security</th>
+                <th>Social Security (household)</th>
                 <th>Other income</th>
                 <th>RMD</th>
                 <th>Est. federal tax</th>
@@ -351,7 +379,7 @@ $defaultBirthYear = (int) date('Y') - 62;
                 <th>Age</th>
                 <th>Portfolio</th>
                 <th>Withdrawal</th>
-                <th>Social Security</th>
+                <th>Social Security (household)</th>
                 <th>Other income</th>
                 <th>RMD</th>
                 <th>Est. federal tax</th>

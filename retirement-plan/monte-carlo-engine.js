@@ -46,6 +46,18 @@
     return monthly * 12;
   }
 
+  function annualSpouseSocialSecurity(age, inputs) {
+    var monthly = inputs.spouseSsMonthly || 0;
+    if (monthly <= 0) return 0;
+    var startAge = inputs.spouseSsClaimAge || inputs.ssClaimAge;
+    if (age < startAge) return 0;
+    var yearsSinceClaim = age - startAge;
+    for (var y = 1; y <= yearsSinceClaim; y++) {
+      monthly *= 1 + inputs.colaRate / 100;
+    }
+    return monthly * 12;
+  }
+
   function annualSpendingAtAge(age, inputs) {
     var yearsSinceRetirement = age - inputs.retirementAge;
     return inputs.baseAnnualSpending * Math.pow(1 + inputs.inflation / 100, yearsSinceRetirement);
@@ -56,8 +68,9 @@
     var rmd = TR.calculateRMD(age, taxDeferredBalance, isSpouseBeneficiary, spouseAge);
     var spending = annualSpendingAtAge(age, inputs);
     var ssAnnual = annualSocialSecurity(age, inputs, ssMonthlyAtClaim);
+    var spouseSsAnnual = annualSpouseSocialSecurity(age, inputs);
     var otherIncome = inputs.otherGuaranteedAnnual;
-    var portfolioWithdrawal = Math.max(rmd, Math.max(0, spending - ssAnnual - otherIncome));
+    var portfolioWithdrawal = Math.max(rmd, Math.max(0, spending - ssAnnual - spouseSsAnnual - otherIncome));
     if (portfolioWithdrawal > balanceStart) portfolioWithdrawal = balanceStart;
     var balanceEnd = Math.max(0, balanceStart - portfolioWithdrawal) * (1 + returnRate);
     return { balanceEnd: balanceEnd, depleted: balanceEnd <= 0 };

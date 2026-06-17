@@ -21,6 +21,23 @@
     return monthly * 12;
   }
 
+  function annualSpouseSocialSecurity(age, inputs) {
+    var monthly = inputs.spouseSsMonthly || 0;
+    if (monthly <= 0) return 0;
+    var startAge = inputs.spouseSsClaimAge || inputs.ssClaimAge;
+    if (age < startAge) return 0;
+    var yearsSinceClaim = age - startAge;
+    for (var y = 1; y <= yearsSinceClaim; y++) {
+      monthly *= 1 + inputs.colaRate / 100;
+    }
+    return monthly * 12;
+  }
+
+  function householdSocialSecurityAnnual(age, inputs, ssMonthlyAtClaim) {
+    return annualSocialSecurity(age, inputs, ssMonthlyAtClaim) +
+      annualSpouseSocialSecurity(age, inputs);
+  }
+
   function annualSpendingAtAge(age, inputs) {
     if (age < inputs.retirementAge) return 0;
     var yearsSinceRetirement = age - inputs.retirementAge;
@@ -30,7 +47,8 @@
   function targetNestEggAtRetirement(inputs, ssMonthlyAtClaim) {
     var spending = inputs.baseAnnualSpending;
     var ssAnnual = annualSocialSecurity(inputs.retirementAge, inputs, ssMonthlyAtClaim);
-    var guaranteed = ssAnnual + inputs.otherGuaranteedAnnual;
+    var spouseSsAnnual = annualSpouseSocialSecurity(inputs.retirementAge, inputs);
+    var guaranteed = ssAnnual + spouseSsAnnual + inputs.otherGuaranteedAnnual;
     var needed = Math.max(0, spending - guaranteed);
     if (needed <= 0 || inputs.withdrawalRate <= 0) return 0;
     return needed / inputs.withdrawalRate;
@@ -140,14 +158,16 @@
         var rmd = TR.calculateRMD(age, taxDeferredBalance, isSpouseBeneficiary, spouseAge);
         var spending = annualSpendingAtAge(age, inputs);
         var ssAnnual = annualSocialSecurity(age, inputs, ssMonthlyAtClaim);
+        var spouseSsAnnual = annualSpouseSocialSecurity(age, inputs);
+        var householdSsAnnual = ssAnnual + spouseSsAnnual;
         var otherIncome = inputs.otherGuaranteedAnnual;
-        var spendingGap = Math.max(0, spending - ssAnnual - otherIncome);
+        var spendingGap = Math.max(0, spending - householdSsAnnual - otherIncome);
         var portfolioWithdrawal = Math.max(rmd, spendingGap);
         if (portfolioWithdrawal > balanceStart) portfolioWithdrawal = balanceStart;
 
         var taxableIncome = TR.estimateTaxableIncome(
           portfolioWithdrawal,
-          ssAnnual,
+          householdSsAnnual,
           otherIncome,
           inputs.filingStatus,
           inputs.useStandardDeduction !== false
@@ -169,13 +189,13 @@
           balanceStart: balanceStart,
           balanceEnd: balance,
           spending: spending,
-          socialSecurity: ssAnnual,
+          socialSecurity: householdSsAnnual,
           otherIncome: otherIncome,
           rmd: rmd,
           withdrawal: portfolioWithdrawal,
           federalTax: federalTax,
           marginalRate: marginalRate,
-          totalIncome: ssAnnual + otherIncome + portfolioWithdrawal,
+          totalIncome: householdSsAnnual + otherIncome + portfolioWithdrawal,
           rmdStarts: age === RMD_START_AGE
         });
       }
@@ -208,6 +228,8 @@
         targetNestEgg: targetNestEgg,
         ssMonthlyAtClaim: ssMonthlyAtClaim,
         ssAnnualAtClaim: ssMonthlyAtClaim * 12,
+        spouseSsMonthly: inputs.spouseSsMonthly || 0,
+        householdSsMonthlyAtClaim: ssMonthlyAtClaim + (inputs.spouseSsMonthly || 0),
         fraAge: FC.fraAgeFromBirthYear(inputs.birthYear),
         depletedAge: depletedAge,
         endingBalance: years.length ? years[years.length - 1].balanceEnd : balance,
