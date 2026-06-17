@@ -812,13 +812,15 @@
       credentials: 'include',
       body: JSON.stringify({ calculator_type: CALCULATOR_TYPE, results_summary: r.summary })
     })
-      .then(function (res) { return res.json(); })
-      .then(function (data) {
+      .then(function (res) { return res.text(); })
+      .then(function (text) {
         if (btn) { btn.disabled = false; btn.textContent = origText; }
-        if (!data.success) {
-          alert(data.error || 'Could not generate explanation.');
-          return;
+        var data;
+        try { data = JSON.parse(text); } catch (e) {
+          throw new Error('Server returned an unexpected response. Try logging out and back in.');
         }
+        if (data.error) throw new Error(data.error);
+        if (!data.explanation) throw new Error('Could not generate explanation.');
         if (window.showExplainModal) {
           window.showExplainModal(data.explanation, {
             calculatorType: CALCULATOR_TYPE,
@@ -826,9 +828,9 @@
           });
         }
       })
-      .catch(function () {
+      .catch(function (err) {
         if (btn) { btn.disabled = false; btn.textContent = origText; }
-        alert('Could not generate explanation.');
+        alert('Explain results: ' + (err.message || 'Could not generate explanation.'));
       });
   }
 
