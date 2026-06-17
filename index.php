@@ -58,12 +58,12 @@ $hide_site_header = isset($_GET['embed'])
 
 // SEO: homepage
 require_once __DIR__ . '/includes/seo_public_url.php';
-$seo_title = "Smart Tools & AI Insights for Secure Financial Planning";
-$seo_description = "Explore interactive workspaces for retirement timeline planning, active YNAB budget auditing, and custom-branded advisor financial tracking solutions.";
+$seo_title = "Retirement Plan Builder & Financial Calculators";
+$seo_description = "Build a year-by-year retirement plan with free calculators for Social Security, spending, RMDs, and taxes. Premium adds Monte Carlo stress testing, PDF reports, AI explanations, and YNAB budget auditing.";
 $seo_url = rb_seo_public_url();
 $seo_site_name = "Ron Belisle Financial Calculators";
 $seo_og_image = rb_seo_site_base_url() . '/images/og-default.jpg';
-$seo_og_image_alt = 'Ron Belisle — Smart Tools & AI Insights for secure financial planning';
+$seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insights';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -622,8 +622,8 @@ $seo_og_image_alt = 'Ron Belisle — Smart Tools & AI Insights for secure financ
       <div class="brand">
         <div class="mark" aria-hidden="true">RB</div>
         <div class="brand-text">
-          <h1 class="brand-title">Smart Tools &amp; AI Insights for Secure Financial Planning</h1>
-          <p class="brand-tagline">Explore free interactive calculators for retirement timeline planning, Social Security optimization, and investment metrics. Upgrade to Premium for advanced features, live YNAB data integration, and personal AI budget auditing.</p>
+          <h1 class="brand-title">Retirement Planning Tools &amp; AI Insights</h1>
+          <p class="brand-tagline">Start with the <strong>Retirement Plan Builder</strong> for a year-by-year view of savings, Social Security, spending, and taxes. Explore free calculators for claiming, RMDs, and optimization. Premium adds Monte Carlo stress testing, PDF reports, AI explanations of your results, and YNAB budget auditing.</p>
           <?php if ($isLoggedIn): ?>
             <div class="hero-actions">
               <p class="hero-welcome">Welcome back, <strong><?php echo htmlspecialchars($userName); ?></strong></p>
@@ -696,11 +696,11 @@ $seo_og_image_alt = 'Ron Belisle — Smart Tools & AI Insights for secure financ
     <div id="tab-panel-retirement" class="tab-panel active" data-tab="retirement" role="tabpanel" aria-labelledby="tab-retirement"<?php if ($hide_site_header): ?> style="display:block"<?php endif; ?>>
     <div class="tier" aria-label="Retirement app links">
       <div class="tier-title">Start here</div>
-      <p class="tier-hint">Build one consistent retirement timeline first, then go deeper into Social Security, spending, taxes, and optimization.</p>
+      <p class="tier-hint">Build one consistent retirement timeline first. Premium Monte Carlo stress testing lives here—you usually do not need a separate tool.</p>
       <div class="grid tight">
         <section class="card card-featured">
-          <h3>Retirement Plan Builder <span class="feature-badge">New</span></h3>
-          <p>Enter your numbers once and see how savings, Social Security, spending, RMDs, and estimated federal taxes fit together year by year. Premium adds a Monte Carlo stress test on the same plan.</p>
+          <h3>Retirement Plan Builder</h3>
+          <p>Enter your numbers once and see how savings, Social Security, spending, RMDs, and estimated federal taxes fit together year by year. Premium adds a Monte Carlo stress test on the same plan, plus PDF export and AI explanations.</p>
           <a class="btn" href="retirement-plan/">Open</a>
         </section>
 
@@ -750,18 +750,12 @@ $seo_og_image_alt = 'Ron Belisle — Smart Tools & AI Insights for secure financ
 
     <div class="tier">
       <div class="tier-title">Sustainability &amp; protection</div>
-      <p class="tier-hint">Pressure-test your plan, clarify needs vs wants, and look at risks that matter after retirement begins.</p>
+      <p class="tier-hint">Pressure-test needs vs wants and look at risks that matter after retirement begins. For portfolio odds, use the Monte Carlo in Retirement Plan Builder (Premium).</p>
       <div class="grid tight">
         <section class="card">
           <h3>Required vs. Desired Spending Calculator</h3>
           <p>Separate essential expenses from discretionary spending to calculate the minimum portfolio needed for security and the ideal portfolio for your full retirement lifestyle.</p>
           <a class="btn" href="required-vs-desired/">Open</a>
-        </section>
-
-        <section class="card">
-          <h3>Plan Success (Monte Carlo)</h3>
-          <p>See the probability of your portfolio lasting through retirement using random market return simulations.</p>
-          <a class="btn" href="plan-success/">Open</a>
         </section>
 
         <section class="card">
@@ -774,6 +768,18 @@ $seo_og_image_alt = 'Ron Belisle — Smart Tools & AI Insights for secure financ
           <h3>Debt Payoff Calculator</h3>
           <p>Pay down debt before retirement—compare avalanche vs snowball, see payoff timelines, and how extra payments save interest.</p>
           <a class="btn" href="debt-payoff/">Open</a>
+        </section>
+      </div>
+    </div>
+
+    <div class="tier">
+      <div class="tier-title">Quick Monte Carlo (specialist)</div>
+      <p class="tier-hint">Already built into Premium Retirement Plan Builder. Use this standalone tool only when you want a fast what-if without a full plan—constant withdrawals, a calendar start date, or annual vs monthly timing.</p>
+      <div class="grid tight">
+        <section class="card">
+          <h3>Plan Success (Monte Carlo)</h3>
+          <p>Standalone stress test: portfolio, annual withdrawal, years, return, and volatility. Best for quick experiments; most users should start with Retirement Plan Builder instead.</p>
+          <a class="btn" href="plan-success/">Open</a>
         </section>
       </div>
     </div>
