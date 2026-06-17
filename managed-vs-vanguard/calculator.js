@@ -16,28 +16,29 @@ function formatCurrency(amount) {
     }).format(amount);
 }
 
-// Calculate portfolio growth
-function calculatePortfolio(principal, annualReturn, feeRate, years) {
-    const netReturn = (annualReturn - feeRate) / 100;
+// Grow at gross return, then deduct fees (same model as vanguard-pas-vs-target-date)
+function calculatePortfolio(principal, annualReturnPct, feeRatePct, years) {
     let yearlyData = [];
     let balance = principal;
     let totalFees = 0;
-    
-    for (let year = 0; year <= years; year++) {
-        const yearFee = balance * (feeRate / 100);
+
+    yearlyData.push({ year: 0, balance: balance, fee: 0, totalFees: 0 });
+
+    for (let year = 1; year <= years; year++) {
+        balance = balance * (1 + annualReturnPct / 100);
+        const yearFee = balance * (feeRatePct / 100);
         totalFees += yearFee;
-        
+
         yearlyData.push({
             year: year,
             balance: balance,
             fee: yearFee,
             totalFees: totalFees
         });
-        
-        // Grow for next year (after fees)
-        balance = balance * (1 + netReturn);
+
+        balance = balance - yearFee;
     }
-    
+
     return yearlyData;
 }
 
@@ -84,13 +85,24 @@ function calculate(showAlerts) {
     
     const directFeeDiff = managedTotalFees - vanguardTotalFees;
     const lostGrowth = opportunityCost - directFeeDiff;
+    const lostGrowthDisplay = Math.max(0, lostGrowth);
     
     // Update results
     document.getElementById('resultYears').textContent = years;
     document.getElementById('opportunityCost').textContent = formatCurrency(opportunityCost);
+    const avgAnnualEl = document.getElementById('avgAnnualCost');
+    if (avgAnnualEl) avgAnnualEl.textContent = formatCurrency(years > 0 ? opportunityCost / years : 0);
+    const breakdownFeesEl = document.getElementById('breakdownFees');
+    const breakdownGrowthEl = document.getElementById('breakdownGrowth');
+    const breakdownTotalEl = document.getElementById('breakdownTotal');
+    if (breakdownFeesEl) breakdownFeesEl.textContent = formatCurrency(directFeeDiff);
+    if (breakdownGrowthEl) breakdownGrowthEl.textContent = formatCurrency(lostGrowthDisplay);
+    if (breakdownTotalEl) breakdownTotalEl.textContent = formatCurrency(opportunityCost);
     
     // Update fee label
     document.getElementById('managedFeeLabel').textContent = advisorFee + '% fee';
+    const managedFeeLabelPortfolio = document.getElementById('managedFeeLabelPortfolio');
+    if (managedFeeLabelPortfolio) managedFeeLabelPortfolio.textContent = advisorFee + '% fee';
     
     // Update comparison table
     document.getElementById('managedYear1Fee').textContent = formatCurrency(managedYear1Fee);
@@ -100,7 +112,7 @@ function calculate(showAlerts) {
     document.getElementById('midYearLabel').textContent = midYear;
     document.getElementById('managedMidValue').textContent = formatCurrency(managedMidValue);
     document.getElementById('vanguardMidValue').textContent = formatCurrency(vanguardMidValue);
-    document.getElementById('midValueDiff').textContent = formatCurrency(managedMidValue - vanguardMidValue);
+    document.getElementById('midValueDiff').textContent = formatCurrency(vanguardMidValue - managedMidValue);
     
     document.getElementById('finalYearLabel').textContent = years;
     document.getElementById('managedFinalValue').textContent = formatCurrency(managedFinal);
@@ -114,7 +126,7 @@ function calculate(showAlerts) {
     // Update insights
     document.getElementById('insightDirectFees').textContent = formatCurrency(directFeeDiff);
     document.getElementById('insightYears').textContent = years;
-    document.getElementById('insightLostGrowth').textContent = formatCurrency(lostGrowth > 0 ? lostGrowth : opportunityCost);
+    document.getElementById('insightLostGrowth').textContent = formatCurrency(lostGrowthDisplay);
     document.getElementById('insightBeatBy').textContent = (advisorFee - vanguardFee).toFixed(2) + '%';
     
     // Create charts
@@ -132,7 +144,7 @@ function calculate(showAlerts) {
         vanguardData,
         opportunityCost,
         directFeeDiff,
-        lostGrowth,
+        lostGrowth: lostGrowthDisplay,
         managedFinal,
         vanguardFinal,
         managedTotalFees,
@@ -592,9 +604,12 @@ function explainResults() {
     let summary = 'Managed Portfolio vs Vanguard Index Fund comparison.\n\n';
     summary += 'Portfolio value: ' + formatCurrency(res.portfolioValue) + '. Advisor fee: ' + res.advisorFee + '%. Vanguard fee: ' + res.vanguardFee + '%. ';
     summary += 'Timeline: ' + res.years + ' years. Expected annual return (before fees): ' + res.returnRate + '%.\n\n';
-    summary += 'Opportunity cost over ' + res.years + ' years: ' + formatCurrency(res.opportunityCost) + ' (amount lost by using managed portfolio vs Vanguard). ';
-    summary += 'Direct fee difference: ' + formatCurrency(res.directFeeDiff) + ' more in advisor fees. ';
-    summary += 'Lost growth (compounding of those fees): ' + formatCurrency(res.lostGrowth > 0 ? res.lostGrowth : res.opportunityCost) + '.\n\n';
+    const lostGrowthDisplay = Math.max(0, res.lostGrowth);
+    summary += 'OPPORTUNITY COST BREAKDOWN (do not double-count):\n';
+    summary += '- Total Opportunity Cost (grand total): ' + formatCurrency(res.opportunityCost) + '\n';
+    summary += '- Direct Fee Difference (paid out of pocket): ' + formatCurrency(res.directFeeDiff) + '\n';
+    summary += '- Lost Growth (fees removed from market, could not compound): ' + formatCurrency(lostGrowthDisplay) + '\n';
+    summary += 'Relationship: Total Opportunity Cost = Direct Fee Difference + Lost Growth.\n\n';
     summary += 'Final portfolio: Managed ' + formatCurrency(res.managedFinal) + ' vs Vanguard ' + formatCurrency(res.vanguardFinal) + '. ';
     summary += 'Total fees paid: Managed ' + formatCurrency(res.managedTotalFees) + ' vs Vanguard ' + formatCurrency(res.vanguardTotalFees) + '. ';
     summary += 'Advisor must beat Vanguard by ' + (res.advisorFee - res.vanguardFee).toFixed(2) + '% annually to justify their fee. Most do not.';

@@ -108,43 +108,66 @@ $isPremium = has_premium_access();
                 <div class="opportunity-cost-banner">
                     <div class="cost-label">Total Opportunity Cost Over <span id="resultYears"></span> Years:</div>
                     <div class="cost-amount" id="opportunityCost">$0</div>
-<div class="cost-explanation">This is the amount of money you are losing by not having your money in a Vanguard index fund</div>                </div>
-
-                <!-- Comparison Table -->
-                <div class="comparison-table">
-                    <div class="comparison-header">
-                        <div class="col-label"></div>
-                        <div class="col-managed">Managed Portfolio<br><span class="fee-label" id="managedFeeLabel"></span></div>
-                        <div class="col-vanguard">Vanguard VTSAX<br><span class="fee-label">0.04% fee</span></div>
-                        <div class="col-difference">You're Losing</div>
+                    <div class="cost-average">≈ <span id="avgAnnualCost">$0</span> per year on average</div>
+                    <div class="cost-breakdown" id="costBreakdown">
+                        <span class="cb-part"><span class="cb-num" id="breakdownFees">$0</span><span class="cb-desc">extra advisor fees</span></span>
+                        <span class="cb-op">+</span>
+                        <span class="cb-part"><span class="cb-num" id="breakdownGrowth">$0</span><span class="cb-desc">lost investment growth</span></span>
+                        <span class="cb-op">=</span>
+                        <span class="cb-part cb-total"><span class="cb-num" id="breakdownTotal">$0</span><span class="cb-desc">total opportunity cost</span></span>
                     </div>
-                    
-                    <div class="comparison-row">
-                        <div class="row-label">Year 1 Fee</div>
-                        <div class="col-managed" id="managedYear1Fee"></div>
-                        <div class="col-vanguard" id="vanguardYear1Fee"></div>
-                        <div class="col-difference negative" id="year1FeeDiff"></div>
-                    </div>
+                    <div class="cost-explanation">Extra amount you could have by investing in a Vanguard index fund instead of a managed portfolio</div>
+                </div>
 
-                    <div class="comparison-row">
-                        <div class="row-label">Year <span id="midYearLabel"></span> Portfolio</div>
-                        <div class="col-managed" id="managedMidValue"></div>
-                        <div class="col-vanguard" id="vanguardMidValue"></div>
-                        <div class="col-difference negative" id="midValueDiff"></div>
-                    </div>
+                <div class="comparison-section">
+                    <h3 class="comparison-section-title">Fees &amp; Costs</h3>
+                    <div class="comparison-table">
+                        <div class="comparison-header">
+                            <div class="col-label"></div>
+                            <div class="col-managed">Managed Portfolio<br><span class="fee-label" id="managedFeeLabel"></span></div>
+                            <div class="col-vanguard">Vanguard VTSAX<br><span class="fee-label">0.04% fee</span></div>
+                            <div class="col-difference">You're Losing</div>
+                        </div>
 
-                    <div class="comparison-row highlight">
-                        <div class="row-label">Year <span id="finalYearLabel"></span> Portfolio</div>
-                        <div class="col-managed" id="managedFinalValue"></div>
-                        <div class="col-vanguard" id="vanguardFinalValue"></div>
-                        <div class="col-difference negative large" id="finalValueDiff"></div>
-                    </div>
+                        <div class="comparison-row">
+                            <div class="row-label">Year 1 Fee</div>
+                            <div class="col-managed" id="managedYear1Fee"></div>
+                            <div class="col-vanguard" id="vanguardYear1Fee"></div>
+                            <div class="col-difference negative" id="year1FeeDiff"></div>
+                        </div>
 
-                    <div class="comparison-row">
-                        <div class="row-label">Total Fees Paid</div>
-                        <div class="col-managed" id="managedTotalFees"></div>
-                        <div class="col-vanguard" id="vanguardTotalFees"></div>
-                        <div class="col-difference negative" id="totalFeesDiff"></div>
+                        <div class="comparison-row">
+                            <div class="row-label">Total Fees Paid</div>
+                            <div class="col-managed" id="managedTotalFees"></div>
+                            <div class="col-vanguard" id="vanguardTotalFees"></div>
+                            <div class="col-difference negative" id="totalFeesDiff"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comparison-section">
+                    <h3 class="comparison-section-title">Portfolio Value</h3>
+                    <div class="comparison-table">
+                        <div class="comparison-header">
+                            <div class="col-label"></div>
+                            <div class="col-managed">Managed Portfolio<br><span class="fee-label" id="managedFeeLabelPortfolio"></span></div>
+                            <div class="col-vanguard">Vanguard VTSAX<br><span class="fee-label">0.04% fee</span></div>
+                            <div class="col-difference">You're Losing</div>
+                        </div>
+
+                        <div class="comparison-row">
+                            <div class="row-label">Year <span id="midYearLabel"></span> Portfolio</div>
+                            <div class="col-managed" id="managedMidValue"></div>
+                            <div class="col-vanguard" id="vanguardMidValue"></div>
+                            <div class="col-difference negative" id="midValueDiff"></div>
+                        </div>
+
+                        <div class="comparison-row highlight">
+                            <div class="row-label">Year <span id="finalYearLabel"></span> Portfolio</div>
+                            <div class="col-managed" id="managedFinalValue"></div>
+                            <div class="col-vanguard" id="vanguardFinalValue"></div>
+                            <div class="col-difference negative large" id="finalValueDiff"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -171,7 +194,7 @@ $isPremium = has_premium_access();
                     <div class="insight-box">
                         <div class="insight-icon">📈</div>
                         <div class="insight-content">
-                            <strong>Lost Growth:</strong> Those fee dollars would have grown to <span id="insightLostGrowth"></span> in Vanguard VTSAX.
+                            <strong>Lost Growth:</strong> Beyond the fees themselves, you miss about <span id="insightLostGrowth"></span> of compounding those dollars could have earned in the market.
                         </div>
                     </div>
                     <div class="insight-box">

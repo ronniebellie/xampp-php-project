@@ -187,8 +187,15 @@ input[readonly] {
 .cost-amount {
     font-size: 48px;
     font-weight: 800;
-    margin-bottom: 10px;
+    margin-bottom: 4px;
     text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.cost-average {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    opacity: 0.95;
 }
 
 .cost-explanation {
@@ -196,9 +203,44 @@ input[readonly] {
     opacity: 0.9;
 }
 
+.cost-breakdown {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: stretch;
+    gap: 10px;
+    max-width: 580px;
+    margin: 0 auto 16px;
+}
+.cost-breakdown .cb-part {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 0;
+    min-width: 120px;
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 8px;
+}
+.cost-breakdown .cb-total { background: rgba(255,255,255,0.28); }
+.cost-breakdown .cb-num { font-size: 20px; font-weight: 800; line-height: 1.2; }
+.cost-breakdown .cb-desc { font-size: 12px; font-weight: 600; opacity: 0.9; margin-top: 3px; }
+.cost-breakdown .cb-op { display: flex; align-items: center; font-size: 22px; font-weight: 800; opacity: 0.9; }
+
+.comparison-section { margin-bottom: 36px; }
+.comparison-section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
 /* Comparison Table */
 .comparison-table {
-    margin-bottom: 40px;
+    margin-bottom: 0;
 }
 
 .comparison-header,
