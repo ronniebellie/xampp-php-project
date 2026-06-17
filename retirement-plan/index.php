@@ -228,7 +228,7 @@ $defaultRetirementAge = 67;
       <div id="ssEstimateWrap" class="form-grid">
         <div>
           <label class="field-label" for="ssPiaMonthly">Your benefit at Full Retirement Age ($/month)</label>
-          <input type="number" id="ssPiaMonthly" min="0" step="50" value="2800">
+          <input type="number" id="ssPiaMonthly" min="0" step="50" value="">
           <small>From <em>your</em> SSA statement (PIA at FRA) — for future claiming estimates.</small>
         </div>
         <div>
@@ -257,7 +257,7 @@ $defaultRetirementAge = 67;
       <div id="spouseSsEstimateWrap" class="form-grid">
         <div>
           <label class="field-label" for="spouseSsMonthly">Spouse's benefit at Full Retirement Age ($/month)</label>
-          <input type="number" id="spouseSsMonthly" min="0" step="50" value="0">
+          <input type="number" id="spouseSsMonthly" min="0" step="50" value="">
           <small>From <em>spouse's</em> SSA statement. Leave at 0 if not applicable.</small>
         </div>
         <div>
@@ -279,7 +279,7 @@ $defaultRetirementAge = 67;
       <div class="form-grid">
         <div>
           <label class="field-label" for="otherGuaranteedAnnual">Other guaranteed income ($/year)</label>
-          <input type="number" id="otherGuaranteedAnnual" min="0" step="1000" value="0">
+          <input type="number" id="otherGuaranteedAnnual" min="0" step="1000" value="">
           <small>Pension, annuity, rental, etc. — do not include Social Security here.</small>
         </div>
       </div>
