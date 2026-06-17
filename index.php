@@ -59,7 +59,7 @@ $hide_site_header = isset($_GET['embed'])
 // SEO: homepage
 require_once __DIR__ . '/includes/seo_public_url.php';
 $seo_title = "Retirement Plan Builder & Financial Calculators";
-$seo_description = "Build a year-by-year retirement plan with free calculators for Social Security, spending, RMDs, and taxes. Premium adds Monte Carlo stress testing, PDF reports, AI explanations, and YNAB budget auditing.";
+$seo_description = "Build a year-by-year retirement plan with free calculators for Social Security, spending, RMDs, and taxes. Premium adds Monte Carlo stress testing, PDF reports, AI explanations of your specific results, and YNAB budget auditing.";
 $seo_url = rb_seo_public_url();
 $seo_site_name = "Ron Belisle Financial Calculators";
 $seo_og_image = rb_seo_site_base_url() . '/images/og-default.jpg';
@@ -623,7 +623,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
         <div class="mark" aria-hidden="true">RB</div>
         <div class="brand-text">
           <h1 class="brand-title">Retirement Planning Tools &amp; AI Insights</h1>
-          <p class="brand-tagline">Start with the <strong>Retirement Plan Builder</strong> for a year-by-year view of savings, Social Security, spending, and taxes. Explore free calculators for claiming, RMDs, and optimization. Premium adds Monte Carlo stress testing, PDF reports, AI explanations of your results, and YNAB budget auditing.</p>
+          <p class="brand-tagline">Start with the <strong>Retirement Plan Builder</strong> for a year-by-year view of savings, Social Security, spending, and taxes. Explore free calculators for claiming, RMDs, and optimization. Premium adds Monte Carlo stress testing, PDF reports, AI explanations of your specific results, and YNAB budget auditing.</p>
           <?php if ($isLoggedIn): ?>
             <div class="hero-actions">
               <p class="hero-welcome">Welcome back, <strong><?php echo htmlspecialchars($userName); ?></strong></p>
@@ -700,7 +700,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
       <div class="grid tight">
         <section class="card card-featured">
           <h3>Retirement Plan Builder</h3>
-          <p>Enter your numbers once and see how savings, Social Security, spending, RMDs, and estimated federal taxes fit together year by year. Premium adds a Monte Carlo stress test on the same plan, plus PDF export and AI explanations.</p>
+          <p>Enter your numbers once and see how savings, Social Security, spending, RMDs, and estimated federal taxes fit together year by year. Premium adds a Monte Carlo stress test on the same plan, plus PDF export and AI explanations of your specific results.</p>
           <a class="btn" href="retirement-plan/">Open</a>
         </section>
 
