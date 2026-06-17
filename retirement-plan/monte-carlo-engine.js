@@ -99,10 +99,17 @@
     var withdrawalStartAge = portfolioWithdrawalStartAge(inputs);
     var spendingGap = Math.max(0, spending - ssAnnual - spouseSsAnnual - otherIncome);
     var spendingGapWithdrawal = age >= withdrawalStartAge ? spendingGap : 0;
+    var spendingWithdrawal = Math.min(balanceStart, spendingGapWithdrawal);
+    var spendingShortfall = age >= withdrawalStartAge && spendingGapWithdrawal > 0 &&
+      spendingWithdrawal < spendingGapWithdrawal;
     var portfolioWithdrawal = Math.max(rmd, spendingGapWithdrawal);
     if (portfolioWithdrawal > balanceStart) portfolioWithdrawal = balanceStart;
     var balanceEnd = Math.max(0, balanceStart - portfolioWithdrawal) * (1 + returnRate);
-    return { balanceEnd: balanceEnd, depleted: balanceEnd <= 0 };
+    return {
+      balanceEnd: balanceEnd,
+      depleted: balanceEnd <= 0,
+      spendingShortfall: spendingShortfall
+    };
   }
 
   /**
@@ -113,8 +120,11 @@
    * @param {object} options - { expectedReturnPct, volatilityPct, numSims }
    */
   function runRetirementStressTest(inputs, deterministic, options) {
-    var startAge = Math.max(inputs.currentAge, inputs.retirementAge, portfolioWithdrawalStartAge(inputs));
-    var yearsToModel = inputs.planEndAge - startAge;
+    var inRetirement = inputs.currentAge >= inputs.retirementAge;
+    var startAge = inRetirement
+      ? inputs.currentAge
+      : Math.max(inputs.retirementAge, portfolioWithdrawalStartAge(inputs));
+    var yearsToModel = inputs.planEndAge - startAge + 1;
     if (yearsToModel <= 0) {
       return {
         successRate: 100,
@@ -173,7 +183,7 @@
           isSpouseBeneficiary
         );
         balance = step.balanceEnd;
-        if (step.depleted) {
+        if (step.spendingShortfall) {
           failed = true;
           endingBalances.push(balance);
         }

@@ -438,7 +438,7 @@ $defaultRetirementAge = 67;
       <div class="chart-section" id="monteCarloSection">
         <h3>Monte Carlo stress test <?php if ($isPremium): ?><span style="font-size:14px;color:#0d9488;font-weight:600;">Premium</span><?php endif; ?></h3>
         <p style="color:#4b5563;margin-bottom:12px;">
-          Thousands of random market scenarios test whether your plan lasts through your chosen plan end age,
+          Thousands of random market scenarios test whether your plan can <strong>fund spending</strong> through your plan end age,
           using the same spending, Social Security, and RMD rules as your timeline above.
         </p>
         <div id="mcResultsWrap">

@@ -334,12 +334,13 @@
     }
     if (summaryEl) {
       summaryEl.innerHTML =
-        'Your plan lasted from age <strong>' + mc.startAge + '</strong> through <strong>' + inputs.planEndAge +
+        'Your plan funded spending from age <strong>' + mc.startAge + '</strong> through <strong>' + inputs.planEndAge +
         '</strong> in <strong>' + mc.successRate + '%</strong> of ' + mc.numSims.toLocaleString() +
         ' simulations (starting portfolio ' + fmt(mc.startBalance) + ', return ' + mc.expectedReturnPct +
         '%, volatility ' + mc.volatilityPct + '%).<br><br>' +
         '<strong>Ending balance at age ' + inputs.planEndAge + ':</strong> 25th percentile = ' + fmt(mc.p25) +
-        ', median = ' + fmt(mc.p50) + ', 75th = ' + fmt(mc.p75) + '. Negative endings mean the portfolio ran out.';
+        ', median = ' + fmt(mc.p50) + ', 75th = ' + fmt(mc.p75) +
+        '. Failures mean the portfolio could not cover the spending gap in at least one year (not merely an RMD in excess of spending).';
     }
 
     var canvas = el('mcDistributionChart');
