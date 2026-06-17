@@ -57,11 +57,12 @@ $isPremium = has_premium_access();
                 <h2>Your Portfolio Details</h2>
                 
                 <div class="input-group">
-                    <div class="slider-label">
-                        <span>Current Portfolio Value</span>
-                        <span class="value" id="portfolioValueLabel"></span>
+                    <label for="portfolioValue">Current Portfolio Value</label>
+                    <div class="input-with-prefix">
+                        <span class="prefix">$</span>
+                        <input type="number" id="portfolioValue" value="500000" min="0" step="1000" inputmode="numeric" placeholder="500000">
                     </div>
-                    <input type="range" id="portfolioValue" value="500000" min="50000" max="5000000" step="10000">
+                    <span class="help-text">Enter your exact portfolio value</span>
                 </div>
 
                 <div class="input-group">
