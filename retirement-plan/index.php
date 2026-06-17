@@ -438,8 +438,9 @@ $defaultRetirementAge = 67;
       <div class="chart-section" id="monteCarloSection">
         <h3>Monte Carlo stress test <?php if ($isPremium): ?><span style="font-size:14px;color:#0d9488;font-weight:600;">Premium</span><?php endif; ?></h3>
         <p style="color:#4b5563;margin-bottom:12px;">
-          Thousands of random market scenarios test whether your plan can <strong>fund spending</strong> through your plan end age,
-          using the same spending, Social Security, and RMD rules as your timeline above.
+          Thousands of random market scenarios test whether <strong>portfolio withdrawals can cover your spending gap</strong>
+          (after Social Security and other income) through your plan end age. The fixed-return chart above can show you on track while
+          volatility still produces a 70–85% success rate over 25+ years at 12% volatility — that is normal, not a contradiction.
         </p>
         <div id="mcResultsWrap">
           <div id="mcPremiumResults" style="<?php echo $isPremium ? '' : 'display:none;'; ?>">
@@ -507,9 +508,9 @@ $defaultRetirementAge = 67;
   <script src="../js/lib/finance-core.js"></script>
   <script src="../js/lib/rmd-tax-core.js"></script>
   <script src="../js/lib/url-prefill.js"></script>
-  <script src="deep-links.js"></script>
-  <script src="plan-engine.js"></script>
-  <script src="monte-carlo-engine.js"></script>
+  <script src="deep-links.js?v=<?php echo (int) @filemtime(__DIR__ . '/deep-links.js'); ?>"></script>
+  <script src="plan-engine.js?v=<?php echo (int) @filemtime(__DIR__ . '/plan-engine.js'); ?>"></script>
+  <script src="monte-carlo-engine.js?v=<?php echo (int) @filemtime(__DIR__ . '/monte-carlo-engine.js'); ?>"></script>
   <script src="../js/share-results.js"></script>
   <script src="../js/explain-results-modal.js"></script>
   <script src="../js/compare-scenarios-modal.js"></script>

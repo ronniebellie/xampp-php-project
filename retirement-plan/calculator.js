@@ -333,14 +333,19 @@
       rateEl.style.color = mc.successRate >= 80 ? '#166534' : (mc.successRate >= 60 ? '#92400e' : '#991b1b');
     }
     if (summaryEl) {
+      var mcStartNote = mc.startAge > inputs.currentAge
+        ? (' when portfolio withdrawals begin at age ' + mc.startAge)
+        : '';
       summaryEl.innerHTML =
-        'Your plan funded spending from age <strong>' + mc.startAge + '</strong> through <strong>' + inputs.planEndAge +
-        '</strong> in <strong>' + mc.successRate + '%</strong> of ' + mc.numSims.toLocaleString() +
-        ' simulations (starting portfolio ' + fmt(mc.startBalance) + ', return ' + mc.expectedReturnPct +
-        '%, volatility ' + mc.volatilityPct + '%).<br><br>' +
+        'Your plan funded the <strong>spending gap from portfolio withdrawals</strong>' + mcStartNote +
+        ' through age <strong>' + inputs.planEndAge + '</strong> in <strong>' + mc.successRate + '%</strong> of ' +
+        mc.numSims.toLocaleString() + ' simulations (starting portfolio ' + fmt(mc.startBalance) + ', return ' +
+        mc.expectedReturnPct + '%, volatility ' + mc.volatilityPct + '%).<br><br>' +
+        '<span style="font-size:13px;color:#4b5563;">The deterministic chart above uses a <strong>fixed</strong> return each year. ' +
+        'Monte Carlo randomizes annual returns, so a plan can be <strong>on track</strong> at fixed returns and still show a 70–85% success rate with 12% volatility over 25+ years.</span><br><br>' +
         '<strong>Ending balance at age ' + inputs.planEndAge + ':</strong> 25th percentile = ' + fmt(mc.p25) +
         ', median = ' + fmt(mc.p50) + ', 75th = ' + fmt(mc.p75) +
-        '. Failures mean the portfolio could not cover the spending gap in at least one year (not merely an RMD in excess of spending).';
+        '. Failures mean the portfolio could not cover the spending gap in at least one year.';
     }
 
     var canvas = el('mcDistributionChart');

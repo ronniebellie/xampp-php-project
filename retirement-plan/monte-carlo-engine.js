@@ -85,13 +85,12 @@
   }
 
   function annualSpendingAtAge(age, inputs) {
+    if (age < inputs.retirementAge) return 0;
     var yearsSinceRetirement = age - inputs.retirementAge;
     return inputs.baseAnnualSpending * Math.pow(1 + inputs.inflation / 100, yearsSinceRetirement);
   }
 
-  function simulateRetirementYear(balanceStart, age, inputs, ssMonthlyBaseline, returnRate, taxDeferredPct, spouseAge, isSpouseBeneficiary) {
-    var taxDeferredBalance = balanceStart * taxDeferredPct;
-    var rmd = TR.calculateRMD(age, taxDeferredBalance, isSpouseBeneficiary, spouseAge);
+  function simulateRetirementYear(balanceStart, age, inputs, ssMonthlyBaseline, returnRate) {
     var spending = annualSpendingAtAge(age, inputs);
     var ssAnnual = annualSocialSecurity(age, inputs, ssMonthlyBaseline);
     var spouseSsAnnual = annualSpouseSocialSecurity(age, inputs);
@@ -99,10 +98,12 @@
     var withdrawalStartAge = portfolioWithdrawalStartAge(inputs);
     var spendingGap = Math.max(0, spending - ssAnnual - spouseSsAnnual - otherIncome);
     var spendingGapWithdrawal = age >= withdrawalStartAge ? spendingGap : 0;
-    var spendingWithdrawal = Math.min(balanceStart, spendingGapWithdrawal);
     var spendingShortfall = age >= withdrawalStartAge && spendingGapWithdrawal > 0 &&
-      spendingWithdrawal < spendingGapWithdrawal;
-    var portfolioWithdrawal = Math.max(rmd, spendingGapWithdrawal);
+      balanceStart < spendingGapWithdrawal;
+    // Stress-test spending-gap funding only. Mandatory RMDs above the spending gap are
+    // still modeled in the deterministic timeline; excess RMD cash stays in the household
+    // and does not reduce future spending capacity in this volatility test.
+    var portfolioWithdrawal = spendingGapWithdrawal;
     if (portfolioWithdrawal > balanceStart) portfolioWithdrawal = balanceStart;
     var balanceEnd = Math.max(0, balanceStart - portfolioWithdrawal) * (1 + returnRate);
     return {
@@ -113,17 +114,23 @@
   }
 
   /**
-   * Stress-test the retirement phase using the same spending/SS/RMD rules as the deterministic plan.
+   * Stress-test whether portfolio withdrawals can fund the spending gap through plan end age.
    *
    * @param {object} inputs - plan inputs
    * @param {object} deterministic - output from runDeterministicPlan
    * @param {object} options - { expectedReturnPct, volatilityPct, numSims }
    */
   function runRetirementStressTest(inputs, deterministic, options) {
+    var withdrawalStartAge = portfolioWithdrawalStartAge(inputs);
     var inRetirement = inputs.currentAge >= inputs.retirementAge;
-    var startAge = inRetirement
-      ? inputs.currentAge
-      : Math.max(inputs.retirementAge, portfolioWithdrawalStartAge(inputs));
+    var startAge;
+    if (!inRetirement) {
+      startAge = Math.max(inputs.retirementAge, withdrawalStartAge);
+    } else if (withdrawalStartAge > inputs.currentAge) {
+      startAge = withdrawalStartAge;
+    } else {
+      startAge = inputs.currentAge;
+    }
     var yearsToModel = inputs.planEndAge - startAge + 1;
     if (yearsToModel <= 0) {
       return {
@@ -148,7 +155,6 @@
         inputs.ssClaimAge
       );
 
-    var taxDeferredPct = FC.clamp(inputs.taxDeferredPct != null ? inputs.taxDeferredPct : 85, 0, 100) / 100;
     var mean = (options.expectedReturnPct || inputs.returnRetirement || 5) / 100;
     var stdDev = (options.volatilityPct || 12) / 100;
     var numSims = FC.clamp(options.numSims || 1000, 100, 5000);
@@ -157,13 +163,10 @@
 
     var successCount = 0;
     var endingBalances = [];
-    var spouseAge = inputs.spouseAge || null;
-    var isSpouseBeneficiary = !!inputs.spouseIsBeneficiary;
 
     for (var s = 0; s < numSims; s++) {
       var balance = startBalance;
       var failed = false;
-      var simSpouseAge = spouseAge;
 
       var yearRets = [];
       for (var yr = 0; yr < yearsToModel; yr++) {
@@ -177,17 +180,13 @@
           age,
           inputs,
           ssMonthlyBaseline,
-          yearRets[y],
-          taxDeferredPct,
-          simSpouseAge,
-          isSpouseBeneficiary
+          yearRets[y]
         );
         balance = step.balanceEnd;
         if (step.spendingShortfall) {
           failed = true;
           endingBalances.push(balance);
         }
-        if (simSpouseAge) simSpouseAge++;
       }
 
       if (!failed) {
