@@ -44,6 +44,8 @@
     var retired = el('alreadyRetired');
     var retirementAge = el('retirementAge');
     var contribution = el('annualContribution');
+    var contributionWrap = el('annualContributionWrap');
+    var returnPreWrap = el('returnPreRetirementWrap');
     var pct = el('retirementSpendingPct');
     var currentAge = el('currentAge');
     if (!retired) return;
@@ -56,6 +58,8 @@
         contribution.value = 0;
         contribution.disabled = true;
       }
+      if (contributionWrap) contributionWrap.style.display = 'none';
+      if (returnPreWrap) returnPreWrap.style.display = 'none';
       if (pct) {
         pct.value = 100;
         pct.disabled = true;
@@ -63,6 +67,8 @@
     } else {
       if (retirementAge) retirementAge.disabled = false;
       if (contribution) contribution.disabled = false;
+      if (contributionWrap) contributionWrap.style.display = '';
+      if (returnPreWrap) returnPreWrap.style.display = '';
       if (pct) {
         pct.disabled = false;
         if (!pct.value) pct.value = 80;

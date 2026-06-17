@@ -162,13 +162,14 @@ $defaultBirthYear = (int) date('Y') - 62;
           <input type="number" id="balance" min="0" step="1000" value="850000" required>
           <small>401(k), IRA, brokerage — one combined total for this snapshot.</small>
         </div>
-        <div>
+        <div id="annualContributionWrap">
           <label class="field-label" for="annualContribution">Annual contributions until retirement ($)</label>
           <input type="number" id="annualContribution" min="0" step="500" value="12000">
         </div>
-        <div>
+        <div id="returnPreRetirementWrap">
           <label class="field-label" for="returnPreRetirement">Expected return before retirement (%)</label>
           <input type="number" id="returnPreRetirement" min="0" max="15" step="0.1" value="6">
+          <small>Only used if you are still saving and growing your portfolio before retirement.</small>
         </div>
       </div>
 
