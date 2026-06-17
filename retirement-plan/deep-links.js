@@ -45,8 +45,8 @@
     );
     var householdSsAnnual = householdSsMonthly * 12;
     var withdrawStartAge = inputs.portfolioWithdrawalStartAge || inputs.retirementAge;
-    var mcStartAge = withdrawalStartAge > inputs.currentAge && inputs.currentAge >= inputs.retirementAge
-      ? withdrawalStartAge
+    var mcStartAge = withdrawStartAge > inputs.currentAge && inputs.currentAge >= inputs.retirementAge
+      ? withdrawStartAge
       : Math.max(inputs.currentAge, inputs.retirementAge, withdrawStartAge);
     var yearsToModel = Math.max(1, inputs.planEndAge - mcStartAge + 1);
     var startRow = result.years.find(function (y) { return y.age === mcStartAge; });
