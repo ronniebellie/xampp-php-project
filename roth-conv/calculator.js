@@ -1307,6 +1307,28 @@ document.addEventListener('DOMContentLoaded', function() {
     if (retirementAgeEl) retirementAgeEl.addEventListener('input', updateIncomeCopy);
     if (filingStatusEl) filingStatusEl.addEventListener('change', updateSpouseAgeVisibility);
     if (withdrawalModeEl) withdrawalModeEl.addEventListener('change', updateWithdrawalModeVisibility);
+
+    if (window.RBUrlPrefill) {
+        RBUrlPrefill.applyFromUrl({
+            currentAge: 'currentAge',
+            retirementAge: 'retirementAge',
+            lifeExpectancy: 'lifeExpectancy',
+            filingStatus: 'filingStatus',
+            traditionalIRA: 'traditionalIRA',
+            rothIRA: 'rothIRA',
+            retirementIncome: 'retirementIncome',
+            annualPortfolioWithdrawalRate: 'annualPortfolioWithdrawalRate',
+            spouseAge: 'spouseAge'
+        }, {
+            required: ['fromPlan', 'currentAge'],
+            formId: 'rothForm',
+            autoSubmit: true,
+            afterApply: function () {
+                if (filingStatusEl) filingStatusEl.dispatchEvent(new Event('change'));
+                updateIncomeCopy();
+            }
+        });
+    }
 });
 // Premium Save/Load/Compare/PDF/CSV
 document.addEventListener('DOMContentLoaded', function() {

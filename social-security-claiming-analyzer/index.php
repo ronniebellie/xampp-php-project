@@ -218,6 +218,7 @@ $isPremium = has_premium_access();
         };
     })();
     </script>
+    <script src="../js/lib/url-prefill.js"></script>
     <script src="calculator.js"></script>
     <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/calculator-footer.php'; ?>
 </body>

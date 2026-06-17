@@ -17,6 +17,7 @@ $today = date('Y-m-d');
 
 $urls = [
     ['loc' => '/', 'priority' => '1.0', 'changefreq' => 'weekly'],
+    ['loc' => '/retirement-plan/', 'priority' => '1.0', 'changefreq' => 'weekly'],
     ['loc' => '/401k-on-track/', 'priority' => '0.9', 'changefreq' => 'monthly'],
     ['loc' => '/nest-egg-target/', 'priority' => '0.9', 'changefreq' => 'monthly'],
     ['loc' => '/survivor-gap/', 'priority' => '0.9', 'changefreq' => 'monthly'],

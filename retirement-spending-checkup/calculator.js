@@ -186,6 +186,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const explainBtn = document.getElementById('explainResultsBtnInResults');
   if (explainBtn) explainBtn.addEventListener('click', explainResults);
+
+  if (window.RBUrlPrefill) {
+    RBUrlPrefill.applyFromUrl({
+      currentMonthlySpending: 'currentMonthlySpending',
+      retirementSpendingPct: 'retirementSpendingPct',
+      currentSavings: 'currentSavings',
+      guaranteedMonthlyIncome: 'guaranteedMonthlyIncome',
+      withdrawalRate: 'withdrawalRate',
+      alreadyRetired: function (val) {
+        var cb = document.getElementById('alreadyRetired');
+        if (cb) {
+          cb.checked = val === '1' || val === 'true' || val === 'yes';
+          cb.dispatchEvent(new Event('change'));
+        }
+      }
+    }, {
+      required: ['fromPlan', 'currentSavings'],
+      formId: 'spendingForm',
+      autoSubmit: true
+    });
+  }
 });
 
 function escapeHtml(s) {

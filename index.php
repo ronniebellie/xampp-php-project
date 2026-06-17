@@ -696,8 +696,14 @@ $seo_og_image_alt = 'Ron Belisle — Smart Tools & AI Insights for secure financ
     <div id="tab-panel-retirement" class="tab-panel active" data-tab="retirement" role="tabpanel" aria-labelledby="tab-retirement"<?php if ($hide_site_header): ?> style="display:block"<?php endif; ?>>
     <div class="tier" aria-label="Retirement app links">
       <div class="tier-title">Start here</div>
-      <p class="tier-hint">Get the big building blocks in place first (Social Security, spending, and timeline). Then go deeper into sustainability, taxes, and optimization.</p>
+      <p class="tier-hint">Build one consistent retirement timeline first, then go deeper into Social Security, spending, taxes, and optimization.</p>
       <div class="grid tight">
+        <section class="card card-featured">
+          <h3>Retirement Plan Builder <span class="feature-badge">New</span></h3>
+          <p>Enter your numbers once and see how savings, Social Security, spending, RMDs, and estimated federal taxes fit together year by year. Premium adds a Monte Carlo stress test on the same plan.</p>
+          <a class="btn" href="retirement-plan/">Open</a>
+        </section>
+
         <section class="card">
           <h3>Social Security Claiming Analyzer</h3>
           <p>Compare claiming ages and see how lifetime Social Security benefits change over time.</p>

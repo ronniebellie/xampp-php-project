@@ -397,6 +397,32 @@
 
   var explainBtn = document.getElementById('explainResultsBtnInResults');
   if (explainBtn) explainBtn.addEventListener('click', explainResults);
+
+  if (window.RBUrlPrefill) {
+    RBUrlPrefill.applyFromUrl({
+      portfolio: 'portfolio',
+      withdrawal: 'withdrawal',
+      years: 'years',
+      expectedReturn: 'expectedReturn',
+      volatility: 'volatility',
+      simulations: 'simulations',
+      inflationRate: 'inflationRate'
+    }, {
+      required: ['fromPlan', 'portfolio'],
+      afterApply: function () {
+        updateLabels();
+        ['portfolio', 'withdrawal'].forEach(function (id) {
+          var field = document.getElementById(id);
+          if (field) {
+            var n = parseFloat(String(field.value).replace(/[^0-9.]/g, ''));
+            if (!isNaN(n)) field.value = Math.round(n).toLocaleString('en-US');
+          }
+        });
+        var btn = document.getElementById('runMonteCarloBtn');
+        if (btn) btn.click();
+      }
+    });
+  }
 })();
 
 function escapeHtml(s) {

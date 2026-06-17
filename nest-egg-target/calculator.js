@@ -128,6 +128,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const explainBtn = document.getElementById('explainResultsBtnInResults');
   if (explainBtn) explainBtn.addEventListener('click', explainResults);
+
+  if (window.RBUrlPrefill) {
+    RBUrlPrefill.applyFromUrl({
+      incomeMethod: function (val) {
+        var radio = document.querySelector('input[name="incomeMethod"][value="' + (val || 'direct') + '"]');
+        if (radio) {
+          radio.checked = true;
+          radio.dispatchEvent(new Event('change'));
+        }
+      },
+      desiredAnnualIncome: 'desiredAnnualIncome',
+      guaranteedAnnualIncome: 'guaranteedAnnualIncome',
+      withdrawalRate: 'withdrawalRate',
+      currentSavings: 'currentSavings'
+    }, {
+      required: ['fromPlan', 'desiredAnnualIncome'],
+      formId: 'nestEggForm',
+      autoSubmit: true,
+      afterApply: function () {
+        var desiredAnnual = Number(document.getElementById('desiredAnnualIncome').value || 0);
+        var guaranteedAnnual = Number(document.getElementById('guaranteedAnnualIncome').value || 0);
+        var withdrawalRatePct = Number(document.getElementById('withdrawalRate').value || 4);
+        updateLabels(desiredAnnual, 0, 80, guaranteedAnnual, withdrawalRatePct);
+      }
+    });
+  }
 });
 
 function escapeHtml(s) {

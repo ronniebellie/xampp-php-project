@@ -430,6 +430,30 @@ document.addEventListener('DOMContentLoaded', function() {
     if (csvBtn) csvBtn.addEventListener('click', downloadCSV);
     if (summaryBtn) summaryBtn.addEventListener('click', downloadClaimingSummary);
     if (explainBtn) explainBtn.addEventListener('click', explainResults);
+
+    if (window.RBUrlPrefill) {
+        RBUrlPrefill.applyFromUrl({
+            monthlyPIA: 'monthlyPIA',
+            lifeExpectancy: 'lifeExpectancy',
+            claimAgeB: 'claimAgeB',
+            colaRate: 'colaRate',
+            birthDateYear: 'birthDateYear',
+            birthDateMonth: 'birthDateMonth',
+            birthDateDay: 'birthDateDay'
+        }, {
+            required: ['fromPlan', 'monthlyPIA'],
+            formId: 'ssForm',
+            autoSubmit: true,
+            afterApply: function (params) {
+                if (params.has('birthDateYear') && typeof window.setBirthDateFromString === 'function') {
+                    var y = params.get('birthDateYear');
+                    var m = String(params.get('birthDateMonth') || '1').padStart(2, '0');
+                    var d = String(params.get('birthDateDay') || '1').padStart(2, '0');
+                    window.setBirthDateFromString(y + '-' + m + '-' + d);
+                }
+            }
+        });
+    }
 });
 
 function saveScenario() {

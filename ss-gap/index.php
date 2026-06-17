@@ -162,6 +162,7 @@ $isPremium = has_premium_access();
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../js/lib/url-prefill.js"></script>
     <script src="../js/share-results.js"></script>
     <script src="../js/explain-results-modal.js"></script>
     <script src="../js/compare-scenarios-modal.js"></script>

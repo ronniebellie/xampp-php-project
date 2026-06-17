@@ -423,6 +423,20 @@ document.addEventListener('DOMContentLoaded', function() {
     if (pdfBtn) pdfBtn.addEventListener('click', downloadPDF);
     if (csvBtn) csvBtn.addEventListener('click', downloadCSV);
     if (explainBtn) explainBtn.addEventListener('click', explainResults);
+
+    if (window.RBUrlPrefill) {
+        RBUrlPrefill.applyFromUrl({
+            targetSpending: 'targetSpending',
+            ssIncome: 'ssIncome',
+            otherIncome: 'otherIncome',
+            withdrawalRate: 'withdrawalRate',
+            filingStatus: 'filingStatus'
+        }, {
+            required: ['fromPlan', 'targetSpending'],
+            formId: 'gapForm',
+            autoSubmit: true
+        });
+    }
 });
 
 function saveScenario() {
