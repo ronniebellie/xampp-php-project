@@ -304,11 +304,11 @@ $defaultRetirementAge = 67;
             <label class="field-label" for="spouseBeneficiary">Spouse is sole IRA beneficiary?</label>
             <select id="spouseBeneficiary" onchange="toggleSpouseAgeField()">
               <option value="no">No</option>
-              <option value="yes">Yes</option>
+              <option value="yes" selected>Yes</option>
             </select>
             <small>If yes and spouse is 10+ years younger, a lower RMD divisor may apply.</small>
           </div>
-          <div id="spouseAgeGroup" style="display:none;">
+          <div id="spouseAgeGroup">
             <label class="field-label" for="spouseAge">Spouse's current age</label>
             <input type="number" id="spouseAge" min="18" max="100" value="56">
           </div>

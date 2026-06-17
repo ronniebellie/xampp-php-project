@@ -557,7 +557,7 @@
       colaRate: readNumber('colaRate'),
       filingStatus: el('filingStatus') ? el('filingStatus').value : 'married',
       taxDeferredPct: readNumber('taxDeferredPct'),
-      spouseBeneficiary: el('spouseBeneficiary') ? el('spouseBeneficiary').value : 'no',
+      spouseBeneficiary: el('spouseBeneficiary') ? el('spouseBeneficiary').value : 'yes',
       spouseAge: readNumber('spouseAge'),
       volatility: readNumber('volatility'),
       simulations: readNumber('simulations'),
