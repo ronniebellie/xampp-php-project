@@ -81,6 +81,7 @@
     var contributionWrap = el('annualContributionWrap');
     var returnPreWrap = el('returnPreRetirementWrap');
     var pct = el('retirementSpendingPct');
+    var pctWrap = el('retirementSpendingPctWrap');
     if (!retired) return;
     if (retired.checked) {
       if (retirementAgeWrap) retirementAgeWrap.style.display = 'none';
@@ -94,6 +95,7 @@
       }
       if (contributionWrap) contributionWrap.style.display = 'none';
       if (returnPreWrap) returnPreWrap.style.display = 'none';
+      if (pctWrap) pctWrap.style.display = 'none';
       if (pct) {
         pct.value = 100;
         pct.disabled = true;
@@ -109,6 +111,7 @@
       if (contribution) contribution.disabled = false;
       if (contributionWrap) contributionWrap.style.display = '';
       if (returnPreWrap) returnPreWrap.style.display = '';
+      if (pctWrap) pctWrap.style.display = '';
       if (pct) {
         pct.disabled = false;
         if (!pct.value) pct.value = 80;
