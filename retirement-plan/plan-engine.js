@@ -11,10 +11,19 @@
 
   var RMD_START_AGE = TR.RMD_START_AGE;
 
-  function annualSocialSecurity(age, inputs, ssMonthlyAtClaim) {
+  function annualSocialSecurity(age, inputs, ssMonthlyBaseline) {
+    if (inputs.ssAlreadyReceiving) {
+      if (age < inputs.currentAge) return 0;
+      var yearsFromNow = age - inputs.currentAge;
+      var monthlyNow = ssMonthlyBaseline;
+      for (var y = 1; y <= yearsFromNow; y++) {
+        monthlyNow *= 1 + inputs.colaRate / 100;
+      }
+      return monthlyNow * 12;
+    }
     if (age < inputs.ssClaimAge) return 0;
     var yearsSinceClaim = age - inputs.ssClaimAge;
-    var monthly = ssMonthlyAtClaim;
+    var monthly = ssMonthlyBaseline;
     for (var y = 1; y <= yearsSinceClaim; y++) {
       monthly *= 1 + inputs.colaRate / 100;
     }
@@ -22,12 +31,23 @@
   }
 
   function annualSpouseSocialSecurity(age, inputs) {
+    if (inputs.spouseSsAlreadyReceiving) {
+      var monthlyReceiving = inputs.spouseSsCurrentMonthly || 0;
+      if (monthlyReceiving <= 0) return 0;
+      if (age < inputs.currentAge) return 0;
+      var yearsFromNow = age - inputs.currentAge;
+      var spouseMonthly = monthlyReceiving;
+      for (var s = 1; s <= yearsFromNow; s++) {
+        spouseMonthly *= 1 + inputs.colaRate / 100;
+      }
+      return spouseMonthly * 12;
+    }
     var monthly = inputs.spouseSsMonthly || 0;
     if (monthly <= 0) return 0;
     var startAge = inputs.spouseSsClaimAge || inputs.ssClaimAge;
     if (age < startAge) return 0;
     var yearsSinceClaim = age - startAge;
-    for (var y = 1; y <= yearsSinceClaim; y++) {
+    for (var i = 1; i <= yearsSinceClaim; i++) {
       monthly *= 1 + inputs.colaRate / 100;
     }
     return monthly * 12;
@@ -120,11 +140,13 @@
    * @returns {{ years: object[], summary: object, milestones: object[] }}
    */
   function runDeterministicPlan(inputs) {
-    var ssMonthlyAtClaim = FC.calculateMonthlyBenefit(
-      inputs.ssPiaMonthly,
-      inputs.birthYear,
-      inputs.ssClaimAge
-    );
+    var ssMonthlyBaseline = inputs.ssAlreadyReceiving
+      ? (inputs.ssCurrentMonthly || 0)
+      : FC.calculateMonthlyBenefit(
+        inputs.ssPiaMonthly,
+        inputs.birthYear,
+        inputs.ssClaimAge
+      );
 
     var taxDeferredPct = FC.clamp(inputs.taxDeferredPct != null ? inputs.taxDeferredPct : 85, 0, 100) / 100;
     var spouseAge = inputs.spouseAge || null;
@@ -163,7 +185,7 @@
         var taxDeferredBalance = balanceStart * taxDeferredPct;
         var rmd = TR.calculateRMD(age, taxDeferredBalance, isSpouseBeneficiary, spouseAge);
         var spending = annualSpendingAtAge(age, inputs);
-        var ssAnnual = annualSocialSecurity(age, inputs, ssMonthlyAtClaim);
+        var ssAnnual = annualSocialSecurity(age, inputs, ssMonthlyBaseline);
         var spouseSsAnnual = annualSpouseSocialSecurity(age, inputs);
         var householdSsAnnual = ssAnnual + spouseSsAnnual;
         var otherIncome = inputs.otherGuaranteedAnnual;
@@ -219,7 +241,7 @@
       ? withdrawalStartRow.balanceStart
       : (withdrawalStartAge > inputs.currentAge ? inputs.balance : balanceAtRetirement);
     var compareBalance = withdrawalStartAge > inputs.currentAge ? inputs.balance : balanceAtRetirement;
-    var targetNestEgg = targetNestEggAtRetirement(inputs, ssMonthlyAtClaim);
+    var targetNestEgg = targetNestEggAtRetirement(inputs, ssMonthlyBaseline);
     var status = describeStatus(compareBalance, targetNestEgg);
 
     var milestoneAges = pickMilestoneAges(inputs);
@@ -233,6 +255,10 @@
 
     var firstRmdRow = years.find(function (y) { return y.age === RMD_START_AGE; });
 
+    var summaryAge = Math.max(inputs.currentAge, inputs.retirementAge);
+    var summaryUserMonthly = annualSocialSecurity(summaryAge, inputs, ssMonthlyBaseline) / 12;
+    var summarySpouseMonthly = annualSpouseSocialSecurity(summaryAge, inputs) / 12;
+
     return {
       years: years,
       milestones: milestones,
@@ -242,10 +268,12 @@
         balanceAtWithdrawalStart: balanceAtWithdrawalStart,
         portfolioWithdrawalStartAge: withdrawalStartAge,
         targetNestEgg: targetNestEgg,
-        ssMonthlyAtClaim: ssMonthlyAtClaim,
-        ssAnnualAtClaim: ssMonthlyAtClaim * 12,
-        spouseSsMonthly: inputs.spouseSsMonthly || 0,
-        householdSsMonthlyAtClaim: ssMonthlyAtClaim + (inputs.spouseSsMonthly || 0),
+        ssMonthlyAtClaim: summaryUserMonthly,
+        ssAnnualAtClaim: summaryUserMonthly * 12,
+        spouseSsMonthly: inputs.spouseSsAlreadyReceiving
+          ? (inputs.spouseSsCurrentMonthly || 0)
+          : (inputs.spouseSsMonthly || 0),
+        householdSsMonthlyAtClaim: summaryUserMonthly + summarySpouseMonthly,
         fraAge: FC.fraAgeFromBirthYear(inputs.birthYear),
         depletedAge: depletedAge,
         endingBalance: years.length ? years[years.length - 1].balanceEnd : balance,

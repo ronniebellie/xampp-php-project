@@ -213,14 +213,19 @@ $defaultBirthYear = (int) date('Y') - 62;
       </p>
 
       <h4 style="margin: 0 0 12px; font-size: 15px; color: #374151;">Your Social Security</h4>
-      <div class="form-grid">
+      <div style="margin-bottom: 12px;">
+        <label style="display:inline-flex;align-items:center;gap:6px;font-size:14px;">
+          <input type="checkbox" id="ssAlreadyReceiving"> I'm already receiving my benefit
+        </label>
+      </div>
+      <div id="ssEstimateWrap" class="form-grid">
         <div>
           <label class="field-label" for="ssPiaMonthly">Your benefit at Full Retirement Age ($/month)</label>
           <input type="number" id="ssPiaMonthly" min="0" step="50" value="2800">
-          <small>From <em>your</em> SSA statement (PIA at FRA) — not household total.</small>
+          <small>From <em>your</em> SSA statement (PIA at FRA) — for future claiming estimates.</small>
         </div>
         <div>
-          <label class="field-label" for="ssClaimAge">You claim benefits at age</label>
+          <label class="field-label" for="ssClaimAge">You plan to claim at age</label>
           <select id="ssClaimAge">
             <?php for ($a = 62; $a <= 70; $a++): ?>
               <option value="<?php echo $a; ?>"<?php echo $a === 67 ? ' selected' : ''; ?>><?php echo $a; ?></option>
@@ -228,22 +233,43 @@ $defaultBirthYear = (int) date('Y') - 62;
           </select>
         </div>
       </div>
+      <div id="ssReceivingWrap" class="form-grid" style="display:none;">
+        <div>
+          <label class="field-label" for="ssCurrentMonthly">Your current monthly benefit ($)</label>
+          <input type="number" id="ssCurrentMonthly" min="0" step="0.01" value="0">
+          <small>Gross amount from your current SSA deposit (before Medicare is deducted).</small>
+        </div>
+      </div>
 
       <h4 style="margin: 18px 0 12px; font-size: 15px; color: #374151;">Spouse's Social Security <span style="font-weight: 400; color: #6b7280;">(optional)</span></h4>
-      <div class="form-grid">
+      <div style="margin-bottom: 12px;">
+        <label style="display:inline-flex;align-items:center;gap:6px;font-size:14px;">
+          <input type="checkbox" id="spouseSsAlreadyReceiving"> Spouse is already receiving their benefit
+        </label>
+      </div>
+      <div id="spouseSsEstimateWrap" class="form-grid">
         <div>
           <label class="field-label" for="spouseSsMonthly">Spouse's benefit at Full Retirement Age ($/month)</label>
           <input type="number" id="spouseSsMonthly" min="0" step="50" value="0">
           <small>From <em>spouse's</em> SSA statement. Leave at 0 if not applicable.</small>
         </div>
         <div>
-          <label class="field-label" for="spouseSsClaimAge">Spouse claims benefits at age</label>
+          <label class="field-label" for="spouseSsClaimAge">Spouse plans to claim at age</label>
           <select id="spouseSsClaimAge">
             <?php for ($a = 62; $a <= 70; $a++): ?>
               <option value="<?php echo $a; ?>"<?php echo $a === 67 ? ' selected' : ''; ?>><?php echo $a; ?></option>
             <?php endfor; ?>
           </select>
         </div>
+      </div>
+      <div id="spouseSsReceivingWrap" class="form-grid" style="display:none;">
+        <div>
+          <label class="field-label" for="spouseSsCurrentMonthly">Spouse's current monthly benefit ($)</label>
+          <input type="number" id="spouseSsCurrentMonthly" min="0" step="0.01" value="0">
+          <small>Gross amount from spouse's current SSA deposit.</small>
+        </div>
+      </div>
+      <div class="form-grid">
         <div>
           <label class="field-label" for="otherGuaranteedAnnual">Other guaranteed income ($/year)</label>
           <input type="number" id="otherGuaranteedAnnual" min="0" step="1000" value="0">

@@ -36,10 +36,19 @@
     return arr[i] * (1 - f) + arr[i + 1] * f;
   }
 
-  function annualSocialSecurity(age, inputs, ssMonthlyAtClaim) {
+  function annualSocialSecurity(age, inputs, ssMonthlyBaseline) {
+    if (inputs.ssAlreadyReceiving) {
+      if (age < inputs.currentAge) return 0;
+      var yearsFromNow = age - inputs.currentAge;
+      var monthlyNow = ssMonthlyBaseline;
+      for (var y = 1; y <= yearsFromNow; y++) {
+        monthlyNow *= 1 + inputs.colaRate / 100;
+      }
+      return monthlyNow * 12;
+    }
     if (age < inputs.ssClaimAge) return 0;
     var yearsSinceClaim = age - inputs.ssClaimAge;
-    var monthly = ssMonthlyAtClaim;
+    var monthly = ssMonthlyBaseline;
     for (var y = 1; y <= yearsSinceClaim; y++) {
       monthly *= 1 + inputs.colaRate / 100;
     }
@@ -47,12 +56,23 @@
   }
 
   function annualSpouseSocialSecurity(age, inputs) {
+    if (inputs.spouseSsAlreadyReceiving) {
+      var monthlyReceiving = inputs.spouseSsCurrentMonthly || 0;
+      if (monthlyReceiving <= 0) return 0;
+      if (age < inputs.currentAge) return 0;
+      var yearsFromNow = age - inputs.currentAge;
+      var spouseMonthly = monthlyReceiving;
+      for (var s = 1; s <= yearsFromNow; s++) {
+        spouseMonthly *= 1 + inputs.colaRate / 100;
+      }
+      return spouseMonthly * 12;
+    }
     var monthly = inputs.spouseSsMonthly || 0;
     if (monthly <= 0) return 0;
     var startAge = inputs.spouseSsClaimAge || inputs.ssClaimAge;
     if (age < startAge) return 0;
     var yearsSinceClaim = age - startAge;
-    for (var y = 1; y <= yearsSinceClaim; y++) {
+    for (var i = 1; i <= yearsSinceClaim; i++) {
       monthly *= 1 + inputs.colaRate / 100;
     }
     return monthly * 12;
@@ -69,11 +89,11 @@
     return inputs.baseAnnualSpending * Math.pow(1 + inputs.inflation / 100, yearsSinceRetirement);
   }
 
-  function simulateRetirementYear(balanceStart, age, inputs, ssMonthlyAtClaim, returnRate, taxDeferredPct, spouseAge, isSpouseBeneficiary) {
+  function simulateRetirementYear(balanceStart, age, inputs, ssMonthlyBaseline, returnRate, taxDeferredPct, spouseAge, isSpouseBeneficiary) {
     var taxDeferredBalance = balanceStart * taxDeferredPct;
     var rmd = TR.calculateRMD(age, taxDeferredBalance, isSpouseBeneficiary, spouseAge);
     var spending = annualSpendingAtAge(age, inputs);
-    var ssAnnual = annualSocialSecurity(age, inputs, ssMonthlyAtClaim);
+    var ssAnnual = annualSocialSecurity(age, inputs, ssMonthlyBaseline);
     var spouseSsAnnual = annualSpouseSocialSecurity(age, inputs);
     var otherIncome = inputs.otherGuaranteedAnnual;
     var withdrawalStartAge = portfolioWithdrawalStartAge(inputs);
@@ -110,11 +130,13 @@
     var startRow = deterministic.years.find(function (y) { return y.age === startAge; });
     var startBalance = startRow ? startRow.balanceStart : inputs.balance;
 
-    var ssMonthlyAtClaim = FC.calculateMonthlyBenefit(
-      inputs.ssPiaMonthly,
-      inputs.birthYear,
-      inputs.ssClaimAge
-    );
+    var ssMonthlyBaseline = inputs.ssAlreadyReceiving
+      ? (inputs.ssCurrentMonthly || 0)
+      : FC.calculateMonthlyBenefit(
+        inputs.ssPiaMonthly,
+        inputs.birthYear,
+        inputs.ssClaimAge
+      );
 
     var taxDeferredPct = FC.clamp(inputs.taxDeferredPct != null ? inputs.taxDeferredPct : 85, 0, 100) / 100;
     var mean = (options.expectedReturnPct || inputs.returnRetirement || 5) / 100;
@@ -144,7 +166,7 @@
           balance,
           age,
           inputs,
-          ssMonthlyAtClaim,
+          ssMonthlyBaseline,
           yearRets[y],
           taxDeferredPct,
           simSpouseAge,

@@ -149,16 +149,26 @@ $inputRows = [
     ['Portfolio withdrawals begin at age', $inputs['portfolioWithdrawalStartAge'] ?? '—'],
     ['Annual contributions (pre-retirement)', rp_money($inputs['annualContribution'] ?? 0)],
     ['Annual spending in retirement', rp_money($inputs['baseAnnualSpending'] ?? 0)],
-    ['Your Social Security at FRA (monthly)', rp_money($inputs['ssPiaMonthly'] ?? 0)],
-    ['You claim Social Security at age', $inputs['ssClaimAge'] ?? '—'],
-    ['Spouse Social Security at FRA (monthly)', rp_money($inputs['spouseSsMonthly'] ?? 0)],
-    ['Spouse claims Social Security at age', $inputs['spouseSsClaimAge'] ?? '—'],
+];
+if (!empty($inputs['ssAlreadyReceiving'])) {
+    $inputRows[] = ['Your current Social Security (monthly)', rp_money($inputs['ssCurrentMonthly'] ?? 0)];
+} else {
+    $inputRows[] = ['Your Social Security at FRA (monthly)', rp_money($inputs['ssPiaMonthly'] ?? 0)];
+    $inputRows[] = ['You claim Social Security at age', $inputs['ssClaimAge'] ?? '—'];
+}
+if (!empty($inputs['spouseSsAlreadyReceiving'])) {
+    $inputRows[] = ['Spouse current Social Security (monthly)', rp_money($inputs['spouseSsCurrentMonthly'] ?? 0)];
+} elseif (!empty($inputs['spouseSsMonthly'])) {
+    $inputRows[] = ['Spouse Social Security at FRA (monthly)', rp_money($inputs['spouseSsMonthly'] ?? 0)];
+    $inputRows[] = ['Spouse claims Social Security at age', $inputs['spouseSsClaimAge'] ?? '—'];
+}
+$inputRows = array_merge($inputRows, [
     ['Other guaranteed income (annual)', rp_money($inputs['otherGuaranteedAnnual'] ?? 0)],
     ['Tax filing status', ucfirst($inputs['filingStatus'] ?? 'married')],
     ['Tax-deferred share of portfolio', ($inputs['taxDeferredPct'] ?? 85) . '%'],
     ['Expected return (pre-retirement)', ($inputs['returnPreRetirement'] ?? 0) . '%'],
     ['Expected return (retirement)', ($inputs['returnRetirement'] ?? 0) . '%'],
-];
+]);
 
 $inputsHtml = '<table border="0" cellpadding="7" style="background-color:#f9fafb;">';
 foreach ($inputRows as $i => $row) {

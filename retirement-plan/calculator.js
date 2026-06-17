@@ -53,6 +53,26 @@
     if (estimateWrap) estimateWrap.style.display = useEstimate ? 'grid' : 'none';
   }
 
+  function syncSsReceivingMode() {
+    var ssReceiving = el('ssAlreadyReceiving');
+    var spouseReceiving = el('spouseSsAlreadyReceiving');
+    var ssEstimate = el('ssEstimateWrap');
+    var ssReceivingWrap = el('ssReceivingWrap');
+    var spouseEstimate = el('spouseSsEstimateWrap');
+    var spouseReceivingWrap = el('spouseSsReceivingWrap');
+
+    if (ssReceiving && ssEstimate && ssReceivingWrap) {
+      var showCurrent = ssReceiving.checked;
+      ssEstimate.style.display = showCurrent ? 'none' : 'grid';
+      ssReceivingWrap.style.display = showCurrent ? 'grid' : 'none';
+    }
+    if (spouseReceiving && spouseEstimate && spouseReceivingWrap) {
+      var showSpouseCurrent = spouseReceiving.checked;
+      spouseEstimate.style.display = showSpouseCurrent ? 'none' : 'grid';
+      spouseReceivingWrap.style.display = showSpouseCurrent ? 'grid' : 'none';
+    }
+  }
+
   function syncRetiredState() {
     var retired = el('alreadyRetired');
     var retirementAge = el('retirementAge');
@@ -78,6 +98,11 @@
         pct.value = 100;
         pct.disabled = true;
       }
+      var ssReceiving = el('ssAlreadyReceiving');
+      var spouseReceiving = el('spouseSsAlreadyReceiving');
+      if (ssReceiving && !ssReceiving.dataset.userTouched) ssReceiving.checked = true;
+      if (spouseReceiving && !spouseReceiving.dataset.userTouched) spouseReceiving.checked = true;
+      syncSsReceivingMode();
     } else {
       if (retirementAgeWrap) retirementAgeWrap.style.display = '';
       if (retirementAge) retirementAge.disabled = false;
@@ -89,6 +114,7 @@
         if (!pct.value) pct.value = 80;
       }
       syncBirthYearDerived();
+      syncSsReceivingMode();
     }
   }
 
@@ -148,8 +174,12 @@
       returnPreRetirement: FC.clamp(readNumber('returnPreRetirement', 6), 0, 15),
       returnRetirement: FC.clamp(readNumber('returnRetirement', 5), 0, 12),
       baseAnnualSpending: baseAnnualSpending,
+      ssAlreadyReceiving: !!(el('ssAlreadyReceiving') && el('ssAlreadyReceiving').checked),
+      ssCurrentMonthly: readNumber('ssCurrentMonthly'),
       ssPiaMonthly: readNumber('ssPiaMonthly'),
       ssClaimAge: parseInt(el('ssClaimAge').value, 10) || Math.round(FC.fraAgeFromBirthYear(birthYear)),
+      spouseSsAlreadyReceiving: !!(el('spouseSsAlreadyReceiving') && el('spouseSsAlreadyReceiving').checked),
+      spouseSsCurrentMonthly: readNumber('spouseSsCurrentMonthly'),
       spouseSsMonthly: readNumber('spouseSsMonthly'),
       spouseSsClaimAge: parseInt(el('spouseSsClaimAge').value, 10) || parseInt(el('ssClaimAge').value, 10) || 67,
       otherGuaranteedAnnual: readNumber('otherGuaranteedAnnual'),
@@ -179,6 +209,11 @@
     if (inputs.birthYear < 1900 || inputs.birthYear > new Date().getFullYear()) errors.push('birth year');
     if (inputs.portfolioWithdrawalStartAge < inputs.currentAge) {
       errors.push('portfolio withdrawal start age (must be at or after your current age)');
+    }
+    if (inputs.ssAlreadyReceiving) {
+      if (inputs.ssCurrentMonthly <= 0) errors.push('your current monthly Social Security benefit');
+    } else if (inputs.ssPiaMonthly <= 0) {
+      errors.push('your Social Security benefit at full retirement age');
     }
     return errors;
   }
@@ -478,8 +513,12 @@
       annualSpendingDirect: readNumber('annualSpendingDirect'),
       currentMonthlySpending: readNumber('currentMonthlySpending'),
       retirementSpendingPct: readNumber('retirementSpendingPct'),
+      ssAlreadyReceiving: !!(el('ssAlreadyReceiving') && el('ssAlreadyReceiving').checked),
+      ssCurrentMonthly: readNumber('ssCurrentMonthly'),
       ssPiaMonthly: readNumber('ssPiaMonthly'),
       ssClaimAge: el('ssClaimAge').value,
+      spouseSsAlreadyReceiving: !!(el('spouseSsAlreadyReceiving') && el('spouseSsAlreadyReceiving').checked),
+      spouseSsCurrentMonthly: readNumber('spouseSsCurrentMonthly'),
       spouseSsMonthly: readNumber('spouseSsMonthly'),
       spouseSsClaimAge: el('spouseSsClaimAge').value,
       otherGuaranteedAnnual: readNumber('otherGuaranteedAnnual'),
@@ -519,12 +558,17 @@
     if (data.ssClaimAge && el('ssClaimAge')) {
       el('ssClaimAge').dataset.userTouched = '1';
     }
+    if (data.ssAlreadyReceiving && el('ssAlreadyReceiving')) {
+      el('ssAlreadyReceiving').dataset.userTouched = '1';
+    }
+    if (data.spouseSsAlreadyReceiving && el('spouseSsAlreadyReceiving')) {
+      el('spouseSsAlreadyReceiving').dataset.userTouched = '1';
+    }
     syncSpendingMode();
+    syncSsReceivingMode();
     syncRetiredState();
     syncFraClaimAge();
   }
-
-  function saveScenario() {
     var name = prompt('Name this scenario:');
     if (!name) return;
     fetch(API_BASE + 'api/save_scenario.php', {
@@ -625,8 +669,12 @@
         annualContribution: lastInputs.annualContribution,
         portfolioWithdrawalStartAge: lastInputs.portfolioWithdrawalStartAge,
         baseAnnualSpending: lastInputs.baseAnnualSpending,
+        ssAlreadyReceiving: lastInputs.ssAlreadyReceiving,
+        ssCurrentMonthly: lastInputs.ssCurrentMonthly,
         ssPiaMonthly: lastInputs.ssPiaMonthly,
         ssClaimAge: lastInputs.ssClaimAge,
+        spouseSsAlreadyReceiving: lastInputs.spouseSsAlreadyReceiving,
+        spouseSsCurrentMonthly: lastInputs.spouseSsCurrentMonthly,
         spouseSsMonthly: lastInputs.spouseSsMonthly,
         spouseSsClaimAge: lastInputs.spouseSsClaimAge,
         otherGuaranteedAnnual: lastInputs.otherGuaranteedAnnual,
@@ -776,6 +824,14 @@
     var retired = el('alreadyRetired');
     if (retired) retired.addEventListener('change', syncRetiredState);
 
+    ['ssAlreadyReceiving', 'spouseSsAlreadyReceiving'].forEach(function (id) {
+      var node = el(id);
+      if (node) node.addEventListener('change', function () {
+        node.dataset.userTouched = '1';
+        syncSsReceivingMode();
+      });
+    });
+
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       runPlan();
@@ -805,6 +861,7 @@
     }
 
     syncSpendingMode();
+    syncSsReceivingMode();
     syncBirthYearDerived();
     syncRetiredState();
   });

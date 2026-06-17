@@ -60,15 +60,22 @@
     var common = { fromPlan: 1 };
 
     return {
-      deepLinkSs: UP.buildUrl('../social-security-claiming-analyzer/', Object.assign({}, common, {
-        birthDateYear: inputs.birthYear,
-        birthDateMonth: 1,
-        birthDateDay: 1,
-        monthlyPIA: Math.round(inputs.ssPiaMonthly),
-        claimAgeB: inputs.ssClaimAge,
-        lifeExpectancy: inputs.planEndAge,
-        colaRate: inputs.colaRate
-      })),
+      deepLinkSs: UP.buildUrl('../social-security-claiming-analyzer/', Object.assign({}, common,
+        inputs.ssAlreadyReceiving ? {
+          monthlyPIA: Math.round(inputs.ssCurrentMonthly || 0),
+          claimAgeB: inputs.currentAge,
+          lifeExpectancy: inputs.planEndAge,
+          colaRate: inputs.colaRate
+        } : {
+          birthDateYear: inputs.birthYear,
+          birthDateMonth: 1,
+          birthDateDay: 1,
+          monthlyPIA: Math.round(inputs.ssPiaMonthly),
+          claimAgeB: inputs.ssClaimAge,
+          lifeExpectancy: inputs.planEndAge,
+          colaRate: inputs.colaRate
+        }
+      )),
       deepLinkPlanSuccess: UP.buildUrl('../plan-success/', Object.assign({}, common, {
         portfolio: portfolioForMc,
         withdrawal: annualWithdrawal,
