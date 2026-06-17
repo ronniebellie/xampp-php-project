@@ -45,6 +45,12 @@ $defaultBirthYear = (int) date('Y') - 62;
       color: #666;
       line-height: 1.4;
     }
+    #planForm.already-retired #retirementSpendingPctWrap,
+    #planForm.already-retired #retirementAgeWrap,
+    #planForm.already-retired #annualContributionWrap,
+    #planForm.already-retired #returnPreRetirementWrap {
+      display: none !important;
+    }
     .status-card {
       border-radius: 12px;
       padding: 20px;
@@ -509,7 +515,7 @@ $defaultBirthYear = (int) date('Y') - 62;
     }
     const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
   </script>
-  <script src="calculator.js"></script>
+  <script src="calculator.js?v=<?php echo (int) @filemtime(__DIR__ . '/calculator.js'); ?>"></script>
   <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/calculator-footer.php'; ?>
 </body>
 </html>

@@ -44,6 +44,18 @@
     return !!(retired && retired.checked);
   }
 
+  function retirementSpendingPctContainer() {
+    var wrap = el('retirementSpendingPctWrap');
+    if (wrap) return wrap;
+    var pct = el('retirementSpendingPct');
+    return pct ? pct.parentElement : null;
+  }
+
+  function setPlanRetiredClass(isRetired) {
+    var form = el('planForm');
+    if (form) form.classList.toggle('already-retired', !!isRetired);
+  }
+
   function syncSpendingMode() {
     var method = document.querySelector('input[name="spendingMethod"]:checked');
     var useEstimate = method && method.value === 'estimate';
@@ -51,6 +63,7 @@
     var estimateWrap = el('estimateSpendingWrap');
     if (directWrap) directWrap.style.display = useEstimate ? 'none' : 'block';
     if (estimateWrap) estimateWrap.style.display = useEstimate ? 'grid' : 'none';
+    if (isAlreadyRetired()) syncRetiredState();
   }
 
   function syncSsReceivingMode() {
@@ -81,8 +94,9 @@
     var contributionWrap = el('annualContributionWrap');
     var returnPreWrap = el('returnPreRetirementWrap');
     var pct = el('retirementSpendingPct');
-    var pctWrap = el('retirementSpendingPctWrap');
+    var pctWrap = retirementSpendingPctContainer();
     if (!retired) return;
+    setPlanRetiredClass(retired.checked);
     if (retired.checked) {
       if (retirementAgeWrap) retirementAgeWrap.style.display = 'none';
       if (retirementAge) {
