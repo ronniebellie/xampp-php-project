@@ -138,21 +138,20 @@ $defaultBirthYear = (int) date('Y') - 62;
       <h3>About you</h3>
       <div class="form-grid">
         <div>
-          <label class="field-label" for="currentAge">Current age</label>
-          <input type="number" id="currentAge" min="18" max="100" value="58" required>
-        </div>
-        <div>
           <label class="field-label" for="birthYear">Birth year</label>
           <input type="number" id="birthYear" min="1920" max="<?php echo date('Y'); ?>" value="<?php echo $defaultBirthYear; ?>" required>
-          <small id="fraHint">Used to estimate your Full Retirement Age for Social Security.</small>
+          <small id="fraHint">Used to estimate your age today and Social Security Full Retirement Age.</small>
         </div>
-        <div>
-          <label class="field-label" for="retirementAge">Retirement age</label>
+        <div id="retirementAgeWrap">
+          <label class="field-label" for="retirementAge">Planned retirement age</label>
           <input type="number" id="retirementAge" min="18" max="100" value="65" required>
-          <label style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:14px;">
-            <input type="checkbox" id="alreadyRetired"> I'm already retired
-          </label>
+          <small>When you expect to stop working and start drawing from savings.</small>
         </div>
+      </div>
+      <div style="margin-bottom: 22px;">
+        <label style="display:inline-flex;align-items:center;gap:6px;font-size:14px;">
+          <input type="checkbox" id="alreadyRetired"> I'm already retired
+        </label>
       </div>
 
       <h3>Money today</h3>

@@ -31,6 +31,19 @@
     return isNaN(n) ? (fallback || 0) : n;
   }
 
+  function currentCalendarYear() {
+    return new Date().getFullYear();
+  }
+
+  function ageFromBirthYear(birthYear) {
+    return currentCalendarYear() - birthYear;
+  }
+
+  function isAlreadyRetired() {
+    var retired = el('alreadyRetired');
+    return !!(retired && retired.checked);
+  }
+
   function syncSpendingMode() {
     var method = document.querySelector('input[name="spendingMethod"]:checked');
     var useEstimate = method && method.value === 'estimate';
@@ -43,15 +56,16 @@
   function syncRetiredState() {
     var retired = el('alreadyRetired');
     var retirementAge = el('retirementAge');
+    var retirementAgeWrap = el('retirementAgeWrap');
     var contribution = el('annualContribution');
     var contributionWrap = el('annualContributionWrap');
     var returnPreWrap = el('returnPreRetirementWrap');
     var pct = el('retirementSpendingPct');
-    var currentAge = el('currentAge');
     if (!retired) return;
     if (retired.checked) {
-      if (retirementAge && currentAge) {
-        retirementAge.value = currentAge.value;
+      if (retirementAgeWrap) retirementAgeWrap.style.display = 'none';
+      if (retirementAge) {
+        retirementAge.value = ageFromBirthYear(readNumber('birthYear'));
         retirementAge.disabled = true;
       }
       if (contribution) {
@@ -65,6 +79,7 @@
         pct.disabled = true;
       }
     } else {
+      if (retirementAgeWrap) retirementAgeWrap.style.display = '';
       if (retirementAge) retirementAge.disabled = false;
       if (contribution) contribution.disabled = false;
       if (contributionWrap) contributionWrap.style.display = '';
@@ -73,24 +88,40 @@
         pct.disabled = false;
         if (!pct.value) pct.value = 80;
       }
+      syncBirthYearDerived();
+    }
+  }
+
+  function syncBirthYearDerived() {
+    var birthYear = readNumber('birthYear', currentCalendarYear() - 60);
+    var age = ageFromBirthYear(birthYear);
+    var fra = FC.fraAgeFromBirthYear(birthYear);
+    var fraHint = el('fraHint');
+    var claimSelect = el('ssClaimAge');
+    var retirementAge = el('retirementAge');
+
+    if (fraHint) {
+      fraHint.textContent =
+        'You\'re about ' + age + ' today. Your Full Retirement Age is about ' +
+        fra.toFixed(1).replace(/\.0$/, '') + '.';
+    }
+    if (claimSelect && !claimSelect.dataset.userTouched) {
+      claimSelect.value = String(Math.round(fra));
+    }
+    if (retirementAge && !isAlreadyRetired()) {
+      retirementAge.min = Math.max(18, age);
+      if (readNumber('retirementAge') < age) retirementAge.value = age;
     }
   }
 
   function syncFraClaimAge() {
-    var birthYear = readNumber('birthYear', new Date().getFullYear() - 60);
-    var fra = FC.fraAgeFromBirthYear(birthYear);
-    var fraHint = el('fraHint');
-    var claimSelect = el('ssClaimAge');
-    if (fraHint) fraHint.textContent = 'Your Full Retirement Age is about ' + fra.toFixed(1).replace(/\.0$/, '') + '.';
-    if (claimSelect && !claimSelect.dataset.userTouched) {
-      claimSelect.value = String(Math.round(fra));
-    }
+    syncBirthYearDerived();
   }
 
   function collectInputs() {
-    var currentAge = readNumber('currentAge');
-    var retirementAge = readNumber('retirementAge');
     var birthYear = readNumber('birthYear');
+    var currentAge = ageFromBirthYear(birthYear);
+    var retirementAge = isAlreadyRetired() ? currentAge : readNumber('retirementAge');
     var method = document.querySelector('input[name="spendingMethod"]:checked');
     var spendingMethod = method ? method.value : 'estimate';
     var baseAnnualSpending = 0;
@@ -133,8 +164,10 @@
 
   function validateInputs(inputs) {
     var errors = [];
-    if (inputs.currentAge < 18 || inputs.currentAge > 100) errors.push('current age (18–100)');
-    if (inputs.retirementAge < inputs.currentAge) errors.push('retirement age (must be at or after current age)');
+    if (inputs.currentAge < 18 || inputs.currentAge > 100) errors.push('birth year (implies age 18–100)');
+    if (!isAlreadyRetired() && inputs.retirementAge < inputs.currentAge) {
+      errors.push('planned retirement age (must be at or after your current age)');
+    }
     if (inputs.balance < 0) errors.push('retirement savings');
     if (inputs.baseAnnualSpending <= 0) errors.push('retirement spending');
     if (inputs.birthYear < 1900 || inputs.birthYear > new Date().getFullYear()) errors.push('birth year');
@@ -402,9 +435,8 @@
 
   function getFormDataForSave() {
     return {
-      currentAge: readNumber('currentAge'),
-      retirementAge: readNumber('retirementAge'),
       birthYear: readNumber('birthYear'),
+      retirementAge: readNumber('retirementAge'),
       balance: readNumber('balance'),
       annualContribution: readNumber('annualContribution'),
       returnPreRetirement: readNumber('returnPreRetirement'),
@@ -431,7 +463,11 @@
 
   function applyFormData(data) {
     if (!data) return;
+    if (data.currentAge && el('birthYear') && !data.birthYear) {
+      el('birthYear').value = currentCalendarYear() - data.currentAge;
+    }
     Object.keys(data).forEach(function (key) {
+      if (key === 'currentAge') return;
       var node = el(key);
       if (!node) return;
       if (node.type === 'checkbox') node.checked = !!data[key];
@@ -682,10 +718,14 @@
     document.querySelectorAll('input[name="spendingMethod"]').forEach(function (radio) {
       radio.addEventListener('change', syncSpendingMode);
     });
-    ['birthYear', 'currentAge'].forEach(function (id) {
+    ['birthYear'].forEach(function (id) {
       var node = el(id);
       if (node) node.addEventListener('change', function () {
-        syncFraClaimAge();
+        syncBirthYearDerived();
+        syncRetiredState();
+      });
+      if (node) node.addEventListener('input', function () {
+        syncBirthYearDerived();
         syncRetiredState();
       });
     });
@@ -727,7 +767,7 @@
     }
 
     syncSpendingMode();
+    syncBirthYearDerived();
     syncRetiredState();
-    syncFraClaimAge();
   });
 })();
