@@ -71,7 +71,7 @@ $isPremium = has_premium_access();
         <div class="slider-row">
           <div class="slider-label"><span>Starting Portfolio</span></div>
           <div class="amount-field"><span class="currency-prefix">$</span><input type="text" inputmode="numeric" id="portfolio" value="1,000,000" aria-label="Starting portfolio in dollars"></div>
-          <small style="color: #666;">Portfolio value when withdrawals begin — this year or a future year (e.g. 2027).</small>
+          <small style="color: #666;">Your portfolio&rsquo;s value today. If you set a future Withdrawals Start Date, the model grows it untouched until withdrawals begin.</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Annual Withdrawal</span></div>
