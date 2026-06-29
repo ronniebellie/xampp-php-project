@@ -384,16 +384,95 @@
 
   updateLabels();
 
+  var SCENARIO_TYPE = 'plan-success-monte-carlo';
+  var SCENARIO_FIELDS = ['portfolio', 'withdrawal', 'withdrawalTiming', 'inflationRate', 'withdrawalStartDate', 'years', 'expectedReturn', 'volatility', 'simulations'];
+
+  function setSaveStatus(text) {
+    var status = document.getElementById('saveStatus');
+    if (status) status.textContent = text || '';
+  }
+
+  function saveScenario() {
+    var name = prompt('Enter a name for this scenario:', 'My Plan');
+    if (!name) return;
+    var data = {};
+    SCENARIO_FIELDS.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) data[id] = el.value;
+    });
+    setSaveStatus('Saving…');
+    fetch('/api/save_scenario.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ calculator_type: SCENARIO_TYPE, scenario_name: name, scenario_data: data })
+    })
+      .then(function (res) { return res.text().then(function (t) { return { ok: res.ok, text: t }; }); })
+      .then(function (r) {
+        var d;
+        try { d = JSON.parse(r.text); } catch (e) { throw new Error('Server returned an unexpected response. Try logging out and back in.'); }
+        if (!d.success) throw new Error(d.error || 'Save failed');
+        setSaveStatus('✓ Saved!');
+        setTimeout(function () { setSaveStatus(''); }, 3000);
+      })
+      .catch(function (err) {
+        setSaveStatus('');
+        alert('Save scenario failed: ' + err.message);
+      });
+  }
+
+  function loadScenario() {
+    fetch('/api/load_scenarios.php?calculator_type=' + encodeURIComponent(SCENARIO_TYPE), { credentials: 'same-origin' })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (!data.success) { alert('Error: ' + data.error); return; }
+        if (!data.scenarios || data.scenarios.length === 0) { alert('No saved scenarios yet. Save your first one!'); return; }
+        var msg = 'Select a scenario to load (or type "d" + number to delete):\n\n';
+        data.scenarios.forEach(function (s, i) {
+          msg += (i + 1) + '. ' + s.name + ' (saved ' + new Date(s.updated_at).toLocaleDateString() + ')\n';
+        });
+        msg += '\nExamples: enter "1" to load, "d1" to delete';
+        var choice = prompt(msg);
+        if (!choice) return;
+        choice = choice.trim();
+        if (choice.toLowerCase().charAt(0) === 'd') {
+          var di = parseInt(choice.substring(1), 10) - 1;
+          if (di < 0 || di >= data.scenarios.length) { alert('Invalid selection.'); return; }
+          var del = data.scenarios[di];
+          if (!confirm('Delete "' + del.name + '"? This cannot be undone.')) return;
+          fetch('/api/delete_scenario.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ scenario_id: del.id })
+          })
+            .then(function (res) { return res.json(); })
+            .then(function (r) { alert(r.success ? 'Scenario deleted.' : 'Error: ' + (r.error || 'Unknown error')); })
+            .catch(function (err) { alert('Delete failed: ' + err.message); });
+          return;
+        }
+        var idx = parseInt(choice, 10) - 1;
+        if (idx < 0 || idx >= data.scenarios.length) { alert('Invalid selection.'); return; }
+        var s = data.scenarios[idx];
+        var sd = s.data || {};
+        Object.keys(sd).forEach(function (key) {
+          var el = document.getElementById(key);
+          if (el) el.value = sd[key];
+        });
+        formatAmountField('portfolio');
+        formatAmountField('withdrawal');
+        updateLabels();
+        runMonteCarlo(true);
+        setSaveStatus('✓ Loaded "' + s.name + '"');
+        setTimeout(function () { setSaveStatus(''); }, 3000);
+      })
+      .catch(function (err) { alert('Load scenario failed: ' + err.message); });
+  }
+
   var saveBtn = document.getElementById('saveScenarioBtn');
   var loadBtn = document.getElementById('loadScenarioBtn');
-  if (saveBtn) saveBtn.addEventListener('click', function () {
-    var status = document.getElementById('saveStatus');
-    if (status) status.textContent = 'Save/load can be added.';
-  });
-  if (loadBtn) loadBtn.addEventListener('click', function () {
-    var status = document.getElementById('saveStatus');
-    if (status) status.textContent = '';
-  });
+  if (saveBtn) saveBtn.addEventListener('click', saveScenario);
+  if (loadBtn) loadBtn.addEventListener('click', loadScenario);
 
   var explainBtn = document.getElementById('explainResultsBtnInResults');
   if (explainBtn) explainBtn.addEventListener('click', explainResults);
