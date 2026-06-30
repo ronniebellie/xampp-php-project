@@ -88,6 +88,16 @@
     return 'In ~' + yrs.toFixed(1) + ' yrs';
   }
 
+  function formatStartDate() {
+    var el = document.getElementById('withdrawalStartDate');
+    if (!el || !el.value) return '';
+    var p = el.value.split('-');
+    if (p.length !== 3) return '';
+    var d = new Date(+p[0], +p[1] - 1, +p[2]);
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
   function getTiming() {
     var el = document.getElementById('withdrawalTiming');
     return el && el.value === 'annual' ? 'annual' : 'monthly';
@@ -166,6 +176,7 @@
 
     var successCount = 0;
     var endingBalances = [];
+    var startBalances = [];
 
     for (var s = 0; s < numSims; s++) {
       var bal = portfolio;
@@ -191,6 +202,9 @@
         bal = bal * (1 + fracRet);
         if (bal <= 0) { failed = true; endingBalances.push(bal); }
       }
+
+      // Portfolio value at the moment withdrawals begin (after any growth delay).
+      startBalances.push(bal);
 
       // Withdrawal phase.
       for (var y = 0; y < years && !failed; y++) {
@@ -243,6 +257,11 @@
     var p50 = percentile(endingBalances, 50);
     var p75 = percentile(endingBalances, 75);
 
+    startBalances.sort(function (a, b) { return a - b; });
+    var startMedian = percentile(startBalances, 50);
+    var startP25 = percentile(startBalances, 25);
+    var startP75 = percentile(startBalances, 75);
+
     function fmt(n) {
       return fmtCurrency(n);
     }
@@ -250,10 +269,15 @@
     var delayNote = delayYears > 0.02
       ? ' (after growing untouched for ' + (formatDelay(delayYears).replace(/^In ~/, '~')) + ')'
       : '';
+    var startDateLabel = formatStartDate();
+    var startBalanceNote = delayYears > 0.02
+      ? '<p><strong>Projected portfolio when withdrawals begin' + (startDateLabel ? ' (' + startDateLabel + ')' : '') + ':</strong> median ' + fmt(startMedian) + ' &mdash; 25th&ndash;75th: ' + fmt(startP25) + '&ndash;' + fmt(startP75) + '. Grown untouched from your ' + fmt(portfolio) + ' starting value.</p>'
+      : '';
     var timingNote = timing === 'annual' ? 'annually on January 1' : 'monthly';
     summaryBox.innerHTML =
       '<p><strong>Success rate:</strong> Your plan lasted all ' + years + ' years of withdrawals' + delayNote + ' in <strong>' + successRate + '%</strong> of ' + numSims.toLocaleString() + ' simulations.</p>' +
       '<p style="font-size: 13px; color: #4b5563;">Withdrawals taken <strong>' + timingNote + '</strong>.</p>' +
+      startBalanceNote +
       '<p><strong>Ending portfolio percentiles:</strong> 25th = ' + fmt(p25) + ', 50th (median) = ' + fmt(p50) + ', 75th = ' + fmt(p75) + '.</p>' +
       '<p>Lower percentiles include runs that ran out of money (negative ending balance).</p>';
 
@@ -290,9 +314,10 @@
       inflationRatePct,
       delayYears,
       timing,
+      startMedian,
       successRate,
       p25, p50, p75,
-      summary: 'Plan Success (Monte Carlo). Starting portfolio $' + portfolio.toLocaleString() + (delayYears > 0.02 ? ', growing untouched for about ' + (delayYears < 2 ? Math.round(delayYears * 12) + ' months' : delayYears.toFixed(1) + ' years') + ' before withdrawals begin' : '') + ', annual withdrawal $' + withdrawal.toLocaleString() + ' (' + (timing === 'annual' ? 'taken annually on January 1' : 'taken monthly') + ') for ' + years + ' years. Expected return ' + expectedReturnPct + '%, volatility ' + volatilityPct + '%. Success rate: ' + successRate + '% of ' + numSims.toLocaleString() + ' simulations. Ending portfolio percentiles: 25th ' + fmt(p25) + ', median ' + fmt(p50) + ', 75th ' + fmt(p75) + '.'
+      summary: 'Plan Success (Monte Carlo). Starting portfolio $' + portfolio.toLocaleString() + (delayYears > 0.02 ? ', growing untouched for about ' + (delayYears < 2 ? Math.round(delayYears * 12) + ' months' : delayYears.toFixed(1) + ' years') + ' before withdrawals begin (projected median ' + fmt(startMedian) + ' at that point)' : '') + ', annual withdrawal $' + withdrawal.toLocaleString() + ' (' + (timing === 'annual' ? 'taken annually on January 1' : 'taken monthly') + ') for ' + years + ' years. Expected return ' + expectedReturnPct + '%, volatility ' + volatilityPct + '%. Success rate: ' + successRate + '% of ' + numSims.toLocaleString() + ' simulations. Ending portfolio percentiles: 25th ' + fmt(p25) + ', median ' + fmt(p50) + ', 75th ' + fmt(p75) + '.'
     };
 
     if (shouldScroll) {
