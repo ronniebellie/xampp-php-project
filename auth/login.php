@@ -7,6 +7,7 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
     $password = $_POST['password'];
+    $remember = isset($_POST['remember']);
     
     if (empty($email) || empty($password)) {
         $error = 'Email and password are required';
@@ -25,6 +26,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_email'] = $user['email'];
                 $_SESSION['user_name'] = $user['full_name'];
                 $_SESSION['subscription_status'] = $user['subscription_status'];
+                
+                // "Stay logged in" - extend the session cookie lifetime to 30 days
+                if ($remember) {
+                    $params = session_get_cookie_params();
+                    setcookie(session_name(), session_id(), [
+                        'expires'  => time() + 60 * 60 * 24 * 30,
+                        'path'     => $params['path'],
+                        'domain'   => $params['domain'],
+                        'secure'   => $params['secure'],
+                        'httponly' => true,
+                        'samesite' => 'Lax',
+                    ]);
+                }
                 
                 // Update last login
                 $update_stmt = $conn->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
@@ -129,6 +143,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-color: #3b82f6;
         }
         
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .remember-me input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #3b82f6;
+            cursor: pointer;
+        }
+        
+        .remember-me label {
+            margin-bottom: 0;
+            font-weight: 500;
+            color: #475569;
+            cursor: pointer;
+        }
+        
         .btn {
             width: 100%;
             padding: 14px;
@@ -208,6 +243,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-group">
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" required>
+            </div>
+            
+            <div class="remember-me">
+                <input type="checkbox" id="remember" name="remember" value="1"<?php echo (!empty($_POST['remember']) ? ' checked' : ''); ?>>
+                <label for="remember">Stay logged in</label>
             </div>
             
             <button type="submit" class="btn">Log In</button>
