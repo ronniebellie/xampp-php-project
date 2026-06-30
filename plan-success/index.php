@@ -75,7 +75,7 @@ $isPremium = has_premium_access();
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Annual Withdrawal</span></div>
-          <div class="amount-field"><span class="currency-prefix">$</span><input type="text" inputmode="numeric" id="withdrawal" value="40,000" aria-label="Annual withdrawal in dollars"></div>
+          <div class="amount-field"><span class="currency-prefix">$</span><input type="text" inputmode="numeric" id="withdrawal" value="60,000" aria-label="Annual withdrawal in dollars"></div>
           <small style="color: #666;">First-year withdrawal. Optionally grow with inflation specified.</small>
         </div>
         <div class="slider-row">
@@ -87,8 +87,8 @@ $isPremium = has_premium_access();
           <small style="color: #666;">How the annual amount is taken. Monthly is more realistic and slightly more favorable.</small>
         </div>
         <div class="slider-row">
-          <div class="slider-label"><span>Inflation Rate for Withdrawals (%)</span><span class="value" id="inflationRateLabel">0%</span></div>
-          <input type="range" id="inflationRate" min="0" max="10" step="0.1" value="0">
+          <div class="slider-label"><span>Inflation Rate for Withdrawals (%)</span><span class="value" id="inflationRateLabel">2.7%</span></div>
+          <input type="range" id="inflationRate" min="0" max="10" step="0.1" value="2.7">
           <small style="color: #666;">0–10%. Set to 0 for flat withdrawals. Typical U.S. ~3%.</small>
         </div>
         <div class="slider-row">
@@ -97,8 +97,8 @@ $isPremium = has_premium_access();
           <small style="color: #666;">When withdrawals begin. Portfolio grows untouched until this date. Defaults to today.</small>
         </div>
         <div class="slider-row">
-          <div class="slider-label"><span>Years to Model</span><span class="value" id="yearsLabel">30 yrs</span></div>
-          <input type="range" id="years" min="5" max="50" step="1" value="30">
+          <div class="slider-label"><span>Years to Model</span><span class="value" id="yearsLabel">27 yrs</span></div>
+          <input type="range" id="years" min="5" max="50" step="1" value="27">
           <small style="color: #666;">Years of withdrawals after the start date (e.g. 30 for a 30-year retirement)</small>
         </div>
         <div class="slider-row">
