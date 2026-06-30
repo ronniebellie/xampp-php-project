@@ -479,11 +479,19 @@
         var idx = parseInt(choice, 10) - 1;
         if (idx < 0 || idx >= data.scenarios.length) { alert('Invalid selection.'); return; }
         var s = data.scenarios[idx];
-        var sd = s.data || {};
+        var sd = s.data;
+        // Be tolerant of data stored as a JSON string (double-encoded) or null.
+        if (typeof sd === 'string') { try { sd = JSON.parse(sd); } catch (e) { sd = null; } }
+        if (!sd || typeof sd !== 'object') { sd = {}; }
+        var applied = 0;
         Object.keys(sd).forEach(function (key) {
           var el = document.getElementById(key);
-          if (el) el.value = sd[key];
+          if (el) { el.value = sd[key]; applied++; }
         });
+        if (applied === 0) {
+          alert('This saved scenario doesn’t contain any usable inputs — it was likely saved before Save/Load was working correctly. Please re-save it (set your inputs, then click Save Scenario).');
+          return;
+        }
         formatAmountField('portfolio');
         formatAmountField('withdrawal');
         updateLabels();
