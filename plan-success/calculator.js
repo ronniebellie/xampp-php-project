@@ -35,7 +35,8 @@
     volatility: { min: 0, max: 50 },
     simulations: { min: 100, max: 10000 },
     inflationRate: { min: 0, max: 10 },
-    delayYears: { min: 0, max: 40 }
+    delayYears: { min: 0, max: 40 },
+    withdrawalRate: { min: 0, max: 20 }
   };
 
   function fmtCurrency(n) {
@@ -103,6 +104,32 @@
     return el && el.value === 'annual' ? 'annual' : 'monthly';
   }
 
+  function getMethod() {
+    var el = document.getElementById('withdrawalMethod');
+    return el && el.value === 'percent' ? 'percent' : 'fixed';
+  }
+
+  function getRate() {
+    var el = document.getElementById('withdrawalRate');
+    if (!el) return NaN;
+    var raw = String(el.value).replace(/[^0-9.]/g, '');
+    if (raw === '') return NaN;
+    return parseFloat(raw);
+  }
+
+  // Show the dollar-amount + inflation fields for fixed mode, or the rate field
+  // for percent-of-portfolio mode. Inflation doesn't apply to percent mode
+  // because the withdrawal already scales with the (nominal) balance.
+  function updateMethodVisibility() {
+    var isPercent = getMethod() === 'percent';
+    var withdrawalRow = document.getElementById('withdrawalRow');
+    var rateRow = document.getElementById('withdrawalRateRow');
+    var inflationRow = document.getElementById('inflationRow');
+    if (withdrawalRow) withdrawalRow.style.display = isPercent ? 'none' : '';
+    if (rateRow) rateRow.style.display = isPercent ? '' : 'none';
+    if (inflationRow) inflationRow.style.display = isPercent ? 'none' : '';
+  }
+
   function updateLabels() {
     var inflationRatePct = parseFloat(document.getElementById('inflationRate').value);
     var years = parseInt(document.getElementById('years').value, 10);
@@ -131,15 +158,21 @@
     var volatilityPct = parseFloat(document.getElementById('volatility').value);
     var numSims = parseInt(document.getElementById('simulations').value, 10);
     var inflationRatePct = parseFloat(document.getElementById('inflationRate').value);
+    var method = getMethod();
+    var withdrawalRatePct = getRate();
     var err = [];
     if (isNaN(portfolio) || portfolio < LIMITS.portfolio.min || portfolio > LIMITS.portfolio.max) err.push('Starting portfolio: $1,000 to $50,000,000');
-    if (isNaN(withdrawal) || withdrawal < LIMITS.withdrawal.min || withdrawal > LIMITS.withdrawal.max) err.push('Annual withdrawal: $0 to $5,000,000');
+    if (method === 'percent') {
+      if (isNaN(withdrawalRatePct) || withdrawalRatePct < LIMITS.withdrawalRate.min || withdrawalRatePct > LIMITS.withdrawalRate.max) err.push('Withdrawal rate: 0% to 20%');
+    } else {
+      if (isNaN(withdrawal) || withdrawal < LIMITS.withdrawal.min || withdrawal > LIMITS.withdrawal.max) err.push('Annual withdrawal: $0 to $5,000,000');
+    }
     if (isNaN(years) || years < LIMITS.years.min || years > LIMITS.years.max) err.push('Years to model: 5 to 50');
     if (isNaN(expectedReturnPct) || expectedReturnPct < LIMITS.expectedReturn.min || expectedReturnPct > LIMITS.expectedReturn.max) err.push('Expected return: 0% to 20%');
     if (isNaN(volatilityPct) || volatilityPct < LIMITS.volatility.min || volatilityPct > LIMITS.volatility.max) err.push('Volatility: 0% to 50%');
     if (isNaN(numSims) || numSims < LIMITS.simulations.min || numSims > LIMITS.simulations.max) err.push('Simulations: 100 to 10,000');
     if (isNaN(inflationRatePct) || inflationRatePct < LIMITS.inflationRate.min || inflationRatePct > LIMITS.inflationRate.max) err.push('Inflation rate: 0% to 10%');
-    return { err: err, portfolio: portfolio, withdrawal: withdrawal, years: years, expectedReturnPct: expectedReturnPct, volatilityPct: volatilityPct, numSims: numSims, inflationRatePct: inflationRatePct, delayYears: getDelayYears(), timing: getTiming() };
+    return { err: err, portfolio: portfolio, withdrawal: withdrawal, years: years, expectedReturnPct: expectedReturnPct, volatilityPct: volatilityPct, numSims: numSims, inflationRatePct: inflationRatePct, delayYears: getDelayYears(), timing: getTiming(), method: method, withdrawalRatePct: withdrawalRatePct };
   }
 
   function runMonteCarlo(shouldScroll) {
@@ -163,10 +196,13 @@
     var inflationRatePct = v.inflationRatePct;
     var delayYears = v.delayYears;
     var timing = v.timing;
+    var method = v.method;
+    var withdrawalRatePct = v.withdrawalRatePct;
 
     var mean = expectedReturnPct / 100;
     var stdDev = volatilityPct / 100;
     var infl = inflationRatePct / 100;
+    var rateFrac = withdrawalRatePct / 100;
 
     var fullDelay = Math.floor(delayYears);
     var fracDelay = delayYears - fullDelay;
@@ -177,6 +213,7 @@
     var successCount = 0;
     var endingBalances = [];
     var startBalances = [];
+    var annualIncomes = [];
 
     for (var s = 0; s < numSims; s++) {
       var bal = portfolio;
@@ -209,9 +246,16 @@
       // Withdrawal phase.
       for (var y = 0; y < years && !failed; y++) {
         var ret = yearRets[y];
-        var withdrawalThisYear = withdrawal;
-        if (infl > 0) {
-          withdrawalThisYear = withdrawal * Math.pow(1 + infl, y);
+        var withdrawalThisYear;
+        if (method === 'percent') {
+          // Take a fixed share of the balance at the start of this year.
+          withdrawalThisYear = bal > 0 ? bal * rateFrac : 0;
+          annualIncomes.push(withdrawalThisYear);
+        } else {
+          withdrawalThisYear = withdrawal;
+          if (infl > 0) {
+            withdrawalThisYear = withdrawal * Math.pow(1 + infl, y);
+          }
         }
         if (timing === 'annual') {
           // Full year's withdrawal taken on Jan 1, remainder grows all year.
@@ -262,6 +306,15 @@
     var startP25 = percentile(startBalances, 25);
     var startP75 = percentile(startBalances, 75);
 
+    // Percent-of-portfolio income distribution (pooled across every simulated
+    // year and path). Median = a typical year's income; 10th pct = lean-year
+    // income; 90th pct = strong-year income.
+    annualIncomes.sort(function (a, b) { return a - b; });
+    var incP10 = percentile(annualIncomes, 10);
+    var incMedian = percentile(annualIncomes, 50);
+    var incP90 = percentile(annualIncomes, 90);
+    var firstYearIncome = rateFrac * startMedian;
+
     function fmt(n) {
       return fmtCurrency(n);
     }
@@ -274,12 +327,23 @@
       ? '<p><strong>Projected portfolio when withdrawals begin' + (startDateLabel ? ' (' + startDateLabel + ')' : '') + ':</strong> median ' + fmt(startMedian) + ' &mdash; 25th&ndash;75th: ' + fmt(startP25) + '&ndash;' + fmt(startP75) + '. Grown untouched from your ' + fmt(portfolio) + ' starting value.</p>'
       : '';
     var timingNote = timing === 'annual' ? 'annually on January 1' : 'monthly';
-    summaryBox.innerHTML =
-      '<p><strong>Success rate:</strong> Your plan lasted all ' + years + ' years of withdrawals' + delayNote + ' in <strong>' + successRate + '%</strong> of ' + numSims.toLocaleString() + ' simulations.</p>' +
-      '<p style="font-size: 13px; color: #4b5563;">Withdrawals taken <strong>' + timingNote + '</strong>.</p>' +
-      startBalanceNote +
-      '<p><strong>Ending portfolio percentiles:</strong> 25th = ' + fmt(p25) + ', 50th (median) = ' + fmt(p50) + ', 75th = ' + fmt(p75) + '.</p>' +
-      '<p>Lower percentiles include runs that ran out of money (negative ending balance).</p>';
+    if (method === 'percent') {
+      var rateLabel = withdrawalRatePct.toFixed(2).replace(/\.?0+$/, '') + '%';
+      summaryBox.innerHTML =
+        '<p><strong>Withdrawal strategy:</strong> <strong>' + rateLabel + '</strong> of the portfolio each year, recalculated on the current balance' + delayNote + '. Taken <strong>' + timingNote + '</strong>.</p>' +
+        '<p><strong>Projected first-year income:</strong> about <strong>' + fmt(firstYearIncome) + '</strong> (' + rateLabel + ' of ' + fmt(startMedian) + ').</p>' +
+        startBalanceNote +
+        '<p><strong>Annual income across all simulated years:</strong> a typical year is about <strong>' + fmt(incMedian) + '</strong>; in lean years (10th percentile) it can drop to about <strong>' + fmt(incP10) + '</strong>, and in strong years (90th percentile) it can reach about ' + fmt(incP90) + '.</p>' +
+        '<p><strong>Ending portfolio percentiles:</strong> 25th = ' + fmt(p25) + ', 50th (median) = ' + fmt(p50) + ', 75th = ' + fmt(p75) + '.</p>' +
+        '<p style="font-size: 13px; color: #4b5563;">Because withdrawals scale with your balance, the portfolio is very unlikely to be fully depleted — the trade-off is that your income rises and falls with the market. Figures are nominal (not inflation-adjusted).</p>';
+    } else {
+      summaryBox.innerHTML =
+        '<p><strong>Success rate:</strong> Your plan lasted all ' + years + ' years of withdrawals' + delayNote + ' in <strong>' + successRate + '%</strong> of ' + numSims.toLocaleString() + ' simulations.</p>' +
+        '<p style="font-size: 13px; color: #4b5563;">Withdrawals taken <strong>' + timingNote + '</strong>.</p>' +
+        startBalanceNote +
+        '<p><strong>Ending portfolio percentiles:</strong> 25th = ' + fmt(p25) + ', 50th (median) = ' + fmt(p50) + ', 75th = ' + fmt(p75) + '.</p>' +
+        '<p>Lower percentiles include runs that ran out of money (negative ending balance).</p>';
+    }
 
     // Histogram: bucket ending balances
     var minB = Math.min.apply(null, endingBalances);
@@ -304,6 +368,14 @@
 
     createChart(labels, buckets, numSims);
 
+    var delayText = delayYears > 0.02 ? ', growing untouched for about ' + (delayYears < 2 ? Math.round(delayYears * 12) + ' months' : delayYears.toFixed(1) + ' years') + ' before withdrawals begin (projected median ' + fmt(startMedian) + ' at that point)' : '';
+    var timingText = timing === 'annual' ? 'taken annually on January 1' : 'taken monthly';
+    var explainSummary;
+    if (method === 'percent') {
+      explainSummary = 'Plan Success (Monte Carlo), percent-of-portfolio withdrawals. Starting portfolio $' + portfolio.toLocaleString() + delayText + '. Each year withdraws ' + withdrawalRatePct + '% of the current balance (' + timingText + ') for ' + years + ' years. Expected return ' + expectedReturnPct + '%, volatility ' + volatilityPct + '%. Projected first-year income about ' + fmt(firstYearIncome) + '. Annual income across all simulated years: typical (median) ' + fmt(incMedian) + ', lean-year 10th percentile ' + fmt(incP10) + ', strong-year 90th percentile ' + fmt(incP90) + '. Ending portfolio percentiles: 25th ' + fmt(p25) + ', median ' + fmt(p50) + ', 75th ' + fmt(p75) + '. Because withdrawals scale with the balance, the portfolio is very unlikely to be fully depleted; the risk is income variability rather than running out.';
+    } else {
+      explainSummary = 'Plan Success (Monte Carlo). Starting portfolio $' + portfolio.toLocaleString() + delayText + ', annual withdrawal $' + withdrawal.toLocaleString() + ' (' + timingText + ') for ' + years + ' years. Expected return ' + expectedReturnPct + '%, volatility ' + volatilityPct + '%. Success rate: ' + successRate + '% of ' + numSims.toLocaleString() + ' simulations. Ending portfolio percentiles: 25th ' + fmt(p25) + ', median ' + fmt(p50) + ', 75th ' + fmt(p75) + '.';
+    }
     window.lastPlanSuccessResult = {
       portfolio,
       withdrawal,
@@ -314,10 +386,16 @@
       inflationRatePct,
       delayYears,
       timing,
+      method,
+      withdrawalRatePct,
       startMedian,
       successRate,
+      firstYearIncome,
+      incMedian,
+      incP10,
+      incP90,
       p25, p50, p75,
-      summary: 'Plan Success (Monte Carlo). Starting portfolio $' + portfolio.toLocaleString() + (delayYears > 0.02 ? ', growing untouched for about ' + (delayYears < 2 ? Math.round(delayYears * 12) + ' months' : delayYears.toFixed(1) + ' years') + ' before withdrawals begin (projected median ' + fmt(startMedian) + ' at that point)' : '') + ', annual withdrawal $' + withdrawal.toLocaleString() + ' (' + (timing === 'annual' ? 'taken annually on January 1' : 'taken monthly') + ') for ' + years + ' years. Expected return ' + expectedReturnPct + '%, volatility ' + volatilityPct + '%. Success rate: ' + successRate + '% of ' + numSims.toLocaleString() + ' simulations. Ending portfolio percentiles: 25th ' + fmt(p25) + ', median ' + fmt(p50) + ', 75th ' + fmt(p75) + '.'
+      summary: explainSummary
     };
 
     if (shouldScroll) {
@@ -374,7 +452,7 @@
   var runBtn = document.getElementById('runMonteCarloBtn');
   if (runBtn) runBtn.addEventListener('click', function () { runMonteCarlo(true); });
 
-  var inputIds = ['portfolio', 'withdrawal', 'inflationRate', 'years', 'expectedReturn', 'volatility', 'simulations', 'withdrawalStartDate', 'withdrawalTiming'];
+  var inputIds = ['portfolio', 'withdrawal', 'withdrawalRate', 'inflationRate', 'years', 'expectedReturn', 'volatility', 'simulations', 'withdrawalStartDate', 'withdrawalTiming'];
   var runTimeout = null;
   function scheduleRun() {
     updateLabels();
@@ -407,10 +485,17 @@
   var timingEl = document.getElementById('withdrawalTiming');
   if (timingEl) timingEl.addEventListener('change', scheduleRun);
 
+  var methodEl = document.getElementById('withdrawalMethod');
+  if (methodEl) methodEl.addEventListener('change', function () {
+    updateMethodVisibility();
+    scheduleRun();
+  });
+
+  updateMethodVisibility();
   updateLabels();
 
   var SCENARIO_TYPE = 'plan-success-monte-carlo';
-  var SCENARIO_FIELDS = ['portfolio', 'withdrawal', 'withdrawalTiming', 'inflationRate', 'withdrawalStartDate', 'years', 'expectedReturn', 'volatility', 'simulations'];
+  var SCENARIO_FIELDS = ['portfolio', 'withdrawal', 'withdrawalMethod', 'withdrawalRate', 'withdrawalTiming', 'inflationRate', 'withdrawalStartDate', 'years', 'expectedReturn', 'volatility', 'simulations'];
 
   function setSaveStatus(text) {
     var status = document.getElementById('saveStatus');
@@ -494,6 +579,7 @@
         }
         formatAmountField('portfolio');
         formatAmountField('withdrawal');
+        updateMethodVisibility();
         updateLabels();
         runMonteCarlo(true);
         setSaveStatus('✓ Loaded "' + s.name + '"');

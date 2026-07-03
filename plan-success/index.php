@@ -74,9 +74,22 @@ $isPremium = has_premium_access();
           <small style="color: #666;">Your portfolio&rsquo;s value today. If you set a future Withdrawals Start Date, the model grows it untouched until withdrawals begin.</small>
         </div>
         <div class="slider-row">
+          <div class="slider-label"><span>Withdrawal Method</span></div>
+          <select id="withdrawalMethod" class="select-field" aria-label="Withdrawal method">
+            <option value="fixed" selected>Fixed dollar (inflation-adjusted)</option>
+            <option value="percent">Percent of portfolio</option>
+          </select>
+          <small style="color: #666;">Fixed = a set dollar amount each year. Percent = a share of the current balance, so income floats with the market.</small>
+        </div>
+        <div class="slider-row" id="withdrawalRow">
           <div class="slider-label"><span>Annual Withdrawal</span></div>
           <div class="amount-field"><span class="currency-prefix">$</span><input type="text" inputmode="numeric" id="withdrawal" value="60,000" aria-label="Annual withdrawal in dollars"></div>
           <small style="color: #666;">First-year withdrawal. Optionally grow with inflation specified.</small>
+        </div>
+        <div class="slider-row" id="withdrawalRateRow" style="display: none;">
+          <div class="slider-label"><span>Withdrawal Rate</span></div>
+          <div class="amount-field"><input type="text" inputmode="decimal" id="withdrawalRate" value="4" aria-label="Withdrawal rate percent" style="text-align: left;"><span class="currency-prefix" style="margin: 0 0 0 6px;">%</span></div>
+          <small style="color: #666;">Percent of the current portfolio withdrawn each year (e.g. 4%). Income rises and falls with your balance.</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Withdrawal Timing</span></div>
@@ -86,7 +99,7 @@ $isPremium = has_premium_access();
           </select>
           <small style="color: #666;">How the annual amount is taken. Monthly is more realistic and slightly more favorable.</small>
         </div>
-        <div class="slider-row">
+        <div class="slider-row" id="inflationRow">
           <div class="slider-label"><span>Inflation Rate for Withdrawals (%)</span><span class="value" id="inflationRateLabel">2.7%</span></div>
           <input type="range" id="inflationRate" min="0" max="10" step="0.1" value="2.7">
           <small style="color: #666;">0–10%. Set to 0 for flat withdrawals. Typical U.S. ~3%.</small>
@@ -162,7 +175,7 @@ $isPremium = has_premium_access();
   <script>
   const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
   </script>
-  <script src="calculator.js?v=20260630b"></script>
+  <script src="calculator.js?v=20260703"></script>
     <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/calculator-footer.php'; ?>
 </body>
 </html>
