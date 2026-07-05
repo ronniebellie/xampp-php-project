@@ -49,7 +49,7 @@ $isPremium = has_premium_access();
     <div class="info-box-blue" style="margin-bottom: 30px;">
       <h2>How It Works</h2>
       <p>A <strong>Monte Carlo simulation</strong> runs hundreds or thousands of possible market paths. Each path uses random annual returns (based on your expected return and volatility). Your portfolio is drawn down by your chosen withdrawal each year. The <strong>success rate</strong> is the percentage of those paths where you still have money left at the end. No simulation can predict the real future—this tool shows you the odds under your assumptions.</p>
-      <p style="margin-top: 12px;"><strong>Tip:</strong> Use a conservative expected return (e.g. 5–6%) and include volatility (e.g. 10–15% standard deviation) so the success rate reflects sequence-of-returns risk.</p>
+      <p style="margin-top: 12px;"><strong>Tip:</strong> There&rsquo;s no single &ldquo;correct&rdquo; expected return &mdash; treat it as an assumption to test. For a balanced portfolio (roughly 60&ndash;70% stocks / 30&ndash;40% bonds), try running the simulation at 5%, 6%, and 7% and compare the results, rather than hunting for one perfect number. Also include volatility (e.g. 10&ndash;15% standard deviation) so the outcome reflects sequence-of-returns risk. The tool re-runs instantly when you change any input, so comparing scenarios takes just a click.</p>
     </div>
 
 <?php if ($isPremium): ?>
@@ -175,7 +175,7 @@ $isPremium = has_premium_access();
   <script>
   const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
   </script>
-  <script src="calculator.js?v=20260703"></script>
+  <script src="calculator.js?v=20260705"></script>
     <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/calculator-footer.php'; ?>
 </body>
 </html>
