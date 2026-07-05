@@ -49,7 +49,7 @@ $isPremium = has_premium_access();
     <div class="info-box-blue" style="margin-bottom: 30px;">
       <h2>How It Works</h2>
       <p>A <strong>Monte Carlo simulation</strong> runs hundreds or thousands of possible market paths. Each path uses random annual returns (based on your expected return and volatility). Your portfolio is drawn down by your chosen withdrawal each year. The <strong>success rate</strong> is the percentage of those paths where you still have money left at the end. No simulation can predict the real future—this tool shows you the odds under your assumptions.</p>
-      <p style="margin-top: 12px;"><strong>Tip:</strong> There&rsquo;s no single &ldquo;correct&rdquo; expected return&mdash;treat it as an assumption to test. If you&rsquo;re unsure where to start, a balanced portfolio (roughly 60&ndash;70% stocks and 30&ndash;40% bonds) is a common reference point: try 5%, 6%, and 7% and compare the results. Include volatility (for example, a 10&ndash;15% standard deviation) to reflect sequence-of-returns risk. Because the simulation updates instantly as you change inputs, comparing scenarios takes just a click.</p>
+      <p style="margin-top: 12px;"><strong>Tip:</strong> There&rsquo;s no single &ldquo;correct&rdquo; expected return&mdash;treat it as an assumption to test. If you&rsquo;re unsure where to start, a balanced portfolio (roughly 60&ndash;70% stocks and 30&ndash;40% bonds) is a reasonable starting point: try 5%, 6%, and 7% and compare the results. Include volatility (for example, a 10&ndash;15% standard deviation) to reflect sequence-of-returns risk. Because the simulation updates instantly, comparing scenarios takes just a click.</p>
     </div>
 
 <?php if ($isPremium): ?>
