@@ -7,6 +7,7 @@ header('Content-Type: application/json');
 
 require_once __DIR__ . '/../includes/db_config.php';
 require_once __DIR__ . '/../includes/budget_helpers.php';
+require_once __DIR__ . '/../includes/has_premium_access.php';
 
 $userId = budget_require_user_id();
 if (!$userId) {
@@ -314,6 +315,78 @@ if ($action === 'set_target') {
     $stmt->close();
 
     echo json_encode(['ok' => true]);
+    exit;
+}
+
+if ($action === 'import_transactions') {
+    if (!has_premium_access()) {
+        budget_json_error('Premium subscription required for CSV import.', 403);
+    }
+
+    $accountId = (int) ($data['account_id'] ?? 0);
+    $categoryId = (int) ($data['category_id'] ?? 0);
+    $rows = $data['transactions'] ?? [];
+
+    if (!$accountId || !$categoryId) {
+        budget_json_error('Account and category are required for import.');
+    }
+    if (!is_array($rows) || count($rows) === 0) {
+        budget_json_error('No transactions to import.');
+    }
+    if (count($rows) > 500) {
+        budget_json_error('Import limited to 500 transactions at a time.');
+    }
+
+    if (!budget_assert_user_account($conn, $userId, $accountId)) {
+        budget_json_error('Invalid account.');
+    }
+    if (!budget_assert_user_category($conn, $userId, $categoryId)) {
+        budget_json_error('Invalid category.');
+    }
+
+    $stmt = $conn->prepare(
+        'INSERT INTO budget_transactions (user_id, account_id, category_id, txn_date, payee, memo, amount)
+         VALUES (?, ?, ?, ?, ?, ?, ?)'
+    );
+
+    $imported = 0;
+    $skipped = 0;
+
+    foreach ($rows as $row) {
+        if (!is_array($row)) {
+            $skipped++;
+            continue;
+        }
+        $txnDate = trim($row['txn_date'] ?? '');
+        $payee = trim($row['payee'] ?? '');
+        $memo = trim($row['memo'] ?? '');
+        $amount = isset($row['amount']) ? round((float) $row['amount'], 2) : null;
+
+        if ($payee === '' || $amount === null || $amount == 0.0) {
+            $skipped++;
+            continue;
+        }
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $txnDate)) {
+            $skipped++;
+            continue;
+        }
+        if (strlen($payee) > 255) {
+            $payee = substr($payee, 0, 255);
+        }
+        if (strlen($memo) > 512) {
+            $memo = substr($memo, 0, 512);
+        }
+
+        $stmt->bind_param('iiisssd', $userId, $accountId, $categoryId, $txnDate, $payee, $memo, $amount);
+        if ($stmt->execute()) {
+            $imported++;
+        } else {
+            $skipped++;
+        }
+    }
+    $stmt->close();
+
+    echo json_encode(['ok' => true, 'imported' => $imported, 'skipped' => $skipped]);
     exit;
 }
 

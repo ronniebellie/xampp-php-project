@@ -77,6 +77,13 @@ if (!$isLoggedIn) {
       background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px;
       padding: 12px 14px; font-size: 13px; color: #1e3a8a; margin-bottom: 16px; line-height: 1.5;
     }
+    .import-step { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e5e7eb; }
+    .import-step:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .mapping-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px; margin-top: 10px;
+    }
+    .register-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
   </style>
 </head>
 <body>
@@ -85,7 +92,7 @@ if (!$isLoggedIn) {
 
     <header>
       <h1>Manual Budget <span class="pill">Beta</span></h1>
-      <p class="sub">Enter transactions yourself — no bank linking. Unlimited accounts and manual entry are free. <strong>Premium</strong> adds bank CSV import and data export (coming soon).</p>
+      <p class="sub">Enter transactions yourself — no bank linking. Unlimited accounts and manual entry are free. <strong>Premium</strong> adds bank CSV import and data export.</p>
     </header>
 
     <?php if (!$tablesReady): ?>
@@ -109,6 +116,7 @@ if (!$isLoggedIn) {
       <button type="button" class="tab-btn" data-tab="plan">Monthly plan</button>
       <button type="button" class="tab-btn" data-tab="accounts">Accounts</button>
       <button type="button" class="tab-btn" data-tab="categories">Categories</button>
+      <button type="button" class="tab-btn" data-tab="import">Import</button>
     </div>
 
     <section id="panel-add" class="panel active card">
@@ -152,7 +160,14 @@ if (!$isLoggedIn) {
     </section>
 
     <section id="panel-register" class="panel card">
-      <h2 style="margin-top:0;">Register</h2>
+      <div class="register-actions">
+        <h2 style="margin:0;">Register</h2>
+        <?php if ($isPremium): ?>
+        <a href="#" class="btn-secondary" id="exportCsvBtn">Export CSV</a>
+        <?php else: ?>
+        <span class="hint" style="margin:0;">CSV export is a <a href="<?php echo htmlspecialchars($premiumUpsellUrl); ?>">Premium</a> feature.</span>
+        <?php endif; ?>
+      </div>
       <div style="overflow-x:auto;">
         <table class="data" id="registerTable">
           <thead>
@@ -198,7 +213,7 @@ if (!$isLoggedIn) {
       <p class="hint">Name each account and pick a type. Add checking, savings, cash, and credit cards — all included free.</p>
       <?php if (!$isPremium): ?>
       <div class="premium-note">
-        <strong>Premium (coming soon):</strong> import transactions from your bank’s CSV export and export your budget data.
+        <strong>Premium:</strong> import transactions from your bank’s CSV export and export your budget data.
         <a href="<?php echo htmlspecialchars($premiumUpsellUrl); ?>">Learn about Premium</a>
       </div>
       <?php endif; ?>
@@ -291,6 +306,109 @@ if (!$isLoggedIn) {
       </div>
     </section>
 
+    <section id="panel-import" class="panel card">
+      <h2 style="margin-top:0;">Import from CSV</h2>
+      <?php if (!$isPremium): ?>
+      <div class="premium-note">
+        <strong>Premium feature:</strong> upload a CSV export from your bank, map columns, preview, and import up to 500 transactions at a time.
+        <a href="<?php echo htmlspecialchars($premiumUpsellUrl); ?>">Upgrade to Premium</a>
+      </div>
+      <?php else: ?>
+      <p class="hint">Export a transaction CSV from your bank (most banks offer this under account activity or statements). We never connect to your bank — you upload the file yourself.</p>
+
+      <form id="importForm">
+        <div class="import-step">
+          <h3 style="margin:0 0 8px;font-size:15px;">1. Choose file</h3>
+          <input type="file" id="importFile" accept=".csv,text/csv" required>
+        </div>
+
+        <div id="importMapping" class="import-step" style="display:none;">
+          <h3 style="margin:0 0 8px;font-size:15px;">2. Map columns</h3>
+          <div class="field" style="max-width:280px;margin-bottom:10px;">
+            <label for="importPreset">Format preset</label>
+            <select id="importPreset">
+              <option value="generic">Generic CSV</option>
+              <option value="fidelity">Brokerage / cash management (Run Date, Action, Amount)</option>
+            </select>
+          </div>
+          <div class="mapping-grid">
+            <div class="field">
+              <label for="mapDate">Date</label>
+              <select id="mapDate"></select>
+            </div>
+            <div class="field">
+              <label for="mapPayee">Payee</label>
+              <select id="mapPayee"></select>
+            </div>
+            <div class="field">
+              <label for="mapMemo">Memo (optional)</label>
+              <select id="mapMemo"></select>
+            </div>
+            <div class="field">
+              <label for="importAmountMode">Amount style</label>
+              <select id="importAmountMode">
+                <option value="signed">Single signed column (+ inflow, − outflow)</option>
+                <option value="split">Separate outflow / inflow columns</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="mapAmount">Amount column</label>
+              <select id="mapAmount"></select>
+            </div>
+            <div class="field">
+              <label for="mapOutflow">Outflow column</label>
+              <select id="mapOutflow"></select>
+            </div>
+            <div class="field">
+              <label for="mapInflow">Inflow column</label>
+              <select id="mapInflow"></select>
+            </div>
+          </div>
+          <label style="display:block;margin-top:10px;font-size:13px;">
+            <input type="checkbox" id="importStripCash"> Strip “(Cash)” suffix from payee names
+          </label>
+        </div>
+
+        <div id="importDefaults" class="import-step" style="display:none;">
+          <h3 style="margin:0 0 8px;font-size:15px;">3. Defaults for imported rows</h3>
+          <p class="hint">All rows in this import use the same account and category. You can re-categorize individual transactions afterward in the register.</p>
+          <div class="form-grid">
+            <div class="field">
+              <label for="importAccount">Account</label>
+              <select id="importAccount" required></select>
+            </div>
+            <div class="field">
+              <label for="importCategory">Category</label>
+              <select id="importCategory" required></select>
+            </div>
+          </div>
+        </div>
+
+        <div id="importPreview" class="import-step" style="display:none;">
+          <h3 style="margin:0 0 8px;font-size:15px;">4. Preview</h3>
+          <p id="importPreviewSummary" class="hint"></p>
+          <div style="overflow-x:auto;">
+            <table class="data" id="importPreviewTable">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Payee</th>
+                  <th>Memo</th>
+                  <th class="num">Outflow</th>
+                  <th class="num">Inflow</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <button type="submit" class="btn-primary" id="importSubmitBtn" style="margin-top:14px;" disabled>Import transactions</button>
+        </div>
+
+        <div id="importStatus" class="status"></div>
+      </form>
+      <?php endif; ?>
+    </section>
+
     <?php endif; ?>
 
     <footer class="site-footer" style="margin-top:32px;">
@@ -301,8 +419,13 @@ if (!$isLoggedIn) {
   <?php if ($tablesReady): ?>
   <script>
     window.BUDGET_API = '/api/budget.php';
+    window.BUDGET_EXPORT_API = '/api/budget_export.php';
+    window.BUDGET_IS_PREMIUM = <?php echo $isPremium ? 'true' : 'false'; ?>;
   </script>
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=3"></script>
+  <?php if ($isPremium): ?>
+  <script src="import.js?v=1"></script>
+  <?php endif; ?>
   <?php endif; ?>
 </body>
 </html>

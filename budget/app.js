@@ -400,6 +400,9 @@
         renderPlan(data.plan);
         renderAccounts(data.accounts);
         renderCategories(state.allCategories);
+        document.dispatchEvent(new CustomEvent('budget:loaded', {
+          detail: { accounts: data.accounts, categories: data.categories },
+        }));
         setLoadStatus('');
       })
       .catch(function (err) {
@@ -515,6 +518,15 @@
     });
   }
 
+  function bindExport() {
+    var btn = $('exportCsvBtn');
+    if (!btn || !window.BUDGET_EXPORT_API) return;
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      window.location.href = window.BUDGET_EXPORT_API + '?month=' + encodeURIComponent(currentMonth());
+    });
+  }
+
   function init() {
     if (!monthPicker) return;
     monthPicker.value = new Date().toISOString().slice(0, 7);
@@ -525,6 +537,8 @@
     bindForm();
     bindAccountForm();
     bindCategoryForms();
+    bindExport();
+    window.budgetReloadMonth = loadMonth;
     loadMonth();
   }
 
