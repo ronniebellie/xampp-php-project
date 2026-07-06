@@ -3,6 +3,11 @@ session_start();
 require_once __DIR__ . '/../includes/db_config.php';
 
 $error = '';
+$success = '';
+
+if (isset($_GET['msg']) && $_GET['msg'] === 'password_reset') {
+    $success = 'Your password was updated. You can log in now.';
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
@@ -189,6 +194,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-bottom: 20px;
             font-size: 14px;
         }
+
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .forgot-link {
+            display: block;
+            text-align: right;
+            margin-top: 8px;
+            font-size: 13px;
+        }
+
+        .forgot-link a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .forgot-link a:hover {
+            text-decoration: underline;
+        }
         
         .footer-links {
             text-align: center;
@@ -230,19 +261,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p>Log in to access premium features</p>
         </div>
         
+        <?php if ($success): ?>
+            <div class="success"><?php echo htmlspecialchars($success); ?></div>
+        <?php endif; ?>
+
         <?php if ($error): ?>
-            <div class="error"><?php echo $error; ?></div>
+            <div class="error"><?php echo htmlspecialchars($error); ?></div>
         <?php endif; ?>
         
         <form method="POST" action="">
             <div class="form-group">
                 <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" required>
+                <input type="email" id="email" name="email" required value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
             </div>
             
             <div class="form-group">
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" required>
+                <div class="forgot-link"><a href="forgot-password.php">Forgot password?</a></div>
             </div>
             
             <div class="remember-me">
