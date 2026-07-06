@@ -64,6 +64,19 @@ if (!$isLoggedIn) {
       font-weight: 700; padding: 4px 10px; border-radius: 999px; margin-left: 8px;
     }
     .target-input { width: 90px; text-align: right; }
+    .btn-secondary {
+      padding: 8px 14px; border: 1px solid #d1d5db; border-radius: 8px;
+      background: #fff; font-weight: 600; cursor: pointer; font-size: 13px;
+    }
+    .btn-secondary:hover { background: #f9fafb; }
+    .btn-danger { color: #b91c1c; border-color: #fecaca; }
+    .btn-danger:disabled { opacity: 0.45; cursor: not-allowed; }
+    .accounts-add { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e5e7eb; }
+    .hint { color: #6b7280; font-size: 13px; margin: 0 0 12px; line-height: 1.5; }
+    .premium-note {
+      background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px;
+      padding: 12px 14px; font-size: 13px; color: #1e3a8a; margin-bottom: 16px; line-height: 1.5;
+    }
   </style>
 </head>
 <body>
@@ -72,7 +85,7 @@ if (!$isLoggedIn) {
 
     <header>
       <h1>Manual Budget <span class="pill">Beta</span></h1>
-      <p class="sub">Enter transactions yourself — no bank linking. Review every dollar as you go. File import and extra accounts will come later under Premium.</p>
+      <p class="sub">Enter transactions yourself — no bank linking. Unlimited accounts and manual entry are free. <strong>Premium</strong> adds bank CSV import and data export (coming soon).</p>
     </header>
 
     <?php if (!$tablesReady): ?>
@@ -83,8 +96,10 @@ if (!$isLoggedIn) {
     <?php else: ?>
 
     <div class="month-row">
+      <button type="button" class="btn-secondary" id="monthPrev" aria-label="Previous month">←</button>
       <label for="monthPicker"><strong>Month</strong></label>
       <input type="month" id="monthPicker">
+      <button type="button" class="btn-secondary" id="monthNext" aria-label="Next month">→</button>
       <span id="loadStatus" style="color:#6b7280;font-size:14px;"></span>
     </div>
 
@@ -92,11 +107,14 @@ if (!$isLoggedIn) {
       <button type="button" class="tab-btn active" data-tab="add">Add transaction</button>
       <button type="button" class="tab-btn" data-tab="register">Register</button>
       <button type="button" class="tab-btn" data-tab="plan">Monthly plan</button>
+      <button type="button" class="tab-btn" data-tab="accounts">Accounts</button>
+      <button type="button" class="tab-btn" data-tab="categories">Categories</button>
     </div>
 
     <section id="panel-add" class="panel active card">
-      <h2 style="margin-top:0;">Add transaction</h2>
+      <h2 id="txnFormTitle" style="margin-top:0;">Add transaction</h2>
       <form id="txnForm">
+        <input type="hidden" id="txnEditId" value="">
         <div class="form-grid">
           <div class="field">
             <label for="txnDate">Date</label>
@@ -127,7 +145,8 @@ if (!$isLoggedIn) {
           <label><input type="radio" name="flow" value="expense" checked> Expense (outflow)</label>
           <label><input type="radio" name="flow" value="income"> Income (inflow)</label>
         </div>
-        <button type="submit" class="btn-primary">Save transaction</button>
+        <button type="submit" class="btn-primary" id="txnSubmitBtn">Save transaction</button>
+        <button type="button" class="btn-secondary" id="txnCancelBtn" style="display:none;margin-left:8px;">Cancel edit</button>
         <div id="formStatus" class="status"></div>
       </form>
     </section>
@@ -140,9 +159,11 @@ if (!$isLoggedIn) {
             <tr>
               <th>Date</th>
               <th>Payee</th>
+              <th>Account</th>
               <th>Category</th>
               <th class="num">Outflow</th>
               <th class="num">Inflow</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -172,6 +193,104 @@ if (!$isLoggedIn) {
       </div>
     </section>
 
+    <section id="panel-accounts" class="panel card">
+      <h2 style="margin-top:0;">Accounts</h2>
+      <p class="hint">Name each account and pick a type. Add checking, savings, cash, and credit cards — all included free.</p>
+      <?php if (!$isPremium): ?>
+      <div class="premium-note">
+        <strong>Premium (coming soon):</strong> import transactions from your bank’s CSV export and export your budget data.
+        <a href="<?php echo htmlspecialchars($premiumUpsellUrl); ?>">Learn about Premium</a>
+      </div>
+      <?php endif; ?>
+
+      <div class="accounts-add">
+        <h3 style="margin:0 0 12px;font-size:16px;">Add account</h3>
+        <form id="accountForm">
+          <div class="form-grid">
+            <div class="field">
+              <label for="newAccountName">Name</label>
+              <input type="text" id="newAccountName" maxlength="128" required placeholder="e.g. Fidelity CMA">
+            </div>
+            <div class="field">
+              <label for="newAccountType">Type</label>
+              <select id="newAccountType" required>
+                <option value="checking">Checking</option>
+                <option value="savings">Savings</option>
+                <option value="cash">Cash</option>
+                <option value="credit">Credit card</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn-primary">Add account</button>
+          <div id="accountFormStatus" class="status"></div>
+        </form>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table class="data" id="accountsTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th class="num">Transactions</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="panel-categories" class="panel card">
+      <h2 style="margin-top:0;">Categories</h2>
+      <p class="hint">Rename categories, add new ones, or hide categories you no longer use. Hidden categories stay in history but won’t appear in new transactions.</p>
+
+      <div class="accounts-add">
+        <h3 style="margin:0 0 12px;font-size:16px;">Add category group</h3>
+        <form id="groupForm" style="margin-bottom:16px;">
+          <div class="form-grid">
+            <div class="field">
+              <label for="newGroupName">Group name</label>
+              <input type="text" id="newGroupName" maxlength="128" required placeholder="e.g. Monthly Bills">
+            </div>
+          </div>
+          <button type="submit" class="btn-secondary">Add group</button>
+          <div id="groupFormStatus" class="status"></div>
+        </form>
+
+        <h3 style="margin:0 0 12px;font-size:16px;">Add category</h3>
+        <form id="categoryForm">
+          <div class="form-grid">
+            <div class="field">
+              <label for="newCategoryName">Category name</label>
+              <input type="text" id="newCategoryName" maxlength="128" required placeholder="e.g. Groceries">
+            </div>
+            <div class="field">
+              <label for="newCategoryGroup">Group</label>
+              <select id="newCategoryGroup" required></select>
+            </div>
+          </div>
+          <button type="submit" class="btn-primary">Add category</button>
+          <div id="categoryFormStatus" class="status"></div>
+        </form>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table class="data" id="categoriesTable">
+          <thead>
+            <tr>
+              <th>Group</th>
+              <th>Category</th>
+              <th class="num">Transactions</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
     <?php endif; ?>
 
     <footer class="site-footer" style="margin-top:32px;">
@@ -183,7 +302,7 @@ if (!$isLoggedIn) {
   <script>
     window.BUDGET_API = '/api/budget.php';
   </script>
-  <script src="app.js"></script>
+  <script src="app.js?v=2"></script>
   <?php endif; ?>
 </body>
 </html>

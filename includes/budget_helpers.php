@@ -86,4 +86,85 @@ if (!defined('BUDGET_HELPERS_LOADED')) {
         echo json_encode(['ok' => false, 'error' => $message]);
         exit;
     }
+
+    function budget_valid_account_type($type) {
+        return in_array($type, ['checking', 'savings', 'cash', 'credit'], true);
+    }
+
+    function budget_account_type_label($type) {
+        $labels = [
+            'checking' => 'Checking',
+            'savings' => 'Savings',
+            'cash' => 'Cash',
+            'credit' => 'Credit card',
+        ];
+        return $labels[$type] ?? $type;
+    }
+
+    function budget_assert_user_account(mysqli $conn, $userId, $accountId) {
+        $stmt = $conn->prepare('SELECT id, name, account_type FROM budget_accounts WHERE id = ? AND user_id = ?');
+        $stmt->bind_param('ii', $accountId, $userId);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $row = $res ? $res->fetch_assoc() : null;
+        $stmt->close();
+        return $row ?: null;
+    }
+
+    function budget_assert_user_category(mysqli $conn, $userId, $categoryId) {
+        $stmt = $conn->prepare('SELECT id, name, is_hidden, group_id FROM budget_categories WHERE id = ? AND user_id = ?');
+        $stmt->bind_param('ii', $categoryId, $userId);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $row = $res ? $res->fetch_assoc() : null;
+        $stmt->close();
+        return $row ?: null;
+    }
+
+    function budget_assert_user_transaction(mysqli $conn, $userId, $transactionId) {
+        $stmt = $conn->prepare('SELECT id FROM budget_transactions WHERE id = ? AND user_id = ?');
+        $stmt->bind_param('ii', $transactionId, $userId);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $row = $res ? $res->fetch_assoc() : null;
+        $stmt->close();
+        return $row ?: null;
+    }
+
+    /** @return array{account_id:int,category_id:int,txn_date:string,payee:string,memo:string,amount:float} */
+    function budget_parse_transaction_input(array $data) {
+        $accountId = (int) ($data['account_id'] ?? 0);
+        $categoryId = (int) ($data['category_id'] ?? 0);
+        $txnDate = trim($data['txn_date'] ?? '');
+        $payee = trim($data['payee'] ?? '');
+        $memo = trim($data['memo'] ?? '');
+        $flow = $data['flow'] ?? 'expense';
+        $amountRaw = $data['amount'] ?? null;
+
+        if (!$accountId || !$categoryId || $payee === '' || $amountRaw === null || $amountRaw === '') {
+            budget_json_error('Account, category, payee, and amount are required.');
+        }
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $txnDate)) {
+            budget_json_error('Date must be YYYY-MM-DD.');
+        }
+
+        $amount = round((float) $amountRaw, 2);
+        if ($amount <= 0) {
+            budget_json_error('Amount must be greater than zero.');
+        }
+        if ($flow === 'expense') {
+            $amount = -$amount;
+        } elseif ($flow !== 'income') {
+            budget_json_error('Flow must be expense or income.');
+        }
+
+        return [
+            'account_id' => $accountId,
+            'category_id' => $categoryId,
+            'txn_date' => $txnDate,
+            'payee' => $payee,
+            'memo' => $memo,
+            'amount' => $amount,
+        ];
+    }
 }
