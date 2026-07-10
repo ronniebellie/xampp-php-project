@@ -89,6 +89,20 @@ $isPremium = has_premium_access();
           <div><label for="min3" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Min payment ($)</label><input type="number" id="min3" min="0" step="1" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
           <div></div>
         </div>
+        <div class="debt-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 12px; align-items: end; margin-bottom: 12px;">
+          <div><label for="name4" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Name</label><input type="text" id="name4" placeholder="e.g. Personal loan" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
+          <div><label for="balance4" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Balance ($)</label><input type="number" id="balance4" min="0" step="1" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
+          <div><label for="apr4" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">APR (%)</label><input type="number" id="apr4" min="0" max="50" step="0.1" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
+          <div><label for="min4" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Min payment ($)</label><input type="number" id="min4" min="0" step="1" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
+          <div></div>
+        </div>
+        <div class="debt-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 12px; align-items: end; margin-bottom: 12px;">
+          <div><label for="name5" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Name</label><input type="text" id="name5" placeholder="e.g. Medical bill" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
+          <div><label for="balance5" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Balance ($)</label><input type="number" id="balance5" min="0" step="1" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
+          <div><label for="apr5" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">APR (%)</label><input type="number" id="apr5" min="0" max="50" step="0.1" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
+          <div><label for="min5" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Min payment ($)</label><input type="number" id="min5" min="0" step="1" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
+          <div></div>
+        </div>
       </div>
 
       <h3 style="margin-top: 28px;">Strategy & extra payment</h3>
@@ -114,6 +128,7 @@ $isPremium = has_premium_access();
 
     <div id="results" style="display: none;">
       <h2>Your Payoff Plan</h2>
+      <div id="payoffWarning" role="alert" style="display: none; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 12px; padding: 14px 16px; margin: 16px 0; color: #991b1b; font-weight: 600;"></div>
       <div class="summary-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 20px 0;">
         <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 12px; padding: 16px;">
           <div style="font-size: 13px; color: #166534; font-weight: 600;">Debt-free in</div>
@@ -128,10 +143,14 @@ $isPremium = has_premium_access();
           <div id="resultTotal" style="font-size: 24px; font-weight: 800; color: #1e3a8a;"></div>
         </div>
       </div>
+      <div id="strategyCompare" style="display: none; background: #faf5ff; border: 1px solid #d8b4fe; border-radius: 12px; padding: 16px 18px; margin: 20px 0;">
+        <div style="font-weight: 700; color: #6b21a8; margin-bottom: 6px;">Avalanche vs. Snowball</div>
+        <div id="strategyCompareText" style="color: #4a5568; font-size: 14px; line-height: 1.5;"></div>
+      </div>
       <div class="chart-section" style="margin: 24px 0;">
         <h3>Balance over time</h3>
         <div class="chart-wrapper" style="height: 360px;">
-          <canvas id="balanceChart"></canvas>
+          <canvas id="balanceChart" role="img" aria-label="Line chart of each debt's balance decreasing to zero over time"></canvas>
         </div>
       </div>
       <div class="chart-section" style="margin: 24px 0;">
@@ -146,7 +165,7 @@ $isPremium = has_premium_access();
               <tr>
                 <th>Month</th>
                 <th>Target debt</th>
-                <th>Payment</th>
+                <th>Total payment</th>
                 <th>Interest</th>
                 <th>Remaining balance</th>
               </tr>
