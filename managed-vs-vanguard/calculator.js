@@ -47,23 +47,41 @@ function calculate(showAlerts) {
     const portfolioValue = parseFloat(document.getElementById('portfolioValue').value);
     const advisorFee = parseFloat(document.getElementById('advisorFee').value);
     const vanguardFee = parseFloat(document.getElementById('vanguardFee').value);
-    const years = parseInt(document.getElementById('years').value);
+    const years = parseInt(document.getElementById('years').value, 10);
     const returnRate = parseFloat(document.getElementById('returnRate').value);
+    const validationError = document.getElementById('validationError');
 
-    const portfolioValueLabel = document.getElementById('portfolioValueLabel');
-    if (portfolioValueLabel) portfolioValueLabel.textContent = formatCurrency(portfolioValue);
     const advisorFeeLabel = document.getElementById('advisorFeeLabel');
     if (advisorFeeLabel) advisorFeeLabel.textContent = advisorFee.toFixed(2).replace(/\.00$/, '') + '%';
     const yearsLabel = document.getElementById('yearsLabel');
     if (yearsLabel) yearsLabel.textContent = years + ' yrs';
     const returnRateLabel = document.getElementById('returnRateLabel');
     if (returnRateLabel) returnRateLabel.textContent = returnRate.toFixed(2).replace(/\.00$/, '') + '%';
-    
-    if (isNaN(portfolioValue) || isNaN(advisorFee) || isNaN(years) || isNaN(returnRate)) {
-        if (showAlerts) alert('Please enter valid numbers for all fields');
+
+    let errorMessage = '';
+    if (isNaN(portfolioValue) || portfolioValue <= 0) {
+        errorMessage = 'Enter a portfolio value greater than zero.';
+    } else if (isNaN(advisorFee) || advisorFee < 0 || advisorFee > 5) {
+        errorMessage = 'Enter an advisor fee between 0% and 5%.';
+    } else if (isNaN(vanguardFee) || vanguardFee < 0 || vanguardFee > 1) {
+        errorMessage = 'Enter a Vanguard expense ratio between 0% and 1%.';
+    } else if (isNaN(years) || years < 1 || years > 50) {
+        errorMessage = 'Choose an investment timeline between 1 and 50 years.';
+    } else if (isNaN(returnRate) || returnRate < 0 || returnRate > 20) {
+        errorMessage = 'Enter an expected return between 0% and 20%.';
+    }
+
+    if (errorMessage) {
+        if (validationError) {
+            validationError.textContent = errorMessage;
+            validationError.style.display = 'block';
+        } else if (showAlerts) {
+            alert(errorMessage);
+        }
         return;
     }
-    
+
+    if (validationError) validationError.style.display = 'none';
     // Calculate both scenarios
     const managedData = calculatePortfolio(portfolioValue, returnRate, advisorFee, years);
     const vanguardData = calculatePortfolio(portfolioValue, returnRate, vanguardFee, years);
@@ -99,11 +117,15 @@ function calculate(showAlerts) {
     if (breakdownGrowthEl) breakdownGrowthEl.textContent = formatCurrency(lostGrowthDisplay);
     if (breakdownTotalEl) breakdownTotalEl.textContent = formatCurrency(opportunityCost);
     
-    // Update fee label
-    document.getElementById('managedFeeLabel').textContent = advisorFee + '% fee';
+    // Update fee labels
+    const managedFeeText = advisorFee.toFixed(2).replace(/\.00$/, '') + '% fee';
+    document.getElementById('managedFeeLabel').textContent = managedFeeText;
     const managedFeeLabelPortfolio = document.getElementById('managedFeeLabelPortfolio');
-    if (managedFeeLabelPortfolio) managedFeeLabelPortfolio.textContent = advisorFee + '% fee';
-    
+    if (managedFeeLabelPortfolio) managedFeeLabelPortfolio.textContent = managedFeeText;
+    const vanguardFeeText = vanguardFee.toFixed(2).replace(/\.00$/, '') + '% fee';
+    document.querySelectorAll('.vanguard-fee-label').forEach(function(el) {
+        el.textContent = vanguardFeeText;
+    });
     // Update comparison table
     document.getElementById('managedYear1Fee').textContent = formatCurrency(managedYear1Fee);
     document.getElementById('vanguardYear1Fee').textContent = formatCurrency(vanguardYear1Fee);
@@ -202,7 +224,7 @@ function createChart(managedData, vanguardData, years) {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     display: true,
@@ -303,7 +325,7 @@ function createFeesChart(managedData, vanguardData, years) {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     display: true,
@@ -376,7 +398,7 @@ document.getElementById('calculateBtn').addEventListener('click', function() {
     calculate(true);
 });
 
-['portfolioValue', 'advisorFee', 'years', 'returnRate'].forEach(id => {
+['portfolioValue', 'advisorFee', 'vanguardFee', 'years', 'returnRate'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', function() {
         calculate(false);
@@ -547,14 +569,18 @@ function compareScenarios() {
 
 function showMVComparison(name1, name2, m1, m2, v1, v2, d1, d2, opp1, opp2) {
     const resultsDiv = document.getElementById('results');
+    const comparisonContainer = document.getElementById('mvComparisonContainer');
+    if (!comparisonContainer) return;
+
     if (resultsDiv.style.display === 'none') resultsDiv.style.display = 'block';
     resultsDiv.scrollIntoView({ behavior: 'smooth' });
-    const comparisonHTML = `
+
+    comparisonContainer.innerHTML = `
         <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
             <h2 style="margin-top: 0; color: #92400e;">⚖️ Scenario Comparison</h2>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 20px;">
                 <div>
-                    <h3 style="color: #667eea;">${name1}</h3>
+                    <h3 style="color: #667eea;">${escapeHtml(name1)}</h3>
                     <div style="font-size: 0.9em; color: #666;">
                         Portfolio: ${formatCurrency(d1.portfolioValue)} | Fee: ${d1.advisorFee}% | Years: ${d1.years} | Return: ${d1.returnRate}%
                     </div>
@@ -562,7 +588,7 @@ function showMVComparison(name1, name2, m1, m2, v1, v2, d1, d2, opp1, opp2) {
                     <div><strong>Opportunity cost:</strong> ${formatCurrency(opp1)}</div>
                 </div>
                 <div>
-                    <h3 style="color: #e53e3e;">${name2}</h3>
+                    <h3 style="color: #e53e3e;">${escapeHtml(name2)}</h3>
                     <div style="font-size: 0.9em; color: #666;">
                         Portfolio: ${formatCurrency(d2.portfolioValue)} | Fee: ${d2.advisorFee}% | Years: ${d2.years} | Return: ${d2.returnRate}%
                     </div>
@@ -570,23 +596,17 @@ function showMVComparison(name1, name2, m1, m2, v1, v2, d1, d2, opp1, opp2) {
                     <div><strong>Opportunity cost:</strong> ${formatCurrency(opp2)}</div>
                 </div>
             </div>
-            <table style="width: 100%; border-collapse: collapse;">
-                <tr style="background: #f0f0f0;"><th>Metric</th><th>${name1}</th><th>${name2}</th><th>Difference</th></tr>
+            <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; min-width: 520px;">
+                <tr style="background: #f0f0f0;"><th>Metric</th><th>${escapeHtml(name1)}</th><th>${escapeHtml(name2)}</th><th>Difference</th></tr>
                 <tr><td>Final value (managed)</td><td>${formatCurrency(m1[m1.length - 1].balance)}</td><td>${formatCurrency(m2[m2.length - 1].balance)}</td><td>${formatCurrency(m2[m2.length - 1].balance - m1[m1.length - 1].balance)}</td></tr>
                 <tr><td>Final value (Vanguard)</td><td>${formatCurrency(v1[v1.length - 1].balance)}</td><td>${formatCurrency(v2[v2.length - 1].balance)}</td><td>${formatCurrency(v2[v2.length - 1].balance - v1[v1.length - 1].balance)}</td></tr>
                 <tr><td>Opportunity cost</td><td>${formatCurrency(opp1)}</td><td>${formatCurrency(opp2)}</td><td>${formatCurrency(opp2 - opp1)}</td></tr>
                 <tr><td>Total fees (managed)</td><td>${formatCurrency(m1[m1.length - 1].totalFees)}</td><td>${formatCurrency(m2[m2.length - 1].totalFees)}</td><td>${formatCurrency(m2[m2.length - 1].totalFees - m1[m1.length - 1].totalFees)}</td></tr>
             </table>
+            </div>
         </div>
     `;
-    const existingContent = resultsDiv.innerHTML;
-    resultsDiv.innerHTML = comparisonHTML + existingContent;
-
-    // Re-bind Explain button because innerHTML replacement recreates the DOM node
-    const explainBtn = document.getElementById('explainResultsBtnInResults');
-    if (explainBtn) {
-        explainBtn.addEventListener('click', explainResults);
-    }
 }
 
 function escapeHtml(s) {

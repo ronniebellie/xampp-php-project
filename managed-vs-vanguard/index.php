@@ -31,7 +31,7 @@ $isPremium = has_premium_access();
 
         <div class="info-box-blue" style="margin-bottom: 30px;">
             <h2>Understanding Vanguard Index Funds</h2>
-            <p>A Vanguard index fund is an investment fund that matches the performance of the entire stock market (like the S&P 500) rather than trying to beat it. Because it doesn't require expensive managers picking stocks, index funds have very low fees—typically around 0.04% compared to 1% for managed portfolios.</p>
+            <p>A Vanguard index fund tracks a broad market index (for example, VTSAX follows the total U.S. stock market) rather than trying to beat it with stock picking. Because there is no expensive active management layer, index funds often charge around 0.04% per year compared with 1% or more for many managed portfolios.</p>
         </div>
 
 <?php if ($isPremium): ?>
@@ -55,7 +55,8 @@ $isPremium = has_premium_access();
             <!-- Input Section -->
             <div class="input-section">
                 <h2>Your Portfolio Details</h2>
-                
+                <div id="validationError" role="alert" style="display: none; margin-bottom: 15px; padding: 12px 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #b91c1c; font-size: 14px;"></div>
+
                 <div class="input-group">
                     <label for="portfolioValue">Current Portfolio Value</label>
                     <div class="input-with-prefix">
@@ -76,8 +77,8 @@ $isPremium = has_premium_access();
 
                 <div class="input-group">
     <label for="vanguardFee">Vanguard Index Fund Expense Ratio (%)</label>
-    <input type="number" id="vanguardFee" value="0.04" min="0" max="1" step="0.01" readonly>
-    <span class="help-text">Typical Vanguard index fund expense ratio is about 0.04%</span>
+    <input type="number" id="vanguardFee" value="0.04" min="0" max="1" step="0.01">
+    <span class="help-text">Typical Vanguard index fund expense ratio is about 0.04%. Adjust if you use a different low-cost fund.</span>
 </div>
 
                 <div class="input-group">
@@ -102,8 +103,9 @@ $isPremium = has_premium_access();
 
             <!-- Results Section -->
             <div id="results" class="results-section" style="display: none;">
+                <div id="mvComparisonContainer"></div>
                 <h2>The True Cost of Your Advisor Fee</h2>
-                
+
                 <!-- Opportunity Cost Banner -->
                 <div class="opportunity-cost-banner">
                     <div class="cost-label">Total Opportunity Cost Over <span id="resultYears"></span> Years:</div>
@@ -125,7 +127,7 @@ $isPremium = has_premium_access();
                         <div class="comparison-header">
                             <div class="col-label"></div>
                             <div class="col-managed">Managed Portfolio<br><span class="fee-label" id="managedFeeLabel"></span></div>
-                            <div class="col-vanguard">Vanguard VTSAX<br><span class="fee-label">0.04% fee</span></div>
+                            <div class="col-vanguard">Vanguard VTSAX<br><span class="fee-label vanguard-fee-label">0.04% fee</span></div>
                             <div class="col-difference">You're Losing</div>
                         </div>
 
@@ -151,7 +153,7 @@ $isPremium = has_premium_access();
                         <div class="comparison-header">
                             <div class="col-label"></div>
                             <div class="col-managed">Managed Portfolio<br><span class="fee-label" id="managedFeeLabelPortfolio"></span></div>
-                            <div class="col-vanguard">Vanguard VTSAX<br><span class="fee-label">0.04% fee</span></div>
+                            <div class="col-vanguard">Vanguard VTSAX<br><span class="fee-label vanguard-fee-label">0.04% fee</span></div>
                             <div class="col-difference">You're Losing</div>
                         </div>
 
@@ -174,12 +176,16 @@ $isPremium = has_premium_access();
                 <!-- Charts -->
                 <div class="chart-container">
                     <h3>Portfolio Growth Over Time</h3>
-                    <canvas id="growthChart"></canvas>
+                    <div class="chart-wrapper" style="height: 360px;">
+                        <canvas id="growthChart" role="img" aria-label="Line chart comparing managed portfolio growth to a Vanguard index fund over time"></canvas>
+                    </div>
                 </div>
 
                 <div class="chart-container">
                     <h3>Cumulative Fees Paid Over Time</h3>
-                    <canvas id="feesChart"></canvas>
+                    <div class="chart-wrapper" style="height: 360px;">
+                        <canvas id="feesChart" role="img" aria-label="Line chart comparing cumulative fees paid in a managed portfolio versus a Vanguard index fund"></canvas>
+                    </div>
                 </div>
 
                 <!-- Key Insights -->
