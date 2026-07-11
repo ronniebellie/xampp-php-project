@@ -227,13 +227,22 @@ function displayResults(results, data) {
     document.getElementById('interpretation').innerHTML = generateInterpretation(results, data);
 
     const chartData = results.filter(r => r.age >= data.currentAge && r.age <= 100);
-    
-    if (myChart) {
-        myChart.destroy();
-    }
 
-    const ctx = document.getElementById('rmdChart').getContext('2d');
-    myChart = new Chart(ctx, {
+    // Render the chart defensively: if Chart.js failed to load (ad blocker,
+    // privacy extension, offline, or CDN outage), don't let it abort the rest
+    // of the results (summary table + scroll). Otherwise the page would appear
+    // to "do nothing" when the Calculate button is clicked.
+    try {
+        if (typeof Chart === 'undefined') {
+            throw new Error('Chart.js library not loaded');
+        }
+
+        if (myChart) {
+            myChart.destroy();
+        }
+
+        const ctx = document.getElementById('rmdChart').getContext('2d');
+        myChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: chartData.map(r => r.age),
@@ -294,7 +303,22 @@ function displayResults(results, data) {
                 }
             }
         }
-    });
+        });
+    } catch (chartError) {
+        console.error('RMD chart could not be rendered:', chartError);
+        const chartCanvas = document.getElementById('rmdChart');
+        if (chartCanvas) {
+            const wrapper = chartCanvas.parentNode;
+            if (wrapper && !wrapper.querySelector('.chart-unavailable-note')) {
+                const note = document.createElement('p');
+                note.className = 'chart-unavailable-note';
+                note.style.cssText = 'color:#92400e;background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:12px;margin:0;';
+                note.textContent = 'The chart could not be displayed (a required library was blocked from loading), but your full year-by-year results are shown below.';
+                wrapper.insertBefore(note, chartCanvas);
+            }
+            chartCanvas.style.display = 'none';
+        }
+    }
 
     // Generate table data based on premium status
     const tableBody = document.getElementById('tableBody');

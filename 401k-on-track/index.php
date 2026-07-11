@@ -92,11 +92,11 @@ $isPremium = has_premium_access();
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-bottom: 25px;">
         <div>
           <label for="desiredIncome" style="display: block; margin-bottom: 5px; font-weight: 600;">Desired annual income in retirement ($)</label>
-          <input type="number" id="desiredIncome" min="0" step="5000" value="0" placeholder="e.g. 60000" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+          <input type="number" id="desiredIncome" min="0" step="any" value="0" placeholder="e.g. 60000" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
         </div>
         <div>
           <label for="withdrawalRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Withdrawal rate (%)</label>
-          <input type="number" id="withdrawalRate" min="1" max="10" step="0.25" value="4" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+          <input type="number" id="withdrawalRate" min="1" max="10" step="any" value="4" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
           <small style="color: #666;">4% is a common rule of thumb</small>
         </div>
         <div style="align-self: end;">

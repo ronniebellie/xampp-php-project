@@ -259,35 +259,35 @@ if ($isBusinessSite) {
         </div>
         <div>
           <label for="initialInv"><?php echo htmlspecialchars($s['initial_label']); ?></label>
-          <input type="number" id="initialInv" step="1" value="-500000">
+          <input type="number" id="initialInv" step="any" value="-500000">
           <small class="help"><?php echo htmlspecialchars($s['initial_help']); ?></small>
         </div>
         <div>
           <label for="discountRate"><?php echo htmlspecialchars($s['rate_label']); ?></label>
-          <input type="number" id="discountRate" min="0" max="100" step="0.5" value="8">
+          <input type="number" id="discountRate" min="0" max="100" step="any" value="8">
           <small class="help"><?php echo htmlspecialchars($s['rate_help']); ?></small>
         </div>
       </div>
       <div class="grid">
         <div>
           <label for="cf1"><?php echo htmlspecialchars($lang === 'ja' ? $s['cf_year'].'1'.$s['cf_year_suffix'] : $s['cf_year'].'1'); ?></label>
-          <input type="number" id="cf1" step="1" value="200000">
+          <input type="number" id="cf1" step="any" value="200000">
         </div>
         <div>
           <label for="cf2"><?php echo htmlspecialchars($lang === 'ja' ? $s['cf_year'].'2'.$s['cf_year_suffix'] : $s['cf_year'].'2'); ?></label>
-          <input type="number" id="cf2" step="1" value="200000">
+          <input type="number" id="cf2" step="any" value="200000">
         </div>
         <div>
           <label for="cf3"><?php echo htmlspecialchars($lang === 'ja' ? $s['cf_year'].'3'.$s['cf_year_suffix'] : $s['cf_year'].'3'); ?></label>
-          <input type="number" id="cf3" step="1" value="200000">
+          <input type="number" id="cf3" step="any" value="200000">
         </div>
         <div>
           <label for="cf4"><?php echo htmlspecialchars($lang === 'ja' ? $s['cf_year'].'4'.$s['cf_year_suffix'] : $s['cf_year'].'4'); ?></label>
-          <input type="number" id="cf4" step="1" value="0">
+          <input type="number" id="cf4" step="any" value="0">
         </div>
         <div>
           <label for="cf5"><?php echo htmlspecialchars($lang === 'ja' ? $s['cf_year'].'5'.$s['cf_year_suffix'] : $s['cf_year'].'5'); ?></label>
-          <input type="number" id="cf5" step="1" value="0">
+          <input type="number" id="cf5" step="any" value="0">
         </div>
       </div>
       <div class="center">

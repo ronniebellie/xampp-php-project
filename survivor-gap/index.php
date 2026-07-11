@@ -52,12 +52,12 @@ $isPremium = has_premium_access();
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                 <div>
                     <label for="singleLifeMonthly" style="display: block; margin-bottom: 5px; font-weight: 600;">Single-Life Monthly Benefit ($)</label>
-                    <input type="number" id="singleLifeMonthly" min="0" step="100" value="4000" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                    <input type="number" id="singleLifeMonthly" min="0" step="any" value="4000" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
                     <small style="color: #666;">Higher amount; benefit ends when you die</small>
                 </div>
                 <div>
                     <label for="jointLifeMonthly" style="display: block; margin-bottom: 5px; font-weight: 600;">Joint-Life Monthly Benefit ($)</label>
-                    <input type="number" id="jointLifeMonthly" min="0" step="100" value="3400" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                    <input type="number" id="jointLifeMonthly" min="0" step="any" value="3400" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
                     <small style="color: #666;">Lower amount; survivor continues to receive benefit</small>
                 </div>
                 <div>
@@ -72,7 +72,7 @@ $isPremium = has_premium_access();
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                 <div>
                     <label for="insurancePremium" style="display: block; margin-bottom: 5px; font-weight: 600;">Estimated Monthly Insurance Premium ($)</label>
-                    <input type="number" id="insurancePremium" min="0" step="50" value="" placeholder="e.g. 400" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                    <input type="number" id="insurancePremium" min="0" step="any" value="" placeholder="e.g. 400" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
                     <small style="color: #666;">Leave blank to skip the insurance comparison</small>
                 </div>
                 <div>

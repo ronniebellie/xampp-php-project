@@ -56,19 +56,19 @@ $isPremium = has_premium_access();
 
                 <div class="input-group">
                     <label for="portfolioValue">Current Portfolio Value ($)</label>
-                    <input type="number" id="portfolioValue" value="1000000" min="0" step="1000">
+                    <input type="number" id="portfolioValue" value="1000000" min="0" step="any">
                     <span class="help-text">Enter your exact portfolio value (e.g. 1,325,000 &rarr; 1325000).</span>
                 </div>
 
                 <div class="input-group">
                     <label for="pasFee">Vanguard PAS Fee (%)</label>
-                    <input type="number" id="pasFee" value="0.30" min="0" max="1" step="0.01" readonly>
+                    <input type="number" id="pasFee" value="0.30" min="0" max="1" step="any" readonly>
                     <span class="help-text">Vanguard Personal Advisor Services: 0.30%</span>
                 </div>
 
                 <div class="input-group">
                     <label>Target Date Fund Blend Expense (%)</label>
-                    <input type="number" id="targetDateFee" value="0.08" min="0" max="0.5" step="0.01" readonly>
+                    <input type="number" id="targetDateFee" value="0.08" min="0" max="0.5" step="any" readonly>
                     <span class="help-text">Typical Vanguard Target Retirement fund expense ratio ~0.08%</span>
                 </div>
 
@@ -91,7 +91,7 @@ $isPremium = has_premium_access();
 
                 <div class="input-group">
                     <label for="timelineStartYear">Timeline start year</label>
-                    <input type="number" id="timelineStartYear" value="<?php echo (int)date('Y'); ?>" min="2000" max="2100" step="1">
+                    <input type="number" id="timelineStartYear" value="<?php echo (int)date('Y'); ?>" min="2000" max="2100" step="any">
                     <span class="help-text">The real-world year when the simulation begins: year 1 in the results is this year, year 2 is the next calendar year, and so on.</span>
                 </div>
                 <div class="input-group">
@@ -104,7 +104,7 @@ $isPremium = has_premium_access();
                 </div>
                 <div class="input-group">
                     <label for="withdrawalsStartYear">Withdrawals start year</label>
-                    <input type="number" id="withdrawalsStartYear" value="2027" min="2000" max="2100" step="1">
+                    <input type="number" id="withdrawalsStartYear" value="2027" min="2000" max="2100" step="any">
                     <span class="help-text">Calendar year when you begin taking the annual withdrawal % above. Example: 2027 if you won&rsquo;t withdraw until then.</span>
                 </div>
 

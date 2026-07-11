@@ -163,7 +163,7 @@ $langParam = $lang === 'ja' ? '?lang=ja' : '';
       <div class="grid">
         <div>
           <label for="apr"><?php echo htmlspecialchars($s['apr_label']); ?></label>
-          <input type="number" id="apr" step="0.01" min="0" max="100" value="12">
+          <input type="number" id="apr" step="any" min="0" max="100" value="12">
         </div>
         <div>
           <label for="compounding"><?php echo htmlspecialchars($s['comp_label']); ?></label>

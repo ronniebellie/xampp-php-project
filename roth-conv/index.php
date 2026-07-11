@@ -88,22 +88,22 @@ $isPremium = has_premium_access();
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                 <div>
                     <label for="traditionalIRA" style="display: block; margin-bottom: 5px; font-weight: 600;">Traditional IRA/401(k) Balance ($)</label>
-                    <input type="number" id="traditionalIRA" value="500000" min="0" step="1000" required style="width: 100%;">
+                    <input type="number" id="traditionalIRA" value="500000" min="0" step="any" required style="width: 100%;">
                     <small style="color: #666;">Current balance in traditional retirement accounts</small>
                 </div>
                 <div>
                     <label for="rothIRA" style="display: block; margin-bottom: 5px; font-weight: 600;">Current Roth IRA Balance ($)</label>
-                    <input type="number" id="rothIRA" value="50000" min="0" step="1000" required style="width: 100%;">
+                    <input type="number" id="rothIRA" value="50000" min="0" step="any" required style="width: 100%;">
                     <small style="color: #666;">Current balance in Roth accounts</small>
                 </div>
                 <div>
     <label for="currentIncome" id="currentIncomeLabel" style="display: block; margin-bottom: 5px; font-weight: 600;">Current Annual Gross Income ($)</label>
-    <input type="number" id="currentIncome" value="80000" min="0" step="1000" required style="width: 100%;">
+    <input type="number" id="currentIncome" value="80000" min="0" step="any" required style="width: 100%;">
     <small id="currentIncomeHelp" style="color: #666;">Wages, pensions, etc. (before standard deduction)</small>
 </div>
                 <div>
                     <label for="retirementIncome" id="retirementIncomeLabel" style="display: block; margin-bottom: 5px; font-weight: 600;">Expected Retirement Income ($)</label>
-                    <input type="number" id="retirementIncome" value="40000" min="0" step="1000" required style="width: 100%;">
+                    <input type="number" id="retirementIncome" value="40000" min="0" step="any" required style="width: 100%;">
                     <small id="retirementIncomeHelp" style="color: #666;">Annual income excluding RMDs</small>
                 </div>
             </div>
@@ -112,7 +112,7 @@ $isPremium = has_premium_access();
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                 <div>
                     <label for="annualPortfolioWithdrawalRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Portfolio Withdrawal (%)</label>
-                    <input type="number" id="annualPortfolioWithdrawalRate" value="0" min="0" max="20" step="0.01" style="width: 100%;">
+                    <input type="number" id="annualPortfolioWithdrawalRate" value="0" min="0" max="20" step="any" style="width: 100%;">
                     <small style="color: #666;">Percent of your total portfolio (Traditional + Roth) you plan to withdraw each year for spending. Traditional withdrawals are taxable; Roth is tax‑free. RMDs still happen separately.</small>
                 </div>
                 <div>
@@ -125,7 +125,7 @@ $isPremium = has_premium_access();
                 </div>
                 <div id="targetSpendingWrap" style="display: none;">
                     <label for="targetAfterTaxSpending" style="display: block; margin-bottom: 5px; font-weight: 600;">Target Annual Spending (after tax) ($)</label>
-                    <input type="number" id="targetAfterTaxSpending" value="110000" min="0" step="1000" style="width: 100%;">
+                    <input type="number" id="targetAfterTaxSpending" value="110000" min="0" step="any" style="width: 100%;">
                     <small style="color: #666;">Target annual spending after federal income taxes. The model will solve for the portfolio withdrawals needed to hit this target.</small>
                 </div>
                 <div>
@@ -142,7 +142,7 @@ $isPremium = has_premium_access();
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                 <div>
                     <label for="conversionAmount" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Conversion Amount ($)</label>
-                    <input type="number" id="conversionAmount" value="50000" min="0" step="1000" required style="width: 100%;">
+                    <input type="number" id="conversionAmount" value="50000" min="0" step="any" required style="width: 100%;">
                     <small style="color: #666;">Amount to convert each year</small>
                 </div>
                 <div>
@@ -168,7 +168,7 @@ $isPremium = has_premium_access();
                 </div>
                 <div>
                     <label for="taxExemptInterest" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Tax-Exempt Interest ($)</label>
-                    <input type="number" id="taxExemptInterest" value="0" min="0" step="100" style="width: 100%;">
+                    <input type="number" id="taxExemptInterest" value="0" min="0" step="any" style="width: 100%;">
                     <small style="color: #666;">Municipal bond interest (Form 1040 line 2a). Added to gross income for MAGI / IRMAA thresholds.</small>
                 </div>
             </div>
@@ -184,12 +184,12 @@ $isPremium = has_premium_access();
                 </div>
                 <div>
                     <label for="investmentIncome" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Investment Income ($)</label>
-                    <input type="number" id="investmentIncome" value="15000" min="0" step="500" style="width: 100%;">
+                    <input type="number" id="investmentIncome" value="15000" min="0" step="any" style="width: 100%;">
                     <small style="color: #666;">Dividends, taxable interest, capital gains, and other net investment income (not wages, pensions, or RMDs).</small>
                 </div>
                 <div>
                     <label for="retirementInvestmentIncome" style="display: block; margin-bottom: 5px; font-weight: 600;">Retirement Investment Income ($) — Optional</label>
-                    <input type="number" id="retirementInvestmentIncome" value="" min="0" step="500" placeholder="Same as above if blank" style="width: 100%;">
+                    <input type="number" id="retirementInvestmentIncome" value="" min="0" step="any" placeholder="Same as above if blank" style="width: 100%;">
                     <small style="color: #666;">Investment income after retirement if different from pre-retirement. Leave blank to use the same amount every year.</small>
                 </div>
             </div>
@@ -198,17 +198,17 @@ $isPremium = has_premium_access();
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                 <div>
                     <label for="returnRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Expected Annual Investment Return (%)</label>
-                    <input type="number" id="returnRate" value="7" min="0" max="20" step="0.1" required style="width: 100%;">
+                    <input type="number" id="returnRate" value="7" min="0" max="20" step="any" required style="width: 100%;">
                     <small style="color: #666;">Expected portfolio growth rate</small>
                 </div>
                 <div>
                     <label for="inflationRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Expected Annual Inflation Rate (%)</label>
-                    <input type="number" id="inflationRate" value="2.5" min="0" max="10" step="0.1" required style="width: 100%;">
+                    <input type="number" id="inflationRate" value="2.5" min="0" max="10" step="any" required style="width: 100%;">
                     <small style="color: #666;">For adjusting brackets over time</small>
                 </div>
                 <div>
                     <label for="discountRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Tax Discount Rate (%) — Optional</label>
-                    <input type="number" id="discountRate" value="0" min="0" max="15" step="0.1" style="width: 100%;">
+                    <input type="number" id="discountRate" value="0" min="0" max="15" step="any" style="width: 100%;">
                     <small style="color: #666;">Opportunity cost of paying taxes now vs. later. Tax dollars paid today could stay invested (e.g., in an index fund). A higher rate makes future tax savings worth less in today&rsquo;s dollars. Try 3&ndash;7% to match expected portfolio returns. Leave at 0 for nominal (undiscounted) totals only.</small>
                 </div>
             </div>

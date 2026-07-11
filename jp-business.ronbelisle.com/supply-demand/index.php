@@ -180,12 +180,12 @@ $langParam = $lang === 'ja' ? '?lang=ja' : '';
       <div class="grid">
         <div>
           <label for="paramA"><?php echo htmlspecialchars($s['demand_a']); ?></label>
-          <input type="number" id="paramA" step="1" value="120">
+          <input type="number" id="paramA" step="any" value="120">
           <small class="help"><?php echo htmlspecialchars($s['demand_a_help']); ?></small>
         </div>
         <div>
           <label for="paramB"><?php echo htmlspecialchars($s['demand_b']); ?></label>
-          <input type="number" id="paramB" step="0.1" value="2">
+          <input type="number" id="paramB" step="any" value="2">
           <small class="help"><?php echo htmlspecialchars($s['demand_b_help']); ?></small>
         </div>
       </div>
@@ -193,12 +193,12 @@ $langParam = $lang === 'ja' ? '?lang=ja' : '';
       <div class="grid">
         <div>
           <label for="paramC"><?php echo htmlspecialchars($s['supply_c']); ?></label>
-          <input type="number" id="paramC" step="1" value="10">
+          <input type="number" id="paramC" step="any" value="10">
           <small class="help"><?php echo htmlspecialchars($s['supply_c_help']); ?></small>
         </div>
         <div>
           <label for="paramD"><?php echo htmlspecialchars($s['supply_d']); ?></label>
-          <input type="number" id="paramD" step="0.1" value="1">
+          <input type="number" id="paramD" step="any" value="1">
           <small class="help"><?php echo htmlspecialchars($s['supply_d_help']); ?></small>
         </div>
       </div>

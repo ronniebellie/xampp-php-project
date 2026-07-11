@@ -63,44 +63,44 @@ $isPremium = has_premium_access();
           </div>
           <div>
             <label for="balance1" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Balance ($)</label>
-            <input type="number" id="balance1" min="0" step="1" value="25000" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+            <input type="number" id="balance1" min="0" step="any" value="25000" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
           </div>
           <div>
             <label for="apr1" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">APR (%)</label>
-            <input type="number" id="apr1" min="0" max="50" step="0.1" value="5.5" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+            <input type="number" id="apr1" min="0" max="50" step="any" value="5.5" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
           </div>
           <div>
             <label for="min1" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Min payment ($)</label>
-            <input type="number" id="min1" min="0" step="1" value="280" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+            <input type="number" id="min1" min="0" step="any" value="280" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
           </div>
           <div></div>
         </div>
         <div class="loan-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 12px; align-items: end; margin-bottom: 12px;">
           <div><label for="name2" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Name</label><input type="text" id="name2" placeholder="e.g. Federal Unsub" value="Federal Loan 2" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
-          <div><label for="balance2" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Balance ($)</label><input type="number" id="balance2" min="0" step="1" value="18000" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
-          <div><label for="apr2" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">APR (%)</label><input type="number" id="apr2" min="0" max="50" step="0.1" value="4.2" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
-          <div><label for="min2" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Min payment ($)</label><input type="number" id="min2" min="0" step="1" value="180" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
+          <div><label for="balance2" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Balance ($)</label><input type="number" id="balance2" min="0" step="any" value="18000" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
+          <div><label for="apr2" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">APR (%)</label><input type="number" id="apr2" min="0" max="50" step="any" value="4.2" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
+          <div><label for="min2" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Min payment ($)</label><input type="number" id="min2" min="0" step="any" value="180" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
           <div></div>
         </div>
         <div class="loan-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 12px; align-items: end; margin-bottom: 12px;">
           <div><label for="name3" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Name</label><input type="text" id="name3" placeholder="e.g. Private" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
-          <div><label for="balance3" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Balance ($)</label><input type="number" id="balance3" min="0" step="1" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
-          <div><label for="apr3" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">APR (%)</label><input type="number" id="apr3" min="0" max="50" step="0.1" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
-          <div><label for="min3" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Min payment ($)</label><input type="number" id="min3" min="0" step="1" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
+          <div><label for="balance3" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Balance ($)</label><input type="number" id="balance3" min="0" step="any" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
+          <div><label for="apr3" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">APR (%)</label><input type="number" id="apr3" min="0" max="50" step="any" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
+          <div><label for="min3" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Min payment ($)</label><input type="number" id="min3" min="0" step="any" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
           <div></div>
         </div>
         <div class="loan-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 12px; align-items: end; margin-bottom: 12px;">
           <div><label for="name4" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Name</label><input type="text" id="name4" placeholder="Loan 4" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
-          <div><label for="balance4" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Balance ($)</label><input type="number" id="balance4" min="0" step="1" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
-          <div><label for="apr4" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">APR (%)</label><input type="number" id="apr4" min="0" max="50" step="0.1" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
-          <div><label for="min4" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Min payment ($)</label><input type="number" id="min4" min="0" step="1" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
+          <div><label for="balance4" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Balance ($)</label><input type="number" id="balance4" min="0" step="any" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
+          <div><label for="apr4" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">APR (%)</label><input type="number" id="apr4" min="0" max="50" step="any" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
+          <div><label for="min4" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Min payment ($)</label><input type="number" id="min4" min="0" step="any" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
           <div></div>
         </div>
         <div class="loan-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 12px; align-items: end; margin-bottom: 12px;">
           <div><label for="name5" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Name</label><input type="text" id="name5" placeholder="Loan 5" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
-          <div><label for="balance5" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Balance ($)</label><input type="number" id="balance5" min="0" step="1" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
-          <div><label for="apr5" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">APR (%)</label><input type="number" id="apr5" min="0" max="50" step="0.1" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
-          <div><label for="min5" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Min payment ($)</label><input type="number" id="min5" min="0" step="1" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
+          <div><label for="balance5" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Balance ($)</label><input type="number" id="balance5" min="0" step="any" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
+          <div><label for="apr5" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">APR (%)</label><input type="number" id="apr5" min="0" max="50" step="any" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
+          <div><label for="min5" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px;">Min payment ($)</label><input type="number" id="min5" min="0" step="any" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
           <div></div>
         </div>
       </div>
@@ -116,7 +116,7 @@ $isPremium = has_premium_access();
         </div>
         <div>
           <label for="extra" style="display: block; margin-bottom: 5px; font-weight: 600;">Extra monthly payment ($)</label>
-          <input type="number" id="extra" min="0" step="10" value="100" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+          <input type="number" id="extra" min="0" step="any" value="100" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
           <small style="color: #666;">Applied to your target loan each month</small>
         </div>
       </div>

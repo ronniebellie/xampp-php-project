@@ -68,19 +68,19 @@ $rb_includes = dirname(__DIR__, 2) . '/includes';
                 </div>
                 <div>
                     <label for="traditionalIRA" style="display: block; margin-bottom: 4px; font-weight: 600;">Traditional IRA balance ($)</label>
-                    <input type="number" id="traditionalIRA" value="960000" min="0" step="1000" required style="width: 100%; padding: 8px;">
+                    <input type="number" id="traditionalIRA" value="960000" min="0" step="any" required style="width: 100%; padding: 8px;">
                 </div>
                 <div>
                     <label for="rothIRA" style="display: block; margin-bottom: 4px; font-weight: 600;">Roth IRA balance ($)</label>
-                    <input type="number" id="rothIRA" value="150000" min="0" step="1000" required style="width: 100%; padding: 8px;">
+                    <input type="number" id="rothIRA" value="150000" min="0" step="any" required style="width: 100%; padding: 8px;">
                 </div>
                 <div>
                     <label for="returnRate" style="display: block; margin-bottom: 4px; font-weight: 600;">Expected return on IRA balances (%)</label>
-                    <input type="number" id="returnRate" value="5" min="0" max="15" step="0.5" required style="width: 100%; padding: 8px;">
+                    <input type="number" id="returnRate" value="5" min="0" max="15" step="any" required style="width: 100%; padding: 8px;">
                 </div>
                 <div>
                     <label for="retirementIncome" style="display: block; margin-bottom: 4px; font-weight: 600;">Annual other income ($)</label>
-                    <input type="number" id="retirementIncome" value="55000" min="0" step="1000" style="width: 100%; padding: 8px;">
+                    <input type="number" id="retirementIncome" value="55000" min="0" step="any" style="width: 100%; padding: 8px;">
                     <small style="color: #666;">SS, pension, etc. (excluding IRA)</small>
                 </div>
             </div>
@@ -89,7 +89,7 @@ $rb_includes = dirname(__DIR__, 2) . '/includes';
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 22px;">
                 <div>
                     <label for="conversionAmount" style="display: block; margin-bottom: 4px; font-weight: 600;">Annual conversion ($)</label>
-                    <input type="number" id="conversionAmount" value="50000" min="0" step="5000" style="width: 100%; padding: 8px;">
+                    <input type="number" id="conversionAmount" value="50000" min="0" step="any" style="width: 100%; padding: 8px;">
                     <small style="color: #666;">0 = no conversions</small>
                 </div>
                 <div>
@@ -113,7 +113,7 @@ $rb_includes = dirname(__DIR__, 2) . '/includes';
                     <input type="text" id="heirName<?php echo $i; ?>" placeholder="Heir <?php echo $i; ?>" style="padding: 8px;">
                     <input type="number" id="heirAge<?php echo $i; ?>" placeholder="Age" min="18" max="80" value="<?php echo $i === 1 ? 42 : ($i === 2 ? 40 : ($i === 3 ? 38 : 35)); ?>" style="padding: 8px;">
                     <input type="number" id="heirShare<?php echo $i; ?>" placeholder="%" min="0" max="100" value="<?php echo $i <= 3 ? (int)(100/3) : 0; ?>" style="padding: 8px;">
-                    <input type="number" id="heirIncome<?php echo $i; ?>" placeholder="Income" min="0" step="1000" value="<?php echo $i === 1 ? 300000 : 80000; ?>" style="padding: 8px;">
+                    <input type="number" id="heirIncome<?php echo $i; ?>" placeholder="Income" min="0" step="any" value="<?php echo $i === 1 ? 300000 : 80000; ?>" style="padding: 8px;">
                     <select id="heirFiling<?php echo $i; ?>" style="padding: 8px;">
                         <option value="single" <?php echo $i === 1 ? 'selected' : ''; ?>>Single</option>
                         <option value="married" <?php echo $i !== 1 ? 'selected' : ''; ?>>Married</option>
@@ -134,7 +134,7 @@ $rb_includes = dirname(__DIR__, 2) . '/includes';
                 </div>
                 <div>
                     <label for="inheritedReturnRate" style="display: block; margin-bottom: 4px; font-weight: 600;">Heir portfolio return (%)</label>
-                    <input type="number" id="inheritedReturnRate" value="5" min="0" max="15" step="0.5" style="width: 100%; padding: 8px;">
+                    <input type="number" id="inheritedReturnRate" value="5" min="0" max="15" step="any" style="width: 100%; padding: 8px;">
                 </div>
             </div>
 

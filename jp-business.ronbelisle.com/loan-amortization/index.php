@@ -188,17 +188,17 @@ $langParam = $lang === 'ja' ? '?lang=ja' : '';
         </div>
         <div>
           <label for="loanAmount"><?php echo htmlspecialchars($s['loan_label']); ?></label>
-          <input type="number" id="loanAmount" step="1" value="2000000">
+          <input type="number" id="loanAmount" step="any" value="2000000">
           <small class="help"><?php echo htmlspecialchars($s['loan_help']); ?></small>
         </div>
         <div>
           <label for="annualRate"><?php echo htmlspecialchars($s['rate_label']); ?></label>
-          <input type="number" id="annualRate" min="0" max="100" step="0.1" value="3.0">
+          <input type="number" id="annualRate" min="0" max="100" step="any" value="3.0">
           <small class="help"><?php echo htmlspecialchars($s['rate_help']); ?></small>
         </div>
         <div>
           <label for="years"><?php echo htmlspecialchars($s['years_label']); ?></label>
-          <input type="number" id="years" min="1" max="40" step="1" value="5">
+          <input type="number" id="years" min="1" max="40" step="any" value="5">
           <small class="help"><?php echo htmlspecialchars($s['years_help']); ?></small>
         </div>
       </div>

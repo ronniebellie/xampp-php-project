@@ -121,12 +121,12 @@ $isPremium = has_premium_access();
                     </div>
                     <div>
                         <label for="singleAmount" style="display: block; margin-bottom: 5px; font-weight: 600;">Amount ($)</label>
-                        <input type="number" id="singleAmount" step="0.01" value="10000" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                        <input type="number" id="singleAmount" step="any" value="10000" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
                         <small style="color: #666;" id="singleAmountLabel">Starting amount today</small>
                     </div>
                     <div>
                         <label for="singleRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Interest Rate (%)</label>
-                        <input type="number" id="singleRate" step="0.01" value="7" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                        <input type="number" id="singleRate" step="any" value="7" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
                         <small style="color: #666;">Expected annual return</small>
                     </div>
                     <div>
@@ -151,17 +151,17 @@ $isPremium = has_premium_access();
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                     <div>
                         <label for="targetGoal" style="display: block; margin-bottom: 5px; font-weight: 600;">Target Future Value ($)</label>
-                        <input type="number" id="targetGoal" step="0.01" value="100000" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                        <input type="number" id="targetGoal" step="any" value="100000" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
                         <small style="color: #666;">Your financial goal</small>
                     </div>
                     <div>
                         <label for="targetPresent" style="display: block; margin-bottom: 5px; font-weight: 600;">Current Savings ($)</label>
-                        <input type="number" id="targetPresent" step="0.01" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                        <input type="number" id="targetPresent" step="any" value="0" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
                         <small style="color: #666;">Amount you already have</small>
                     </div>
                     <div>
                         <label for="targetRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Interest Rate (%)</label>
-                        <input type="number" id="targetRate" step="0.01" value="7" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                        <input type="number" id="targetRate" step="any" value="7" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
                         <small style="color: #666;">Expected annual return</small>
                     </div>
                     <div>
@@ -186,12 +186,12 @@ $isPremium = has_premium_access();
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                     <div>
                         <label for="annuityPayment" style="display: block; margin-bottom: 5px; font-weight: 600;">Monthly Payment ($)</label>
-                        <input type="number" id="annuityPayment" step="0.01" value="500" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                        <input type="number" id="annuityPayment" step="any" value="500" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
                         <small style="color: #666;">Amount you'll contribute each month</small>
                     </div>
                     <div>
                         <label for="annuityRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Interest Rate (%)</label>
-                        <input type="number" id="annuityRate" step="0.01" value="7" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                        <input type="number" id="annuityRate" step="any" value="7" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
                         <small style="color: #666;">Expected annual return</small>
                     </div>
                     <div>

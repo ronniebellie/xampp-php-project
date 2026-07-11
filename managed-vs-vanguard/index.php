@@ -61,7 +61,7 @@ $isPremium = has_premium_access();
                     <label for="portfolioValue">Current Portfolio Value</label>
                     <div class="input-with-prefix">
                         <span class="prefix">$</span>
-                        <input type="number" id="portfolioValue" value="500000" min="0" step="1000" inputmode="numeric" placeholder="500000">
+                        <input type="number" id="portfolioValue" value="500000" min="0" step="any" inputmode="numeric" placeholder="500000">
                     </div>
                     <span class="help-text">Enter your exact portfolio value</span>
                 </div>
@@ -77,7 +77,7 @@ $isPremium = has_premium_access();
 
                 <div class="input-group">
     <label for="vanguardFee">Vanguard Index Fund Expense Ratio (%)</label>
-    <input type="number" id="vanguardFee" value="0.04" min="0" max="1" step="0.01">
+    <input type="number" id="vanguardFee" value="0.04" min="0" max="1" step="any">
     <span class="help-text">Typical Vanguard index fund expense ratio is about 0.04%. Adjust if you use a different low-cost fund.</span>
 </div>
 

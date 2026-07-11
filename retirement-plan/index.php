@@ -151,7 +151,7 @@ $defaultRetirementAge = 67;
         </div>
         <div id="retirementAgeWrap">
           <label class="field-label" for="retirementAge">Planned retirement age</label>
-          <input type="number" id="retirementAge" min="18" max="100" step="1" value="<?php echo $defaultRetirementAge; ?>" autocomplete="off" inputmode="numeric" required>
+          <input type="number" id="retirementAge" min="18" max="100" step="any" value="<?php echo $defaultRetirementAge; ?>" autocomplete="off" inputmode="numeric" required>
           <small>When you expect to stop working and start drawing from savings.</small>
         </div>
       </div>
@@ -165,21 +165,21 @@ $defaultRetirementAge = 67;
       <div class="form-grid">
         <div>
           <label class="field-label" for="balance">Retirement savings today ($)</label>
-          <input type="number" id="balance" min="0" step="1000" value="850000" required>
+          <input type="number" id="balance" min="0" step="any" value="850000" required>
           <small>401(k), IRA, brokerage — one combined total for this snapshot.</small>
         </div>
         <div>
           <label class="field-label" for="portfolioWithdrawalStartAge">Portfolio withdrawals for spending begin at age</label>
-          <input type="number" id="portfolioWithdrawalStartAge" min="18" max="100" step="1" value="">
+          <input type="number" id="portfolioWithdrawalStartAge" min="18" max="100" step="any" value="">
           <small>When you'll start drawing from savings to cover spending (after Social Security). RMDs still apply when required. For a calendar date (e.g. Jan 2027), use the age you'll be that year.</small>
         </div>
         <div id="annualContributionWrap">
           <label class="field-label" for="annualContribution">Annual contributions until retirement ($)</label>
-          <input type="number" id="annualContribution" min="0" step="500" value="12000">
+          <input type="number" id="annualContribution" min="0" step="any" value="12000">
         </div>
         <div id="returnPreRetirementWrap">
           <label class="field-label" for="returnPreRetirement">Expected return before retirement (%)</label>
-          <input type="number" id="returnPreRetirement" min="0" max="15" step="0.1" value="6">
+          <input type="number" id="returnPreRetirement" min="0" max="15" step="any" value="6">
           <small>Only used if you are still saving and growing your portfolio before retirement.</small>
         </div>
       </div>
@@ -196,7 +196,7 @@ $defaultRetirementAge = 67;
       <div id="estimateSpendingWrap" class="form-grid">
         <div>
           <label class="field-label" for="currentMonthlySpending">Household monthly spending ($)</label>
-          <input type="number" id="currentMonthlySpending" min="0" step="50" value="6000">
+          <input type="number" id="currentMonthlySpending" min="0" step="any" value="6000">
           <small>What your household spends now (or expects to spend in retirement) — not gross income.</small>
         </div>
         <div id="retirementSpendingPctWrap">
@@ -209,7 +209,7 @@ $defaultRetirementAge = 67;
       <div id="directSpendingWrap" class="form-grid" style="display:none;">
         <div>
           <label class="field-label" for="annualSpendingDirect">Annual household spending in retirement ($)</label>
-          <input type="number" id="annualSpendingDirect" min="0" step="1000" value="72000">
+          <input type="number" id="annualSpendingDirect" min="0" step="any" value="72000">
           <small>Total yearly expenses for your household — not income.</small>
         </div>
       </div>
@@ -228,7 +228,7 @@ $defaultRetirementAge = 67;
       <div id="ssEstimateWrap" class="form-grid">
         <div>
           <label class="field-label" for="ssPiaMonthly">Your benefit at Full Retirement Age ($/month)</label>
-          <input type="number" id="ssPiaMonthly" min="0" step="50" value="">
+          <input type="number" id="ssPiaMonthly" min="0" step="any" value="">
           <small>From <em>your</em> SSA statement (PIA at FRA) — for future claiming estimates.</small>
         </div>
         <div>
@@ -243,7 +243,7 @@ $defaultRetirementAge = 67;
       <div id="ssReceivingWrap" class="form-grid" style="display:none;">
         <div>
           <label class="field-label" for="ssCurrentMonthly">Your current monthly benefit ($)</label>
-          <input type="number" id="ssCurrentMonthly" min="0" step="0.01" value="0">
+          <input type="number" id="ssCurrentMonthly" min="0" step="any" value="0">
           <small>Gross amount from your current SSA deposit (before Medicare is deducted).</small>
         </div>
       </div>
@@ -257,7 +257,7 @@ $defaultRetirementAge = 67;
       <div id="spouseSsEstimateWrap" class="form-grid">
         <div>
           <label class="field-label" for="spouseSsMonthly">Spouse's benefit at Full Retirement Age ($/month)</label>
-          <input type="number" id="spouseSsMonthly" min="0" step="50" value="">
+          <input type="number" id="spouseSsMonthly" min="0" step="any" value="">
           <small>From <em>spouse's</em> SSA statement. Leave at 0 if not applicable.</small>
         </div>
         <div>
@@ -272,14 +272,14 @@ $defaultRetirementAge = 67;
       <div id="spouseSsReceivingWrap" class="form-grid" style="display:none;">
         <div>
           <label class="field-label" for="spouseSsCurrentMonthly">Spouse's current monthly benefit ($)</label>
-          <input type="number" id="spouseSsCurrentMonthly" min="0" step="0.01" value="0">
+          <input type="number" id="spouseSsCurrentMonthly" min="0" step="any" value="0">
           <small>Gross amount from spouse's current SSA deposit.</small>
         </div>
       </div>
       <div class="form-grid">
         <div>
           <label class="field-label" for="otherGuaranteedAnnual">Other guaranteed income ($/year)</label>
-          <input type="number" id="otherGuaranteedAnnual" min="0" step="1000" value="">
+          <input type="number" id="otherGuaranteedAnnual" min="0" step="any" value="">
           <small>Pension, annuity, rental, etc. — do not include Social Security here.</small>
         </div>
       </div>
@@ -297,7 +297,7 @@ $defaultRetirementAge = 67;
           </div>
           <div>
             <label class="field-label" for="taxDeferredPct">Tax-deferred share of portfolio (%)</label>
-            <input type="number" id="taxDeferredPct" min="0" max="100" step="1" value="85">
+            <input type="number" id="taxDeferredPct" min="0" max="100" step="any" value="85">
             <small>Portion subject to RMDs (Traditional IRA, 401(k), etc.). Roth/brokerage is the remainder.</small>
           </div>
           <div>
@@ -320,33 +320,33 @@ $defaultRetirementAge = 67;
         <div class="form-grid" style="margin-top: 14px;">
           <div>
             <label class="field-label" for="planEndAge">Plan through age</label>
-            <input type="number" id="planEndAge" min="80" max="100" step="1" value="95">
+            <input type="number" id="planEndAge" min="80" max="100" step="any" value="95">
             <small>How far to project spending, RMDs, and Monte Carlo. Many planners use 90–95; Vanguard often uses 100.</small>
           </div>
           <div>
             <label class="field-label" for="withdrawalRate">Withdrawal rate for on-track check (%)</label>
-            <input type="number" id="withdrawalRate" min="0.5" max="10" step="0.1" value="4">
+            <input type="number" id="withdrawalRate" min="0.5" max="10" step="any" value="4">
           </div>
           <div>
             <label class="field-label" for="returnRetirement">Expected return in retirement (%)</label>
-            <input type="number" id="returnRetirement" min="0" max="12" step="0.1" value="5">
+            <input type="number" id="returnRetirement" min="0" max="12" step="any" value="5">
           </div>
           <div>
             <label class="field-label" for="inflation">Inflation on spending (%)</label>
-            <input type="number" id="inflation" min="0" max="8" step="0.1" value="2.5">
+            <input type="number" id="inflation" min="0" max="8" step="any" value="2.5">
           </div>
           <div>
             <label class="field-label" for="colaRate">Social Security COLA (%)</label>
-            <input type="number" id="colaRate" min="0" max="8" step="0.1" value="2.5">
+            <input type="number" id="colaRate" min="0" max="8" step="any" value="2.5">
           </div>
           <div>
             <label class="field-label" for="volatility">Return volatility for stress test (%)</label>
-            <input type="number" id="volatility" min="0" max="50" step="0.5" value="10">
+            <input type="number" id="volatility" min="0" max="50" step="any" value="10">
             <small>Standard deviation of annual returns (Premium Monte Carlo). Typical: 8% balanced, 10% moderate equity, 12% all-equity.</small>
           </div>
           <div>
             <label class="field-label" for="simulations">Monte Carlo simulations</label>
-            <input type="number" id="simulations" min="100" max="5000" step="100" value="1000">
+            <input type="number" id="simulations" min="100" max="5000" step="any" value="1000">
             <small>Premium stress test runs (100–5,000).</small>
           </div>
         </div>

@@ -138,7 +138,7 @@ if (!$isLoggedIn) {
           </div>
           <div class="field">
             <label for="txnAmount">Amount</label>
-            <input type="number" id="txnAmount" min="0.01" step="0.01" required placeholder="0.00">
+            <input type="number" id="txnAmount" min="0.01" step="any" required placeholder="0.00">
           </div>
         </div>
         <div class="field">

@@ -79,7 +79,7 @@ $isPremium = has_premium_access();
                 </div>
                 <div>
                     <label for="monthlyPIA" style="display: block; margin-bottom: 5px; font-weight: 600;">Monthly Benefit at Full Retirement Age ($)</label>
-                    <input type="number" id="monthlyPIA" min="0" step="1" value="3000" required style="width: 100%;">
+                    <input type="number" id="monthlyPIA" min="0" step="any" value="3000" required style="width: 100%;">
                     <small style="color: #666;">From your Social Security statement (before Medicare)</small>
                 </div>
                 <div>
@@ -112,12 +112,12 @@ $isPremium = has_premium_access();
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                 <div>
                     <label for="colaRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual COLA Increase (%)</label>
-                    <input type="number" id="colaRate" min="0" max="10" step="0.1" value="2.5" required style="width: 100%;">
+                    <input type="number" id="colaRate" min="0" max="10" step="any" value="2.5" required style="width: 100%;">
                     <small style="color: #666;">30-year average is ~2.6%</small>
                 </div>
                 <div>
                     <label for="discountRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Discount Rate (%) - Optional</label>
-                    <input type="number" id="discountRate" min="0" max="10" step="0.1" value="0" style="width: 100%;">
+                    <input type="number" id="discountRate" min="0" max="10" step="any" value="0" style="width: 100%;">
                     <small style="color: #666;">0 = nominal dollars, 3-4% = present value</small>
                 </div>
             </div>

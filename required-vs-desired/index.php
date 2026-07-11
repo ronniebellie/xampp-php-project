@@ -56,12 +56,12 @@ $isPremium = has_premium_access();
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                 <div>
                     <label for="required-annual" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Required Expenses (Today's Dollars) ($)</label>
-                    <input type="number" id="required-annual" value="48000" min="0" step="1000" style="width: 100%;">
+                    <input type="number" id="required-annual" value="48000" min="0" step="any" style="width: 100%;">
                     <small style="color: #666;">Essentials: housing, food, utilities, insurance, healthcare, property taxes</small>
                 </div>
                 <div>
                     <label for="desired-annual" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Desired Expenses (Today's Dollars) ($)</label>
-                    <input type="number" id="desired-annual" value="24000" min="0" step="1000" style="width: 100%;">
+                    <input type="number" id="desired-annual" value="24000" min="0" step="any" style="width: 100%;">
                     <small style="color: #666;">Discretionary: travel, hobbies, entertainment, dining out, gifts</small>
                 </div>
             </div>
@@ -69,7 +69,7 @@ $isPremium = has_premium_access();
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                 <div>
                     <label for="ss-income" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Social Security Income ($)</label>
-                    <input type="number" id="ss-income" value="36000" min="0" step="1000" style="width: 100%;">
+                    <input type="number" id="ss-income" value="36000" min="0" step="any" style="width: 100%;">
                     <small style="color: #666;">Combined annual Social Security benefits (you + spouse)</small>
                 </div>
                 <div>
@@ -86,19 +86,19 @@ $isPremium = has_premium_access();
                 </div>
                 <div>
                     <label for="inflation-rate" style="display: block; margin-bottom: 5px; font-weight: 600;">Expected Annual Inflation Rate (%)</label>
-                    <input type="number" id="inflation-rate" value="3.0" min="0" max="10" step="0.1" style="width: 100%;">
+                    <input type="number" id="inflation-rate" value="3.0" min="0" max="10" step="any" style="width: 100%;">
                 </div>
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                 <div>
                     <label for="withdrawal-rate" style="display: block; margin-bottom: 5px; font-weight: 600;">Portfolio Withdrawal Rate (%)</label>
-                    <input type="number" id="withdrawal-rate" value="4.0" min="2" max="6" step="0.5" style="width: 100%;">
+                    <input type="number" id="withdrawal-rate" value="4.0" min="2" max="6" step="any" style="width: 100%;">
                     <small style="color: #666;">Typical range: 3-5% (4% is traditional rule of thumb)</small>
                 </div>
                 <div>
                     <label for="portfolio-return" style="display: block; margin-bottom: 5px; font-weight: 600;">Expected Annual Portfolio Return (%)</label>
-                    <input type="number" id="portfolio-return" value="6.0" min="0" max="15" step="0.5" style="width: 100%;">
+                    <input type="number" id="portfolio-return" value="6.0" min="0" max="15" step="any" style="width: 100%;">
                     <small style="color: #666;">Conservative: 5-6%, Moderate: 6-8%, Aggressive: 8-10%</small>
                 </div>
             </div>

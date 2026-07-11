@@ -65,12 +65,12 @@ $isPremium = has_premium_access();
                 </div>
                 <div>
                     <label for="accountBalance" style="display: block; margin-bottom: 5px; font-weight: 600;">Tax-Deferred Account Balance (as of 12/31 last year) ($)</label>
-                    <input type="number" id="accountBalance" min="0" step="1000" value="1100000" required style="width: 100%;">
+                    <input type="number" id="accountBalance" min="0" step="any" value="1100000" required style="width: 100%;">
                     <small style="color: #666;">Traditional IRA, 401(k), etc. - exclude Roth accounts</small>
                 </div>
                 <div>
                     <label for="growthRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Expected Annual Growth Rate (%)</label>
-                    <input type="number" id="growthRate" min="0" max="20" step="0.1" value="7" required style="width: 100%;">
+                    <input type="number" id="growthRate" min="0" max="20" step="any" value="7" required style="width: 100%;">
                     <small style="color: #666;">Typical range: 5-8% for diversified portfolios</small>
                 </div>
             </div>
@@ -95,17 +95,17 @@ $isPremium = has_premium_access();
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                 <div>
                     <label for="socialSecurity" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Social Security Benefits ($)</label>
-                    <input type="number" id="socialSecurity" min="0" step="1000" value="55000" style="width: 100%;">
+                    <input type="number" id="socialSecurity" min="0" step="any" value="55000" style="width: 100%;">
                     <small style="color: #666;">Expected annual amount (0 if not yet claiming)</small>
                 </div>
                 <div>
                     <label for="pension" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Pension Income ($)</label>
-                    <input type="number" id="pension" min="0" step="1000" value="0" style="width: 100%;">
+                    <input type="number" id="pension" min="0" step="any" value="0" style="width: 100%;">
                     <small style="color: #666;">Include any pension or annuity income</small>
                 </div>
                 <div>
                     <label for="otherIncome" style="display: block; margin-bottom: 5px; font-weight: 600;">Other Taxable Income ($)</label>
-                    <input type="number" id="otherIncome" min="0" step="1000" value="0" style="width: 100%;">
+                    <input type="number" id="otherIncome" min="0" step="any" value="0" style="width: 100%;">
                     <small style="color: #666;">Rental income, part-time work, etc.</small>
                 </div>
             </div>

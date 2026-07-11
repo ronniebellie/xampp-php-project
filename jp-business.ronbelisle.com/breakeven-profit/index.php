@@ -225,22 +225,22 @@ $baseUrl = '/';
         </div>
         <div>
           <label for="pricePerUnit"><?php echo htmlspecialchars($s['price_label']); ?></label>
-          <input type="number" id="pricePerUnit" min="0" step="1" value="500">
+          <input type="number" id="pricePerUnit" min="0" step="any" value="500">
           <small class="help"><?php echo htmlspecialchars($s['price_help']); ?></small>
         </div>
         <div>
           <label for="variableCostPerUnit"><?php echo htmlspecialchars($s['variable_label']); ?></label>
-          <input type="number" id="variableCostPerUnit" min="0" step="1" value="200">
+          <input type="number" id="variableCostPerUnit" min="0" step="any" value="200">
           <small class="help"><?php echo htmlspecialchars($s['variable_help']); ?></small>
         </div>
         <div>
           <label for="fixedCosts"><?php echo htmlspecialchars($s['fixed_label']); ?></label>
-          <input type="number" id="fixedCosts" min="0" step="1000" value="300000">
+          <input type="number" id="fixedCosts" min="0" step="any" value="300000">
           <small class="help"><?php echo htmlspecialchars($s['fixed_help']); ?></small>
         </div>
         <div>
           <label for="expectedUnits"><?php echo htmlspecialchars($s['expected_label']); ?></label>
-          <input type="number" id="expectedUnits" min="0" step="10" value="1200">
+          <input type="number" id="expectedUnits" min="0" step="any" value="1200">
           <small class="help"><?php echo htmlspecialchars($s['expected_help']); ?></small>
         </div>
       </div>

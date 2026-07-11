@@ -59,7 +59,7 @@ $isPremium = has_premium_access();
             id="currentAge"
             min="18"
             max="80"
-            step="1"
+            step="any"
             value="40"
             style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
@@ -74,7 +74,7 @@ $isPremium = has_premium_access();
             id="retirementAge"
             min="22"
             max="80"
-            step="1"
+            step="any"
             value="65"
             style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
@@ -89,7 +89,7 @@ $isPremium = has_premium_access();
             type="number"
             id="currentSavings"
             min="0"
-            step="1000"
+            step="any"
             value="150000"
             style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
@@ -104,7 +104,7 @@ $isPremium = has_premium_access();
             type="number"
             id="annualContribution"
             min="0"
-            step="500"
+            step="any"
             value="12000"
             style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
@@ -120,7 +120,7 @@ $isPremium = has_premium_access();
             id="expectedReturn"
             min="0"
             max="20"
-            step="0.5"
+            step="any"
             value="6"
             style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
@@ -138,7 +138,7 @@ $isPremium = has_premium_access();
             type="number"
             id="desiredIncome"
             min="0"
-            step="5000"
+            step="any"
             value="80000"
             style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
@@ -153,7 +153,7 @@ $isPremium = has_premium_access();
             type="number"
             id="guaranteedIncome"
             min="0"
-            step="500"
+            step="any"
             value="30000"
             style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
@@ -169,7 +169,7 @@ $isPremium = has_premium_access();
             id="withdrawalRate"
             min="2"
             max="8"
-            step="0.25"
+            step="any"
             value="4"
             style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
@@ -188,7 +188,7 @@ $isPremium = has_premium_access();
             id="retireLater2"
             min="1"
             max="15"
-            step="1"
+            step="any"
             value="2"
             style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
@@ -204,7 +204,7 @@ $isPremium = has_premium_access();
             id="retireLater3"
             min="2"
             max="20"
-            step="1"
+            step="any"
             value="5"
             style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
@@ -219,7 +219,7 @@ $isPremium = has_premium_access();
             type="number"
             id="extraSavings"
             min="0"
-            step="500"
+            step="any"
             value="3000"
             style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
@@ -235,7 +235,7 @@ $isPremium = has_premium_access();
             id="spendingCutPct"
             min="0"
             max="50"
-            step="1"
+            step="any"
             value="10"
             style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
@@ -250,7 +250,7 @@ $isPremium = has_premium_access();
             type="number"
             id="partTimeIncome"
             min="0"
-            step="1000"
+            step="any"
             value="10000"
             style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;"
           >
