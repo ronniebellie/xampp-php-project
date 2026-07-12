@@ -11,7 +11,7 @@ const PRESETS = {
     earlyDeathDelayLost: {
         higherBirthYear: 1958,
         higherPIA: 3890,
-        higherClaimAge: 68,
+        higherClaimAge: 70,
         higherSex: 'male',
         lowerBirthYear: 1958,
         lowerPIA: 2480,

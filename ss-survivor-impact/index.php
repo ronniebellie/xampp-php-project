@@ -92,7 +92,7 @@ $isPremium = has_premium_access();
 
         <div class="preset-bar" style="margin-top: 20px;">
             <span style="font-weight: 600; align-self: center; margin-right: 6px;">Load preset:</span>
-            <button type="button" class="preset-btn" data-preset="earlyDeathDelayLost" title="Lower earner waits until 70; higher earner dies at 71 — survivor benefit replaces her own check">Early death — delay didn't pay off</button>
+            <button type="button" class="preset-btn" data-preset="earlyDeathDelayLost" title="Both wait until 70; he dies at 71 — her delay buys almost nothing, survivor benefit replaces her own check">Early death — delay didn't pay off</button>
             <button type="button" class="preset-btn" data-preset="actuarialTypical">Typical couple (actuarial)</button>
             <button type="button" class="preset-btn" data-preset="longLife">Both live to 95</button>
             <button type="button" class="preset-btn" data-preset="earlyDeath">Higher earner dies at 75</button>
