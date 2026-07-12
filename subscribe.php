@@ -3,11 +3,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
 rb_session_start();
 require_once 'includes/db_config.php';
 require_once 'includes/stripe_config.php';
+require_once 'includes/auth_flow_helpers.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header('Location: auth/login.php');
-    exit;
+    rb_auth_redirect_to_login('/subscribe.php', 'trial');
 }
 
 // Get user info

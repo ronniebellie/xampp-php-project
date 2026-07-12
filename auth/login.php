@@ -2,9 +2,13 @@
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
 rb_session_start();
 require_once __DIR__ . '/../includes/db_config.php';
+require_once __DIR__ . '/../includes/auth_flow_helpers.php';
 
 $error = '';
 $success = '';
+
+rb_auth_capture_trial_intent_from_request();
+$trialIntent = rb_auth_is_trial_intent();
 
 if (isset($_GET['msg']) && $_GET['msg'] === 'password_reset') {
     $success = 'Your password was updated. You can log in now.';
@@ -27,30 +31,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user = $result->fetch_assoc();
             
             if (password_verify($password, $user['password_hash'])) {
-                // Password correct - set session
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['user_email'] = $user['email'];
-                $_SESSION['user_name'] = $user['full_name'];
-                $_SESSION['subscription_status'] = $user['subscription_status'];
-                
-                rb_session_set_remember($remember);
-                
+                rb_auth_login_user($user, $remember);
+
                 // Update last login
                 $update_stmt = $conn->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
                 $update_stmt->bind_param("i", $user['id']);
                 $update_stmt->execute();
                 $update_stmt->close();
-                
-                // Check if there's a redirect destination
-                if (isset($_SESSION['redirect_after_login'])) {
-                    $redirect = $_SESSION['redirect_after_login'];
-                    unset($_SESSION['redirect_after_login']); // Clear it
-                    header('Location: ' . $redirect);
-                } else {
-                    // Default redirect to homepage
-                    header('Location: ../');
-                }
-                exit();
+
+                rb_auth_redirect_after_auth();
             } else {
                 $error = 'Invalid email or password';
             }
@@ -240,6 +229,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .home-link:hover {
             text-decoration: underline;
         }
+
+        .trial-callout {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e3a8a;
+            padding: 14px 16px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            line-height: 1.55;
+        }
+
+        .trial-callout strong {
+            display: block;
+            margin-bottom: 4px;
+            color: #1d4ed8;
+        }
     </style>
 </head>
 <body>
@@ -247,9 +253,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <a href="../" class="home-link">← Back to Home</a>
         
         <div class="logo">
+            <?php if ($trialIntent): ?>
+            <h1>Start Your 7-Day Free Premium Trial</h1>
+            <p>Log in to continue. You won't be charged until the trial ends.</p>
+            <?php else: ?>
             <h1>Welcome Back</h1>
             <p>Log in to access premium features</p>
+            <?php endif; ?>
         </div>
+
+        <?php if ($trialIntent): ?>
+            <div class="trial-callout">
+                <strong>New here?</strong>
+                Create a free account first, then choose monthly or annual billing on the next page. Cancel anytime during the trial and pay nothing.
+            </div>
+        <?php endif; ?>
         
         <?php if ($success): ?>
             <div class="success"><?php echo htmlspecialchars($success); ?></div>
@@ -280,7 +298,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
         
         <div class="footer-links">
+            <?php if ($trialIntent): ?>
+            Don't have an account? <a href="register.php<?php echo rb_auth_intent_query(); ?>">Sign up to start your trial</a>
+            <?php else: ?>
             Don't have an account? <a href="register.php">Sign up</a>
+            <?php endif; ?>
         </div>
     </div>
 </body>

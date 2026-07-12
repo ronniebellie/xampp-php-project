@@ -2,9 +2,13 @@
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
 rb_session_start();
 require_once __DIR__ . '/../includes/db_config.php';
+require_once __DIR__ . '/../includes/auth_flow_helpers.php';
 
 $error = '';
 $success = '';
+
+rb_auth_capture_trial_intent_from_request();
+$trialIntent = rb_auth_is_trial_intent();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
@@ -37,14 +41,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bind_param("sss", $email, $password_hash, $full_name);
             
             if ($stmt->execute()) {
-                $success = 'Registration successful! You can now log in.';
+                $user_id = (int) $conn->insert_id;
+                $stmt->close();
+
+                $user = [
+                    'id' => $user_id,
+                    'email' => $email,
+                    'full_name' => $full_name,
+                    'subscription_status' => 'free',
+                ];
+                rb_auth_login_user($user, false);
+
+                $update_stmt = $conn->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
+                $update_stmt->bind_param("i", $user_id);
+                $update_stmt->execute();
+                $update_stmt->close();
+                $conn->close();
+
+                rb_auth_redirect_after_auth();
             } else {
                 $error = 'Registration failed. Please try again.';
             }
         }
-        
-        $stmt->close();
-        $conn->close();
+
+        if (isset($stmt) && $stmt instanceof mysqli_stmt) {
+            $stmt->close();
+        }
+        if (isset($conn) && $conn instanceof mysqli) {
+            $conn->close();
+        }
     }
 }
 ?>
@@ -188,6 +213,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .home-link:hover {
             text-decoration: underline;
         }
+
+        .trial-callout {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e3a8a;
+            padding: 14px 16px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            line-height: 1.55;
+        }
     </style>
 </head>
 <body>
@@ -195,9 +231,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <a href="../" class="home-link">← Back to Home</a>
         
         <div class="logo">
+            <?php if ($trialIntent): ?>
+            <h1>Create Your Free Account</h1>
+            <p>Next, you'll choose monthly or annual billing and start your 7-day free trial.</p>
+            <?php else: ?>
             <h1>Create Your Account</h1>
             <p>Sign up for premium features</p>
+            <?php endif; ?>
         </div>
+
+        <?php if ($trialIntent): ?>
+            <div class="trial-callout">
+                You won't be charged until the trial ends. Cancel anytime during the trial and pay nothing.
+            </div>
+        <?php endif; ?>
         
         <?php if ($error): ?>
             <div class="error"><?php echo $error; ?></div>
@@ -229,11 +276,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="password" id="confirm_password" name="confirm_password" required>
             </div>
             
-            <button type="submit" class="btn">Create Account</button>
+            <button type="submit" class="btn"><?php echo $trialIntent ? 'Create Account &amp; Continue' : 'Create Account'; ?></button>
         </form>
         
         <div class="footer-links">
-            Already have an account? <a href="login.php">Log in</a>
+            Already have an account? <a href="login.php<?php echo rb_auth_intent_query(); ?>">Log in</a>
         </div>
     </div>
 </body>

@@ -3,17 +3,21 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
 rb_session_start();
 require_once 'includes/db_config.php';
 require_once 'includes/stripe_config.php';
+require_once 'includes/auth_flow_helpers.php';
 require_once 'vendor/autoload.php';
-
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    header('Location: auth/login.php');
-    exit;
-}
 
 // Get plan details from URL
 $plan = $_GET['plan'] ?? 'monthly';
 $price_id = $_GET['price_id'] ?? STRIPE_PRICE_MONTHLY;
+if (!in_array($plan, ['monthly', 'annual'], true)) {
+    $plan = 'monthly';
+}
+
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    $return_path = '/checkout.php?plan=' . rawurlencode($plan) . '&price_id=' . rawurlencode($price_id);
+    rb_auth_redirect_to_login($return_path, 'trial');
+}
 
 // Get user info
 $user_id = $_SESSION['user_id'];
