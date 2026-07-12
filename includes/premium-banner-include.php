@@ -183,7 +183,7 @@ if ($isEmbed) {
                 </p>
                 <p class="premium-banner-reassurance">Free tools remain free forever.</p>
             </div>
-            <a href="/subscribe.php" class="premium-banner-cta" data-rb-event="premium_upsell_click" data-rb-param-location="premium_banner" data-rb-param-cta="trial">Try Premium Free for 7 Days</a>
+            <a href="/subscribe.php" class="premium-banner-cta" data-rb-event="premium_upsell_click" data-rb-param-location="premium_banner" data-rb-param-cta="trial">Try Premium for free for 7 days</a>
         </div>
     </div>
 </div>
