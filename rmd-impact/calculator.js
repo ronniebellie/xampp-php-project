@@ -369,6 +369,8 @@ function buildRMDSummary(results) {
         peakEffectiveTaxRate: Math.round(Math.max(...results.map(r => r.effectiveTaxRate)) * 10) / 10
     };
 }
+
+function formatCurrency(value) {
     return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
