@@ -10,6 +10,15 @@ $success = '';
 rb_auth_capture_trial_intent_from_request();
 $trialIntent = rb_auth_is_trial_intent();
 
+$prefillEmail = '';
+if (!empty($_SESSION['trial_signup_email'])) {
+    $prefillEmail = (string) $_SESSION['trial_signup_email'];
+    unset($_SESSION['trial_signup_email']);
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['email'])) {
+    $prefillEmail = (string) $_POST['email'];
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
     $password = $_POST['password'];
@@ -232,8 +241,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         <div class="logo">
             <?php if ($trialIntent): ?>
-            <h1>Create Your Free Account</h1>
-            <p>Next, pick monthly or annual billing and begin your 7-day free trial. You won't be charged until the trial ends.</p>
+            <h1>Start Your 7-Day Free Premium Trial</h1>
+            <p>Create your free account to continue. Next you'll pick a plan — your trial starts before any charge.</p>
             <?php else: ?>
             <h1>Create Your Account</h1>
             <p>Sign up for premium features</p>
@@ -262,7 +271,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             <div class="form-group">
                 <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" required>
+                <input type="email" id="email" name="email" required value="<?php echo htmlspecialchars($prefillEmail); ?>">
             </div>
             
             <div class="form-group">
@@ -280,7 +289,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
         
         <div class="footer-links">
-            Already have an account? <a href="login.php<?php echo rb_auth_intent_query(); ?>">Log in</a>
+            <?php if ($trialIntent): ?>
+            Already have an account? <a href="login.php<?php echo rb_auth_intent_query(); ?>">Log in here</a>
+            <?php else: ?>
+            Already have an account? <a href="login.php">Log in</a>
+            <?php endif; ?>
         </div>
     </div>
 </body>

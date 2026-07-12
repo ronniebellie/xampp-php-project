@@ -52,14 +52,23 @@ if (!function_exists('rb_auth_redirect_to_login')) {
 
         if ($intent === 'trial') {
             rb_auth_set_trial_intent();
+            header('Location: /auth/register.php?intent=trial');
+            exit;
         }
 
-        $login_url = '/auth/login.php';
-        if ($intent === 'trial') {
-            $login_url .= '?intent=trial';
+        header('Location: /auth/login.php');
+        exit;
+    }
+}
+
+if (!function_exists('rb_auth_redirect_to_trial_signup')) {
+    function rb_auth_redirect_to_trial_signup(?string $email = null): void
+    {
+        if ($email !== null && $email !== '') {
+            $_SESSION['trial_signup_email'] = $email;
         }
 
-        header('Location: ' . $login_url);
+        header('Location: /auth/register.php?intent=trial');
         exit;
     }
 }

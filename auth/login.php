@@ -40,9 +40,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $update_stmt->close();
 
                 rb_auth_redirect_after_auth();
+            } elseif ($trialIntent) {
+                $error = 'Incorrect password. Try again or use Forgot password below.';
             } else {
                 $error = 'Invalid email or password';
             }
+        } elseif ($trialIntent) {
+            rb_auth_redirect_to_trial_signup($email);
         } else {
             $error = 'Invalid email or password';
         }
@@ -174,6 +178,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 14px;
         }
 
+        .error-help {
+            margin: -12px 0 20px;
+            font-size: 14px;
+            color: #64748b;
+            text-align: center;
+        }
+
+        .error-help a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .error-help a:hover {
+            text-decoration: underline;
+        }
+
         .success {
             background: #d1fae5;
             color: #065f46;
@@ -260,20 +281,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         <div class="logo">
             <?php if ($trialIntent): ?>
-            <h1>Start Your 7-Day Free Premium Trial</h1>
-            <p>Log in to continue. You won't be charged until the trial ends.</p>
+            <h1>Log In to Continue</h1>
+            <p>Use your existing account email and password to continue to billing.</p>
             <?php else: ?>
             <h1>Welcome Back</h1>
             <p>Log in to access premium features</p>
             <?php endif; ?>
         </div>
-
-        <?php if ($trialIntent): ?>
-            <div class="trial-callout">
-                <strong>New here?</strong>
-                Create a free account, then pick monthly or annual billing on the next page. Your 7-day free trial starts first — you won't be charged until it ends. Cancel anytime.
-            </div>
-        <?php endif; ?>
         
         <?php if ($success): ?>
             <div class="success"><?php echo htmlspecialchars($success); ?></div>
@@ -306,7 +320,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="footer-links">
             <?php if ($trialIntent): ?>
             <a href="register.php<?php echo rb_auth_intent_query(); ?>">Sign up to start your trial</a>
-            <p class="footer-links-secondary">Already have an account? <a href="#login-form">Log in here</a>.</p>
             <?php else: ?>
             Don't have an account? <a href="register.php">Sign up</a>
             <?php endif; ?>
