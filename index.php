@@ -711,6 +711,12 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
         </section>
 
         <section class="card">
+          <h3>Social Security Survivor Impact Calculator</h3>
+          <p>Model both spouses together and see how survivor benefits change lifetime household income — and whether waiting for a bigger check actually pays off.</p>
+          <a class="btn" href="ss-survivor-impact/">Open</a>
+        </section>
+
+        <section class="card">
           <h3>Retirement Spending &amp; On-Track Checkup</h3>
           <p>Estimate a retirement budget from your current spending, factor in guaranteed income, and see whether your savings look on track using a simple withdrawal-rate rule of thumb.</p>
           <a class="btn" href="retirement-spending-checkup/">Open</a>
