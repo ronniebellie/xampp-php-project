@@ -13,6 +13,27 @@
     return spouse.startMonthly * Math.pow(1 + colaRate / 100, yearsReceiving);
   }
 
+  /** Deceased spouse benefit for survivor: COLA continues from amount at death. */
+  function survivorBenefitFromDeceased(spouse, deceasedAge, colaRate) {
+    if (deceasedAge < spouse.deathAge) {
+      return spouseMonthlyAtYear(spouse, deceasedAge, colaRate);
+    }
+    var atDeath = spouseMonthlyAtYear(spouse, spouse.deathAge, colaRate);
+    var yearsSinceDeath = deceasedAge - spouse.deathAge;
+    return atDeath * Math.pow(1 + colaRate / 100, yearsSinceDeath);
+  }
+
+  var PHASE_LABELS = {
+    both_alive: 'Both spouses living',
+    survivor_lower: 'Lower earner surviving',
+    survivor_higher: 'Higher earner surviving',
+    both_deceased: 'Both spouses deceased'
+  };
+
+  function formatHouseholdPhase(phase) {
+    return PHASE_LABELS[phase] || phase;
+  }
+
   function prepareSpouse(raw, isHigher) {
     var s = {
       birthYear: raw.birthYear,
@@ -47,18 +68,12 @@
       householdMonthly = monthlyH + monthlyL;
     } else if (!hAlive && lAlive) {
       phase = 'survivor_lower';
-      var deceasedH = spouseMonthlyAtYear(higher, Math.min(ageH, higher.deathAge), colaRate);
-      if (ageH > higher.deathAge) {
-        deceasedH = spouseMonthlyAtYear(higher, higher.deathAge, colaRate);
-      }
-      householdMonthly = Math.max(monthlyL, deceasedH);
+      var survivorFromH = survivorBenefitFromDeceased(higher, ageH, colaRate);
+      householdMonthly = Math.max(monthlyL, survivorFromH);
     } else {
       phase = 'survivor_higher';
-      var deceasedL = spouseMonthlyAtYear(lower, Math.min(ageL, lower.deathAge), colaRate);
-      if (ageL > lower.deathAge) {
-        deceasedL = spouseMonthlyAtYear(lower, lower.deathAge, colaRate);
-      }
-      householdMonthly = Math.max(monthlyH, deceasedL);
+      var survivorFromL = survivorBenefitFromDeceased(lower, ageL, colaRate);
+      householdMonthly = Math.max(monthlyH, survivorFromL);
     }
 
     return {
@@ -222,6 +237,8 @@
   global.RBSSHousehold = {
     simulateHouseholdSS: simulateHouseholdSS,
     compareStrategies: compareStrategies,
-    spouseMonthlyAtYear: spouseMonthlyAtYear
+    spouseMonthlyAtYear: spouseMonthlyAtYear,
+    survivorBenefitFromDeceased: survivorBenefitFromDeceased,
+    formatHouseholdPhase: formatHouseholdPhase
   };
 })(typeof window !== 'undefined' ? window : this);

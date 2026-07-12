@@ -30,6 +30,16 @@ function fmt0($n) {
     return '$' . number_format((float)$n, 0);
 }
 
+function fmtPhase($phase) {
+    $labels = [
+        'both_alive' => 'Both spouses living',
+        'survivor_lower' => 'Lower earner surviving',
+        'survivor_higher' => 'Higher earner surviving',
+        'both_deceased' => 'Both spouses deceased'
+    ];
+    return $labels[$phase] ?? $phase;
+}
+
 $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 $pdf->setPrintHeader(false);
 $pdf->setPrintFooter(false);
@@ -101,9 +111,10 @@ if (!empty($data['chartImage'])) {
             $pdf->SetFont('helvetica', 'B', 12);
             $pdf->Cell(0, 6, 'Household income over time', 0, 1);
             $pdf->Ln(2);
-            $pdf->Image($tempFile, 18, $pdf->GetY(), 174, 0, 'PNG');
+            $chartY = $pdf->GetY();
+            $chartH = $pdf->Image($tempFile, 18, $chartY, 174, 0, 'PNG');
             @unlink($tempFile);
-            $pdf->Ln(62);
+            $pdf->SetY($chartY + ($chartH ?: 55) + 12);
         }
     }
 }
@@ -132,7 +143,7 @@ if (!empty($yearly)) {
     $pdf->SetTextColor(0, 0, 0);
     $tbl = '<table border="1" cellpadding="3" style="font-size:7px;"><tr style="background:#2563eb;color:#fff;"><th>Year</th><th>H age</th><th>L age</th><th>Phase</th><th>Household/mo</th><th>Cumulative</th></tr>';
     foreach ($yearly as $row) {
-        $tbl .= '<tr><td>' . ($row['calendarYear'] ?? '') . '</td><td>' . ($row['higherAge'] ?? '') . '</td><td>' . ($row['lowerAge'] ?? '') . '</td><td>' . htmlspecialchars($row['phase'] ?? '') . '</td><td>' . number_format($row['householdMonthly'] ?? 0, 0) . '</td><td>' . number_format($row['cumulativeHousehold'] ?? 0, 0) . '</td></tr>';
+        $tbl .= '<tr><td>' . ($row['calendarYear'] ?? '') . '</td><td>' . ($row['higherAge'] ?? '') . '</td><td>' . ($row['lowerAge'] ?? '') . '</td><td>' . htmlspecialchars(fmtPhase($row['phase'] ?? '')) . '</td><td>' . fmt0($row['householdMonthly'] ?? 0) . '</td><td>' . fmt0($row['cumulativeHousehold'] ?? 0) . '</td></tr>';
     }
     $tbl .= '</table>';
     $pdf->writeHTML($tbl, true, false, true, false, '');

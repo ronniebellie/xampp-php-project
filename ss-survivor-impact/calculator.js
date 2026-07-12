@@ -442,13 +442,14 @@ function createHouseholdChart(yearly) {
         window.householdChart.destroy();
     }
 
-    var step = Math.max(1, Math.floor(yearly.length / 25));
+    var maxLabels = 12;
+    var step = Math.max(1, Math.ceil(yearly.length / maxLabels));
     var sampled = yearly.filter(function (_, i) { return i % step === 0; });
 
     window.householdChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: sampled.map(function (y) { return 'H' + y.higherAge + ' / L' + y.lowerAge; }),
+            labels: sampled.map(function (y) { return String(y.calendarYear); }),
             datasets: [{
                 label: 'Household monthly SS',
                 data: sampled.map(function (y) { return y.householdMonthly; }),
@@ -472,7 +473,10 @@ function createHouseholdChart(yearly) {
                 }
             },
             scales: {
-                x: { title: { display: true, text: 'Higher / Lower age (sampled years)' } },
+                x: {
+                    title: { display: true, text: 'Calendar year' },
+                    ticks: { maxRotation: 45, minRotation: 0, autoSkip: true, maxTicksLimit: maxLabels }
+                },
                 y: {
                     title: { display: true, text: 'Household monthly income' },
                     ticks: { callback: function (v) { return formatCurrency(v); } }

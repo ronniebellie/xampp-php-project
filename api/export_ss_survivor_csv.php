@@ -21,6 +21,20 @@ if (!$data || empty($data['yearly'])) {
 
 $yearly = $data['yearly'];
 
+function fmtPhaseCsv($phase) {
+    $labels = [
+        'both_alive' => 'Both spouses living',
+        'survivor_lower' => 'Lower earner surviving',
+        'survivor_higher' => 'Higher earner surviving',
+        'both_deceased' => 'Both spouses deceased'
+    ];
+    return $labels[$phase] ?? $phase;
+}
+
+function fmtMoneyCsv($n) {
+    return '$' . number_format((float)$n, 0);
+}
+
 ob_end_clean();
 header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename="SS_Survivor_Impact_' . date('Y-m-d') . '.csv"');
@@ -45,12 +59,12 @@ foreach ($yearly as $row) {
         $row['calendarYear'] ?? '',
         $row['higherAge'] ?? '',
         $row['lowerAge'] ?? '',
-        $row['phase'] ?? '',
-        isset($row['monthlyHigher']) ? number_format((float)$row['monthlyHigher'], 2, '.', '') : '',
-        isset($row['monthlyLower']) ? number_format((float)$row['monthlyLower'], 2, '.', '') : '',
-        isset($row['householdMonthly']) ? number_format((float)$row['householdMonthly'], 2, '.', '') : '',
-        isset($row['annualHousehold']) ? number_format((float)$row['annualHousehold'], 2, '.', '') : '',
-        isset($row['cumulativeHousehold']) ? number_format((float)$row['cumulativeHousehold'], 2, '.', '') : ''
+        fmtPhaseCsv($row['phase'] ?? ''),
+        isset($row['monthlyHigher']) ? fmtMoneyCsv($row['monthlyHigher']) : '',
+        isset($row['monthlyLower']) ? fmtMoneyCsv($row['monthlyLower']) : '',
+        isset($row['householdMonthly']) ? fmtMoneyCsv($row['householdMonthly']) : '',
+        isset($row['annualHousehold']) ? fmtMoneyCsv($row['annualHousehold']) : '',
+        isset($row['cumulativeHousehold']) ? fmtMoneyCsv($row['cumulativeHousehold']) : ''
     ]);
 }
 
