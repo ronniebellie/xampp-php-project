@@ -32,6 +32,7 @@ $isPremium = has_premium_access();
         <div class="info-box-blue" style="margin-bottom: 30px;">
             <h2>Understanding Social Security Claiming Decisions</h2>
             <p>You can claim Social Security retirement benefits as early as age 62 or as late as age 70. Claiming early means smaller monthly checks but more total payments. Claiming later means larger monthly checks but fewer total payments. This calculator helps you understand the trade-offs and find the "break-even" age where total lifetime benefits become equal.</p>
+            <p style="margin-top: 12px;"><strong>Married?</strong> Individual break-even is not the whole story. When one spouse dies, the survivor keeps only the higher benefit. Model both records together in the <a href="../ss-survivor-impact/">Social Security Survivor Impact Calculator</a>.</p>
         </div>
 
 <?php if ($isPremium): ?>
