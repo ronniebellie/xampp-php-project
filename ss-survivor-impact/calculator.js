@@ -8,7 +8,7 @@ const SSI_API_BASE = (function () {
 })();
 
 const PRESETS = {
-    article: {
+    earlyDeathDelayLost: {
         higherBirthYear: 1958,
         higherPIA: 3890,
         higherClaimAge: 68,
@@ -28,12 +28,12 @@ const PRESETS = {
         higherPIA: 3890,
         higherClaimAge: 70,
         higherSex: 'male',
-        lowerBirthYear: 1960,
+        lowerBirthYear: 1958,
         lowerPIA: 2480,
-        lowerClaimAge: 67,
+        lowerClaimAge: 62,
         lowerSex: 'female',
         overrideLongevity: false,
-        lowerEarlyCompareAge: 65,
+        lowerEarlyCompareAge: 67,
         colaRate: 2.8
     },
     longLife: {
@@ -74,6 +74,26 @@ function formatCurrency(amount) {
     return RBFinance.formatCurrency(amount);
 }
 
+function syncFraHints() {
+    ['higher', 'lower'].forEach(function (which) {
+        var birthYear = parseInt(document.getElementById(which + 'BirthYear').value, 10);
+        var fra = RBFinance.getFRA(birthYear);
+        var hint = document.getElementById(which + 'FraHint');
+        if (hint) {
+            hint.textContent = 'FRA: ' + fra.years + (fra.months > 0 ? ' + ' + fra.months + ' mo' : '') +
+                ' (age ' + RBFinance.fraAgeFromBirthYear(birthYear).toFixed(1).replace(/\.0$/, '') + ')';
+        }
+    });
+    syncLowerEarlyCompareFromFra();
+}
+
+function syncLowerEarlyCompareFromFra() {
+    var lowerBirthYear = parseInt(document.getElementById('lowerBirthYear').value, 10);
+    var compareEl = document.getElementById('lowerEarlyCompareAge');
+    if (!compareEl || compareEl.dataset.userEdited === 'true') return;
+    compareEl.value = Math.round(RBFinance.fraAgeFromBirthYear(lowerBirthYear));
+}
+
 function syncCurrentAgeFromBirthYear(which) {
     if (!ageSyncedFromBirthYear[which]) return;
     var birthYearEl = document.getElementById(which + 'BirthYear');
@@ -81,6 +101,53 @@ function syncCurrentAgeFromBirthYear(which) {
     if (birthYearEl && ageEl) {
         ageEl.value = RBActuarial.ageFromBirthYear(parseInt(birthYearEl.value, 10));
     }
+}
+
+function resolveDeathAgesFromData(data) {
+    var override = data.overrideLongevity === true || data.overrideLongevity === 'true' || data.overrideLongevity === 'on';
+    var higherAge = parseInt(data.higherCurrentAge, 10);
+    var lowerAge = parseInt(data.lowerCurrentAge, 10);
+    var higherSex = data.higherSex || 'male';
+    var lowerSex = data.lowerSex || 'female';
+
+    if (override) {
+        return {
+            higherDeathAge: parseInt(data.higherDeathAge, 10),
+            lowerDeathAge: parseInt(data.lowerDeathAge, 10),
+            source: 'custom'
+        };
+    }
+    return {
+        higherDeathAge: RBActuarial.getActuarialDeathAge(higherSex, higherAge),
+        lowerDeathAge: RBActuarial.getActuarialDeathAge(lowerSex, lowerAge),
+        source: 'actuarial'
+    };
+}
+
+function buildOptsFromSavedData(data) {
+    var deaths = resolveDeathAgesFromData(data);
+    return {
+        higherEarner: {
+            birthYear: parseInt(data.higherBirthYear, 10),
+            pia: parseFloat(data.higherPIA),
+            claimAge: parseInt(data.higherClaimAge, 10),
+            deathAge: deaths.higherDeathAge,
+            sex: data.higherSex || 'male',
+            currentAge: parseInt(data.higherCurrentAge, 10)
+        },
+        lowerEarner: {
+            birthYear: parseInt(data.lowerBirthYear, 10),
+            pia: parseFloat(data.lowerPIA),
+            claimAge: parseInt(data.lowerClaimAge, 10),
+            deathAge: deaths.lowerDeathAge,
+            sex: data.lowerSex || 'female',
+            currentAge: parseInt(data.lowerCurrentAge, 10)
+        },
+        colaRate: parseFloat(data.colaRate) || 0,
+        discountRate: parseFloat(data.discountRate) || 0,
+        lowerEarlyCompareAge: parseInt(data.lowerEarlyCompareAge, 10),
+        longevitySource: deaths.source
+    };
 }
 
 function resolveDeathAges() {
@@ -172,6 +239,7 @@ function applyPreset(name) {
     });
     syncCurrentAgeFromBirthYear('higher');
     syncCurrentAgeFromBirthYear('lower');
+    syncFraHints();
     toggleOverridePanel();
     updateLongevityHints();
     document.getElementById('survivorForm').dispatchEvent(new Event('submit', { cancelable: true }));
@@ -348,6 +416,7 @@ function buildStrategyComparison(baseOpts) {
     });
 
     document.getElementById('strategyBody').innerHTML = rows;
+    return strategies;
 }
 
 function createHouseholdChart(yearly) {
@@ -402,7 +471,8 @@ function runAnalysis() {
     var result = RBSSHousehold.simulateHouseholdSS(opts);
     var d = result.delayAnalysis;
 
-    document.getElementById('heroSentence').innerHTML = buildHeroSentence(result, opts);
+    var heroHtml = buildHeroSentence(result, opts);
+    document.getElementById('heroSentence').innerHTML = heroHtml;
 
     var longevityLabel = opts.longevitySource === 'actuarial' ? 'Actuarial death ages' : 'Custom death ages';
     document.getElementById('summaryCards').innerHTML =
@@ -435,10 +505,15 @@ function runAnalysis() {
     interp += '</ul>';
     document.getElementById('interpretation').innerHTML = interp;
 
-    buildStrategyComparison(opts);
+    var strategies = buildStrategyComparison(opts);
     createHouseholdChart(result.yearly);
 
-    window.lastSurvivorImpactResult = { opts: opts, result: result };
+    window.lastSurvivorImpactResult = {
+        opts: opts,
+        result: result,
+        strategies: strategies,
+        heroText: heroHtml.replace(/<[^>]+>/g, '')
+    };
 
     document.getElementById('results').style.display = 'block';
     document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -514,6 +589,163 @@ function loadScenario() {
     });
 }
 
+function downloadPDF() {
+    var stored = window.lastSurvivorImpactResult;
+    if (!stored) {
+        alert('Please run the analysis first.');
+        return;
+    }
+    var chartCanvas = document.getElementById('householdChart');
+    var chartImage = chartCanvas && window.householdChart ? chartCanvas.toDataURL('image/png') : null;
+    var strategiesForPdf = (stored.strategies || []).map(function (s) {
+        return {
+            name: s.name,
+            result: {
+                higher: { claimAge: s.result.higher.claimAge },
+                lower: { claimAge: s.result.lower.claimAge },
+                totalHousehold: s.result.totalHousehold
+            }
+        };
+    });
+    var payload = {
+        opts: stored.opts,
+        result: stored.result,
+        heroText: stored.heroText,
+        strategies: strategiesForPdf,
+        yearly: stored.result.yearly,
+        chartImage: chartImage
+    };
+
+    fetch(SSI_API_BASE + 'api/generate_ss_survivor_pdf.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+    })
+    .then(function (r) {
+        if (!r.ok) {
+            return r.text().then(function (t) {
+                try { throw new Error(JSON.parse(t).error); } catch (e) { throw new Error(t || 'PDF failed'); }
+            });
+        }
+        var ct = r.headers.get('Content-Type') || '';
+        if (ct.indexOf('application/pdf') === -1) {
+            return r.text().then(function () { throw new Error('Server did not return a PDF. Log in as premium and try again.'); });
+        }
+        return r.blob();
+    })
+    .then(function (blob) {
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'SS_Survivor_Impact_' + new Date().toISOString().split('T')[0] + '.pdf';
+        a.click();
+        URL.revokeObjectURL(a.href);
+    })
+    .catch(function (e) { alert('Download PDF: ' + e.message); });
+}
+
+function downloadCSV() {
+    var stored = window.lastSurvivorImpactResult;
+    if (!stored || !stored.result.yearly) {
+        alert('Please run the analysis first.');
+        return;
+    }
+    fetch(SSI_API_BASE + 'api/export_ss_survivor_csv.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ yearly: stored.result.yearly })
+    })
+    .then(function (r) {
+        if (!r.ok) {
+            return r.text().then(function (t) {
+                try { throw new Error(JSON.parse(t).error); } catch (e) { throw new Error(t || 'Export failed'); }
+            });
+        }
+        return r.blob();
+    })
+    .then(function (blob) {
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'SS_Survivor_Impact_' + new Date().toISOString().split('T')[0] + '.csv';
+        a.click();
+        URL.revokeObjectURL(a.href);
+    })
+    .catch(function (e) { alert('Export CSV: ' + e.message); });
+}
+
+function compareScenarios() {
+    fetch(SSI_API_BASE + 'api/load_scenarios.php?calculator_type=ss-survivor-impact')
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+        if (!data.success || !data.scenarios || data.scenarios.length < 2) {
+            alert('You need at least 2 saved scenarios to compare. Save more first!');
+            return;
+        }
+        var message = 'Select TWO scenarios to compare:\n\n';
+        data.scenarios.forEach(function (s, i) {
+            message += (i + 1) + '. ' + s.name + '\n';
+        });
+        var choice = prompt(message + '\nEnter two numbers separated by comma (e.g., "1,2"):');
+        if (!choice) return;
+        var parts = choice.split(',').map(function (s) { return parseInt(s.trim(), 10) - 1; });
+        if (parts.length !== 2 || parts[0] < 0 || parts[0] >= data.scenarios.length ||
+            parts[1] < 0 || parts[1] >= data.scenarios.length || parts[0] === parts[1]) {
+            alert('Invalid selection. Enter two different numbers (e.g., "1,2").');
+            return;
+        }
+        var s1 = data.scenarios[parts[0]];
+        var s2 = data.scenarios[parts[1]];
+        var r1 = RBSSHousehold.simulateHouseholdSS(buildOptsFromSavedData(s1.data));
+        var r2 = RBSSHousehold.simulateHouseholdSS(buildOptsFromSavedData(s2.data));
+        showScenarioComparison(s1.name, s2.name, r1, r2);
+    })
+    .catch(function (err) { alert('Compare failed: ' + err.message); });
+}
+
+function showScenarioComparison(name1, name2, r1, r2) {
+    var resultsDiv = document.getElementById('results');
+    if (resultsDiv.style.display === 'none') resultsDiv.style.display = 'block';
+
+    var existing = document.getElementById('scenarioComparisonBanner');
+    if (existing) existing.remove();
+
+    var d1 = r1.delayAnalysis;
+    var d2 = r2.delayAnalysis;
+    var html = '<div id="scenarioComparisonBanner" style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 20px; margin-bottom: 30px;">' +
+        '<h2 style="margin-top: 0; color: #92400e;">Scenario Comparison</h2>' +
+        '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">' +
+        '<div><h3 style="color: #2563eb;">' + escapeHtml(name1) + '</h3>' +
+        '<div style="font-size: 0.9em; color: #666; line-height: 1.6;">' +
+        'Higher claims ' + r1.higher.claimAge + ' / Lower claims ' + r1.lower.claimAge + '<br>' +
+        'Death ages ' + r1.higher.deathAge + ' / ' + r1.lower.deathAge + '<br>' +
+        'Lifetime household SS: <strong>' + formatCurrency(r1.totalHousehold) + '</strong><br>' +
+        'After first death: ' + formatCurrency(r1.afterFirstDeath) + '<br>' +
+        'Lower delay net loss: ' + formatCurrency(d1.netLoss) +
+        '</div></div>' +
+        '<div><h3 style="color: #7c3aed;">' + escapeHtml(name2) + '</h3>' +
+        '<div style="font-size: 0.9em; color: #666; line-height: 1.6;">' +
+        'Higher claims ' + r2.higher.claimAge + ' / Lower claims ' + r2.lower.claimAge + '<br>' +
+        'Death ages ' + r2.higher.deathAge + ' / ' + r2.lower.deathAge + '<br>' +
+        'Lifetime household SS: <strong>' + formatCurrency(r2.totalHousehold) + '</strong><br>' +
+        'After first death: ' + formatCurrency(r2.afterFirstDeath) + '<br>' +
+        'Lower delay net loss: ' + formatCurrency(d2.netLoss) +
+        '</div></div></div>' +
+        '<p style="margin: 0; font-size: 14px; color: #78350f;"><strong>Difference:</strong> ' +
+        formatCurrency(Math.abs(r1.totalHousehold - r2.totalHousehold)) +
+        (r1.totalHousehold >= r2.totalHousehold ? ' more lifetime SS in scenario 1.' : ' more lifetime SS in scenario 2.') +
+        '</p></div>';
+
+    resultsDiv.insertAdjacentHTML('afterbegin', html);
+    resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function escapeHtml(s) {
+    var div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+}
+
 function explainResults() {
     var stored = window.lastSurvivorImpactResult;
     if (!stored) {
@@ -565,11 +797,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('higherBirthYear').addEventListener('change', function () {
         syncCurrentAgeFromBirthYear('higher');
+        syncFraHints();
         updateLongevityHints();
     });
     document.getElementById('lowerBirthYear').addEventListener('change', function () {
         syncCurrentAgeFromBirthYear('lower');
+        syncFraHints();
         updateLongevityHints();
+    });
+
+    document.getElementById('lowerEarlyCompareAge').addEventListener('input', function () {
+        this.dataset.userEdited = 'true';
     });
 
     document.getElementById('higherCurrentAge').addEventListener('input', function () {
@@ -597,13 +835,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     syncCurrentAgeFromBirthYear('higher');
     syncCurrentAgeFromBirthYear('lower');
+    syncFraHints();
     toggleOverridePanel();
     updateLongevityHints();
 
     var saveBtn = document.getElementById('saveScenarioBtn');
     var loadBtn = document.getElementById('loadScenarioBtn');
+    var compareBtn = document.getElementById('compareScenariosBtn');
+    var pdfBtn = document.getElementById('downloadPdfBtn');
+    var csvBtn = document.getElementById('downloadCsvBtn');
     var explainBtn = document.getElementById('explainResultsBtn');
     if (saveBtn) saveBtn.addEventListener('click', saveScenario);
     if (loadBtn) loadBtn.addEventListener('click', loadScenario);
+    if (compareBtn) compareBtn.addEventListener('click', compareScenarios);
+    if (pdfBtn) pdfBtn.addEventListener('click', downloadPDF);
+    if (csvBtn) csvBtn.addEventListener('click', downloadCSV);
     if (explainBtn) explainBtn.addEventListener('click', explainResults);
 });

@@ -92,7 +92,7 @@ $isPremium = has_premium_access();
 
         <div class="preset-bar" style="margin-top: 20px;">
             <span style="font-weight: 600; align-self: center; margin-right: 6px;">Load preset:</span>
-            <button type="button" class="preset-btn" data-preset="article">Article scenario (delay erased)</button>
+            <button type="button" class="preset-btn" data-preset="earlyDeathDelayLost" title="Lower earner waits until 70; higher earner dies at 71 — survivor benefit replaces her own check">Early death — delay didn't pay off</button>
             <button type="button" class="preset-btn" data-preset="actuarialTypical">Typical couple (actuarial)</button>
             <button type="button" class="preset-btn" data-preset="longLife">Both live to 95</button>
             <button type="button" class="preset-btn" data-preset="earlyDeath">Higher earner dies at 75</button>
@@ -102,11 +102,18 @@ $isPremium = has_premium_access();
         <div class="premium-features" style="background: #f0fff4; border: 2px solid #48bb78; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
             <h3 style="margin-top: 0; color: #22543d;">Premium Features</h3>
             <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
-                <button type="button" id="saveScenarioBtn" class="btn-primary" style="background: #48bb78;">Save Scenario</button>
-                <button type="button" id="loadScenarioBtn" class="btn-secondary">Load Scenario</button>
+                <button type="button" id="saveScenarioBtn" class="btn-primary" style="background: #48bb78;" title="Store your current inputs and results for later">Save Scenario</button>
+                <button type="button" id="loadScenarioBtn" class="btn-secondary" title="Open a previously saved scenario">Load Scenario</button>
+                <button type="button" id="compareScenariosBtn" class="btn-primary" style="background: #f59e0b; color: white;" title="Side-by-side comparison of two saved scenarios">Compare Scenarios</button>
+                <button type="button" id="downloadPdfBtn" class="btn-primary" style="background: #e53e3e; color: white;" title="Full report with key results, chart, and year-by-year table">Download PDF</button>
+                <button type="button" id="downloadCsvBtn" class="btn-primary" style="background: #3182ce; color: white;" title="Year-by-year household income for Excel">Export CSV</button>
                 <span id="saveStatus" style="color: #22543d; font-weight: 600;"></span>
             </div>
-            <p style="margin: 12px 0 0 0; font-size: 13px; color: #4a5568;">Save and recall scenarios. Use <strong>Explain my results</strong> below for AI plain-language analysis.</p>
+            <p style="margin: 12px 0 0 0; font-size: 13px; color: #4a5568; line-height: 1.5;">
+                <strong>Save</strong> / <strong>Load</strong> — Store and recall scenarios. <strong>Compare</strong> — See two scenarios side-by-side.
+                <strong>PDF</strong> — Full report with chart and strategy comparison. <strong>CSV</strong> — Spreadsheet data.
+                <strong>Explain</strong> — AI plain-language analysis (below, after you run the analysis).
+            </p>
         </div>
 <?php endif; ?>
 
@@ -125,10 +132,11 @@ $isPremium = has_premium_access();
                     <div>
                         <label for="higherPIA" class="field-label">Monthly benefit at FRA ($)</label>
                         <input type="number" id="higherPIA" min="0" step="any" value="3890" required style="width: 100%; padding: 8px;">
+                        <small id="higherFraHint" style="color: #666;">FRA: —</small>
                     </div>
                     <div>
                         <label for="higherClaimAge" class="field-label">Claiming age</label>
-                        <input type="number" id="higherClaimAge" min="62" max="70" value="68" required style="width: 100%; padding: 8px;">
+                        <input type="number" id="higherClaimAge" min="62" max="70" value="70" required style="width: 100%; padding: 8px;">
                     </div>
                 </div>
             </div>
@@ -147,10 +155,11 @@ $isPremium = has_premium_access();
                     <div>
                         <label for="lowerPIA" class="field-label">Monthly benefit at FRA ($)</label>
                         <input type="number" id="lowerPIA" min="0" step="any" value="2480" required style="width: 100%; padding: 8px;">
+                        <small id="lowerFraHint" style="color: #666;">FRA: —</small>
                     </div>
                     <div>
                         <label for="lowerClaimAge" class="field-label">Claiming age</label>
-                        <input type="number" id="lowerClaimAge" min="62" max="70" value="70" required style="width: 100%; padding: 8px;">
+                        <input type="number" id="lowerClaimAge" min="62" max="70" value="62" required style="width: 100%; padding: 8px;">
                     </div>
                 </div>
             </div>
@@ -220,8 +229,8 @@ $isPremium = has_premium_access();
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px;">
                 <div>
                     <label for="lowerEarlyCompareAge" class="field-label">Compare lower earner vs claiming at age</label>
-                    <input type="number" id="lowerEarlyCompareAge" min="62" max="70" value="65" style="width: 100%; padding: 8px;">
-                    <small style="color: #666;">Used to calculate income forgone by waiting</small>
+                    <input type="number" id="lowerEarlyCompareAge" min="62" max="70" value="67" style="width: 100%; padding: 8px;">
+                    <small style="color: #666;">Defaults to FRA; used to calculate income forgone by waiting</small>
                 </div>
                 <div>
                     <label for="colaRate" class="field-label">Annual COLA (%)</label>
@@ -294,7 +303,7 @@ $isPremium = has_premium_access();
         <?php if (!$isPremium): ?>
         <?php
         $premium_upsell_headline = 'Save & Explain Your Couples Strategy';
-        $premium_upsell_text = 'Upgrade to Premium to save scenarios and get AI-generated plain-language explanations of your household Social Security results.';
+        $premium_upsell_text = 'Upgrade to Premium to save scenarios, compare strategies, download PDF reports, export CSV data, and get AI-generated plain-language explanations.';
         include(__DIR__ . '/../includes/premium-upsell-banner.php');
         ?>
         <?php endif; ?>
