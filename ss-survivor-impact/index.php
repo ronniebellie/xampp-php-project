@@ -291,6 +291,7 @@ $isPremium = has_premium_access();
                         <tbody id="strategyBody"></tbody>
                     </table>
                 </div>
+                <div id="strategyInsight" class="info-box info-box-blue" style="display: none; margin-top: 16px; font-size: 14px; line-height: 1.6;"></div>
             </div>
 
             <?php if ($isPremium): ?>

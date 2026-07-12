@@ -94,7 +94,7 @@ $html .= '<tr style="background:#eff6ff;"><td><b>After first death</b></td><td>'
 $html .= '<tr><td><b>Higher earner monthly (at claim)</b></td><td>' . fmt0($h['startMonthly'] ?? 0) . '</td></tr>';
 $html .= '<tr style="background:#eff6ff;"><td><b>Lower earner monthly (at claim)</b></td><td>' . fmt0($l['startMonthly'] ?? 0) . '</td></tr>';
 $html .= '<tr><td><b>Survivor floor at higher earner death</b></td><td>' . fmt0($d['higherAtDeath'] ?? 0) . '/mo</td></tr>';
-$html .= '<tr style="background:#eff6ff;"><td><b>Lower earner income forgone by waiting</b></td><td>' . fmt0($d['forgone'] ?? 0) . '</td></tr>';
+$html .= '<tr style="background:#eff6ff;"><td><b>Lower earner benefits delayed by waiting</b></td><td>' . fmt0($d['forgone'] ?? 0) . '</td></tr>';
 $html .= '<tr><td><b>Delay premium recovered before survivor switch</b></td><td>' . fmt0($d['recovered'] ?? 0) . '</td></tr>';
 $html .= '<tr style="background:#eff6ff;"><td><b>Net loss on lower earner own record</b></td><td>' . fmt0($d['netLoss'] ?? 0) . '</td></tr>';
 $html .= '</table>';
@@ -132,6 +132,12 @@ if (!empty($strategies)) {
     }
     $stHtml .= '</table>';
     $pdf->writeHTML($stHtml, true, false, true, false, '');
+    $insight = trim($data['strategyInsight'] ?? '');
+    if ($insight !== '') {
+        $pdf->Ln(3);
+        $pdf->SetFont('helvetica', '', 9);
+        $pdf->MultiCell(0, 5, $insight, 0, 'L');
+    }
 }
 
 $yearly = $data['yearly'] ?? [];

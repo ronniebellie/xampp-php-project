@@ -317,13 +317,17 @@ function buildHeroSentence(result, opts) {
         return 'The lower earner claims at FRA (' + d.earlyCompareAge + '), so there is no extra wait on their own record to analyze. The key question is whether the higher earner\'s delay to age ' + higher.claimAge + ' raises the survivor floor to <strong>' + formatCurrency(d.higherAtDeath) + '/month</strong> — income that may last for the longer-lived spouse.';
     }
 
-    var html = 'The lower earner gave up approximately <strong>' + formatCurrency(d.forgone) +
-        '</strong> by waiting until age ' + lower.claimAge + ' instead of claiming at age ' + d.earlyCompareAge + '. ';
+    var delayYears = lower.claimAge - d.earlyCompareAge;
+    var delayPhrase = delayYears > 1
+        ? 'during the ' + delayYears + '-year delay before claiming at age ' + lower.claimAge + ' instead of age ' + d.earlyCompareAge
+        : 'by waiting until age ' + lower.claimAge + ' instead of claiming at age ' + d.earlyCompareAge;
+    var html = 'The lower earner delayed receiving approximately <strong>' + formatCurrency(d.forgone) +
+        '</strong> in benefits ' + delayPhrase + '. ';
 
     if (firstWho === 'higher' && d.higherAtDeath > lower.startMonthly) {
         html += 'Because survivor benefits replaced their own benefit when the higher earner died at age ' + higher.deathAge + ', ';
         if (d.recovered > 0 && d.netLoss > 0) {
-            html += 'only <strong>' + formatCurrency(d.recovered) + '</strong> of that delay premium was recovered before the switch — a net loss of <strong>' + formatCurrency(d.netLoss) + '</strong> on their own record.';
+            html += 'only <strong>' + formatCurrency(d.recovered) + '</strong> of that delay was recovered before the switch — a net loss of <strong>' + formatCurrency(d.netLoss) + '</strong> on their own record.';
         } else if (d.netLoss <= 0 && d.recovered > 0) {
             html += 'the delay recovered <strong>' + formatCurrency(d.recovered) + '</strong> in extra payments before the switch — roughly breaking even on the wait.';
         } else {
@@ -402,7 +406,36 @@ function buildTimeline(result) {
     return html;
 }
 
-function buildStrategyComparison(baseOpts) {
+function dedupeStrategies(strategies) {
+    var seen = {};
+    return strategies.filter(function (s) {
+        var key = s.result.higher.claimAge + ':' + s.result.lower.claimAge;
+        if (seen[key]) return false;
+        seen[key] = true;
+        return true;
+    });
+}
+
+function buildStrategyInsight(strategies, result) {
+    if (!strategies.length || result.firstDeathWho !== 'higher') return '';
+
+    var best = strategies.reduce(function (a, b) {
+        return a.result.totalHousehold >= b.result.totalHousehold ? a : b;
+    });
+    var couplesRec = strategies.find(function (s) { return s.name === 'Lower early, higher at 70'; });
+
+    var html = '<strong>Why rankings differ:</strong> Because the higher earner\'s delayed benefit becomes the survivor benefit, delaying the higher earner usually adds more to lifetime household income than delaying the lower earner — whose own benefit may be replaced when the higher earner dies first.';
+
+    if (best.name === 'Lower early, higher at 70') {
+        html += ' Here, <em>Lower early, higher at 70</em> leads the comparison for that reason.';
+    } else if (couplesRec && couplesRec.result.totalHousehold >= best.result.totalHousehold - 1) {
+        html += ' <em>Lower early, higher at 70</em> remains among the strongest options here for the same reason.';
+    }
+
+    return html;
+}
+
+function buildStrategyComparison(baseOpts, result) {
     var fraHigher = Math.round(RBFinance.fraAgeFromBirthYear(baseOpts.higherEarner.birthYear));
     var fraLower = Math.round(RBFinance.fraAgeFromBirthYear(baseOpts.lowerEarner.birthYear));
 
@@ -412,6 +445,8 @@ function buildStrategyComparison(baseOpts) {
         { name: 'Both delay to 70', description: 'Individual max strategy', higher: { claimAge: 70 }, lower: { claimAge: 70 } },
         { name: 'Both claim at FRA', description: 'Moderate approach', higher: { claimAge: fraHigher }, lower: { claimAge: fraLower } }
     ]);
+
+    strategies = dedupeStrategies(strategies);
 
     var bestTotal = -1;
     strategies.forEach(function (s) {
@@ -433,6 +468,14 @@ function buildStrategyComparison(baseOpts) {
     });
 
     document.getElementById('strategyBody').innerHTML = rows;
+
+    var insightEl = document.getElementById('strategyInsight');
+    if (insightEl) {
+        var insightHtml = buildStrategyInsight(strategies, result);
+        insightEl.innerHTML = insightHtml;
+        insightEl.style.display = insightHtml ? 'block' : 'none';
+    }
+
     return strategies;
 }
 
@@ -515,7 +558,7 @@ function runAnalysis() {
     }
 
     if (d.forgone > 0) {
-        interp += '<li><strong>Lower earner delay cost:</strong> Waiting from age ' + d.earlyCompareAge + ' to ' + result.lower.claimAge + ' skipped about ' + formatCurrency(d.forgone) + ' in own-record income.</li>';
+        interp += '<li><strong>Lower earner delay:</strong> Waiting from age ' + d.earlyCompareAge + ' to ' + result.lower.claimAge + ' delayed about ' + formatCurrency(d.forgone) + ' in own-record income — not a permanent loss until you see whether survivor benefits replace it.</li>';
     }
 
     if (d.higherDelayBonusMonthly > 0) {
@@ -526,14 +569,17 @@ function runAnalysis() {
     interp += '</ul>';
     document.getElementById('interpretation').innerHTML = interp;
 
-    var strategies = buildStrategyComparison(opts);
+    var strategies = buildStrategyComparison(opts, result);
     createHouseholdChart(result.yearly);
+
+    var strategyInsight = buildStrategyInsight(strategies, result);
 
     window.lastSurvivorImpactResult = {
         opts: opts,
         result: result,
         strategies: strategies,
-        heroText: heroHtml.replace(/<[^>]+>/g, '')
+        heroText: heroHtml.replace(/<[^>]+>/g, ''),
+        strategyInsight: strategyInsight.replace(/<[^>]+>/g, '')
     };
 
     document.getElementById('results').style.display = 'block';
@@ -632,6 +678,7 @@ function downloadPDF() {
         opts: stored.opts,
         result: stored.result,
         heroText: stored.heroText,
+        strategyInsight: stored.strategyInsight || '',
         strategies: strategiesForPdf,
         yearly: stored.result.yearly,
         chartImage: chartImage
@@ -782,7 +829,7 @@ function explainResults() {
     summary += 'Lower earner: ' + opts.lowerEarner.sex + ', age ' + opts.lowerEarner.currentAge + ', born ' + r.lower.birthYear + ', PIA ' + formatCurrency(r.lower.pia) + ', claims at ' + r.lower.claimAge + ', dies at ' + r.lower.deathAge + '.\n\n';
     summary += 'Lifetime household SS: ' + formatCurrency(r.totalHousehold) + '. Before first death: ' + formatCurrency(r.beforeFirstDeath) + '. After: ' + formatCurrency(r.afterFirstDeath) + '.\n';
     summary += 'Survivor years approx: ' + Math.max(0, opts.lowerEarner.deathAge - opts.higherEarner.deathAge) + '.\n';
-    summary += 'Lower earner forgone by waiting: ' + formatCurrency(d.forgone) + '. Recovered before survivor switch: ' + formatCurrency(d.recovered) + '. Net loss on own record: ' + formatCurrency(d.netLoss) + '.\n';
+    summary += 'Lower earner delayed by waiting: ' + formatCurrency(d.forgone) + '. Recovered before survivor switch: ' + formatCurrency(d.recovered) + '. Net loss on own record: ' + formatCurrency(d.netLoss) + '.\n';
     summary += 'Survivor floor at higher earner death: ' + formatCurrency(d.higherAtDeath) + '/month.';
 
     var btn = document.getElementById('explainResultsBtn');
