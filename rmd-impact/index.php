@@ -103,6 +103,9 @@ $isPremium = has_premium_access();
                 </div>
             </div>
 
+            <?php $planYear = (int)date('Y'); $defaultStartYear = $planYear + 1; ?>
+            <input type="hidden" id="planStartYear" value="<?php echo $planYear; ?>">
+
             <div id="withdrawalFieldsGroup" style="display: none;">
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 15px;">
                     <div>
@@ -116,9 +119,6 @@ $isPremium = has_premium_access();
                         <small style="color: #666;">Leave at 100 to model ongoing withdrawals</small>
                     </div>
                 </div>
-
-                <?php $planYear = (int)date('Y'); $defaultStartYear = $planYear + 1; ?>
-                <input type="hidden" id="planStartYear" value="<?php echo $planYear; ?>">
 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 10px;">
                     <div>
@@ -338,7 +338,11 @@ $isPremium = has_premium_access();
 
     function toggleWithdrawalFields() {
         const enabled = document.getElementById('enableWithdrawals').value === 'yes';
-        document.getElementById('withdrawalFieldsGroup').style.display = enabled ? 'block' : 'none';
+        const group = document.getElementById('withdrawalFieldsGroup');
+        group.style.display = enabled ? 'block' : 'none';
+        group.querySelectorAll('input, select, textarea').forEach(function(el) {
+            el.disabled = !enabled;
+        });
         if (enabled) {
             toggleWithdrawalStartMode();
             toggleWithdrawalSource();
@@ -396,6 +400,9 @@ $isPremium = has_premium_access();
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+        if (typeof toggleWithdrawalFields === 'function') {
+            toggleWithdrawalFields();
+        }
         const startEl = document.getElementById('withdrawalStartAge');
         const currentAgeEl = document.getElementById('currentAge');
         const startYearEl = document.getElementById('withdrawalStartYear');

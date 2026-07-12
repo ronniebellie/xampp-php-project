@@ -104,6 +104,16 @@ function calendarYearForAge(currentAge, planStartYear, age) {
     return planStartYear + (age - currentAge);
 }
 
+/** True for boolean true, 'yes', or 1; false for false, 'no', 0, null, undefined. */
+function isTruthyFlag(value) {
+    return value === true || value === 'yes' || value === 1 || value === '1';
+}
+
+function isWithdrawalsEnabled(data) {
+    return isTruthyFlag(data && data.enableWithdrawals) &&
+        (parseFloat(data.withdrawalAmount) || 0) > 0;
+}
+
 /**
  * Resolve when withdrawals begin — either a specific age or a calendar month/year.
  */
@@ -143,7 +153,7 @@ function isWithdrawalActive(age, data, wc) {
 }
 
 function getProjectionStartAge(data) {
-    if (data.enableWithdrawals && (parseFloat(data.withdrawalAmount) || 0) > 0) {
+    if (isWithdrawalsEnabled(data)) {
         return Math.min(73, getWithdrawalConfig(data).startAge);
     }
     return 73;
@@ -154,7 +164,8 @@ function getProjectionStartAge(data) {
  * When withdrawals are disabled the projection behaves exactly as before.
  */
 function getWithdrawalConfig(data) {
-    const enabled = !!data.enableWithdrawals && (parseFloat(data.withdrawalAmount) || 0) > 0;
+    const enabled = isWithdrawalsEnabled(data);
+    const source = data.withdrawalSource || 'traditional';
     const pctT = data.pctTraditional != null ? parseFloat(data.pctTraditional) : 100;
     const pctR = data.pctRoth != null ? parseFloat(data.pctRoth) : 0;
     const pctX = data.pctTaxable != null ? parseFloat(data.pctTaxable) : 0;
@@ -169,10 +180,12 @@ function getWithdrawalConfig(data) {
         startLabel: resolved.startLabel,
         planStartYear: resolved.planStartYear,
         endAge: parseInt(data.withdrawalEndAge, 10) || 100,
-        inflate: !!data.withdrawalInflation,
+        inflate: isTruthyFlag(data.withdrawalInflation),
         inflationRate: parseFloat(data.withdrawalInflationRate) || 0,
-        source: data.withdrawalSource || 'traditional',
-        pct: { traditional: pctT, roth: pctR, taxable: pctX }
+        source: source,
+        pct: source === 'combination'
+            ? { traditional: pctT, roth: pctR, taxable: pctX }
+            : { traditional: 100, roth: 0, taxable: 0 }
     };
 }
 
@@ -306,7 +319,7 @@ function generateInterpretation(results, data) {
     let interpretation = '<h3>What This Means For You</h3><ul>';
 
     // Planned-withdrawal comparison: show how pre-73 withdrawals lower future RMDs
-    if (data.enableWithdrawals && (parseFloat(data.withdrawalAmount) || 0) > 0) {
+    if (isWithdrawalsEnabled(data)) {
         const baselineData = Object.assign({}, data, { enableWithdrawals: false });
         const baseline = calculateProjection(baselineData);
         const baseFirst = baseline.find(r => r.rmdAmount > 0) || zeroRow;
@@ -448,7 +461,7 @@ function displayResults(results, data) {
                         tension: 0.4
                     }
                 ];
-                if (data.enableWithdrawals && (parseFloat(data.withdrawalAmount) || 0) > 0) {
+                if (isWithdrawalsEnabled(data)) {
                     sets.push({
                         label: 'Total Withdrawals',
                         data: chartData.map(r => r.totalWithdrawal),
@@ -521,7 +534,7 @@ function displayResults(results, data) {
     let tableHTML = '';
 
     const wc = getWithdrawalConfig(data);
-    const wStartAge = (data.enableWithdrawals && (parseFloat(data.withdrawalAmount) || 0) > 0)
+    const wStartAge = isWithdrawalsEnabled(data)
         ? Math.max(data.currentAge, wc.startAge)
         : 73;
     const tableFromAge = Math.min(73, wStartAge);
@@ -595,17 +608,18 @@ function displayResults(results, data) {
 function readWithdrawalInputs() {
     const el = function(id) { return document.getElementById(id); };
     const enableEl = el('enableWithdrawals');
-    const enabled = enableEl ? enableEl.value === 'yes' : false;
+    const enabled = enableEl ? isTruthyFlag(enableEl.value) : false;
+    const planYearEl = el('planStartYear');
     return {
         enableWithdrawals: enabled,
-        withdrawalAmount: el('withdrawalAmount') ? (parseFloat(el('withdrawalAmount').value) || 0) : 0,
+        withdrawalAmount: enabled && el('withdrawalAmount') ? (parseFloat(el('withdrawalAmount').value) || 0) : 0,
         withdrawalStartMode: el('withdrawalStartMode') ? el('withdrawalStartMode').value : 'age',
         withdrawalStartAge: el('withdrawalStartAge') ? (parseInt(el('withdrawalStartAge').value, 10) || null) : null,
         withdrawalStartMonth: el('withdrawalStartMonth') ? (parseInt(el('withdrawalStartMonth').value, 10) || 1) : 1,
         withdrawalStartYear: el('withdrawalStartYear') ? (parseInt(el('withdrawalStartYear').value, 10) || null) : null,
-        planStartYear: el('planStartYear') ? (parseInt(el('planStartYear').value, 10) || new Date().getFullYear()) : new Date().getFullYear(),
+        planStartYear: planYearEl ? (parseInt(planYearEl.value, 10) || new Date().getFullYear()) : new Date().getFullYear(),
         withdrawalEndAge: el('withdrawalEndAge') ? (parseInt(el('withdrawalEndAge').value, 10) || 100) : 100,
-        withdrawalInflation: el('withdrawalInflation') ? el('withdrawalInflation').value === 'yes' : false,
+        withdrawalInflation: el('withdrawalInflation') ? isTruthyFlag(el('withdrawalInflation').value) : false,
         withdrawalInflationRate: el('withdrawalInflationRate') ? (parseFloat(el('withdrawalInflationRate').value) || 0) : 0,
         withdrawalSource: el('withdrawalSource') ? el('withdrawalSource').value : 'traditional',
         rothBalance: el('rothBalance') ? (parseFloat(el('rothBalance').value) || 0) : 0,
@@ -614,6 +628,53 @@ function readWithdrawalInputs() {
         pctRoth: el('pctRoth') ? (parseFloat(el('pctRoth').value) || 0) : 0,
         pctTaxable: el('pctTaxable') ? (parseFloat(el('pctTaxable').value) || 0) : 0
     };
+}
+
+function gatherRMDFormData() {
+    const spouseBeneficiary = document.getElementById('spouseBeneficiary').value === 'yes';
+    const spouseAge = spouseBeneficiary ? parseInt(document.getElementById('spouseAge').value, 10) : null;
+    const data = {
+        currentAge: parseInt(document.getElementById('currentAge').value, 10),
+        accountBalance: parseFloat(document.getElementById('accountBalance').value),
+        growthRate: parseFloat(document.getElementById('growthRate').value),
+        socialSecurity: parseFloat(document.getElementById('socialSecurity').value) || 0,
+        pension: parseFloat(document.getElementById('pension').value) || 0,
+        otherIncome: parseFloat(document.getElementById('otherIncome').value) || 0,
+        filingStatus: document.getElementById('filingStatus').value,
+        useStandardDeduction: document.getElementById('standardDeduction').value === 'yes',
+        isSpouseBeneficiary: spouseBeneficiary,
+        spouseAge: spouseAge
+    };
+    Object.assign(data, readWithdrawalInputs());
+    return data;
+}
+
+const RMD_FORM_COMPARE_KEYS = [
+    'currentAge', 'accountBalance', 'growthRate', 'socialSecurity', 'pension', 'otherIncome',
+    'filingStatus', 'useStandardDeduction', 'isSpouseBeneficiary', 'spouseAge',
+    'enableWithdrawals', 'withdrawalAmount', 'withdrawalStartMode', 'withdrawalStartAge',
+    'withdrawalStartMonth', 'withdrawalStartYear', 'planStartYear', 'withdrawalEndAge',
+    'withdrawalInflation', 'withdrawalInflationRate', 'withdrawalSource',
+    'rothBalance', 'taxableBalance', 'pctTraditional', 'pctRoth', 'pctTaxable'
+];
+
+function rmdFormMatchesLastCalculation(data) {
+    const last = window.lastRMDData;
+    if (!last || !window.lastRMDResult) return false;
+    for (let i = 0; i < RMD_FORM_COMPARE_KEYS.length; i++) {
+        const key = RMD_FORM_COMPARE_KEYS[i];
+        if (JSON.stringify(data[key]) !== JSON.stringify(last[key])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function getRMDCalculationResults(data) {
+    if (rmdFormMatchesLastCalculation(data)) {
+        return window.lastRMDResult;
+    }
+    return calculateProjection(data);
 }
 
 /**
@@ -659,22 +720,7 @@ function validateWithdrawalInputs(w, currentAge) {
 document.getElementById('rmdForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
-    const spouseBeneficiary = document.getElementById('spouseBeneficiary').value === 'yes';
-    const spouseAge = spouseBeneficiary ? parseInt(document.getElementById('spouseAge').value) : null;
-
-    const data = {
-        currentAge: parseInt(document.getElementById('currentAge').value),
-        accountBalance: parseFloat(document.getElementById('accountBalance').value),
-        growthRate: parseFloat(document.getElementById('growthRate').value),
-        socialSecurity: parseFloat(document.getElementById('socialSecurity').value) || 0,
-        pension: parseFloat(document.getElementById('pension').value) || 0,
-        otherIncome: parseFloat(document.getElementById('otherIncome').value) || 0,
-        filingStatus: document.getElementById('filingStatus').value,
-        useStandardDeduction: document.getElementById('standardDeduction').value === 'yes',
-        isSpouseBeneficiary: spouseBeneficiary,
-        spouseAge: spouseAge
-    };
-    Object.assign(data, readWithdrawalInputs());
+    const data = gatherRMDFormData();
 
     if (data.currentAge < 50 || data.currentAge > 100) {
         alert('Please enter a valid age between 50 and 100');
@@ -691,7 +737,7 @@ document.getElementById('rmdForm').addEventListener('submit', function(e) {
         return;
     }
 
-    if (spouseBeneficiary && (!spouseAge || spouseAge < 18 || spouseAge > 100)) {
+    if (data.isSpouseBeneficiary && (!data.spouseAge || data.spouseAge < 18 || data.spouseAge > 100)) {
         alert('Please enter a valid spouse age between 18 and 100');
         return;
     }
@@ -721,7 +767,7 @@ document.getElementById('rmdForm').addEventListener('submit', function(e) {
         if (data.spouseAge) {
             params.set('spouseAge', String(data.spouseAge));
         }
-        if (data.enableWithdrawals) {
+        if (isWithdrawalsEnabled(data)) {
             params.set('enableWithdrawals', 'yes');
             params.set('withdrawalAmount', String(data.withdrawalAmount));
             params.set('withdrawalStartMode', data.withdrawalStartMode || 'age');
@@ -952,6 +998,9 @@ function loadScenario() {
                     const input = document.getElementById(key);
                     if (input) input.value = scenario.data[key];
                 });
+                if (typeof toggleSpouseAge === 'function') toggleSpouseAge();
+                if (typeof toggleWithdrawalFields === 'function') toggleWithdrawalFields();
+                if (typeof toggleWithdrawalStartMode === 'function') toggleWithdrawalStartMode();
                 alert('Scenario loaded! Click Calculate to see results.');
             }
         }
@@ -971,7 +1020,7 @@ function scenarioToProjectionData(s) {
         useStandardDeduction: d.standardDeduction === 'yes',
         isSpouseBeneficiary: d.spouseBeneficiary === 'yes',
         spouseAge: d.spouseBeneficiary === 'yes' && d.spouseAge ? parseInt(d.spouseAge, 10) : null,
-        enableWithdrawals: d.enableWithdrawals === 'yes',
+        enableWithdrawals: isTruthyFlag(d.enableWithdrawals),
         withdrawalAmount: parseFloat(d.withdrawalAmount) || 0,
         withdrawalStartMode: d.withdrawalStartMode || 'age',
         withdrawalStartAge: d.withdrawalStartAge ? parseInt(d.withdrawalStartAge, 10) : null,
@@ -979,7 +1028,7 @@ function scenarioToProjectionData(s) {
         withdrawalStartYear: d.withdrawalStartYear ? parseInt(d.withdrawalStartYear, 10) : null,
         planStartYear: d.planStartYear ? parseInt(d.planStartYear, 10) : getPlanStartYear(),
         withdrawalEndAge: d.withdrawalEndAge ? parseInt(d.withdrawalEndAge, 10) : 100,
-        withdrawalInflation: d.withdrawalInflation === 'yes',
+        withdrawalInflation: isTruthyFlag(d.withdrawalInflation),
         withdrawalInflationRate: parseFloat(d.withdrawalInflationRate) || 0,
         withdrawalSource: d.withdrawalSource || 'traditional',
         rothBalance: parseFloat(d.rothBalance) || 0,
@@ -1255,7 +1304,7 @@ function explainResults() {
         if (data.isSpouseBeneficiary && data.spouseAge) {
             summary += 'Spouse is sole beneficiary, age ' + data.spouseAge + '. ';
         }
-        if (data.enableWithdrawals && (parseFloat(data.withdrawalAmount) || 0) > 0) {
+        if (isWithdrawalsEnabled(data)) {
             const wc = getWithdrawalConfig(data);
             summary += 'Planned annual withdrawals of ' + formatCurrency(data.withdrawalAmount) +
                 (data.withdrawalInflation ? ' (inflation-adjusted at ' + data.withdrawalInflationRate + '%)' : '') +
@@ -1317,20 +1366,7 @@ function downloadPDF() {
     const canvas = document.getElementById('rmdChart');
     const chartImage = canvas.toDataURL('image/png');
 
-    const data = {
-        currentAge: parseInt(document.getElementById('currentAge').value),
-        accountBalance: parseFloat(document.getElementById('accountBalance').value),
-        growthRate: parseFloat(document.getElementById('growthRate').value),
-        socialSecurity: parseFloat(document.getElementById('socialSecurity').value) || 0,
-        pension: parseFloat(document.getElementById('pension').value) || 0,
-        otherIncome: parseFloat(document.getElementById('otherIncome').value) || 0,
-        filingStatus: document.getElementById('filingStatus').value,
-        useStandardDeduction: document.getElementById('standardDeduction').value === 'yes',
-        isSpouseBeneficiary: document.getElementById('spouseBeneficiary').value === 'yes',
-        spouseAge: document.getElementById('spouseBeneficiary').value === 'yes' ? 
-            parseInt(document.getElementById('spouseAge').value) : null
-    };
-    Object.assign(data, readWithdrawalInputs());
+    const data = gatherRMDFormData();
 
     const summaryCards = document.querySelectorAll('.summary-value');
     const summary = {
@@ -1340,7 +1376,7 @@ function downloadPDF() {
         peakTaxBracket: parseInt(summaryCards[3].textContent.replace('%', ''))
     };
 
-    const results = calculateProjection(data);
+    const results = getRMDCalculationResults(data);
     const projStart = getProjectionStartAge(data);
     const projections = results.filter(r => r.age >= projStart);
 
@@ -1399,20 +1435,7 @@ function downloadCSV() {
     }
 
     // Gather form data (same as PDF)
-    const data = {
-        currentAge: parseInt(document.getElementById('currentAge').value),
-        accountBalance: parseFloat(document.getElementById('accountBalance').value),
-        growthRate: parseFloat(document.getElementById('growthRate').value),
-        socialSecurity: parseFloat(document.getElementById('socialSecurity').value) || 0,
-        pension: parseFloat(document.getElementById('pension').value) || 0,
-        otherIncome: parseFloat(document.getElementById('otherIncome').value) || 0,
-        filingStatus: document.getElementById('filingStatus').value,
-        useStandardDeduction: document.getElementById('standardDeduction').value === 'yes',
-        isSpouseBeneficiary: document.getElementById('spouseBeneficiary').value === 'yes',
-        spouseAge: document.getElementById('spouseBeneficiary').value === 'yes' ? 
-            parseInt(document.getElementById('spouseAge').value) : null
-    };
-    Object.assign(data, readWithdrawalInputs());
+    const data = gatherRMDFormData();
 
     const summary = {
         firstRMD: parseFloat(summaryCards[0].textContent.replace(/[$,]/g, '')),
@@ -1421,7 +1444,7 @@ function downloadCSV() {
         peakTaxBracket: parseInt(summaryCards[3].textContent.replace('%', ''))
     };
 
-    const results = calculateProjection(data);
+    const results = getRMDCalculationResults(data);
     const projStart = getProjectionStartAge(data);
     const projections = results.filter(r => r.age >= projStart);
 
@@ -1479,22 +1502,9 @@ function downloadCalendar() {
     }
 
     // Gather form data
-    const data = {
-        currentAge: parseInt(document.getElementById('currentAge').value),
-        accountBalance: parseFloat(document.getElementById('accountBalance').value),
-        growthRate: parseFloat(document.getElementById('growthRate').value),
-        socialSecurity: parseFloat(document.getElementById('socialSecurity').value) || 0,
-        pension: parseFloat(document.getElementById('pension').value) || 0,
-        otherIncome: parseFloat(document.getElementById('otherIncome').value) || 0,
-        filingStatus: document.getElementById('filingStatus').value,
-        useStandardDeduction: document.getElementById('standardDeduction').value === 'yes',
-        isSpouseBeneficiary: document.getElementById('spouseBeneficiary').value === 'yes',
-        spouseAge: document.getElementById('spouseBeneficiary').value === 'yes' ? 
-            parseInt(document.getElementById('spouseAge').value) : null
-    };
-    Object.assign(data, readWithdrawalInputs());
+    const data = gatherRMDFormData();
 
-    const results = calculateProjection(data);
+    const results = getRMDCalculationResults(data);
     const projStart = getProjectionStartAge(data);
     const projections = results.filter(r => r.age >= projStart);
 

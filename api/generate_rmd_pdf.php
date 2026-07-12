@@ -23,6 +23,15 @@ if (!$data) {
     die(json_encode(['error' => 'No data provided']));
 }
 
+function rmdWithdrawalsEnabled($data) {
+    if (!isset($data['enableWithdrawals'])) {
+        return false;
+    }
+    $flag = $data['enableWithdrawals'];
+    $enabled = ($flag === true || $flag === 1 || $flag === '1' || $flag === 'yes');
+    return $enabled && floatval($data['withdrawalAmount'] ?? 0) > 0;
+}
+
 $required = ['currentAge', 'accountBalance', 'growthRate', 'socialSecurity', 'pension', 'otherIncome', 'filingStatus', 'summary', 'projections'];
 foreach ($required as $key) {
     if (!isset($data[$key])) {
@@ -127,7 +136,7 @@ $html = '<table border="0" cellpadding="8" style="background-color: #f0f5ff;">
     <td>' . ucfirst($data['filingStatus']) . '</td>
 </tr>';
 
-if (!empty($data['enableWithdrawals']) && !empty($data['withdrawalAmount']) && floatval($data['withdrawalAmount']) > 0) {
+if (rmdWithdrawalsEnabled($data)) {
     $sourceLabels = [
         'traditional' => 'Traditional IRA / 401(k)',
         'roth' => 'Roth IRA / Roth 401(k)',
