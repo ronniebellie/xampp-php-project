@@ -93,7 +93,7 @@ $html .= '<tr><td><b>Before first death</b></td><td>' . fmt0($r['beforeFirstDeat
 $html .= '<tr style="background:#eff6ff;"><td><b>After first death</b></td><td>' . fmt0($r['afterFirstDeath'] ?? 0) . '</td></tr>';
 $html .= '<tr><td><b>Higher earner monthly (at claim)</b></td><td>' . fmt0($h['startMonthly'] ?? 0) . '</td></tr>';
 $html .= '<tr style="background:#eff6ff;"><td><b>Lower earner monthly (at claim)</b></td><td>' . fmt0($l['startMonthly'] ?? 0) . '</td></tr>';
-$html .= '<tr><td><b>Survivor floor at higher earner death</b></td><td>' . fmt0($d['higherAtDeath'] ?? 0) . '/mo</td></tr>';
+$html .= '<tr><td><b>Survivor benefit at first death</b></td><td>' . fmt0($d['higherAtDeath'] ?? 0) . '/mo</td></tr>';
 $html .= '<tr style="background:#eff6ff;"><td><b>Lower earner benefits delayed by waiting</b></td><td>' . fmt0($d['forgone'] ?? 0) . '</td></tr>';
 $html .= '<tr><td><b>Delay premium recovered before survivor switch</b></td><td>' . fmt0($d['recovered'] ?? 0) . '</td></tr>';
 $html .= '<tr style="background:#eff6ff;"><td><b>Net loss on lower earner own record</b></td><td>' . fmt0($d['netLoss'] ?? 0) . '</td></tr>';
@@ -120,6 +120,17 @@ if (!empty($data['chartImage'])) {
 }
 
 $strategies = $data['strategies'] ?? [];
+$recommendation = trim($data['recommendationText'] ?? '');
+if ($recommendation !== '') {
+    $pdf->SetFont('helvetica', 'B', 13);
+    $pdf->SetTextColor(5, 150, 105);
+    $pdf->Cell(0, 8, 'Recommended claiming strategy', 0, 1);
+    $pdf->SetTextColor(0, 0, 0);
+    $pdf->SetFont('helvetica', '', 9);
+    $pdf->MultiCell(0, 5, $recommendation, 0, 'L');
+    $pdf->Ln(4);
+}
+
 if (!empty($strategies)) {
     $pdf->SetFont('helvetica', 'B', 13);
     $pdf->SetTextColor(37, 99, 235);
@@ -139,6 +150,13 @@ if (!empty($strategies)) {
         $pdf->MultiCell(0, 5, $insight, 0, 'L');
     }
 }
+
+$pdf->Ln(4);
+$pdf->SetFont('helvetica', 'B', 10);
+$pdf->SetTextColor(80, 80, 80);
+$pdf->Cell(0, 6, 'Model assumptions', 0, 1);
+$pdf->SetFont('helvetica', '', 8);
+$pdf->MultiCell(0, 4, 'These comparisons assume both spouses receive the benefits shown until the first death, after which the survivor receives the larger benefit. Annual COLAs are applied throughout. Taxes, Medicare premiums, spousal benefits while both spouses are alive, the earnings test, and legislative changes are not modeled. Survivor benefits must be applied for separately.', 0, 'L');
 
 $yearly = $data['yearly'] ?? [];
 if (!empty($yearly)) {

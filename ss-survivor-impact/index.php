@@ -58,6 +58,9 @@ $isPremium = has_premium_access();
         .override-panel { margin-top: 16px; padding-top: 16px; border-top: 1px dashed #86efac; }
         .override-panel.hidden { display: none; }
         .longevity-badge { display: inline-block; background: #dcfce7; color: #166534; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; margin-left: 8px; }
+        .recommendation-callout { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 2px solid #10b981; border-radius: 12px; padding: 20px; margin: 24px 0; color: #065f46; }
+        .recommendation-callout h3 { margin: 0 0 12px; font-size: 17px; color: #047857; }
+        .recommendation-callout ul { margin: 0; padding-left: 20px; line-height: 1.7; }
     </style>
 </head>
 <body>
@@ -119,7 +122,7 @@ $isPremium = has_premium_access();
 
         <form id="survivorForm">
             <div class="spouse-section higher">
-                <h3>Higher earner (sets survivor floor)</h3>
+                <h3>Higher earner (benefit continues to survivor)</h3>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
                     <div>
                         <label for="higherBirthYear" class="field-label">Birth year</label>
@@ -274,6 +277,7 @@ $isPremium = has_premium_access();
             <div class="info-box info-box-blue" id="interpretation"></div>
 
             <div class="table-section">
+                <div id="recommendationCallout" class="recommendation-callout" style="display: none;"></div>
                 <h3>Compare claiming strategies</h3>
                 <p style="color: #666; font-size: 14px;">Same longevity assumptions — different claiming ages.</p>
                 <div class="table-wrapper">
@@ -300,6 +304,11 @@ $isPremium = has_premium_access();
                 <p style="margin: 12px 0 0 0; font-size: 15px; color: #166534;">Get AI-generated plain-language explanations of your specific results.</p>
             </div>
             <?php endif; ?>
+
+            <details class="ss-assumptions" style="margin: 24px 0; padding: 16px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+                <summary style="cursor: pointer; font-weight: 600; color: #334155;">Model assumptions</summary>
+                <p style="margin: 12px 0 0; font-size: 14px; line-height: 1.65; color: #475569;">These comparisons assume both spouses receive the benefits shown until the first death, after which the survivor receives the larger benefit. Annual COLAs are applied throughout. Taxes, Medicare premiums, spousal benefits while both spouses are alive, the earnings test, and legislative changes are not modeled. Survivor benefits must be applied for separately.</p>
+            </details>
 
             <?php
             $share_title = 'Social Security Survivor Impact Calculator';

@@ -277,7 +277,7 @@ function buildLongevityNote(opts, result) {
     if (result.firstDeathWho === 'higher' && gap > 3) {
         note += '<li><strong>Survivor years matter:</strong> The lower earner is modeled to outlive the higher earner by about ' +
             gap + ' years. Household income after the first death (' + formatCurrency(result.afterFirstDeath) +
-            ' total) depends heavily on the higher earner\'s benefit as the survivor floor — a key reason planners often want the higher earner to delay.</li>';
+            ' total) depends heavily on the higher earner\'s benefit as the survivor benefit at first death — a key reason planners often want the higher earner to delay.</li>';
     } else if (result.firstDeathWho === 'higher' && gap <= 3) {
         note += '<li><strong>Short survivor period:</strong> The lower earner outlives the higher earner by only ~' +
             gap + ' year(s) in this scenario — less time for an enlarged survivor benefit to compound in value.</li>';
@@ -300,7 +300,7 @@ function buildHeroSentence(result, opts) {
     // Lower earner claims before the comparison age (e.g. 62 vs FRA 67) — common couples strategy
     if (lower.claimAge < d.earlyCompareAge) {
         var earlyHtml = 'The lower earner claims at <strong>age ' + lower.claimAge + '</strong> — before FRA (' + d.earlyCompareAge + ') — for <strong>' + formatCurrency(lower.startMonthly) + '/month</strong> starting early. ';
-        earlyHtml += 'The higher earner waits until <strong>age ' + higher.claimAge + '</strong>, raising the survivor floor to <strong>' + formatCurrency(d.higherAtDeath) + '/month</strong>. ';
+        earlyHtml += 'The higher earner waits until <strong>age ' + higher.claimAge + '</strong>, raising the survivor benefit at first death to <strong>' + formatCurrency(d.higherAtDeath) + '/month</strong>. ';
         if (firstWho === 'higher' && d.higherAtDeath > lower.startMonthly) {
             earlyHtml += 'When the higher earner dies at age ' + higher.deathAge + ', the lower earner steps up from their own check to that larger survivor benefit of <strong>' + formatCurrency(d.higherAtDeath) + '/month</strong>';
             if (survivorYears > 0) {
@@ -314,7 +314,7 @@ function buildHeroSentence(result, opts) {
     }
 
     if (lower.claimAge === d.earlyCompareAge) {
-        return 'The lower earner claims at FRA (' + d.earlyCompareAge + '), so there is no extra wait on their own record to analyze. The key question is whether the higher earner\'s delay to age ' + higher.claimAge + ' raises the survivor floor to <strong>' + formatCurrency(d.higherAtDeath) + '/month</strong> — income that may last for the longer-lived spouse.';
+        return 'The lower earner claims at FRA (' + d.earlyCompareAge + '), so there is no extra wait on their own record to analyze. The key question is whether the higher earner\'s delay to age ' + higher.claimAge + ' raises the survivor benefit at first death to <strong>' + formatCurrency(d.higherAtDeath) + '/month</strong> — income that may last for the longer-lived spouse.';
     }
 
     var delayYears = lower.claimAge - d.earlyCompareAge;
@@ -416,6 +416,12 @@ function dedupeStrategies(strategies) {
     });
 }
 
+function formatClaimRecommendation(age) {
+    if (age >= 70) return 'Delay until age 70';
+    if (age <= 62) return 'Claim at age 62';
+    return 'Claim at age ' + age;
+}
+
 function buildStrategyInsight(strategies, result) {
     if (!strategies.length || result.firstDeathWho !== 'higher') return '';
 
@@ -424,14 +430,38 @@ function buildStrategyInsight(strategies, result) {
     });
     var couplesRec = strategies.find(function (s) { return s.name === 'Lower early, higher at 70'; });
 
-    var html = '<strong>Why rankings differ:</strong> Because the higher earner\'s delayed benefit becomes the survivor benefit, delaying the higher earner usually adds more to lifetime household income than delaying the lower earner — whose own benefit may be replaced when the higher earner dies first.';
+    var html = 'Because the higher earner\'s delayed benefit becomes the survivor benefit, delaying the higher earner often produces the highest lifetime household benefit. Delaying the lower earner is frequently less valuable because that benefit may later be replaced by the survivor benefit.';
 
     if (best.name === 'Lower early, higher at 70') {
-        html += ' Here, <em>Lower early, higher at 70</em> leads the comparison for that reason.';
+        html += ' In this scenario, <em>Lower early, higher at 70</em> leads the comparison.';
     } else if (couplesRec && couplesRec.result.totalHousehold >= best.result.totalHousehold - 1) {
-        html += ' <em>Lower early, higher at 70</em> remains among the strongest options here for the same reason.';
+        html += ' <em>Lower early, higher at 70</em> remains among the strongest options here.';
     }
 
+    return html;
+}
+
+function buildRecommendation(strategies) {
+    if (!strategies.length) return '';
+
+    var yourPlan = strategies.find(function (s) { return s.name === 'Your plan'; });
+    var best = strategies.reduce(function (a, b) {
+        return a.result.totalHousehold >= b.result.totalHousehold ? a : b;
+    });
+
+    var html = '<h3>Recommended claiming strategy for this scenario</h3><ul>';
+    html += '<li><strong>Higher earner:</strong> ' + formatClaimRecommendation(best.result.higher.claimAge) + '.</li>';
+    html += '<li><strong>Lower earner:</strong> ' + formatClaimRecommendation(best.result.lower.claimAge) + '.</li>';
+
+    if (yourPlan && best.name !== 'Your plan' && best.result.totalHousehold > yourPlan.result.totalHousehold + 1) {
+        html += '<li><strong>Estimated lifetime household advantage:</strong> ' +
+            formatCurrency(best.result.totalHousehold - yourPlan.result.totalHousehold) +
+            ' over your current strategy.</li>';
+    } else if (yourPlan && (best.name === 'Your plan' || best.result.totalHousehold <= yourPlan.result.totalHousehold + 1)) {
+        html += '<li><strong>Your current inputs</strong> match the strongest option in this comparison.</li>';
+    }
+
+    html += '</ul>';
     return html;
 }
 
@@ -468,6 +498,13 @@ function buildStrategyComparison(baseOpts, result) {
     });
 
     document.getElementById('strategyBody').innerHTML = rows;
+
+    var recEl = document.getElementById('recommendationCallout');
+    if (recEl) {
+        var recHtml = buildRecommendation(strategies);
+        recEl.innerHTML = recHtml;
+        recEl.style.display = recHtml ? 'block' : 'none';
+    }
 
     var insightEl = document.getElementById('strategyInsight');
     if (insightEl) {
@@ -544,7 +581,7 @@ function runAnalysis() {
         '<div class="summary-card"><div class="summary-label">Before first death</div><div class="summary-value">' + formatCurrency(result.beforeFirstDeath) + '</div></div>' +
         '<div class="summary-card"><div class="summary-label">After first death</div><div class="summary-value">' + formatCurrency(result.afterFirstDeath) + '</div></div>' +
         '<div class="summary-card"><div class="summary-label">' + longevityLabel + '</div><div class="summary-value">' + opts.higherEarner.deathAge + ' / ' + opts.lowerEarner.deathAge + '</div></div>' +
-        '<div class="summary-card"><div class="summary-label">Survivor floor at death</div><div class="summary-value">' + formatCurrency(d.higherAtDeath) + '</div></div>' +
+        '<div class="summary-card"><div class="summary-label">Survivor benefit at first death</div><div class="summary-value">' + formatCurrency(d.higherAtDeath) + '</div></div>' +
         '<div class="summary-card"><div class="summary-label">Survivor years (approx.)</div><div class="summary-value">' + Math.max(0, opts.lowerEarner.deathAge - opts.higherEarner.deathAge) + '</div></div>';
 
     document.getElementById('timelineVisual').innerHTML = buildTimeline(result);
@@ -562,7 +599,7 @@ function runAnalysis() {
     }
 
     if (d.higherDelayBonusMonthly > 0) {
-        interp += '<li><strong>Higher earner delay value:</strong> Delaying the higher earner added roughly ' + formatCurrency(d.higherDelayBonusMonthly) + '/month to the survivor floor compared with claiming at FRA — income that may support the longer-lived spouse for years.</li>';
+        interp += '<li><strong>Higher earner delay value:</strong> Delaying the higher earner added roughly ' + formatCurrency(d.higherDelayBonusMonthly) + '/month to the survivor benefit at first death compared with claiming at FRA — income that may support the longer-lived spouse for years.</li>';
     }
 
     interp += '<li><strong>Couples rule of thumb:</strong> In many marriages with unequal earnings, the higher earner should delay (survivor benefit for the longer-lived spouse), while the lower earner often benefits from claiming earlier.</li>';
@@ -573,13 +610,15 @@ function runAnalysis() {
     createHouseholdChart(result.yearly);
 
     var strategyInsight = buildStrategyInsight(strategies, result);
+    var recommendationText = buildRecommendation(strategies);
 
     window.lastSurvivorImpactResult = {
         opts: opts,
         result: result,
         strategies: strategies,
         heroText: heroHtml.replace(/<[^>]+>/g, ''),
-        strategyInsight: strategyInsight.replace(/<[^>]+>/g, '')
+        strategyInsight: strategyInsight.replace(/<[^>]+>/g, ''),
+        recommendationText: recommendationText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
     };
 
     document.getElementById('results').style.display = 'block';
@@ -679,6 +718,7 @@ function downloadPDF() {
         result: stored.result,
         heroText: stored.heroText,
         strategyInsight: stored.strategyInsight || '',
+        recommendationText: stored.recommendationText || '',
         strategies: strategiesForPdf,
         yearly: stored.result.yearly,
         chartImage: chartImage
@@ -830,7 +870,7 @@ function explainResults() {
     summary += 'Lifetime household SS: ' + formatCurrency(r.totalHousehold) + '. Before first death: ' + formatCurrency(r.beforeFirstDeath) + '. After: ' + formatCurrency(r.afterFirstDeath) + '.\n';
     summary += 'Survivor years approx: ' + Math.max(0, opts.lowerEarner.deathAge - opts.higherEarner.deathAge) + '.\n';
     summary += 'Lower earner delayed by waiting: ' + formatCurrency(d.forgone) + '. Recovered before survivor switch: ' + formatCurrency(d.recovered) + '. Net loss on own record: ' + formatCurrency(d.netLoss) + '.\n';
-    summary += 'Survivor floor at higher earner death: ' + formatCurrency(d.higherAtDeath) + '/month.';
+    summary += 'Survivor benefit at first death: ' + formatCurrency(d.higherAtDeath) + '/month.';
 
     var btn = document.getElementById('explainResultsBtn');
     if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
