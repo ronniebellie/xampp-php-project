@@ -216,6 +216,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .footer-links a:hover {
             text-decoration: underline;
         }
+
+        .footer-links-secondary {
+            margin-top: 12px;
+            font-size: 13px;
+            color: #64748b;
+        }
         
         .home-link {
             display: block;
@@ -277,7 +283,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="error"><?php echo htmlspecialchars($error); ?></div>
         <?php endif; ?>
         
-        <form method="POST" action="">
+        <form id="login-form" method="POST" action="">
             <div class="form-group">
                 <label for="email">Email Address</label>
                 <input type="email" id="email" name="email" required value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
@@ -299,7 +305,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         <div class="footer-links">
             <?php if ($trialIntent): ?>
-            Don't have an account? <a href="register.php<?php echo rb_auth_intent_query(); ?>">Sign up to start your trial</a>
+            <a href="register.php<?php echo rb_auth_intent_query(); ?>">Sign up to start your trial</a>
+            <p class="footer-links-secondary">Already have an account? <a href="#login-form">Log in here</a>.</p>
             <?php else: ?>
             Don't have an account? <a href="register.php">Sign up</a>
             <?php endif; ?>
