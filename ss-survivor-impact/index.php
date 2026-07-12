@@ -223,18 +223,25 @@ $isPremium = has_premium_access();
                     </div>
                     <p style="margin: 12px 0 0; font-size: 13px; color: #6b7280;">Use this for what-if scenarios (e.g., early death) or when you have a specific planning age from your advisor or family history.</p>
                 </div>
+                <div style="margin-top: 20px; padding-top: 16px; border-top: 1px dashed #86efac;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; align-items: start;">
+                        <div>
+                            <label for="colaRate" class="field-label">Annual Social Security COLA (%)</label>
+                            <input type="number" id="colaRate" min="0" max="10" step="any" value="2.8" style="width: 100%; padding: 8px;">
+                            <small style="color: #166534; display: block; margin-top: 6px; line-height: 1.5;">
+                                Applied to both spouses while receiving benefits. After one spouse dies, the survivor’s check continues to receive COLA — so a larger delayed benefit from the higher earner compounds over a long survivor period.
+                            </small>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <h3>Assumptions</h3>
+            <h3>Other assumptions</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px;">
                 <div>
                     <label for="lowerEarlyCompareAge" class="field-label">Delay comparison age (lower earner)</label>
                     <input type="number" id="lowerEarlyCompareAge" min="62" max="70" value="67" style="width: 100%; padding: 8px;">
                     <small style="color: #666;">Only used if the lower earner waits past this age — defaults to FRA</small>
-                </div>
-                <div>
-                    <label for="colaRate" class="field-label">Annual COLA (%)</label>
-                    <input type="number" id="colaRate" min="0" max="10" step="any" value="2.8" style="width: 100%; padding: 8px;">
                 </div>
                 <div>
                     <label for="discountRate" class="field-label">Discount rate (%) — optional</label>

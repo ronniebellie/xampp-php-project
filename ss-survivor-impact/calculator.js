@@ -302,7 +302,7 @@ function buildHeroSentence(result, opts) {
         var earlyHtml = 'The lower earner claims at <strong>age ' + lower.claimAge + '</strong> — before FRA (' + d.earlyCompareAge + ') — for <strong>' + formatCurrency(lower.startMonthly) + '/month</strong> starting early. ';
         earlyHtml += 'The higher earner waits until <strong>age ' + higher.claimAge + '</strong>, raising the survivor floor to <strong>' + formatCurrency(d.higherAtDeath) + '/month</strong>. ';
         if (firstWho === 'higher' && d.higherAtDeath > lower.startMonthly) {
-            earlyHtml += 'When the higher earner dies at age ' + higher.deathAge + ', the lower earner steps up from their own check to that larger survivor benefit';
+            earlyHtml += 'When the higher earner dies at age ' + higher.deathAge + ', the lower earner steps up from their own check to that larger survivor benefit of <strong>' + formatCurrency(d.higherAtDeath) + '/month</strong>';
             if (survivorYears > 0) {
                 earlyHtml += ' for about <strong>' + survivorYears + ' year' + (survivorYears === 1 ? '' : 's') + '</strong>';
             }
