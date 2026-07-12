@@ -33,6 +33,18 @@ $isPremium = has_premium_access();
         <div class="info-box-blue" style="margin-bottom: 30px;">
             <h2>Understanding RMDs</h2>
             <p>Required Minimum Distributions (RMDs) force you to withdraw a percentage of your tax-deferred retirement accounts starting at age 73. Many retirees also take planned withdrawals from their IRA or 401(k) long before RMDs begin to fund living expenses — this calculator lets you model those withdrawals and see how they affect your future RMDs and tax brackets. Once RMDs start, any traditional withdrawal you already take counts toward satisfying the RMD for that year.</p>
+            <details style="margin-top: 16px;">
+                <summary style="cursor: pointer; font-weight: 600; color: #334155;">How each projection year is calculated</summary>
+                <ol style="margin: 12px 0 0 0; padding-left: 20px; color: #475569; line-height: 1.65;">
+                    <li><strong>Start-of-year balance</strong> — Traditional IRA balance at the beginning of the age year.</li>
+                    <li><strong>Planned withdrawal</strong> — Your annual amount (optionally inflation-adjusted), split by source.</li>
+                    <li><strong>Required RMD</strong> — At age 73+, the IRS minimum on the <em>start-of-year</em> traditional balance.</li>
+                    <li><strong>Traditional IRA withdrawal</strong> — The greater of your planned traditional amount and the RMD (capped at the account balance). Planned traditional withdrawals count toward the RMD; only a shortfall is added on top.</li>
+                    <li><strong>Subtract withdrawals</strong> — Withdrawals reduce each account before growth is applied.</li>
+                    <li><strong>Apply growth</strong> — Remaining balances grow at your entered rate for the rest of the year. <strong>Withdrawals come first, then growth</strong> on what is left.</li>
+                    <li><strong>Tax estimate</strong> — Progressive 2026 federal brackets on income after the standard deduction. <strong>Marginal bracket</strong> is the rate on your last dollar of taxable income; <strong>effective rate</strong> is total estimated federal tax ÷ total income (a better measure of your overall tax burden).</li>
+                </ol>
+            </details>
         </div>
 
        
@@ -297,16 +309,20 @@ $isPremium = has_premium_access();
 
             <div class="table-section">
                 <h3>Year-by-Year Breakdown</h3>
+                <p style="color: #555; font-size: 0.92em; margin: 0 0 12px 0; line-height: 1.5;">Traditional IRA columns show how planned withdrawals interact with RMDs. <strong>Add'l vs RMD</strong> shows a <em>shortfall</em> when the IRS requires more than you planned, or <em>excess</em> when your plan exceeds the minimum. <strong>Total IRA Withdrawal</strong> is the actual amount taken from the traditional account.</p>
                 <div class="table-wrapper">
                     <table class="data-table">
                         <thead>
                             <tr>
                                 <th>Age</th>
-                                <th>Traditional Balance</th>
-                                <th>Withdrawals</th>
-                                <th>RMD Amount</th>
+                                <th>Trad. Balance</th>
+                                <th>Planned Withdrawal</th>
+                                <th>Required RMD</th>
+                                <th>Add'l vs RMD</th>
+                                <th>Total IRA Withdrawal</th>
                                 <th>Total Income</th>
-                                <th>Est. Tax Bracket</th>
+                                <th>Marginal Bracket</th>
+                                <th>Effective Federal Rate</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody"></tbody>

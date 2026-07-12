@@ -32,6 +32,18 @@ function rmdWithdrawalsEnabled($data) {
     return $enabled && floatval($data['withdrawalAmount'] ?? 0) > 0;
 }
 
+function formatRmdAdjustmentCell($row) {
+    $short = isset($row['rmdShortfall']) ? floatval($row['rmdShortfall']) : 0;
+    $excess = isset($row['excessOverRmd']) ? floatval($row['excessOverRmd']) : 0;
+    if ($short > 0) {
+        return '$' . number_format($short, 0) . ' (shortfall)';
+    }
+    if ($excess > 0) {
+        return '$' . number_format($excess, 0) . ' (excess)';
+    }
+    return '—';
+}
+
 $required = ['currentAge', 'accountBalance', 'growthRate', 'socialSecurity', 'pension', 'otherIncome', 'filingStatus', 'summary', 'projections'];
 foreach ($required as $key) {
     if (!isset($data[$key])) {
@@ -204,32 +216,40 @@ $pdf->SetTextColor(0, 0, 0);
 $pdf->Ln(2);
 
 // Summary cards in a grid
+$peakEffective = isset($data['summary']['peakEffectiveTaxRate']) ? floatval($data['summary']['peakEffectiveTaxRate']) : 0;
 $summaryHtml = '<table border="0" cellpadding="10">
 <tr>
-    <td width="50%" style="background-color: #f0f9ff; border: 2px solid #667eea; border-radius: 8px;">
+    <td width="33%" style="background-color: #f0f9ff; border: 2px solid #667eea; border-radius: 8px;">
         <div style="text-align: center;">
             <div style="font-size: 11px; color: #666; margin-bottom: 5px;">First RMD (Age 73)</div>
             <div style="font-size: 20px; font-weight: bold; color: #667eea;">$' . number_format($data['summary']['firstRMD'], 0) . '</div>
         </div>
     </td>
-    <td width="50%" style="background-color: #fef3f2; border: 2px solid #ef4444; border-radius: 8px;">
+    <td width="33%" style="background-color: #fef3f2; border: 2px solid #ef4444; border-radius: 8px;">
         <div style="text-align: center;">
             <div style="font-size: 11px; color: #666; margin-bottom: 5px;">RMD at Age 80</div>
             <div style="font-size: 20px; font-weight: bold; color: #ef4444;">$' . number_format($data['summary']['age80RMD'], 0) . '</div>
         </div>
     </td>
-</tr>
-<tr>
-    <td style="background-color: #fef7e6; border: 2px solid #f59e0b; border-radius: 8px;">
+    <td width="33%" style="background-color: #fef7e6; border: 2px solid #f59e0b; border-radius: 8px;">
         <div style="text-align: center;">
             <div style="font-size: 11px; color: #666; margin-bottom: 5px;">RMD at Age 90</div>
             <div style="font-size: 20px; font-weight: bold; color: #f59e0b;">$' . number_format($data['summary']['age90RMD'], 0) . '</div>
         </div>
     </td>
+</tr>
+<tr>
     <td style="background-color: #f0fdf4; border: 2px solid #10b981; border-radius: 8px;">
         <div style="text-align: center;">
-            <div style="font-size: 11px; color: #666; margin-bottom: 5px;">Peak Tax Bracket</div>
-            <div style="font-size: 20px; font-weight: bold; color: #10b981;">' . $data['summary']['peakTaxBracket'] . '%</div>
+            <div style="font-size: 11px; color: #666; margin-bottom: 5px;">Peak Marginal Bracket</div>
+            <div style="font-size: 20px; font-weight: bold; color: #10b981;">' . intval($data['summary']['peakTaxBracket']) . '%</div>
+        </div>
+    </td>
+    <td colspan="2" style="background-color: #eff6ff; border: 2px solid #3b82f6; border-radius: 8px;">
+        <div style="text-align: center;">
+            <div style="font-size: 11px; color: #666; margin-bottom: 5px;">Peak Effective Federal Rate</div>
+            <div style="font-size: 20px; font-weight: bold; color: #2563eb;">' . number_format($peakEffective, 1) . '%</div>
+            <div style="font-size: 9px; color: #64748b; margin-top: 4px;">Total estimated federal tax ÷ total income (not the rate on every dollar)</div>
         </div>
     </td>
 </tr>
@@ -286,52 +306,68 @@ if ($data['accountBalance'] <= 50000) {
 }
 
 if ($data['summary']['peakTaxBracket'] <= 12) {
-    $interpretationHtml .= '<p><b>You\'re likely in a favorable tax situation.</b> Your estimated tax bracket remains low even with RMDs.</p>';
+    $interpretationHtml .= '<p><b>You\'re likely in a favorable tax situation.</b> Your estimated marginal bracket remains low even with RMDs.</p>';
 } else if ($data['summary']['peakTaxBracket'] <= 22) {
     $interpretationHtml .= '<p><b>You\'re in a moderate tax bracket.</b> RMDs are adding to your tax bill, but you still have room for planning opportunities.</p>';
 } else {
-    $interpretationHtml .= '<p><b>RMDs may push you into higher tax brackets.</b> Consider strategies to reduce your tax-deferred balance before RMDs become mandatory.</p>';
+    $interpretationHtml .= '<p><b>RMDs may push you into higher marginal tax brackets.</b> Your peak marginal bracket is not the rate on all income — see the Effective Federal Rate column for your estimated average tax burden.</p>';
 }
+
+if ($peakEffective > 0) {
+    $interpretationHtml .= '<p><b>Peak effective federal rate:</b> ' . number_format($peakEffective, 1) . '% (estimated total federal tax divided by total income).</p>';
+}
+
+$interpretationHtml .= '<p style="font-size: 9px; color: #64748b;"><b>Calculation order each year:</b> start-of-year balance → planned &amp; required withdrawals (withdrawals before growth) → growth on remainder. Marginal bracket = rate on last dollar of taxable income; effective rate = total federal tax ÷ total income.</p>';
 
 $interpretationHtml .= '</div>';
 $pdf->writeHTML($interpretationHtml, true, false, true, false, '');
 
-// Add new page for table
-$pdf->AddPage();
+// Add new page for table (landscape for wider columns)
+$pdf->AddPage('L');
 
 // Year-by-Year Table
 $pdf->SetFont('helvetica', 'B', 16);
 $pdf->SetTextColor(102, 126, 234);
 $pdf->Cell(0, 8, 'Year-by-Year Projection', 0, 1);
 $pdf->SetTextColor(0, 0, 0);
-$pdf->Ln(3);
+$pdf->SetFont('helvetica', '', 8);
+$pdf->MultiCell(0, 4, 'Each year: start with the traditional balance, apply planned and required withdrawals (withdrawals before growth), then grow the remainder. Planned traditional withdrawals count toward RMDs; Add\'l vs RMD shows a shortfall when the IRS minimum exceeds your plan, or excess when your plan exceeds the minimum.', 0, 'L');
+$pdf->Ln(2);
 
-$tableHtml = '<table border="1" cellpadding="6" style="border-collapse: collapse;">
+$tableHtml = '<table border="1" cellpadding="4" style="border-collapse: collapse; font-size: 8px;">
 <thead>
 <tr style="background-color: #667eea; color: white; font-weight: bold; text-align: center;">
-<th width="10%">Age</th>
-<th width="18%">Trad. Balance</th>
-<th width="18%">Withdrawals</th>
-<th width="18%">RMD</th>
-<th width="18%">Total Income</th>
-<th width="18%">Tax Bracket</th>
+<th>Age</th>
+<th>Trad. Bal.</th>
+<th>Planned</th>
+<th>Req. RMD</th>
+<th>Add\'l vs RMD</th>
+<th>Total IRA</th>
+<th>Total Inc.</th>
+<th>Marg. %</th>
+<th>Eff. %</th>
 </tr>
 </thead>
 <tbody>';
 
 $rowColor = '#ffffff';
 foreach ($data['projections'] as $i => $row) {
-    // Alternate row colors
     $rowColor = ($i % 2 == 0) ? '#f9fafb' : '#ffffff';
-    $withdrawals = isset($row['totalWithdrawal']) ? floatval($row['totalWithdrawal']) : 0;
-    
+    $plannedTrad = isset($row['plannedTraditional']) ? floatval($row['plannedTraditional']) : 0;
+    $tradWd = isset($row['traditionalWithdrawal']) ? floatval($row['traditionalWithdrawal']) : 0;
+    $effective = isset($row['effectiveTaxRate']) ? floatval($row['effectiveTaxRate']) : 0;
+    $rmdDisplay = intval($row['age']) >= 73 ? '$' . number_format($row['rmdAmount'], 0) : '—';
+
     $tableHtml .= '<tr style="background-color: ' . $rowColor . ';">
     <td style="text-align: center;">' . $row['age'] . '</td>
     <td style="text-align: right;">$' . number_format($row['balance'], 0) . '</td>
-    <td style="text-align: right;">$' . number_format($withdrawals, 0) . '</td>
-    <td style="text-align: right;">$' . number_format($row['rmdAmount'], 0) . '</td>
+    <td style="text-align: right;">$' . number_format($plannedTrad, 0) . '</td>
+    <td style="text-align: right;">' . $rmdDisplay . '</td>
+    <td style="text-align: right;">' . htmlspecialchars(formatRmdAdjustmentCell($row)) . '</td>
+    <td style="text-align: right;">$' . number_format($tradWd, 0) . '</td>
     <td style="text-align: right;">$' . number_format($row['totalIncome'], 0) . '</td>
     <td style="text-align: center;">' . $row['taxBracket'] . '%</td>
+    <td style="text-align: center;">' . number_format($effective, 1) . '%</td>
     </tr>';
 }
 

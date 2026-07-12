@@ -90,6 +90,54 @@ function calculateTaxBracket(taxableIncome, filingStatus) {
     return 37;
 }
 
+/** Progressive federal income tax on taxable income (ordinary rates only). */
+function calculateFederalTax(taxableIncome, filingStatus) {
+    const brackets = taxBrackets2026[filingStatus];
+    if (!brackets || taxableIncome <= 0) return 0;
+    let tax = 0;
+    let prevMax = 0;
+    for (const bracket of brackets) {
+        const width = bracket.max - prevMax;
+        const inBracket = Math.min(Math.max(0, taxableIncome - prevMax), width);
+        tax += inBracket * bracket.rate;
+        prevMax = bracket.max;
+        if (taxableIncome <= bracket.max) break;
+    }
+    return tax;
+}
+
+function formatPercent(value, decimals) {
+    decimals = decimals != null ? decimals : 1;
+    return (Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals)).toFixed(decimals) + '%';
+}
+
+/** Planned traditional withdrawal vs RMD — shortfall or voluntary excess after age 73. */
+function computeRmdInteraction(plannedTraditional, rmdAmount, age) {
+    const planned = plannedTraditional || 0;
+    const rmd = rmdAmount || 0;
+    if (age < 73 || rmd <= 0) {
+        return { rmdShortfall: 0, excessOverRmd: 0 };
+    }
+    return {
+        rmdShortfall: Math.max(0, rmd - planned),
+        excessOverRmd: Math.max(0, planned - rmd)
+    };
+}
+
+function getCalculationMethodologyHtml() {
+    return '<div class="calc-methodology" style="margin-top: 20px; padding: 16px 18px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px;">' +
+        '<h4 style="margin: 0 0 10px 0; color: #334155;">How each projection year is calculated</h4>' +
+        '<ol style="margin: 0; padding-left: 20px; color: #475569; font-size: 0.95em; line-height: 1.6;">' +
+        '<li><strong>Start-of-year balance</strong> — Traditional IRA balance at the beginning of the age year (after all prior-year withdrawals and growth).</li>' +
+        '<li><strong>Planned withdrawal</strong> — Your entered annual amount (optionally inflation-adjusted), split across Traditional / Roth / Taxable per your source setting.</li>' +
+        '<li><strong>Required RMD</strong> — At age 73+, the IRS minimum on the <em>start-of-year</em> traditional balance (Uniform or Joint Life table).</li>' +
+        '<li><strong>Traditional IRA withdrawal</strong> — The greater of your planned traditional amount and the RMD (capped at the account balance). Any planned traditional withdrawal counts toward the RMD; only a shortfall is added on top.</li>' +
+        '<li><strong>Subtract withdrawals</strong> — Planned Roth and taxable withdrawals are taken from those balances; the traditional withdrawal reduces the IRA balance.</li>' +
+        '<li><strong>Apply growth</strong> — Each account\'s <em>remaining</em> balance grows at your entered rate for the rest of the year. Withdrawals happen before growth, not after.</li>' +
+        '<li><strong>Tax estimate</strong> — Total income includes traditional withdrawals, Social Security, pension, and other income (Roth withdrawals are tax-free). Federal tax uses progressive 2026 brackets on income after the standard deduction. Marginal bracket is the rate on the last dollar; effective rate is total federal tax ÷ total income.</li>' +
+        '</ol></div>';
+}
+
 const MONTH_NAMES = ['', 'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -267,7 +315,10 @@ function calculateProjection(data) {
         const totalIncome = tradWithdrawal + data.socialSecurity + data.pension + data.otherIncome;
         const deduction = data.useStandardDeduction ? standardDeductions2026[data.filingStatus] : 0;
         const taxableIncome = Math.max(0, totalIncome - deduction);
+        const federalTax = calculateFederalTax(taxableIncome, data.filingStatus);
         const taxBracket = calculateTaxBracket(taxableIncome, data.filingStatus);
+        const effectiveTaxRate = totalIncome > 0 ? (federalTax / totalIncome) * 100 : 0;
+        const rmdInteraction = computeRmdInteraction(split.traditional, rmdAmount, age);
 
         results.push({
             age,
@@ -277,13 +328,18 @@ function calculateProjection(data) {
             totalBalance: tradStart + rothStart + taxableStart,
             rmdAmount,
             plannedWithdrawal: planned,
+            plannedTraditional: split.traditional,
+            rmdShortfall: rmdInteraction.rmdShortfall,
+            excessOverRmd: rmdInteraction.excessOverRmd,
             traditionalWithdrawal: tradWithdrawal,
             rothWithdrawal,
             taxableWithdrawal,
             totalWithdrawal,
             totalIncome,
             taxableIncome,
-            taxBracket
+            federalTax,
+            taxBracket,
+            effectiveTaxRate
         });
 
         // Grow whatever remains in each account
@@ -301,7 +357,18 @@ function calculateProjection(data) {
     return results;
 }
 
-function formatCurrency(value) {
+function buildRMDSummary(results) {
+    const firstRMD = results.find(r => r.rmdAmount > 0) || { rmdAmount: 0 };
+    const age80Data = results.find(r => r.age === 80) || firstRMD;
+    const age90Data = results.find(r => r.age === 90) || age80Data;
+    return {
+        firstRMD: firstRMD.rmdAmount,
+        age80RMD: age80Data.rmdAmount,
+        age90RMD: age90Data.rmdAmount,
+        peakTaxBracket: Math.max(...results.map(r => r.taxBracket)),
+        peakEffectiveTaxRate: Math.round(Math.max(...results.map(r => r.effectiveTaxRate)) * 10) / 10
+    };
+}
     return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
@@ -364,11 +431,11 @@ function generateInterpretation(results, data) {
     }
 
     if (firstRMD.taxBracket <= 12) {
-        interpretation += '<li><strong>You\'re likely in a favorable tax situation.</strong> Your estimated tax bracket remains low even with RMDs.</li>';
+        interpretation += '<li><strong>You\'re likely in a favorable tax situation.</strong> Your estimated marginal bracket remains low even with RMDs.</li>';
     } else if (firstRMD.taxBracket <= 22) {
         interpretation += '<li><strong>You\'re in a moderate tax bracket.</strong> RMDs are adding to your tax bill, but you still have room for planning opportunities.</li>';
     } else {
-        interpretation += '<li><strong>RMDs may push you into higher tax brackets.</strong> Consider strategies to reduce your tax-deferred balance before RMDs become mandatory.</li>';
+        interpretation += '<li><strong>RMDs may push you into higher tax brackets.</strong> Your marginal bracket (rate on the last dollar) can be much higher than your effective rate (total tax ÷ total income). Review the Effective Federal Rate column for your true average burden.</li>';
     }
 
     if (age80Data && age80Data.balance > data.accountBalance * 1.2) {
@@ -384,7 +451,33 @@ function generateInterpretation(results, data) {
     }
 
     interpretation += '</ul>';
+    interpretation += getCalculationMethodologyHtml();
     return interpretation;
+}
+
+function formatRmdAdjustmentCell(r) {
+    if (r.rmdShortfall > 0) {
+        return formatCurrency(r.rmdShortfall) + ' <span style="color:#b45309;font-size:0.85em;">(shortfall)</span>';
+    }
+    if (r.excessOverRmd > 0) {
+        return formatCurrency(r.excessOverRmd) + ' <span style="color:#059669;font-size:0.85em;">(excess)</span>';
+    }
+    return '—';
+}
+
+function buildProjectionTableRow(r) {
+    return `
+            <tr>
+                <td>${r.age}</td>
+                <td>${formatCurrency(r.balance)}</td>
+                <td>${formatCurrency(r.plannedTraditional)}</td>
+                <td>${r.age >= 73 ? formatCurrency(r.rmdAmount) : '—'}</td>
+                <td>${formatRmdAdjustmentCell(r)}</td>
+                <td>${formatCurrency(r.traditionalWithdrawal)}</td>
+                <td>${formatCurrency(r.totalIncome)}</td>
+                <td>${r.taxBracket}%</td>
+                <td>${formatPercent(r.effectiveTaxRate)}</td>
+            </tr>`;
 }
 
 function displayResults(results, data) {
@@ -397,6 +490,9 @@ function displayResults(results, data) {
     const firstRMD = results.find(r => r.rmdAmount > 0) || { rmdAmount: 0, taxBracket: 0 };
     const age80Data = results.find(r => r.age === 80) || firstRMD;
     const age90Data = results.find(r => r.age === 90) || age80Data;
+
+    const peakMarginal = Math.max(...results.map(r => r.taxBracket));
+    const peakEffective = Math.max(...results.map(r => r.effectiveTaxRate));
 
     const summaryHTML = `
         <div class="summary-card">
@@ -412,8 +508,12 @@ function displayResults(results, data) {
             <div class="summary-value">${formatCurrency(age90Data.rmdAmount)}</div>
         </div>
         <div class="summary-card">
-            <div class="summary-label">Peak Tax Bracket</div>
-            <div class="summary-value">${Math.max(...results.map(r => r.taxBracket))}%</div>
+            <div class="summary-label">Peak Marginal Bracket</div>
+            <div class="summary-value">${peakMarginal}%</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Peak Effective Federal Rate</div>
+            <div class="summary-value">${formatPercent(peakEffective)}</div>
         </div>
     `;
     document.getElementById('summaryCards').innerHTML = summaryHTML;
@@ -542,29 +642,11 @@ function displayResults(results, data) {
     if (typeof isPremiumUser !== 'undefined' && isPremiumUser) {
         // Premium: Show ALL years from the first relevant age to 100
         const tableData = results.filter(r => r.age >= tableFromAge);
-        tableHTML = tableData.map(r => `
-            <tr>
-                <td>${r.age}</td>
-                <td>${formatCurrency(r.balance)}</td>
-                <td>${formatCurrency(r.totalWithdrawal)}</td>
-                <td>${formatCurrency(r.rmdAmount)}</td>
-                <td>${formatCurrency(r.totalIncome)}</td>
-                <td>${r.taxBracket}%</td>
-            </tr>
-        `).join('');
+        tableHTML = tableData.map(r => buildProjectionTableRow(r)).join('');
     } else {
         // Free: Show first 3 rows, then blurred preview
         const freeData = results.filter(r => r.age >= tableFromAge && (r.age - tableFromAge) % 5 === 0).slice(0, 3);
-        tableHTML = freeData.map(r => `
-            <tr>
-                <td>${r.age}</td>
-                <td>${formatCurrency(r.balance)}</td>
-                <td>${formatCurrency(r.totalWithdrawal)}</td>
-                <td>${formatCurrency(r.rmdAmount)}</td>
-                <td>${formatCurrency(r.totalIncome)}</td>
-                <td>${r.taxBracket}%</td>
-            </tr>
-        `).join('');
+        tableHTML = freeData.map(r => buildProjectionTableRow(r)).join('');
         
         // Add blurred preview rows
         tableHTML += `
@@ -573,7 +655,10 @@ function displayResults(results, data) {
                 <td>$XXX,XXX</td>
                 <td>$XX,XXX</td>
                 <td>$XX,XXX</td>
+                <td>—</td>
                 <td>$XX,XXX</td>
+                <td>$XX,XXX</td>
+                <td>XX%</td>
                 <td>XX%</td>
             </tr>
             <tr style="filter: blur(4px); user-select: none; pointer-events: none;">
@@ -581,7 +666,10 @@ function displayResults(results, data) {
                 <td>$XXX,XXX</td>
                 <td>$XX,XXX</td>
                 <td>$XX,XXX</td>
+                <td>—</td>
                 <td>$XX,XXX</td>
+                <td>$XX,XXX</td>
+                <td>XX%</td>
                 <td>XX%</td>
             </tr>
             <tr style="filter: blur(4px); user-select: none; pointer-events: none;">
@@ -589,7 +677,10 @@ function displayResults(results, data) {
                 <td>$XXX,XXX</td>
                 <td>$XX,XXX</td>
                 <td>$XX,XXX</td>
+                <td>—</td>
                 <td>$XX,XXX</td>
+                <td>$XX,XXX</td>
+                <td>XX%</td>
                 <td>XX%</td>
             </tr>
         `;
@@ -1119,6 +1210,8 @@ function showComparison(name1, name2, results1, results2, data1, data2) {
     const age90_2 = results2.find(r => r.age === 90) || age80_2;
     const peakTax1 = Math.max(...results1.map(r => r.taxBracket));
     const peakTax2 = Math.max(...results2.map(r => r.taxBracket));
+    const peakEff1 = Math.max(...results1.map(r => r.effectiveTaxRate));
+    const peakEff2 = Math.max(...results2.map(r => r.effectiveTaxRate));
     
     const tableHTML = `
         <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
@@ -1156,11 +1249,19 @@ function showComparison(name1, name2, results1, results2, data1, data2) {
                     </td>
                 </tr>
                 <tr style="background: #f9fafb; border-bottom: 1px solid #ddd;">
-                    <td style="padding: 8px; font-weight: 600;">Peak Tax Bracket</td>
+                    <td style="padding: 8px; font-weight: 600;">Peak Marginal Bracket</td>
                     <td style="padding: 8px; text-align: right;">${peakTax1}%</td>
                     <td style="padding: 8px; text-align: right;">${peakTax2}%</td>
                     <td style="padding: 8px; text-align: right; font-weight: 600; color: ${peakTax2 - peakTax1 >= 0 ? '#e53e3e' : '#10b981'};">
                         ${peakTax2 - peakTax1 >= 0 ? '+' : ''}${peakTax2 - peakTax1}%
+                    </td>
+                </tr>
+                <tr style="background: #fff; border-bottom: 1px solid #ddd;">
+                    <td style="padding: 8px; font-weight: 600;">Peak Effective Federal Rate</td>
+                    <td style="padding: 8px; text-align: right;">${formatPercent(peakEff1)}</td>
+                    <td style="padding: 8px; text-align: right;">${formatPercent(peakEff2)}</td>
+                    <td style="padding: 8px; text-align: right; font-weight: 600; color: ${peakEff2 - peakEff1 >= 0 ? '#e53e3e' : '#10b981'};">
+                        ${peakEff2 - peakEff1 >= 0 ? '+' : ''}${formatPercent(peakEff2 - peakEff1)}
                     </td>
                 </tr>
             </tbody>
@@ -1315,10 +1416,14 @@ function explainResults() {
             if (data.taxableBalance) summary += 'Taxable brokerage balance: ' + formatCurrency(data.taxableBalance) + '. ';
             summary += 'Traditional withdrawals count toward RMDs once they begin. ';
         }
+        const peakTax = Math.max(...results.map(r => r.taxBracket));
+        const peakEffective = Math.max(...results.map(r => r.effectiveTaxRate));
+
         summary += 'First RMD at age 73: ' + formatCurrency(firstRMD.rmdAmount) + '. ';
         summary += 'RMD at age 80: ' + formatCurrency(age80Data.rmdAmount) + '. ';
         summary += 'RMD at age 90: ' + formatCurrency(age90Data.rmdAmount) + '. ';
-        summary += 'Peak estimated tax bracket: ' + peakTax + '%.';
+        summary += 'Peak estimated marginal tax bracket: ' + peakTax + '%. ';
+        summary += 'Peak estimated effective federal tax rate: ' + formatPercent(peakEffective) + '.';
     }
 
     const btn = document.getElementById('explainResultsBtnInResults');
@@ -1367,16 +1472,8 @@ function downloadPDF() {
     const chartImage = canvas.toDataURL('image/png');
 
     const data = gatherRMDFormData();
-
-    const summaryCards = document.querySelectorAll('.summary-value');
-    const summary = {
-        firstRMD: parseFloat(summaryCards[0].textContent.replace(/[$,]/g, '')),
-        age80RMD: parseFloat(summaryCards[1].textContent.replace(/[$,]/g, '')),
-        age90RMD: parseFloat(summaryCards[2].textContent.replace(/[$,]/g, '')),
-        peakTaxBracket: parseInt(summaryCards[3].textContent.replace('%', ''))
-    };
-
     const results = getRMDCalculationResults(data);
+    const summary = buildRMDSummary(results);
     const projStart = getProjectionStartAge(data);
     const projections = results.filter(r => r.age >= projStart);
 
@@ -1436,15 +1533,8 @@ function downloadCSV() {
 
     // Gather form data (same as PDF)
     const data = gatherRMDFormData();
-
-    const summary = {
-        firstRMD: parseFloat(summaryCards[0].textContent.replace(/[$,]/g, '')),
-        age80RMD: parseFloat(summaryCards[1].textContent.replace(/[$,]/g, '')),
-        age90RMD: parseFloat(summaryCards[2].textContent.replace(/[$,]/g, '')),
-        peakTaxBracket: parseInt(summaryCards[3].textContent.replace('%', ''))
-    };
-
     const results = getRMDCalculationResults(data);
+    const summary = buildRMDSummary(results);
     const projStart = getProjectionStartAge(data);
     const projections = results.filter(r => r.age >= projStart);
 
