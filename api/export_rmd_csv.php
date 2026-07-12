@@ -49,13 +49,15 @@ echo "\xEF\xBB\xBF";
 $output = fopen('php://output', 'w');
 
 // Write header row
-fputcsv($output, ['Age', 'Account Balance', 'RMD Amount', 'Total Income', 'Taxable Income', 'Tax Bracket (%)']);
+fputcsv($output, ['Age', 'Traditional Balance', 'Total Withdrawals', 'Traditional Withdrawal', 'RMD Amount', 'Total Income', 'Taxable Income', 'Tax Bracket (%)']);
 
 // Write data rows
 foreach ($data['projections'] as $row) {
     fputcsv($output, [
         $row['age'],
         number_format($row['balance'], 2),
+        number_format(isset($row['totalWithdrawal']) ? $row['totalWithdrawal'] : 0, 2),
+        number_format(isset($row['traditionalWithdrawal']) ? $row['traditionalWithdrawal'] : 0, 2),
         number_format($row['rmdAmount'], 2),
         number_format($row['totalIncome'], 2),
         number_format($row['taxableIncome'], 2),

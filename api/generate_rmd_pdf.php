@@ -125,7 +125,54 @@ $html = '<table border="0" cellpadding="8" style="background-color: #f0f5ff;">
 <tr>
     <td><b>Tax Filing Status:</b></td>
     <td>' . ucfirst($data['filingStatus']) . '</td>
+</tr>';
+
+if (!empty($data['enableWithdrawals']) && !empty($data['withdrawalAmount']) && floatval($data['withdrawalAmount']) > 0) {
+    $sourceLabels = [
+        'traditional' => 'Traditional IRA / 401(k)',
+        'roth' => 'Roth IRA / Roth 401(k)',
+        'taxable' => 'Taxable brokerage',
+        'combination' => 'Combination'
+    ];
+    $source = isset($data['withdrawalSource']) ? $data['withdrawalSource'] : 'traditional';
+    $sourceLabel = isset($sourceLabels[$source]) ? $sourceLabels[$source] : $source;
+    $html .= '
+<tr>
+    <td style="border-top: 1px solid #ddd; border-bottom: 1px solid #ddd;"><b>Planned Annual Withdrawal:</b></td>
+    <td style="border-top: 1px solid #ddd; border-bottom: 1px solid #ddd;">$' . number_format(floatval($data['withdrawalAmount']), 0) .
+        (!empty($data['withdrawalInflation']) ? ' (inflation-adjusted at ' . floatval($data['withdrawalInflationRate']) . '%)' : '') . '</td>
 </tr>
+<tr>
+    <td style="border-bottom: 1px solid #ddd;"><b>Withdrawal Period:</b></td>
+    <td style="border-bottom: 1px solid #ddd;">Age ' . intval($data['withdrawalStartAge'] ?? $data['currentAge']) . ' to ' . intval($data['withdrawalEndAge'] ?? 100) . '</td>
+</tr>
+<tr>
+    <td style="border-bottom: 1px solid #ddd;"><b>Withdrawal Source:</b></td>
+    <td style="border-bottom: 1px solid #ddd;">' . htmlspecialchars($sourceLabel);
+    if ($source === 'combination') {
+        $html .= ' (' . floatval($data['pctTraditional'] ?? 0) . '% trad / ' .
+            floatval($data['pctRoth'] ?? 0) . '% Roth / ' .
+            floatval($data['pctTaxable'] ?? 0) . '% taxable)';
+    }
+    $html .= '</td>
+</tr>';
+    if (!empty($data['rothBalance'])) {
+        $html .= '
+<tr>
+    <td style="border-bottom: 1px solid #ddd;"><b>Roth Balance:</b></td>
+    <td style="border-bottom: 1px solid #ddd;">$' . number_format(floatval($data['rothBalance']), 0) . '</td>
+</tr>';
+    }
+    if (!empty($data['taxableBalance'])) {
+        $html .= '
+<tr>
+    <td style="border-bottom: 1px solid #ddd;"><b>Taxable Brokerage Balance:</b></td>
+    <td style="border-bottom: 1px solid #ddd;">$' . number_format(floatval($data['taxableBalance']), 0) . '</td>
+</tr>';
+    }
+}
+
+$html .= '
 </table>';
 
 $pdf->writeHTML($html, true, false, true, false, '');
@@ -244,11 +291,12 @@ $pdf->Ln(3);
 $tableHtml = '<table border="1" cellpadding="6" style="border-collapse: collapse;">
 <thead>
 <tr style="background-color: #667eea; color: white; font-weight: bold; text-align: center;">
-<th width="12%">Age</th>
-<th width="22%">Balance</th>
-<th width="22%">RMD</th>
-<th width="22%">Total Income</th>
-<th width="22%">Tax Bracket</th>
+<th width="10%">Age</th>
+<th width="18%">Trad. Balance</th>
+<th width="18%">Withdrawals</th>
+<th width="18%">RMD</th>
+<th width="18%">Total Income</th>
+<th width="18%">Tax Bracket</th>
 </tr>
 </thead>
 <tbody>';
@@ -257,10 +305,12 @@ $rowColor = '#ffffff';
 foreach ($data['projections'] as $i => $row) {
     // Alternate row colors
     $rowColor = ($i % 2 == 0) ? '#f9fafb' : '#ffffff';
+    $withdrawals = isset($row['totalWithdrawal']) ? floatval($row['totalWithdrawal']) : 0;
     
     $tableHtml .= '<tr style="background-color: ' . $rowColor . ';">
     <td style="text-align: center;">' . $row['age'] . '</td>
     <td style="text-align: right;">$' . number_format($row['balance'], 0) . '</td>
+    <td style="text-align: right;">$' . number_format($withdrawals, 0) . '</td>
     <td style="text-align: right;">$' . number_format($row['rmdAmount'], 0) . '</td>
     <td style="text-align: right;">$' . number_format($row['totalIncome'], 0) . '</td>
     <td style="text-align: center;">' . $row['taxBracket'] . '%</td>
