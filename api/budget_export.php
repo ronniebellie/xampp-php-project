@@ -2,7 +2,8 @@
 /**
  * Premium: export budget transactions as CSV for the selected month.
  */
-session_start();
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
+rb_session_start();
 
 require_once __DIR__ . '/../includes/db_config.php';
 require_once __DIR__ . '/../includes/budget_helpers.php';

@@ -1,7 +1,8 @@
 <?php
 // Present Value (Single Amount)
 
-session_start();
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
+rb_session_start();
 
 function h(string $v): string {
     return htmlspecialchars($v, ENT_QUOTES, 'UTF-8');

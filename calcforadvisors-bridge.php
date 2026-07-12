@@ -3,7 +3,8 @@
  * Bridge: calcforadvisors subscribers → ronbelisle.com Premium access.
  * Validates signed token from calcforadvisors, sets session, redirects to calculators.
  */
-session_start();
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
+rb_session_start();
 require_once __DIR__ . '/includes/db_config.php';
 
 $token = $_GET['token'] ?? '';

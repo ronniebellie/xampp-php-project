@@ -2,7 +2,8 @@
 error_reporting(0);
 ini_set('display_errors', 0);
 ob_start(); // Prevent any stray output from corrupting the CSV
-session_start();
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
+rb_session_start();
 require_once '../includes/db_config.php';
 
 // Check Premium access (ronbelisle or calcforadvisors paid)

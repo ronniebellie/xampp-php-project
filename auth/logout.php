@@ -1,11 +1,10 @@
 <?php
-session_start();
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
+rb_session_start();
 
-// Destroy all session data
+rb_session_clear_remember_cookies();
 session_unset();
 session_destroy();
 
-// Redirect to homepage
 header('Location: ../');
 exit();
-?>

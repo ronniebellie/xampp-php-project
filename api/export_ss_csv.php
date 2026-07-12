@@ -2,7 +2,8 @@
 error_reporting(0);
 ini_set('display_errors', 0);
 ob_start();
-session_start();
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
+rb_session_start();
 require_once '../includes/db_config.php';
 
 require_once __DIR__ . '/../includes/has_premium_access.php';

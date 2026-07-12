@@ -17,7 +17,8 @@
  */
 error_reporting(0);
 ini_set('display_errors', 0);
-session_start();
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
+rb_session_start();
 
 require_once __DIR__ . '/../includes/db_config.php';
 

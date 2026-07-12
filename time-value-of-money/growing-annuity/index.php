@@ -2,7 +2,8 @@
 // Growing Annuity (PV or FV)
 
 
-session_start();
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
+rb_session_start();
 
 // Clear form/result
 if (isset($_GET['reset']) && $_SERVER['REQUEST_METHOD'] === 'GET') {

@@ -2,7 +2,8 @@
 /**
  * Budget app JSON API (v1): month snapshot, add transaction, set category target.
  */
-session_start();
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
+rb_session_start();
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/../includes/db_config.php';

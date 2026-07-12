@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
+rb_session_start();
 require_once __DIR__ . '/../includes/db_config.php';
 
 $error = '';
@@ -32,18 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_name'] = $user['full_name'];
                 $_SESSION['subscription_status'] = $user['subscription_status'];
                 
-                // "Stay logged in" - extend the session cookie lifetime to 30 days
-                if ($remember) {
-                    $params = session_get_cookie_params();
-                    setcookie(session_name(), session_id(), [
-                        'expires'  => time() + 60 * 60 * 24 * 30,
-                        'path'     => $params['path'],
-                        'domain'   => $params['domain'],
-                        'secure'   => $params['secure'],
-                        'httponly' => true,
-                        'samesite' => 'Lax',
-                    ]);
-                }
+                rb_session_set_remember($remember);
                 
                 // Update last login
                 $update_stmt = $conn->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");

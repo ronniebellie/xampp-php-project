@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
+rb_session_start();
 
 // Serve jp-business mini-site when using jp-business subdomain (clean URLs: /npv-irr/, /breakeven-profit/)
 if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'jp-business.ronbelisle.com') {

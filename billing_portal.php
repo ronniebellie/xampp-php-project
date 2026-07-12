@@ -3,7 +3,8 @@
  * Stripe Billing Portal – redirects premium users to Stripe's Customer Portal
  * to manage subscription (cancel, update payment method, view invoices).
  */
-session_start();
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
+rb_session_start();
 require_once 'includes/db_config.php';
 require_once 'includes/stripe_config.php';
 require_once 'vendor/autoload.php';
