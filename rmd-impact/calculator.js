@@ -90,6 +90,65 @@ function calculateTaxBracket(taxableIncome, filingStatus) {
     return 37;
 }
 
+const MONTH_NAMES = ['', 'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+
+function getPlanStartYear(data) {
+    if (data && data.planStartYear) return parseInt(data.planStartYear, 10);
+    const el = document.getElementById('planStartYear');
+    if (el) return parseInt(el.value, 10) || new Date().getFullYear();
+    return new Date().getFullYear();
+}
+
+function calendarYearForAge(currentAge, planStartYear, age) {
+    return planStartYear + (age - currentAge);
+}
+
+/**
+ * Resolve when withdrawals begin — either a specific age or a calendar month/year.
+ */
+function resolveWithdrawalStart(data) {
+    const planStartYear = getPlanStartYear(data);
+    const mode = data.withdrawalStartMode || 'age';
+
+    if (mode === 'date') {
+        const startYear = parseInt(data.withdrawalStartYear, 10) || planStartYear;
+        const startMonth = parseInt(data.withdrawalStartMonth, 10) || 1;
+        const startAge = data.currentAge + (startYear - planStartYear);
+        return {
+            startMode: 'date',
+            planStartYear,
+            startYear,
+            startMonth,
+            startAge: Math.max(data.currentAge, Math.min(100, startAge)),
+            startLabel: MONTH_NAMES[startMonth] + ' ' + startYear
+        };
+    }
+
+    const startAge = parseInt(data.withdrawalStartAge, 10) || data.currentAge;
+    return {
+        startMode: 'age',
+        planStartYear,
+        startAge,
+        startLabel: 'age ' + startAge
+    };
+}
+
+function isWithdrawalActive(age, data, wc) {
+    if (!wc.enabled || age > wc.endAge) return false;
+    if (wc.startMode === 'date') {
+        return calendarYearForAge(data.currentAge, wc.planStartYear, age) >= wc.startYear;
+    }
+    return age >= wc.startAge;
+}
+
+function getProjectionStartAge(data) {
+    if (data.enableWithdrawals && (parseFloat(data.withdrawalAmount) || 0) > 0) {
+        return Math.min(73, getWithdrawalConfig(data).startAge);
+    }
+    return 73;
+}
+
 /**
  * Normalize the planned-withdrawal inputs into a config object.
  * When withdrawals are disabled the projection behaves exactly as before.
@@ -99,10 +158,16 @@ function getWithdrawalConfig(data) {
     const pctT = data.pctTraditional != null ? parseFloat(data.pctTraditional) : 100;
     const pctR = data.pctRoth != null ? parseFloat(data.pctRoth) : 0;
     const pctX = data.pctTaxable != null ? parseFloat(data.pctTaxable) : 0;
+    const resolved = resolveWithdrawalStart(data);
     return {
         enabled,
         amount: enabled ? (parseFloat(data.withdrawalAmount) || 0) : 0,
-        startAge: parseInt(data.withdrawalStartAge, 10) || data.currentAge,
+        startMode: resolved.startMode,
+        startAge: resolved.startAge,
+        startYear: resolved.startYear,
+        startMonth: resolved.startMonth,
+        startLabel: resolved.startLabel,
+        planStartYear: resolved.planStartYear,
         endAge: parseInt(data.withdrawalEndAge, 10) || 100,
         inflate: !!data.withdrawalInflation,
         inflationRate: parseFloat(data.withdrawalInflationRate) || 0,
@@ -149,10 +214,10 @@ function calculateProjection(data) {
         const rothStart = rothBalance;
         const taxableStart = taxableBalance;
 
-        // Planned withdrawal for this year (optionally inflation-adjusted from today)
+        // Planned withdrawal for this year (optionally inflation-adjusted from start)
         let planned = 0;
-        if (wc.enabled && age >= wc.startAge && age <= wc.endAge) {
-            const yearsElapsed = age - startAge;
+        if (isWithdrawalActive(age, data, wc)) {
+            const yearsElapsed = age - wc.startAge;
             planned = wc.inflate
                 ? wc.amount * Math.pow(1 + wc.inflationRate / 100, yearsElapsed)
                 : wc.amount;
@@ -250,6 +315,10 @@ function generateInterpretation(results, data) {
         const firstDiff = baseFirst.rmdAmount - firstRMD.rmdAmount;
 
         let msg = '<li><strong>Impact of your planned withdrawals:</strong> ';
+        if (data.withdrawalStartMode === 'date' && data.withdrawalStartYear) {
+            const month = parseInt(data.withdrawalStartMonth, 10) || 1;
+            msg += 'Withdrawals begin in ' + MONTH_NAMES[month] + ' ' + data.withdrawalStartYear + '. ';
+        }
         if (firstDiff > 1) {
             msg += `Because you plan to withdraw before RMDs begin, your first RMD at age 73 is about ${formatCurrency(firstRMD.rmdAmount)} instead of ${formatCurrency(baseFirst.rmdAmount)} — roughly ${formatCurrency(firstDiff)} lower per year. `;
         } else if (data.withdrawalSource === 'roth' || data.withdrawalSource === 'taxable') {
@@ -451,9 +520,9 @@ function displayResults(results, data) {
     const tableBody = document.getElementById('tableBody');
     let tableHTML = '';
 
-    // Show the age at which planned withdrawals begin so pre-73 rows are visible
+    const wc = getWithdrawalConfig(data);
     const wStartAge = (data.enableWithdrawals && (parseFloat(data.withdrawalAmount) || 0) > 0)
-        ? Math.max(data.currentAge, parseInt(data.withdrawalStartAge, 10) || data.currentAge)
+        ? Math.max(data.currentAge, wc.startAge)
         : 73;
     const tableFromAge = Math.min(73, wStartAge);
 
@@ -530,7 +599,11 @@ function readWithdrawalInputs() {
     return {
         enableWithdrawals: enabled,
         withdrawalAmount: el('withdrawalAmount') ? (parseFloat(el('withdrawalAmount').value) || 0) : 0,
+        withdrawalStartMode: el('withdrawalStartMode') ? el('withdrawalStartMode').value : 'age',
         withdrawalStartAge: el('withdrawalStartAge') ? (parseInt(el('withdrawalStartAge').value, 10) || null) : null,
+        withdrawalStartMonth: el('withdrawalStartMonth') ? (parseInt(el('withdrawalStartMonth').value, 10) || 1) : 1,
+        withdrawalStartYear: el('withdrawalStartYear') ? (parseInt(el('withdrawalStartYear').value, 10) || null) : null,
+        planStartYear: el('planStartYear') ? (parseInt(el('planStartYear').value, 10) || new Date().getFullYear()) : new Date().getFullYear(),
         withdrawalEndAge: el('withdrawalEndAge') ? (parseInt(el('withdrawalEndAge').value, 10) || 100) : 100,
         withdrawalInflation: el('withdrawalInflation') ? el('withdrawalInflation').value === 'yes' : false,
         withdrawalInflationRate: el('withdrawalInflationRate') ? (parseFloat(el('withdrawalInflationRate').value) || 0) : 0,
@@ -551,8 +624,18 @@ function validateWithdrawalInputs(w, currentAge) {
     if (!(w.withdrawalAmount > 0)) {
         return 'Please enter a planned annual withdrawal amount greater than 0 (or set "Include planned withdrawals" to No).';
     }
-    const start = w.withdrawalStartAge || currentAge;
-    if (start < currentAge || start > 100) {
+    const resolved = resolveWithdrawalStart(Object.assign({ currentAge: currentAge }, w));
+    const start = resolved.startAge;
+    if (w.withdrawalStartMode === 'date') {
+        const planYear = w.planStartYear || getPlanStartYear(w);
+        const startYear = parseInt(w.withdrawalStartYear, 10);
+        if (!startYear || startYear < planYear) {
+            return 'Withdrawal start year must be ' + planYear + ' or later.';
+        }
+        if (startYear > planYear + (100 - currentAge)) {
+            return 'Withdrawal start year is too far in the future for your current age.';
+        }
+    } else if (start < currentAge || start > 100) {
         return 'Withdrawal start age must be between your current age and 100.';
     }
     if (w.withdrawalEndAge < start || w.withdrawalEndAge > 100) {
@@ -641,7 +724,11 @@ document.getElementById('rmdForm').addEventListener('submit', function(e) {
         if (data.enableWithdrawals) {
             params.set('enableWithdrawals', 'yes');
             params.set('withdrawalAmount', String(data.withdrawalAmount));
+            params.set('withdrawalStartMode', data.withdrawalStartMode || 'age');
             if (data.withdrawalStartAge) params.set('withdrawalStartAge', String(data.withdrawalStartAge));
+            if (data.withdrawalStartMonth) params.set('withdrawalStartMonth', String(data.withdrawalStartMonth));
+            if (data.withdrawalStartYear) params.set('withdrawalStartYear', String(data.withdrawalStartYear));
+            if (data.planStartYear) params.set('planStartYear', String(data.planStartYear));
             params.set('withdrawalEndAge', String(data.withdrawalEndAge));
             params.set('withdrawalInflation', data.withdrawalInflation ? 'yes' : 'no');
             params.set('withdrawalInflationRate', String(data.withdrawalInflationRate));
@@ -696,7 +783,11 @@ document.addEventListener('DOMContentLoaded', function () {
     if (params.has('enableWithdrawals')) {
         setValue('enableWithdrawals', 'enableWithdrawals');
         setValue('withdrawalAmount', 'withdrawalAmount');
+        setValue('withdrawalStartMode', 'withdrawalStartMode');
         setValue('withdrawalStartAge', 'withdrawalStartAge');
+        setValue('withdrawalStartMonth', 'withdrawalStartMonth');
+        setValue('withdrawalStartYear', 'withdrawalStartYear');
+        setValue('planStartYear', 'planStartYear');
         setValue('withdrawalEndAge', 'withdrawalEndAge');
         setValue('withdrawalInflation', 'withdrawalInflation');
         setValue('withdrawalInflationRate', 'withdrawalInflationRate');
@@ -708,6 +799,9 @@ document.addEventListener('DOMContentLoaded', function () {
         setValue('pctTaxable', 'pctTaxable');
         if (typeof toggleWithdrawalFields === 'function') {
             toggleWithdrawalFields();
+        }
+        if (typeof toggleWithdrawalStartMode === 'function') {
+            toggleWithdrawalStartMode();
         }
     }
 
@@ -769,7 +863,11 @@ function saveScenario() {
         spouseAge: val('spouseAge'),
         enableWithdrawals: val('enableWithdrawals'),
         withdrawalAmount: val('withdrawalAmount'),
+        withdrawalStartMode: val('withdrawalStartMode'),
         withdrawalStartAge: val('withdrawalStartAge'),
+        withdrawalStartMonth: val('withdrawalStartMonth'),
+        withdrawalStartYear: val('withdrawalStartYear'),
+        planStartYear: val('planStartYear'),
         withdrawalEndAge: val('withdrawalEndAge'),
         withdrawalInflation: val('withdrawalInflation'),
         withdrawalInflationRate: val('withdrawalInflationRate'),
@@ -875,7 +973,11 @@ function scenarioToProjectionData(s) {
         spouseAge: d.spouseBeneficiary === 'yes' && d.spouseAge ? parseInt(d.spouseAge, 10) : null,
         enableWithdrawals: d.enableWithdrawals === 'yes',
         withdrawalAmount: parseFloat(d.withdrawalAmount) || 0,
+        withdrawalStartMode: d.withdrawalStartMode || 'age',
         withdrawalStartAge: d.withdrawalStartAge ? parseInt(d.withdrawalStartAge, 10) : null,
+        withdrawalStartMonth: d.withdrawalStartMonth ? parseInt(d.withdrawalStartMonth, 10) : 1,
+        withdrawalStartYear: d.withdrawalStartYear ? parseInt(d.withdrawalStartYear, 10) : null,
+        planStartYear: d.planStartYear ? parseInt(d.planStartYear, 10) : getPlanStartYear(),
         withdrawalEndAge: d.withdrawalEndAge ? parseInt(d.withdrawalEndAge, 10) : 100,
         withdrawalInflation: d.withdrawalInflation === 'yes',
         withdrawalInflationRate: parseFloat(d.withdrawalInflationRate) || 0,
@@ -1154,9 +1256,10 @@ function explainResults() {
             summary += 'Spouse is sole beneficiary, age ' + data.spouseAge + '. ';
         }
         if (data.enableWithdrawals && (parseFloat(data.withdrawalAmount) || 0) > 0) {
+            const wc = getWithdrawalConfig(data);
             summary += 'Planned annual withdrawals of ' + formatCurrency(data.withdrawalAmount) +
                 (data.withdrawalInflation ? ' (inflation-adjusted at ' + data.withdrawalInflationRate + '%)' : '') +
-                ' from ' + (data.withdrawalStartAge || data.currentAge) + ' to age ' + data.withdrawalEndAge +
+                ' beginning ' + wc.startLabel + ' until age ' + data.withdrawalEndAge +
                 ', sourced from: ' + data.withdrawalSource +
                 (data.withdrawalSource === 'combination' ? ' (' + data.pctTraditional + '% traditional / ' + data.pctRoth + '% Roth / ' + data.pctTaxable + '% taxable)' : '') + '. ';
             if (data.rothBalance) summary += 'Roth balance: ' + formatCurrency(data.rothBalance) + '. ';
@@ -1238,9 +1341,7 @@ function downloadPDF() {
     };
 
     const results = calculateProjection(data);
-    const projStart = (data.enableWithdrawals && data.withdrawalAmount > 0)
-        ? Math.min(73, data.withdrawalStartAge || data.currentAge)
-        : 73;
+    const projStart = getProjectionStartAge(data);
     const projections = results.filter(r => r.age >= projStart);
 
     fetch('/api/generate_rmd_pdf.php', {
@@ -1321,9 +1422,7 @@ function downloadCSV() {
     };
 
     const results = calculateProjection(data);
-    const projStart = (data.enableWithdrawals && data.withdrawalAmount > 0)
-        ? Math.min(73, data.withdrawalStartAge || data.currentAge)
-        : 73;
+    const projStart = getProjectionStartAge(data);
     const projections = results.filter(r => r.age >= projStart);
 
     fetch('/api/export_rmd_csv.php', {
@@ -1396,9 +1495,7 @@ function downloadCalendar() {
     Object.assign(data, readWithdrawalInputs());
 
     const results = calculateProjection(data);
-    const projStart = (data.enableWithdrawals && data.withdrawalAmount > 0)
-        ? Math.min(73, data.withdrawalStartAge || data.currentAge)
-        : 73;
+    const projStart = getProjectionStartAge(data);
     const projections = results.filter(r => r.age >= projStart);
 
     fetch('/api/generate_rmd_calendar.php', {

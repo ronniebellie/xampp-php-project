@@ -144,7 +144,16 @@ if (!empty($data['enableWithdrawals']) && !empty($data['withdrawalAmount']) && f
 </tr>
 <tr>
     <td style="border-bottom: 1px solid #ddd;"><b>Withdrawal Period:</b></td>
-    <td style="border-bottom: 1px solid #ddd;">Age ' . intval($data['withdrawalStartAge'] ?? $data['currentAge']) . ' to ' . intval($data['withdrawalEndAge'] ?? 100) . '</td>
+    <td style="border-bottom: 1px solid #ddd;">';
+    if (!empty($data['withdrawalStartMode']) && $data['withdrawalStartMode'] === 'date' && !empty($data['withdrawalStartYear'])) {
+        $months = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        $m = isset($data['withdrawalStartMonth']) ? intval($data['withdrawalStartMonth']) : 1;
+        $monthLabel = isset($months[$m]) ? $months[$m] : 'January';
+        $html .= htmlspecialchars($monthLabel . ' ' . intval($data['withdrawalStartYear'])) . ' to age ' . intval($data['withdrawalEndAge'] ?? 100);
+    } else {
+        $html .= 'Age ' . intval($data['withdrawalStartAge'] ?? $data['currentAge']) . ' to ' . intval($data['withdrawalEndAge'] ?? 100);
+    }
+    $html .= '</td>
 </tr>
 <tr>
     <td style="border-bottom: 1px solid #ddd;"><b>Withdrawal Source:</b></td>

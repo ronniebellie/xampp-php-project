@@ -111,15 +111,61 @@ $isPremium = has_premium_access();
                         <small style="color: #666;">Total from all sources combined</small>
                     </div>
                     <div>
-                        <label for="withdrawalStartAge" style="display: block; margin-bottom: 5px; font-weight: 600;">Withdrawals begin at age</label>
-                        <input type="number" id="withdrawalStartAge" min="50" max="100" value="68" style="width: 100%;">
-                        <small style="color: #666;">Usually your current age</small>
-                    </div>
-                    <div>
                         <label for="withdrawalEndAge" style="display: block; margin-bottom: 5px; font-weight: 600;">Withdrawals continue until age</label>
                         <input type="number" id="withdrawalEndAge" min="50" max="100" value="100" style="width: 100%;">
                         <small style="color: #666;">Leave at 100 to model ongoing withdrawals</small>
                     </div>
+                </div>
+
+                <?php $planYear = (int)date('Y'); $defaultStartYear = $planYear + 1; ?>
+                <input type="hidden" id="planStartYear" value="<?php echo $planYear; ?>">
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 10px;">
+                    <div>
+                        <label for="withdrawalStartMode" style="display: block; margin-bottom: 5px; font-weight: 600;">When do withdrawals begin?</label>
+                        <select id="withdrawalStartMode" onchange="toggleWithdrawalStartMode()" style="width: 100%;">
+                            <option value="age">At a specific age</option>
+                            <option value="date" selected>On a calendar date</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="withdrawalStartAgeGroup" style="display: none;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <label for="withdrawalStartAge" style="display: block; margin-bottom: 5px; font-weight: 600;">Begin at age</label>
+                            <input type="number" id="withdrawalStartAge" min="50" max="100" value="68" style="width: 100%;">
+                            <small style="color: #666;">Usually your current age if already withdrawing</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="withdrawalStartDateGroup" style="display: block;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <label for="withdrawalStartMonth" style="display: block; margin-bottom: 5px; font-weight: 600;">Begin in month</label>
+                            <select id="withdrawalStartMonth" style="width: 100%;">
+                                <option value="1" selected>January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="withdrawalStartYear" style="display: block; margin-bottom: 5px; font-weight: 600;">Begin in year</label>
+                            <input type="number" id="withdrawalStartYear" min="<?php echo $planYear; ?>" max="2100" step="1" value="<?php echo $defaultStartYear; ?>" style="width: 100%;">
+                            <small style="color: #666;">e.g. January <?php echo $defaultStartYear; ?> if starting next year</small>
+                        </div>
+                    </div>
+                    <p id="withdrawalStartDateHint" style="margin: 0 0 15px 0; font-size: 0.9em; color: #555; line-height: 1.4;"></p>
                 </div>
 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 15px;">
@@ -294,10 +340,37 @@ $isPremium = has_premium_access();
         const enabled = document.getElementById('enableWithdrawals').value === 'yes';
         document.getElementById('withdrawalFieldsGroup').style.display = enabled ? 'block' : 'none';
         if (enabled) {
+            toggleWithdrawalStartMode();
             toggleWithdrawalSource();
             toggleInflationRate();
             syncWithdrawalStartAge();
+            updateWithdrawalStartDateHint();
         }
+    }
+
+    function toggleWithdrawalStartMode() {
+        const mode = document.getElementById('withdrawalStartMode').value;
+        document.getElementById('withdrawalStartAgeGroup').style.display = mode === 'age' ? 'block' : 'none';
+        document.getElementById('withdrawalStartDateGroup').style.display = mode === 'date' ? 'block' : 'none';
+        updateWithdrawalStartDateHint();
+    }
+
+    function updateWithdrawalStartDateHint() {
+        const hint = document.getElementById('withdrawalStartDateHint');
+        const modeEl = document.getElementById('withdrawalStartMode');
+        if (!hint || !modeEl || modeEl.value !== 'date') return;
+
+        const currentAge = parseInt(document.getElementById('currentAge').value, 10);
+        const planYear = parseInt(document.getElementById('planStartYear').value, 10);
+        const startYear = parseInt(document.getElementById('withdrawalStartYear').value, 10);
+        const monthSelect = document.getElementById('withdrawalStartMonth');
+        const monthLabel = monthSelect ? monthSelect.options[monthSelect.selectedIndex].text : 'January';
+
+        if (!currentAge || !planYear || !startYear) return;
+
+        const effectiveAge = currentAge + (startYear - planYear);
+        hint.textContent = monthLabel + ' ' + startYear + ' corresponds to about age ' + effectiveAge +
+            ' in this projection (one row per age year, starting from your current age in ' + planYear + ').';
     }
 
     function toggleWithdrawalSource() {
@@ -325,12 +398,20 @@ $isPremium = has_premium_access();
     document.addEventListener('DOMContentLoaded', function() {
         const startEl = document.getElementById('withdrawalStartAge');
         const currentAgeEl = document.getElementById('currentAge');
+        const startYearEl = document.getElementById('withdrawalStartYear');
+        const startMonthEl = document.getElementById('withdrawalStartMonth');
         if (startEl) {
             startEl.addEventListener('input', function() { startEl.dataset.userEdited = '1'; });
         }
         if (currentAgeEl) {
-            currentAgeEl.addEventListener('change', syncWithdrawalStartAge);
+            currentAgeEl.addEventListener('change', function() {
+                syncWithdrawalStartAge();
+                updateWithdrawalStartDateHint();
+            });
         }
+        if (startYearEl) startYearEl.addEventListener('input', updateWithdrawalStartDateHint);
+        if (startMonthEl) startMonthEl.addEventListener('change', updateWithdrawalStartDateHint);
+        updateWithdrawalStartDateHint();
     });
     </script>
     <script src="../js/compare-scenarios-modal.js"></script>
