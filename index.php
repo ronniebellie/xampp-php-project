@@ -713,7 +713,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
 
         <section class="card">
           <h3>Social Security Survivor Impact Calculator</h3>
-          <p>Model both spouses together and see how survivor benefits change lifetime household income — and whether waiting for a bigger check actually pays off.</p>
+          <p>Should the lower earner delay to age 70? Not always. Compare claiming strategies for both spouses and see how survivor benefits, longevity, and COLAs can dramatically change the strategy that produces the highest lifetime household income.</p>
           <a class="btn" href="ss-survivor-impact/">Open</a>
         </section>
 
