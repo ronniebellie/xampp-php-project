@@ -808,7 +808,10 @@ function validateWithdrawalInputs(w, currentAge) {
     return null;
 }
 
-document.getElementById('rmdForm').addEventListener('submit', function(e) {
+document.addEventListener('DOMContentLoaded', function() {
+    const rmdForm = document.getElementById('rmdForm');
+    if (!rmdForm) return;
+    rmdForm.addEventListener('submit', function(e) {
     e.preventDefault();
 
     const data = gatherRMDFormData();
@@ -881,6 +884,7 @@ document.getElementById('rmdForm').addEventListener('submit', function(e) {
         const url = window.location.origin + window.location.pathname + '?' + params.toString();
         shareEl.setAttribute('data-share-url', url);
     }
+    });
 });
 
 // If URL contains scenario parameters, pre-fill the form and auto-run the calculation
@@ -1396,7 +1400,6 @@ function explainResults() {
         const firstRMD = results.find(r => r.rmdAmount > 0) || results[results.length - 1];
         const age80Data = results.find(r => r.age === 80) || firstRMD;
         const age90Data = results.find(r => r.age === 90) || age80Data;
-        const peakTax = Math.max(...results.map(r => r.taxBracket));
 
         summary += 'RMD Impact Projection.\n\n';
         summary += 'Current age: ' + data.currentAge + '. Tax-deferred account balance: ' + formatCurrency(data.accountBalance) + '. Expected growth rate: ' + data.growthRate + '%.\n\n';
