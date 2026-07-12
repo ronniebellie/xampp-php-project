@@ -295,9 +295,26 @@ function buildHeroSentence(result, opts) {
     var lower = result.lower;
     var higher = result.higher;
     var firstWho = result.firstDeathWho;
+    var survivorYears = Math.max(0, opts.lowerEarner.deathAge - opts.higherEarner.deathAge);
 
-    if (lower.claimAge <= d.earlyCompareAge) {
-        return 'The lower earner is not delaying past the comparison age, so there is no forgone income from waiting on their own record.';
+    // Lower earner claims before the comparison age (e.g. 62 vs FRA 67) — common couples strategy
+    if (lower.claimAge < d.earlyCompareAge) {
+        var earlyHtml = 'The lower earner claims at <strong>age ' + lower.claimAge + '</strong> — before FRA (' + d.earlyCompareAge + ') — for <strong>' + formatCurrency(lower.startMonthly) + '/month</strong> starting early. ';
+        earlyHtml += 'The higher earner waits until <strong>age ' + higher.claimAge + '</strong>, raising the survivor floor to <strong>' + formatCurrency(d.higherAtDeath) + '/month</strong>. ';
+        if (firstWho === 'higher' && d.higherAtDeath > lower.startMonthly) {
+            earlyHtml += 'When the higher earner dies at age ' + higher.deathAge + ', the lower earner steps up from their own check to that larger survivor benefit';
+            if (survivorYears > 0) {
+                earlyHtml += ' for about <strong>' + survivorYears + ' year' + (survivorYears === 1 ? '' : 's') + '</strong>';
+            }
+            earlyHtml += '. That is why planners often focus on delaying the <em>higher</em> earner — not maximizing the lower earner\'s own benefit, which may be replaced anyway.';
+        } else {
+            earlyHtml += 'This matches the couples pattern many planners recommend: claim the lower benefit early, delay the higher benefit to protect the survivor.';
+        }
+        return earlyHtml;
+    }
+
+    if (lower.claimAge === d.earlyCompareAge) {
+        return 'The lower earner claims at FRA (' + d.earlyCompareAge + '), so there is no extra wait on their own record to analyze. The key question is whether the higher earner\'s delay to age ' + higher.claimAge + ' raises the survivor floor to <strong>' + formatCurrency(d.higherAtDeath) + '/month</strong> — income that may last for the longer-lived spouse.';
     }
 
     var html = 'The lower earner gave up approximately <strong>' + formatCurrency(d.forgone) +

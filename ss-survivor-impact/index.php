@@ -228,9 +228,9 @@ $isPremium = has_premium_access();
             <h3>Assumptions</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px;">
                 <div>
-                    <label for="lowerEarlyCompareAge" class="field-label">Compare lower earner vs claiming at age</label>
+                    <label for="lowerEarlyCompareAge" class="field-label">Delay comparison age (lower earner)</label>
                     <input type="number" id="lowerEarlyCompareAge" min="62" max="70" value="67" style="width: 100%; padding: 8px;">
-                    <small style="color: #666;">Defaults to FRA; used to calculate income forgone by waiting</small>
+                    <small style="color: #666;">Only used if the lower earner waits past this age — defaults to FRA</small>
                 </div>
                 <div>
                     <label for="colaRate" class="field-label">Annual COLA (%)</label>
