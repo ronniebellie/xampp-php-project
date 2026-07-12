@@ -265,7 +265,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php if ($trialIntent): ?>
             <div class="trial-callout">
                 <strong>New here?</strong>
-                Create a free account first, then choose monthly or annual billing on the next page. Cancel anytime during the trial and pay nothing.
+                Create a free account, then pick monthly or annual billing on the next page. Your 7-day free trial starts first — you won't be charged until it ends. Cancel anytime.
             </div>
         <?php endif; ?>
         

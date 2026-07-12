@@ -233,7 +233,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="logo">
             <?php if ($trialIntent): ?>
             <h1>Create Your Free Account</h1>
-            <p>Next, you'll choose monthly or annual billing and start your 7-day free trial.</p>
+            <p>Next, pick monthly or annual billing and begin your 7-day free trial. You won't be charged until the trial ends.</p>
             <?php else: ?>
             <h1>Create Your Account</h1>
             <p>Sign up for premium features</p>
@@ -242,7 +242,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <?php if ($trialIntent): ?>
             <div class="trial-callout">
-                You won't be charged until the trial ends. Cancel anytime during the trial and pay nothing.
+                You'll add a payment method at checkout so access can continue after the trial, but you won't be charged for 7 days. Cancel anytime.
             </div>
         <?php endif; ?>
         
