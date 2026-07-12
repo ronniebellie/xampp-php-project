@@ -80,14 +80,29 @@ function rb_session_set_remember(bool $remember): void
     }
 
     unset($_SESSION['remember_me']);
-    rb_session_clear_remember_cookies();
+    rb_session_clear_remember_marker();
+    rb_session_refresh_standard_session_cookie();
+}
+
+function rb_session_clear_remember_marker(): void
+{
+    $expired = rb_session_cookie_options(time() - 3600);
+    setcookie('rb_remember', '', $expired);
+}
+
+function rb_session_refresh_standard_session_cookie(): void
+{
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        return;
+    }
+
+    setcookie(session_name(), session_id(), rb_session_cookie_options(0));
 }
 
 function rb_session_clear_remember_cookies(): void
 {
-    $expired = rb_session_cookie_options(time() - 3600);
-    setcookie('rb_remember', '', $expired);
+    rb_session_clear_remember_marker();
     if (session_status() === PHP_SESSION_ACTIVE) {
-        setcookie(session_name(), '', $expired);
+        setcookie(session_name(), '', rb_session_cookie_options(time() - 3600));
     }
 }
