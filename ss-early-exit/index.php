@@ -115,10 +115,19 @@ $isPremium = has_premium_access();
             <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
                 <button type="button" id="saveScenarioBtn" class="btn-primary" style="background: #48bb78;" title="Store your current inputs and results for later">Save Scenario</button>
                 <button type="button" id="loadScenarioBtn" class="btn-secondary" title="Open a previously saved scenario">Load Scenario</button>
+                <button type="button" id="compareScenariosBtn" class="btn-primary" style="background: #f59e0b; color: white;" title="Side-by-side comparison of two saved scenarios">⚖️ Compare Scenarios</button>
+                <button type="button" id="downloadPdfBtn" class="btn-primary" style="background: #e53e3e; color: white;" title="Full report with chart and scenario table (PDF)">📄 Download PDF</button>
+                <button type="button" id="downloadCsvBtn" class="btn-primary" style="background: #3182ce; color: white;" title="Scenario comparison data for Excel">📊 Export CSV</button>
+                <button type="button" id="downloadSummaryBtn" class="btn-primary" style="background: #805ad5; color: white;" title="One-page PDF: reduction, nest egg, takeaway">📋 Impact Summary</button>
                 <span id="saveStatus" style="color: #22543d; font-weight: 600;"></span>
             </div>
             <p style="margin: 12px 0 0 0; font-size: 13px; color: #4a5568; line-height: 1.5;">
-                <strong>Save</strong> / <strong>Load</strong> — Store and recall scenarios. <strong>Explain</strong> — AI explains your results in plain language (after you calculate).
+                <strong>Save</strong> / <strong>Load</strong> — Store and recall scenarios.
+                <strong>Compare</strong> — Side-by-side of two saved runs.
+                <strong>PDF</strong> — Full report with chart.
+                <strong>CSV</strong> — Spreadsheet data.
+                <strong>Summary</strong> — One-page impact guide.
+                <strong>Explain</strong> — AI explains your results after you calculate.
             </p>
         </div>
 <?php endif; ?>
@@ -310,8 +319,8 @@ $isPremium = has_premium_access();
 
         <?php if (!$isPremium): ?>
         <?php
-        $premium_upsell_headline = 'Save Early-Exit Scenarios';
-        $premium_upsell_text = 'Upgrade to Premium to save scenarios and get AI-generated plain-language explanations of your specific results.';
+        $premium_upsell_headline = 'Save, Compare & Export Early-Exit Scenarios';
+        $premium_upsell_text = 'Upgrade to Premium to save scenarios, compare runs, download PDF/CSV reports, and get AI-generated plain-language explanations of your specific results.';
         include(__DIR__ . '/../includes/premium-upsell-banner.php');
         ?>
         <?php endif; ?>

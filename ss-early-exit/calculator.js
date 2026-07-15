@@ -733,7 +733,7 @@
     displayResults(inputs, built);
   });
 
-  // --- Premium: save / load / explain ---
+  // --- Premium: save / load / compare / PDF / CSV / explain ---
   function apiBase() {
     const path = window.location.pathname || '';
     return path.indexOf('/ss-early-exit') !== -1 ? '..' : '';
@@ -759,7 +759,10 @@
       results: lastResults ? {
         planMonthly: lastResults.plan.monthly,
         actualMonthly: lastResults.actual.monthly,
+        planPia: lastResults.plan.pia,
+        actualPia: lastResults.actual.pia,
         deltaMo: lastResults.deltaMo,
+        deltaLife: lastResults.deltaLife,
         nestEgg: lastResults.nestEgg
       } : null
     };
@@ -791,6 +794,218 @@
         document.getElementById(map[k]).value = d[k];
       }
     });
+  }
+
+  function inputsFromSaved(d) {
+    const birthDate = d.birthDate || '1965-01-15';
+    const birthYear = parseInt(String(birthDate).substr(0, 4), 10);
+    const currentAge = ageFromBirthDate(birthDate) || 60;
+    const mode = d.mode || 'quick';
+    let yearsAlreadyWorked = parseInt(d.yearsAlreadyWorked, 10);
+    if (!yearsAlreadyWorked || mode === 'quick') {
+      yearsAlreadyWorked = Math.min(40, Math.max(0, currentAge - 22));
+    }
+    let historicalEarningsRatio = parseFloat(d.historicalEarningsRatio);
+    if (!historicalEarningsRatio) historicalEarningsRatio = 65;
+    return {
+      mode,
+      birthDate,
+      birthYear,
+      currentAge,
+      plannedRetirementAge: parseFloat(d.plannedRetirementAge),
+      actualStopAge: parseFloat(d.actualStopAge),
+      claimingAge: parseFloat(d.claimingAge),
+      currentAnnualEarnings: parseFloat(d.currentAnnualEarnings),
+      earningsGrowthRatePct: parseFloat(d.earningsGrowthRatePct) || 0,
+      ssaBenefitMonthly: parseFloat(d.ssaBenefitMonthly) || 0,
+      ssaBenefitBasis: d.ssaBenefitBasis || 'fra',
+      lifeExpectancy: parseInt(d.lifeExpectancy, 10) || 85,
+      colaRatePct: parseFloat(d.colaRatePct) || 2.5,
+      withdrawalRatePct: parseFloat(d.withdrawalRatePct) || 4,
+      yearsAlreadyWorked,
+      historicalEarningsRatio,
+      postStopAnnualEarnings: parseFloat(d.postStopAnnualEarnings) || 0,
+      pastEarningsAmounts: [],
+      eligYear: eligibilityYear(birthYear),
+      fra: getFRA(birthYear)
+    };
+  }
+
+  function computeSavedScenario(d) {
+    const inputs = inputsFromSaved(d);
+    const built = buildScenarios(inputs);
+    const lifePlan = lifetimeTotal(built.plan.monthly, inputs.claimingAge, inputs.lifeExpectancy, inputs.colaRatePct);
+    const lifeActual = lifetimeTotal(built.actual.monthly, inputs.claimingAge, inputs.lifeExpectancy, inputs.colaRatePct);
+    const deltaMo = built.plan.monthly - built.actual.monthly;
+    const nestEgg = deltaMo > 0 ? (deltaMo * 12) / (inputs.withdrawalRatePct / 100) : 0;
+    return {
+      inputs,
+      plan: built.plan,
+      actual: built.actual,
+      deltaMo,
+      deltaLife: lifePlan - lifeActual,
+      nestEgg
+    };
+  }
+
+  function exportPayload() {
+    if (!lastResults) return null;
+    const r = lastResults;
+    const wdr = r.inputs.withdrawalRatePct;
+    const scenarios = (r.scenarios || []).map((s) => {
+      const vs = r.plan.monthly - s.monthly;
+      return {
+        stopAge: s.stopAge,
+        label: s.label || '',
+        pia: Math.round(s.pia * 100) / 100,
+        monthly: Math.round(s.monthly * 100) / 100,
+        vsPlan: Math.round(vs * 100) / 100,
+        nestEgg: vs > 0 ? Math.round((vs * 12) / (wdr / 100)) : 0,
+        isActual: !!s.isActual || roundAge(s.stopAge) === roundAge(r.actual.stopAge)
+      };
+    });
+    return {
+      birthDate: r.inputs.birthDate,
+      fra: r.inputs.fra,
+      plannedRetirementAge: r.inputs.plannedRetirementAge,
+      actualStopAge: r.inputs.actualStopAge,
+      claimingAge: r.inputs.claimingAge,
+      currentAnnualEarnings: r.inputs.currentAnnualEarnings,
+      earningsGrowthRatePct: r.inputs.earningsGrowthRatePct,
+      ssaBenefitMonthly: r.inputs.ssaBenefitMonthly,
+      lifeExpectancy: r.inputs.lifeExpectancy,
+      colaRatePct: r.inputs.colaRatePct,
+      withdrawalRatePct: wdr,
+      planMonthly: r.plan.monthly,
+      actualMonthly: r.actual.monthly,
+      planPia: r.plan.pia,
+      actualPia: r.actual.pia,
+      deltaMo: r.deltaMo,
+      deltaLife: r.deltaLife,
+      nestEgg: r.nestEgg,
+      scenarios
+    };
+  }
+
+  function downloadBlob(blob, filename) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function fetchBlob(url, payload) {
+    return fetch(apiBase() + url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then((res) => {
+      if (!res.ok) {
+        return res.text().then((t) => {
+          let msg = 'Request failed';
+          try {
+            const j = JSON.parse(t);
+            if (j && j.error) msg = j.error;
+          } catch (e) {
+            if (t) msg = t;
+          }
+          throw new Error(msg);
+        });
+      }
+      return res.blob();
+    });
+  }
+
+  function showComparison(name1, name2, r1, r2) {
+    const resultsDiv = document.getElementById('results');
+    if (resultsDiv.style.display === 'none') resultsDiv.style.display = 'block';
+    const existing = document.getElementById('scenarioCompareBanner');
+    if (existing) existing.remove();
+
+    const html = `
+      <div id="scenarioCompareBanner" style="background:#fef3c7;border:2px solid #f59e0b;border-radius:8px;padding:20px;margin-bottom:30px;">
+        <h2 style="margin-top:0;color:#92400e;">⚖️ Scenario Comparison</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <div>
+            <h3 style="color:#2563eb;">${name1}</h3>
+            <div style="font-size:0.95em;color:#444;line-height:1.55;">
+              <div>Stop ${r1.inputs.actualStopAge} vs plan ${r1.inputs.plannedRetirementAge} · Claim @ ${r1.inputs.claimingAge}</div>
+              <div>Plan benefit: <strong>${formatCurrency(r1.plan.monthly)}</strong>/mo</div>
+              <div>Early-exit benefit: <strong>${formatCurrency(r1.actual.monthly)}</strong>/mo</div>
+              <div>Monthly reduction: <strong>${formatCurrency(r1.deltaMo)}</strong></div>
+              <div>Lifetime hit: <strong>${formatCurrency(r1.deltaLife)}</strong></div>
+              <div>Extra nest egg: <strong>${formatCurrency(r1.nestEgg)}</strong></div>
+            </div>
+          </div>
+          <div>
+            <h3 style="color:#dc2626;">${name2}</h3>
+            <div style="font-size:0.95em;color:#444;line-height:1.55;">
+              <div>Stop ${r2.inputs.actualStopAge} vs plan ${r2.inputs.plannedRetirementAge} · Claim @ ${r2.inputs.claimingAge}</div>
+              <div>Plan benefit: <strong>${formatCurrency(r2.plan.monthly)}</strong>/mo</div>
+              <div>Early-exit benefit: <strong>${formatCurrency(r2.actual.monthly)}</strong>/mo</div>
+              <div>Monthly reduction: <strong>${formatCurrency(r2.deltaMo)}</strong></div>
+              <div>Lifetime hit: <strong>${formatCurrency(r2.deltaLife)}</strong></div>
+              <div>Extra nest egg: <strong>${formatCurrency(r2.nestEgg)}</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    resultsDiv.insertAdjacentHTML('afterbegin', html);
+    resultsDiv.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function buildExplainSummary() {
+    const r = lastResults;
+    if (!r) return '';
+    let summary = 'Early Exit Social Security Impact results.\n\n';
+    summary += 'Planned stop age: ' + r.plan.stopAge + '. Actual stop age: ' + r.actual.stopAge + '.\n';
+    summary += 'Claiming age: ' + r.inputs.claimingAge + '.\n';
+    summary += 'Plan benefit: ' + formatCurrency(r.plan.monthly) + '/mo. Early-exit benefit: ' + formatCurrency(r.actual.monthly) + '/mo.\n';
+    summary += 'Monthly reduction: ' + formatCurrency(r.deltaMo) + '. Lifetime hit: ' + formatCurrency(r.deltaLife) + '.\n';
+    summary += 'Extra nest egg at ' + r.inputs.withdrawalRatePct + '%: ' + formatCurrency(r.nestEgg) + '.\n';
+    summary += 'This is an approximate model of highest-35 earnings impact, not an SSA projection.\n';
+    return summary;
+  }
+
+  async function explainResults() {
+    if (!lastResults) {
+      alert('Calculate results first (click Estimate Impact).');
+      return;
+    }
+    const summary = buildExplainSummary();
+    const btn = document.getElementById('explainResultsBtnInResults');
+    const orig = btn ? btn.textContent : '';
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Loading…';
+    }
+    try {
+      const res = await fetch(apiBase() + '/api/explain_results.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          calculator_type: 'ss-early-exit',
+          results_summary: summary
+        })
+      });
+      const data = await res.json();
+      if (data.explanation && typeof showExplainModal === 'function') {
+        showExplainModal(data.explanation, {
+          calculatorType: 'ss-early-exit',
+          resultsSummary: summary
+        });
+      } else {
+        alert(data.error || 'Could not generate explanation.');
+      }
+    } catch (err) {
+      alert('Explain request failed.');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = orig || '🤖 Explain my results';
+      }
+    }
   }
 
   const saveBtn = document.getElementById('saveScenarioBtn');
@@ -828,11 +1043,11 @@
           if (status) status.textContent = 'No saved scenarios.';
           return;
         }
-        const list = data.scenarios.map((s, i) => (i + 1) + '. ' + s.scenario_name).join('\n');
+        const list = data.scenarios.map((s, i) => (i + 1) + '. ' + (s.name || s.scenario_name || 'Untitled')).join('\n');
         const choice = prompt('Load which scenario?\n' + list + '\n\nEnter number:');
         const idx = parseInt(choice, 10) - 1;
         if (isNaN(idx) || idx < 0 || idx >= data.scenarios.length) return;
-        let parsed = data.scenarios[idx].scenario_data;
+        let parsed = data.scenarios[idx].data != null ? data.scenarios[idx].data : data.scenarios[idx].scenario_data;
         if (typeof parsed === 'string') parsed = JSON.parse(parsed);
         applyScenarioData(parsed);
         if (status) status.textContent = 'Loaded. Click Estimate Impact.';
@@ -842,44 +1057,92 @@
     });
   }
 
-  const explainBtn = document.getElementById('explainResultsBtnInResults');
-  if (explainBtn) {
-    explainBtn.addEventListener('click', async () => {
-      if (!lastResults) {
-        alert('Calculate results first.');
-        return;
-      }
-      const r = lastResults;
-      let summary = 'Early Exit Social Security Impact results.\n\n';
-      summary += 'Planned stop age: ' + r.plan.stopAge + '. Actual stop age: ' + r.actual.stopAge + '.\n';
-      summary += 'Claiming age: ' + r.inputs.claimingAge + '.\n';
-      summary += 'Plan benefit: ' + formatCurrency(r.plan.monthly) + '/mo. Early-exit benefit: ' + formatCurrency(r.actual.monthly) + '/mo.\n';
-      summary += 'Monthly reduction: ' + formatCurrency(r.deltaMo) + '. Lifetime hit: ' + formatCurrency(r.deltaLife) + '.\n';
-      summary += 'Extra nest egg at ' + r.inputs.withdrawalRatePct + '%: ' + formatCurrency(r.nestEgg) + '.\n';
-      summary += 'This is an approximate model of highest-35 earnings impact, not an SSA projection.\n';
-
+  const compareBtn = document.getElementById('compareScenariosBtn');
+  if (compareBtn) {
+    compareBtn.addEventListener('click', async () => {
       try {
-        const res = await fetch(apiBase() + '/api/explain_results.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            calculator_type: 'ss-early-exit',
-            results_summary: summary
-          })
-        });
+        const res = await fetch(apiBase() + '/api/load_scenarios.php?calculator_type=ss-early-exit');
         const data = await res.json();
-        if (data.explanation && typeof showExplainModal === 'function') {
-          showExplainModal(data.explanation, {
-            calculatorType: 'ss-early-exit',
-            resultsSummary: summary
-          });
-        } else {
-          alert(data.error || 'Could not generate explanation.');
+        if (!data.success) {
+          alert('Error: ' + (data.error || 'Could not load scenarios'));
+          return;
         }
+        if (!data.scenarios || data.scenarios.length < 2) {
+          alert('Save at least 2 scenarios first, then compare.');
+          return;
+        }
+        const list = data.scenarios.map((s, i) => (i + 1) + '. ' + (s.name || 'Untitled')).join('\n');
+        const choice = prompt('Select TWO scenarios to compare:\n\n' + list + '\n\nEnter two numbers (e.g. 1,2):');
+        if (!choice) return;
+        const parts = choice.split(',').map((s) => parseInt(s.trim(), 10) - 1);
+        if (parts.length !== 2 || parts[0] === parts[1] ||
+            parts.some((p) => isNaN(p) || p < 0 || p >= data.scenarios.length)) {
+          alert('Invalid selection. Enter two different numbers (e.g. 1,2).');
+          return;
+        }
+        const d1 = data.scenarios[parts[0]].data;
+        const d2 = data.scenarios[parts[1]].data;
+        const r1 = computeSavedScenario(d1);
+        const r2 = computeSavedScenario(d2);
+        showComparison(
+          data.scenarios[parts[0]].name || 'Scenario A',
+          data.scenarios[parts[1]].name || 'Scenario B',
+          r1,
+          r2
+        );
       } catch (err) {
-        alert('Explain request failed.');
+        alert('Compare failed.');
       }
     });
+  }
+
+  const pdfBtn = document.getElementById('downloadPdfBtn');
+  if (pdfBtn) {
+    pdfBtn.addEventListener('click', () => {
+      const payload = exportPayload();
+      if (!payload) {
+        alert('Calculate results first (click Estimate Impact).');
+        return;
+      }
+      const canvas = document.getElementById('scenarioBarChart');
+      payload.chartImage = (canvas && scenarioBarChart) ? canvas.toDataURL('image/png') : null;
+      fetchBlob('/api/generate_ss_early_exit_pdf.php', payload)
+        .then((blob) => downloadBlob(blob, 'SS_Early_Exit_Report_' + new Date().toISOString().split('T')[0] + '.pdf'))
+        .catch((e) => alert('Download PDF: ' + e.message));
+    });
+  }
+
+  const csvBtn = document.getElementById('downloadCsvBtn');
+  if (csvBtn) {
+    csvBtn.addEventListener('click', () => {
+      const payload = exportPayload();
+      if (!payload) {
+        alert('Calculate results first (click Estimate Impact).');
+        return;
+      }
+      fetchBlob('/api/export_ss_early_exit_csv.php', payload)
+        .then((blob) => downloadBlob(blob, 'SS_Early_Exit_' + new Date().toISOString().split('T')[0] + '.csv'))
+        .catch((e) => alert('Export CSV: ' + e.message));
+    });
+  }
+
+  const summaryBtn = document.getElementById('downloadSummaryBtn');
+  if (summaryBtn) {
+    summaryBtn.addEventListener('click', () => {
+      const payload = exportPayload();
+      if (!payload) {
+        alert('Calculate results first (click Estimate Impact).');
+        return;
+      }
+      fetchBlob('/api/generate_ss_early_exit_summary_pdf.php', payload)
+        .then((blob) => downloadBlob(blob, 'SS_Early_Exit_Summary_' + new Date().toISOString().split('T')[0] + '.pdf'))
+        .catch((e) => alert('Impact Summary: ' + e.message));
+    });
+  }
+
+  const explainBtn = document.getElementById('explainResultsBtnInResults');
+  if (explainBtn) {
+    explainBtn.addEventListener('click', explainResults);
   }
 
   // URL prefill
