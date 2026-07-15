@@ -712,6 +712,12 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
         </section>
 
         <section class="card">
+          <h3>Early Exit Social Security Impact</h3>
+          <p>See how stopping work earlier than planned can lower the Social Security benefit your SSA statement assumes.</p>
+          <a class="btn" href="ss-early-exit/">Open</a>
+        </section>
+
+        <section class="card">
           <h3>Social Security Survivor Impact Calculator</h3>
           <p>Should the lower earner delay to age 70? Not always. Compare claiming strategies for both spouses and see how survivor benefits, longevity, and COLAs can dramatically change the strategy that produces the highest lifetime household income.</p>
           <a class="btn" href="ss-survivor-impact/">Open</a>

@@ -23,6 +23,7 @@ $urls = [
     ['loc' => '/survivor-gap/', 'priority' => '0.9', 'changefreq' => 'monthly'],
     ['loc' => '/retirement-spending-checkup/', 'priority' => '0.9', 'changefreq' => 'monthly'],
     ['loc' => '/social-security-claiming-analyzer/', 'priority' => '0.9', 'changefreq' => 'monthly'],
+    ['loc' => '/ss-early-exit/', 'priority' => '0.9', 'changefreq' => 'monthly'],
     ['loc' => '/roth-conv/', 'priority' => '0.9', 'changefreq' => 'monthly'],
     ['loc' => '/rmd-impact/', 'priority' => '0.9', 'changefreq' => 'monthly'],
     ['loc' => '/managed-vs-vanguard/', 'priority' => '0.9', 'changefreq' => 'monthly'],
