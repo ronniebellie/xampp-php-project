@@ -533,6 +533,40 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
     .integrated-note p{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
     .integrated-note p:first-child{color:var(--text);font-weight:800;margin-bottom:4px}
     .integrated-note a{font-weight:800}
+    .advisor-callout{
+      margin:20px 0 0;
+      padding:18px 20px;
+      border:1px solid #d8e1ed;
+      border-radius:14px;
+      background:#f8fafc;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      gap:18px;
+    }
+    .advisor-callout h2{
+      margin:0;
+      font-size:18px;
+      line-height:1.25;
+      letter-spacing:0;
+    }
+    .advisor-callout p{
+      margin:5px 0 0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.45;
+      max-width:720px;
+    }
+    .advisor-callout .btn{
+      min-height:40px;
+      padding:9px 14px;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--text);
+      border-radius:10px;
+      flex:0 0 auto;
+    }
     hr.footer-sep{border:0;border-top:1px solid rgba(15,23,42,.12);margin:22px 0 14px}
     .site-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:13px;padding-bottom:10px}
     .footer-left{margin:0}
@@ -828,8 +862,6 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
 
     <nav class="site-top-nav" aria-label="Site sections">
       <a href="/" class="active" aria-current="page">Calculators</a>
-      <a href="https://ronbelisle.com/invest-guidance.ronbelisle.com/">Investing Guidance</a>
-      <a href="https://calcforadvisors.com" target="_blank" rel="noopener">Advisor Branding</a>
     </nav>
     <?php endif; ?>
 
@@ -997,6 +1029,16 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
         </div>
       </div>
     </main>
+
+    <?php if (!$hide_site_header): ?>
+    <section class="advisor-callout" aria-labelledby="advisor-callout-title">
+      <div>
+        <h2 id="advisor-callout-title">For Financial Advisors</h2>
+        <p>These retirement planning calculators are also available with advisor branding and additional tools designed for financial professionals.</p>
+      </div>
+      <a class="btn" href="https://calcforadvisors.com/">Visit CalcForAdvisors.com &rarr;</a>
+    </section>
+    <?php endif; ?>
 
     <?php if (!$hide_site_header): ?>
     <script>
