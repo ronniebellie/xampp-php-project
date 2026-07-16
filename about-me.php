@@ -41,7 +41,7 @@ if ($isLoggedIn) {
     <p style="margin-bottom: 20px;"><a href="/" class="back">← Return to home page</a></p>
     <h1>About RB</h1>
     <div class="prose">
-      <p>My name is Ron B. I'm not backed by a fintech company, just a (sort-of) retired university teacher who saw a need for straightforward, no-nonsense retirement tools and decided to build them myself.</p>
+      <p>Hi, I'm Ron Belisle. I'm not backed by a fintech company—just a (sort-of) retired university teacher who saw a need for straightforward, no-nonsense retirement tools and decided to build them myself.</p>
       <p>My degrees are in History (BA) and Applied Linguistics (MA), both from Washington State University, not computer science. But I bring something more relevant to this project: four decades of explaining complex topics in plain English, real-world experience in financial planning, and a practical understanding of how AI can help people make better-informed decisions.</p>
       <p>I spent most of my 40-year teaching career with Mukogawa Women's University, a Japanese university near Kobe, teaching some in Japan but mostly at its U.S. branch campus in Washington state. I retired in 2024, and this fall I'm returning to teach an online course on generative AI for the university's business majors, helping students learn to use AI thoughtfully and responsibly.</p>
       <p>Before teaching, I spent six years as a life insurance agent with Northwestern Mutual Life, beginning on a college agent contract while attending Washington State University. In 1983, I ranked among the top 10 college agents nationwide, out of roughly 300 to 400. That experience gave me a lasting foundation in long-term financial planning and in helping people think clearly about their goals.</p>
