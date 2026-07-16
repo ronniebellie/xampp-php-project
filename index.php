@@ -565,6 +565,220 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
       .tool-action{justify-content:flex-start;padding-left:0}
       .footer-right{width:100%;justify-content:flex-start;text-align:left}
     }
+    @media (max-width: 767px){
+      .wrap{padding:10px 10px 28px}
+      .topbar{
+        margin-bottom:10px;
+        border-radius:12px;
+        box-shadow:0 6px 16px rgba(15,23,42,.07);
+      }
+      .brand{gap:0}
+      .brand-text{padding:18px 16px 16px}
+      .mark{
+        width:38px;
+        height:38px;
+        border-radius:10px;
+        margin-bottom:10px;
+        font-size:14px;
+      }
+      .brand-title{
+        font-size:30px;
+        line-height:1.08;
+      }
+      .brand-tagline{
+        margin-top:9px;
+        font-size:14.5px;
+        line-height:1.42;
+      }
+      .hero-primary-actions{
+        margin-top:14px;
+        gap:8px;
+      }
+      .hero-primary-actions .hero-btn{
+        width:100%;
+      }
+      .hero-primary-actions .hero-btn-secondary{
+        min-height:38px;
+        padding:8px 12px;
+        font-size:13px;
+        box-shadow:none;
+      }
+      .hero-actions{
+        grid-template-columns:1fr;
+        gap:6px;
+        padding:12px;
+        border-radius:10px;
+      }
+      .hero-actions::before{
+        margin-bottom:0;
+        font-size:10px;
+      }
+      .hero-action-label{
+        font-size:12.5px;
+      }
+      .hero-action-note{
+        font-size:11.5px;
+        line-height:1.3;
+      }
+      .hero-premium-path{
+        padding-bottom:9px;
+      }
+      .hero-premium-path .hero-btn,
+      .hero-login-path .hero-btn{
+        min-height:38px;
+        margin-top:6px;
+      }
+      .site-top-nav{
+        gap:4px;
+        margin-bottom:12px;
+        padding:4px;
+        border-radius:10px;
+      }
+      .site-top-nav a{
+        min-height:34px;
+        padding:6px 10px;
+        font-size:13px;
+      }
+      .premium-banner{
+        margin-bottom:12px;
+        padding:14px;
+        border-radius:10px;
+        box-shadow:0 6px 16px rgba(15,47,95,.14);
+      }
+      .premium-banner h2{
+        font-size:17px;
+      }
+      .premium-banner p,
+      .premium-banner-pricing,
+      .premium-feature-item{
+        font-size:13px;
+      }
+      .premium-banner-features{
+        gap:7px 12px;
+        margin-top:9px;
+      }
+      .premium-banner-cta{
+        min-height:38px;
+        padding:8px 12px;
+      }
+      .planning-shell{
+        margin-top:12px;
+        padding:12px;
+        border-radius:12px;
+        box-shadow:0 4px 12px rgba(15,23,42,.05);
+      }
+      .section-kicker{
+        margin-bottom:4px;
+        font-size:10.5px;
+      }
+      .section-title{
+        font-size:22px;
+        line-height:1.18;
+      }
+      .section-copy{
+        margin-top:5px;
+        font-size:13.5px;
+        line-height:1.4;
+      }
+      .calculator-tab-shell{
+        margin:12px 0 14px;
+        padding:4px;
+        border-radius:10px;
+      }
+      .calculator-tab{
+        min-height:38px;
+        padding:8px 10px;
+        border-radius:8px;
+        font-size:12.5px;
+      }
+      .primary-tool{
+        padding:14px;
+        border-radius:10px;
+        margin-bottom:12px;
+        box-shadow:0 5px 14px rgba(15,23,42,.07);
+      }
+      .primary-tool h3{
+        font-size:20px;
+      }
+      .primary-tool p{
+        margin-top:5px;
+        font-size:13.5px;
+        line-height:1.42;
+      }
+      .primary-tool .btn{
+        min-height:40px;
+        padding:8px 12px;
+      }
+      .popular-grid{
+        gap:8px;
+        margin:10px 0 14px;
+      }
+      .tool-card{
+        min-height:0;
+        padding:12px;
+        border-radius:10px;
+        gap:6px;
+      }
+      .tool-card h3{
+        font-size:14px;
+      }
+      .tool-card p{
+        font-size:12.5px;
+        line-height:1.34;
+      }
+      .goal-grid{
+        gap:10px;
+        margin-top:10px;
+      }
+      .goal-section{
+        border-radius:10px;
+      }
+      .goal-heading{
+        gap:8px;
+        padding:10px 12px;
+      }
+      .goal-icon{
+        width:26px;
+        height:26px;
+        border-radius:7px;
+        font-size:12px;
+      }
+      .goal-heading h2,
+      .goal-heading h3{
+        font-size:15px;
+      }
+      .goal-heading p{
+        font-size:12px;
+        line-height:1.28;
+      }
+      .tool-row{
+        padding:10px 12px;
+        gap:4px;
+      }
+      .tool-row h3{
+        font-size:14px;
+      }
+      .tool-row p{
+        margin-top:3px;
+        font-size:12.5px;
+        line-height:1.32;
+      }
+      .tool-action,
+      .btn{
+        min-height:34px;
+        padding:6px 0;
+        font-size:12.5px;
+      }
+      .integrated-note{
+        margin-top:12px;
+        padding:12px;
+        border-radius:10px;
+      }
+      .integrated-note p{
+        font-size:13px;
+        line-height:1.4;
+      }
+    }
   </style>
 </head>
 <body>
