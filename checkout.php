@@ -6,12 +6,14 @@ require_once 'includes/stripe_config.php';
 require_once 'includes/auth_flow_helpers.php';
 require_once 'vendor/autoload.php';
 
-// Get plan details from URL
-$plan = $_GET['plan'] ?? 'monthly';
-$price_id = $_GET['price_id'] ?? STRIPE_PRICE_MONTHLY;
+// Get plan details from URL. Reject unknown plans instead of silently choosing a Stripe price.
+$plan = $_GET['plan'] ?? '';
 if (!in_array($plan, ['monthly', 'annual'], true)) {
-    $plan = 'monthly';
+    http_response_code(400);
+    echo "Error: Invalid subscription plan.";
+    exit;
 }
+$price_id = $plan === 'annual' ? STRIPE_PRICE_ANNUAL : STRIPE_PRICE_MONTHLY;
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
