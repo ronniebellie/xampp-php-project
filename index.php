@@ -97,521 +97,473 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
   <?php include __DIR__ . '/includes/json-ld-home.php'; ?>
   <style>
     :root{
-      --max: 980px;
-      --bg: #f6f7fb;
+      --max: 1120px;
+      --bg: #f5f7fb;
       --paper: #ffffff;
+      --paper-soft: #f8fafc;
       --text: #0f172a;
-      --muted: rgba(15,23,42,.68);
-      --border: rgba(15,23,42,.14);
+      --muted: #526071;
+      --border: #d9e1ec;
       --accent: #1d4ed8;
-      --shadow: 0 14px 34px rgba(15,23,42,.14);
-      --radius: 16px;
+      --accent-strong: #173f8a;
+      --success: #047857;
+      --ink-soft: #334155;
+      --shadow: 0 14px 34px rgba(15,23,42,.10);
+      --radius: 12px;
     }
     *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
     body{
       margin:0;
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
       color:var(--text);
-      background:
-        linear-gradient(180deg,#f9fafb 0%,var(--bg) 55%,#f3f4f6 100%),
-        repeating-linear-gradient(0deg,rgba(15,23,42,.03) 0 1px,transparent 1px 34px),
-        repeating-linear-gradient(90deg,rgba(15,23,42,.02) 0 1px,transparent 1px 34px);
+      background:linear-gradient(180deg,#f8fafc 0%,var(--bg) 48%,#eef2f7 100%);
+      line-height:1.5;
     }
-    .wrap{max-width:var(--max);margin:0 auto;padding:24px 18px 44px}
+    .wrap{max-width:var(--max);margin:0 auto;padding:22px 20px 46px}
+    a{color:var(--accent)}
+    a:focus-visible,button:focus-visible{outline:3px solid rgba(29,78,216,.28);outline-offset:3px}
     .topbar{
-      display:flex;align-items:center;justify-content:space-between;gap:16px;
-      padding:28px 32px;margin-bottom:20px;
-      border:2px solid var(--border);
-      background:linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
-      border-radius:var(--radius);
-      box-shadow:0 8px 24px rgba(0, 0, 0, 0.04);
+      display:block;
+      padding:0;
+      margin-bottom:16px;
+      border:1px solid var(--border);
+      background:var(--paper);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
     }
-    .brand{display:flex;align-items:center;gap:16px;min-width:0;flex:1}
+    .brand{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 310px;
+      gap:28px;
+      align-items:stretch;
+      min-width:0;
+      flex:1;
+    }
+    .brand-text{min-width:0;padding:34px 34px 30px}
     .mark{
-      width:56px;height:56px;border-radius:16px;border:2px solid rgba(29,78,216,.2);
-      background:linear-gradient(135deg,rgba(29,78,216,.15),rgba(29,78,216,.06));
-      display:grid;place-items:center;font-weight:850;letter-spacing:-.02em;color:var(--accent);flex:0 0 auto;font-size:20px;
+      width:48px;height:48px;border-radius:12px;border:1px solid rgba(29,78,216,.16);
+      background:#eff6ff;
+      display:grid;place-items:center;font-weight:850;letter-spacing:.01em;color:var(--accent);font-size:17px;
+      margin-bottom:18px;
     }
-    .brand-text{flex:1;min-width:0}
+    a.mark{text-decoration:none}
     .brand-title{
-      font-size:24px;font-weight:850;letter-spacing:-.01em;margin:0;color:var(--accent);line-height:1.25;
+      font-size:clamp(32px,5vw,54px);
+      font-weight:850;
+      letter-spacing:0;
+      margin:0;
+      color:var(--text);
+      line-height:1.02;
+      max-width:780px;
     }
     .brand-tagline{
-      font-size:15px;color:var(--muted);margin:10px 0 0;line-height:1.6;max-width:680px;
+      font-size:17px;
+      color:var(--muted);
+      margin:16px 0 0;
+      line-height:1.62;
+      max-width:760px;
     }
+    .hero-primary-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
     .hero-actions{
       display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      margin-top:18px;
-      align-items:center;
+      flex-direction:column;
+      gap:8px;
+      align-items:stretch;
+      justify-content:center;
+      align-self:center;
+      margin-right:26px;
+      padding:16px;
+      background:#f8fafc;
+      border-left:1px solid var(--border);
+      border:1px solid var(--border);
+      border-radius:14px;
+      min-width:220px;
+      max-width:250px;
     }
-    .hero-btn{
+    .hero-actions::before{
+      content:"Access";
+      display:block;
+      margin:0 0 2px;
+      color:#64748b;
+      font-size:11px;
+      font-weight:850;
+      letter-spacing:.08em;
+      line-height:1.2;
+      text-transform:uppercase;
+    }
+    .hero-welcome{
+      font-size:13px;
+      color:var(--muted);
+      margin:0 0 2px;
+      line-height:1.35;
+    }
+    .hero-welcome strong{color:var(--text)}
+    .hero-action-label{
+      margin:2px 0 0;
+      color:#334155;
+      font-size:13px;
+      font-weight:800;
+      line-height:1.3;
+    }
+    .hero-action-note{
+      margin:0;
+      color:#64748b;
+      font-size:12px;
+      line-height:1.35;
+    }
+    .hero-premium-path{
+      margin:0;
+      padding:0 0 12px;
+      border-bottom:1px solid #e2e8f0;
+    }
+    .hero-premium-path .hero-btn{
+      width:100%;
+      margin-top:8px;
+    }
+    .hero-login-path{
+      margin-top:2px;
+    }
+    .hero-login-path .hero-btn{
+      width:100%;
+      margin-top:7px;
+    }
+    .hero-btn,.btn{
+      min-height:44px;
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      padding:10px 18px;
+      gap:8px;
+      padding:10px 16px;
       border-radius:10px;
       font-size:14px;
-      font-weight:700;
+      font-weight:760;
       text-decoration:none;
       line-height:1.2;
-      transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
+      border:1px solid transparent;
+      transition:background .15s ease,border-color .15s ease,color .15s ease,transform .15s ease;
     }
-    .hero-btn:hover{
-      transform:translateY(-1px);
+    .hero-btn:hover,.btn:hover{transform:translateY(-1px)}
+    .hero-actions .hero-btn{
+      min-height:38px;
+      padding:8px 12px;
+      border-radius:9px;
+      font-size:13px;
+      font-weight:750;
+      box-shadow:none;
     }
-    .hero-btn-secondary{
-      color:var(--text);
-      background:#fff;
-      border:1px solid var(--border);
-      box-shadow:0 2px 8px rgba(15,23,42,.06);
+    .hero-actions .hero-btn-premium{
+      color:#fff;
+      background:var(--success);
+      border-color:var(--success);
     }
-    .hero-btn-secondary:hover{
-      background:#f8fafc;
+    .hero-actions .hero-btn-premium:hover{
+      color:#fff;
+      background:#065f46;
+      border-color:#065f46;
     }
-    .hero-btn-primary{
+    .hero-btn-primary,.btn-primary{
       color:#fff;
       background:var(--accent);
-      border:1px solid rgba(29,78,216,.35);
-      box-shadow:0 4px 12px rgba(29,78,216,.22);
+      border-color:var(--accent);
+      box-shadow:0 8px 18px rgba(29,78,216,.18);
     }
-    .hero-btn-primary:hover{
-      background:#1e40af;
+    .hero-btn-primary:hover,.btn-primary:hover{background:var(--accent-strong);border-color:var(--accent-strong)}
+    .hero-btn-secondary,.btn-secondary{
+      color:var(--text);
+      background:#fff;
+      border-color:var(--border);
     }
+    .hero-btn-secondary:hover,.btn-secondary:hover{border-color:#b8c5d6;background:#f8fafc}
     .hero-btn-premium{
       color:#fff;
-      background:linear-gradient(135deg,#059669 0%,#10b981 100%);
-      border:1px solid rgba(5,150,105,.35);
-      box-shadow:0 4px 12px rgba(16,185,129,.24);
+      background:var(--success);
+      border-color:var(--success);
     }
-    .hero-btn-premium:hover{
-      background:linear-gradient(135deg,#047857 0%,#059669 100%);
+    .hero-btn-premium:hover{background:#065f46}
+    .premium-badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:42px;
+      padding:9px 12px;
+      border-radius:10px;
+      background:#ecfdf5;
+      color:#065f46;
+      font-weight:800;
+      border:1px solid #bbf7d0;
     }
-    .hero-welcome{
-      font-size:14px;
-      color:var(--muted);
-      margin:0;
-      line-height:1.5;
-    }
-    .hero-welcome strong{color:var(--text)}
     .site-top-nav{
       display:flex;
-      gap:8px;
+      gap:6px;
       flex-wrap:wrap;
       align-items:center;
-      margin:0 0 20px;
-      padding:0 0 16px;
-      border-bottom:1px solid rgba(15,23,42,.1);
+      margin:0 0 18px;
+      padding:6px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.76);
+      border-radius:999px;
+      width:max-content;
+      max-width:100%;
     }
     .site-top-nav a{
       display:inline-flex;
       align-items:center;
-      padding:8px 16px;
+      min-height:38px;
+      padding:8px 14px;
       border-radius:999px;
       text-decoration:none;
       font-size:14px;
-      font-weight:600;
+      font-weight:700;
       color:var(--muted);
       transition:background .15s ease,color .15s ease;
     }
-    .site-top-nav a:hover:not(.active){
-      background:rgba(15,23,42,.04);
-      color:var(--text);
+    .site-top-nav a:hover:not(.active){background:#f1f5f9;color:var(--text)}
+    .site-top-nav a.active{background:var(--text);color:#fff}
+    .premium-banner {
+      background:#0f2f5f;
+      border-radius:14px;
+      padding:20px 22px;
+      margin:0 0 18px;
+      color:white;
+      box-shadow:0 10px 26px rgba(15,47,95,.18);
+      border:1px solid rgba(255,255,255,.12);
     }
-    .site-top-nav a.active{
-      background:rgba(29,78,216,.1);
-      color:var(--accent);
+    .premium-banner-content{display:flex;align-items:center;justify-content:space-between;gap:18px}
+    .premium-banner-text{flex:1}
+    .premium-banner h2{margin:0 0 6px;font-size:20px;font-weight:820;letter-spacing:0}
+    .premium-banner p{margin:0;opacity:.95;font-size:14px;line-height:1.5}
+    .premium-banner-pricing{margin:9px 0 12px;font-size:14px;font-weight:650;opacity:.95}
+    .premium-banner-pricing a{color:#fff;text-decoration:underline}
+    .premium-banner-features{display:flex;gap:10px 16px;margin-top:11px;flex-wrap:wrap}
+    .premium-feature-item{display:flex;align-items:center;gap:6px;font-size:13px;opacity:.95}
+    .premium-feature-item::before{content:"✓";font-weight:bold;color:#86efac}
+    .premium-banner-cta{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:42px;
+      background:#fff;
+      color:#0f2f5f;
+      padding:10px 18px;
+      border-radius:10px;
+      text-decoration:none;
+      font-weight:800;
+      font-size:14px;
+      white-space:nowrap;
     }
-    .calculator-tab-shell{
-      margin:28px 0 32px;
-      padding:8px;
-      background:#f8fafc;
+    .premium-banner.member{background:#065f46}
+    .premium-banner.member .premium-banner-cta{background:rgba(255,255,255,.14);color:white;border:1px solid rgba(255,255,255,.42)}
+    .planning-shell{
+      margin-top:20px;
+      padding:22px;
+      background:rgba(255,255,255,.78);
       border:1px solid var(--border);
-      border-radius:var(--radius);
-      box-shadow:0 1px 2px rgba(15,23,42,.04);
+      border-radius:18px;
+      box-shadow:0 8px 24px rgba(15,23,42,.06);
     }
-    .calculator-tab-bar{
-      display:flex;
-      gap:6px;
-      flex-wrap:wrap;
-      background:transparent;
-      border:none;
-      border-radius:12px;
-      padding:0;
-      margin:0;
+    .section-kicker{
+      margin:0 0 6px;
+      font-size:12px;
+      font-weight:850;
+      color:var(--accent);
+      letter-spacing:.10em;
+      text-transform:uppercase;
     }
+    .section-title{margin:0;font-size:26px;line-height:1.15;letter-spacing:0}
+    .section-copy{margin:8px 0 0;color:var(--muted);font-size:15px;max-width:760px}
+    .calculator-tab-shell{
+      margin:18px 0 20px;
+      padding:6px;
+      background:#eef2f7;
+      border:1px solid #d8e1ed;
+      border-radius:14px;
+    }
+    .calculator-tab-bar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;background:transparent;border:none;padding:0;margin:0}
     .calculator-tab{
-      flex:1 1 220px;
+      min-height:46px;
       border:none;
       background:transparent;
-      padding:12px 16px;
+      padding:10px 12px;
       border-radius:10px;
       font-size:13px;
-      font-weight:600;
-      color:#64748b;
+      font-weight:760;
+      color:#475569;
       cursor:pointer;
-      line-height:1.4;
+      line-height:1.25;
       text-align:center;
-      transition:background .2s ease,color .2s ease,box-shadow .2s ease;
+      transition:background .15s ease,color .15s ease,box-shadow .15s ease;
     }
-    .calculator-tab:hover:not(.active){
-      color:var(--text);
-      background:rgba(255,255,255,.5);
-    }
-    .calculator-tab.active{
-      background:#fff;
-      color:var(--text);
-      font-weight:800;
-      box-shadow:0 1px 3px rgba(0,0,0,.1);
-    }
+    .calculator-tab:hover:not(.active){color:var(--text);background:rgba(255,255,255,.62)}
+    .calculator-tab.active{background:#fff;color:var(--text);box-shadow:0 1px 4px rgba(15,23,42,.10)}
     .tab-panel[hidden]{display:none !important}
+    .primary-tool{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:18px;
+      align-items:center;
+      padding:22px;
+      border:1px solid #cbd8ea;
+      border-radius:14px;
+      background:#fff;
+      box-shadow:0 10px 24px rgba(15,23,42,.08);
+      margin-bottom:18px;
+    }
+    .primary-tool h3,.tool-card h3,.tool-row h3{margin:0;color:var(--text);letter-spacing:0}
+    .primary-tool h3{font-size:24px;line-height:1.15}
+    .primary-tool p{margin:8px 0 0;color:var(--muted);font-size:15px;line-height:1.55;max-width:820px}
+    .popular-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:16px 0 20px}
+    .tool-card{
+      min-height:132px;
+      padding:14px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#fff;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .tool-card h3{font-size:15px;line-height:1.24}
+    .tool-card p{margin:0;color:var(--muted);font-size:13px;line-height:1.38;flex:1}
+    .goal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}
+    .goal-section{
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+      overflow:hidden;
+    }
+    .goal-section.full{grid-column:1 / -1}
+    .goal-heading{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      padding:13px 14px;
+      border-bottom:1px solid #e5ebf3;
+      background:#f8fafc;
+    }
+    .goal-icon{
+      width:30px;
+      height:30px;
+      border-radius:8px;
+      display:grid;
+      place-items:center;
+      background:#e0ecff;
+      color:var(--accent);
+      font-weight:900;
+      flex:0 0 auto;
+    }
+    .goal-heading h2,.goal-heading h3{margin:0;font-size:16px;line-height:1.25}
+    .goal-heading p{margin:2px 0 0;color:var(--muted);font-size:12.5px;line-height:1.35}
+    .tool-list{display:grid}
+    .tool-row{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:12px;
+      align-items:center;
+      padding:12px 14px;
+      border-top:1px solid #edf1f6;
+      text-decoration:none;
+      color:inherit;
+    }
+    .tool-list .tool-row:first-child{border-top:0}
+    .tool-row:hover{background:#f8fafc}
+    .tool-row h3{font-size:14.5px;line-height:1.25}
+    .tool-row p{margin:4px 0 0;color:var(--muted);font-size:13px;line-height:1.35}
+    .tool-action,.btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:36px;
+      padding:8px 10px;
+      color:var(--accent);
+      font-weight:800;
+      font-size:13px;
+      text-decoration:none;
+      white-space:nowrap;
+    }
+    .tool-action::after,.btn::after{content:"→";margin-left:5px}
+    .btn{border:0;background:transparent;border-radius:8px}
+    .btn-primary,.primary-tool .btn{
+      min-height:44px;
+      padding:10px 16px;
+      border-radius:10px;
+      background:var(--accent);
+      color:#fff;
+      border:1px solid var(--accent);
+      box-shadow:0 8px 18px rgba(29,78,216,.16);
+    }
+    .primary-tool .btn::after{color:inherit}
+    .btn-secondary{border:1px solid var(--border);background:#fff;color:var(--text)}
     .feature-badge{
       display:inline-block;
       margin-left:8px;
-      padding:3px 9px;
+      padding:3px 8px;
       border-radius:999px;
       font-size:10px;
-      font-weight:800;
-      letter-spacing:.04em;
+      font-weight:850;
+      letter-spacing:.05em;
       text-transform:uppercase;
       vertical-align:middle;
-      color:#fff;
-      background:linear-gradient(135deg,#7c3aed 0%,#4f46e5 100%);
-      box-shadow:0 2px 8px rgba(79,70,229,.28);
+      color:#075985;
+      background:#e0f2fe;
     }
-    .card.card-featured{
-      border:1px solid rgba(79,70,229,.28);
-      background:linear-gradient(180deg,#fff 0%,#f5f3ff 100%);
-      box-shadow:0 12px 28px rgba(79,70,229,.12);
+    .card{display:block}
+    .section,.section-heading,.hint,.tier,.tier-title,.tier-hint,.grid,.grid.tight,.ynab-tool-grid{margin:0;padding:0}
+    .card.coming-soon .btn{background:#e2e8f0;color:#64748b;border-color:#cbd5e1;cursor:not-allowed;pointer-events:none}
+    .card.coming-soon .coming-badge{
+      display:inline-block;
+      background:#f59e0b;
+      color:white;
+      padding:4px 10px;
+      border-radius:12px;
+      font-size:11px;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+      margin-left:6px;
     }
-    .card.card-featured::after{
-      opacity:.12;
+    .integrated-note{
+      margin-top:20px;
+      padding:16px 18px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
     }
-    
-    /* Premium Banner */
-    .premium-banner {
-      background: linear-gradient(135deg, #2c5282 0%, #3182ce 100%);
-      border-radius: var(--radius);
-      padding: 24px 28px;
-      margin-bottom: 20px;
-      color: white;
-      box-shadow: 0 8px 24px rgba(44, 82, 130, 0.25);
-      border: 1px solid rgba(255,255,255,0.1);
+    .integrated-note p{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
+    .integrated-note p:first-child{color:var(--text);font-weight:800;margin-bottom:4px}
+    .integrated-note a{font-weight:800}
+    hr.footer-sep{border:0;border-top:1px solid rgba(15,23,42,.12);margin:22px 0 14px}
+    .site-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:13px;padding-bottom:10px}
+    .footer-left{margin:0}
+    .footer-right{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;text-align:right}
+    .donate-button{display:inline-flex;align-items:center;justify-content:center;padding:8px 14px;border-radius:999px;border:1px solid rgba(15,23,42,.14);background:rgba(15,23,42,.03);color:var(--text);text-decoration:none;font-weight:700;line-height:1;white-space:nowrap}
+    .donate-button:hover{background:rgba(15,23,42,.06)}
+    @media (max-width: 920px){
+      .brand{grid-template-columns:1fr}
+      .hero-actions{border-left:0;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-self:stretch;margin:0;max-width:none}
+      .hero-welcome{grid-column:1 / -1}
+      .popular-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .goal-grid{grid-template-columns:1fr}
     }
-    .premium-banner-content {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-    }
-    .premium-banner-text {
-      flex: 1;
-    }
-    .premium-banner h2 {
-      margin: 0 0 8px 0;
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-    }
-    .premium-banner p {
-      margin: 0;
-      opacity: 0.95;
-      font-size: 15px;
-      line-height: 1.5;
-    }
-    .premium-banner-pricing {
-      margin: 10px 0 14px;
-      font-size: 14px;
-      font-weight: 600;
-      opacity: 0.95;
-    }
-    .premium-banner-pricing a {
-      color: #fff;
-      text-decoration: underline;
-    }
-    .premium-banner-features {
-      display: flex;
-      gap: 20px;
-      margin-top: 12px;
-      flex-wrap: wrap;
-    }
-    .premium-feature-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 14px;
-      opacity: 0.95;
-    }
-    .premium-feature-item::before {
-      content: "✓";
-      font-weight: bold;
-      color: #48bb78;
-    }
-    .premium-banner-cta {
-      display: inline-block;
-      background: white;
-      color: #2c5282;
-      padding: 12px 24px;
-      border-radius: 10px;
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 15px;
-      white-space: nowrap;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .premium-banner-cta:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
-    }
-    .premium-banner.member {
-      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
-    }
-    .premium-banner.member .premium-banner-cta {
-      background: rgba(255,255,255,0.2);
-      color: white;
-      border: 2px solid white;
-    }
-    
-    /* Mobile tweaks for header & premium banner */
-    @media (max-width: 640px) {
-      .wrap {
-        padding: 18px 14px 32px;
-      }
-      .topbar {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 20px 18px;
-        gap: 12px;
-      }
-      .brand {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-      }
-      .mark {
-        display: none;
-      }
-      .brand-title {
-        font-size: 20px;
-      }
-      .brand-tagline {
-        font-size: 14px;
-        max-width: none;
-      }
-      .hero-actions {
-        width: 100%;
-      }
-      .hero-btn {
-        flex: 1 1 calc(50% - 10px);
-        min-width: 120px;
-      }
-      .calculator-tab-shell {
-        margin: 24px 0 28px;
-        padding: 6px;
-      }
-      .calculator-tab {
-        flex: 1 1 100%;
-        font-size: 12px;
-        padding: 10px 12px;
-      }
-      .site-top-nav a {
-        font-size: 13px;
-        padding: 7px 12px;
-      }
-      .premium-banner {
-        padding: 20px 18px;
-      }
-      .premium-banner-content {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .premium-banner-cta {
-        width: 100%;
-        text-align: center;
-        justify-content: center;
-        display: inline-flex;
-      }
-    }
-    
-    .section{
-      margin-top:18px;display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;
-      padding:6px 4px 0;
-    }
-    h2{margin:0;font-size:18px;letter-spacing:-.01em}
-    .hint{margin:0;font-size:13px;color:var(--muted)}
-    .grid{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:14px;margin-top:14px}
-    @media (min-width:720px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    .card{
-      border:1px solid rgba(15,23,42,.12);
-      background:var(--paper);
-      box-shadow:0 10px 22px rgba(15,23,42,.08);
-      border-radius:var(--radius);
-      padding:16px;
-      display:flex;flex-direction:column;gap:10px;min-height:160px;position:relative;
-      transition:transform 120ms ease, background 120ms ease;
-    }
-    .card:hover{transform:translateY(-2px);background:#fff}
-    .card h3{margin:0;font-size:16px;letter-spacing:-.01em}
-    .card p{margin:0;color:var(--muted);flex:1}
-    .card::after{
-      content:"";position:absolute;top:14px;right:14px;width:78px;height:26px;opacity:.22;
-      background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='156' height='52' viewBox='0 0 156 52'><path d='M4 40 C20 36, 26 46, 38 38 S62 20, 76 26 S98 42, 112 30 S132 10, 152 14' fill='none' stroke='%231d4ed8' stroke-width='4' stroke-linecap='round'/></svg>");
-      background-size:cover;background-repeat:no-repeat;pointer-events:none;
-    }
-    .section-heading {
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--text);
-      margin: 32px 0 8px 0;
-      letter-spacing: -0.01em;
-    }
-    .section-heading:first-of-type { margin-top: 0; }
-    .tier{
-      margin-top: 18px;
-    }
-    .tier-title{
-      margin: 16px 4px 6px;
-      font-size: 14px;
-      font-weight: 850;
-      color: rgba(15,23,42,.86);
-      letter-spacing: -0.01em;
-      text-transform: uppercase;
-    }
-    .tier-hint{
-      margin: 0 4px 12px;
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.45;
-      max-width: 820px;
-    }
-    .grid.tight{ margin-top: 10px; }
-    .ynab-tool-grid .card{
-      grid-column: 1 / -1;
-    }
-    .section-divider {
-      margin: 48px 0 0;
-      padding: 32px 0 0;
-      border-top: 3px solid var(--border);
-      position: relative;
-    }
-    .section-divider::before {
-      content: "";
-      position: absolute;
-      top: -3px;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
-      opacity: 0.35;
-      border-radius: 2px;
-    }
-    .card.coming-soon .btn {
-      background: #e2e8f0;
-      color: #64748b;
-      border-color: #cbd5e1;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-
-    .card.coming-soon .coming-badge {
-      display: inline-block;
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-      color: white;
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-left: 6px;
-    }
-    .btn{
-      display:inline-block;text-decoration:none;font-weight:750;font-size:14px;
-      padding:10px 14px;border-radius:14px;border:1px solid rgba(29,78,216,.28);
-      background:rgba(29,78,216,.10);color:var(--accent);
-    }
-    .btn:hover{background:rgba(29,78,216,.14)}
-
-    /* Subscription buttons */
-    .subscribe-btn {
-      color: #059669;
-      font-weight: 700;
-    }
-    .subscribe-btn:hover {
-      text-decoration: underline;
-    }
-    .premium-badge {
-      color: #d97706;
-      font-weight: 700;
-    }
-
-    hr.footer-sep {
-      border: 0;
-      border-top: 1px solid rgba(15,23,42,.12);
-      margin: 22px 0 14px;
-    }
-
-    .site-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      color: var(--muted);
-      font-size: 13px;
-      padding-bottom: 10px;
-    }
-
-    .footer-left { margin: 0; }
-
-    .footer-right {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      text-align: right;
-    }
-
-    .donate-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 8px 14px;
-      border-radius: 999px;
-      border: 1px solid rgba(15,23,42,.14);
-      background: rgba(15,23,42,.03);
-      color: var(--text);
-      text-decoration: none;
-      font-weight: 700;
-      line-height: 1;
-      white-space: nowrap;
-    }
-
-    .donate-button:hover {
-      background: rgba(15,23,42,.06);
-    }
-
-    @media (max-width: 720px) {
-      .topbar{flex-direction:column;align-items:flex-start;padding:20px}
-      .brand-title{font-size:20px}
-      .brand-tagline{font-size:14px}
-      .section-divider{margin-top:36px;padding-top:24px}
-      .premium-banner-content {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .premium-banner-cta {
-        width: 100%;
-        text-align: center;
-      }
-      .footer-right {
-        width: 100%;
-        justify-content: flex-start;
-        text-align: left;
-      }
+    @media (max-width: 640px){
+      .wrap{padding:14px 12px 34px}
+      .brand-text{padding:24px 20px 22px}
+      .mark{margin-bottom:14px}
+      .brand-title{font-size:34px}
+      .brand-tagline{font-size:16px}
+      .hero-actions{grid-template-columns:1fr;padding:18px}
+      .site-top-nav{width:100%;border-radius:14px}
+      .site-top-nav a{flex:1 1 100%;justify-content:center}
+      .premium-banner-content{flex-direction:column;align-items:flex-start}
+      .premium-banner-cta{width:100%}
+      .planning-shell{padding:16px;border-radius:14px}
+      .calculator-tab-bar{grid-template-columns:1fr}
+      .primary-tool{grid-template-columns:1fr;padding:18px}
+      .popular-grid{grid-template-columns:1fr}
+      .tool-row{grid-template-columns:1fr;gap:6px}
+      .tool-action{justify-content:flex-start;padding-left:0}
+      .footer-right{width:100%;justify-content:flex-start;text-align:left}
     }
   </style>
 </head>
@@ -621,25 +573,38 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
     <?php if (!$hide_site_header): ?>
     <div class="topbar" role="banner">
       <div class="brand">
-        <div class="mark" aria-hidden="true">RB</div>
         <div class="brand-text">
+          <a class="mark" href="/about-me.php" aria-label="About Ron Belisle">RB</a>
           <h1 class="brand-title">Retirement Planning Tools &amp; AI Insights</h1>
-          <p class="brand-tagline">Start with the <strong>Retirement Plan Builder</strong> for a year-by-year view of savings, Social Security, spending, and taxes. Explore free calculators for claiming, RMDs, and optimization. Premium adds Monte Carlo stress testing, PDF reports, AI explanations of your specific results, and YNAB budget auditing.</p>
+          <p class="brand-tagline">Build one coordinated retirement plan instead of juggling separate calculators. Model Social Security, taxes, withdrawals, RMDs, Medicare, spending, and investments together so every financial decision reflects the others.</p>
+          <div class="hero-primary-actions">
+            <a href="retirement-plan/" class="hero-btn hero-btn-primary">Start Retirement Plan Builder</a>
+            <a href="#planning-tools" class="hero-btn hero-btn-secondary">Browse Planning Tools</a>
+          </div>
+        </div>
+        <div class="hero-actions">
           <?php if ($isLoggedIn): ?>
-            <div class="hero-actions">
-              <p class="hero-welcome">Welcome back, <strong><?php echo htmlspecialchars($userName); ?></strong></p>
-              <a href="auth/logout.php" class="hero-btn hero-btn-secondary">Log Out</a>
-              <?php if (!$is_premium): ?>
-                <a href="premium.html" class="hero-btn hero-btn-premium">Upgrade to Premium</a>
-              <?php else: ?>
-                <span class="premium-badge">✨ Premium Member</span>
-              <?php endif; ?>
-            </div>
+            <p class="hero-action-label">Existing member</p>
+            <p class="hero-welcome">Welcome back, <strong><?php echo htmlspecialchars($userName); ?></strong></p>
+            <a href="auth/logout.php" class="hero-btn hero-btn-secondary">Log Out</a>
+            <?php if (!$is_premium): ?>
+              <div class="hero-premium-path">
+                <p class="hero-action-label">Premium</p>
+                <p class="hero-action-note">Learn about the subscription and start a 7-day free trial.</p>
+                <a href="premium.html" class="hero-btn hero-btn-premium">Start Free Trial</a>
+              </div>
+            <?php else: ?>
+              <span class="premium-badge">✨ Premium Member</span>
+            <?php endif; ?>
           <?php else: ?>
-            <div class="hero-actions">
+            <div class="hero-premium-path">
+              <p class="hero-action-label">Premium</p>
+              <a href="premium.html" class="hero-btn hero-btn-premium">Start 7-Day Free Trial</a>
+              <p class="hero-action-note">No charge today • Cancel anytime</p>
+            </div>
+            <div class="hero-login-path">
+              <p class="hero-action-label">Already have a Premium account?</p>
               <a href="auth/login.php" class="hero-btn hero-btn-secondary">Log In</a>
-              <a href="auth/register.php" class="hero-btn hero-btn-primary">Sign Up</a>
-              <a href="premium.html" class="hero-btn hero-btn-premium">Premium</a>
             </div>
           <?php endif; ?>
         </div>
@@ -684,249 +649,139 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
       </div>
     <?php endif; ?>
 
-    <?php if (!$hide_site_header): ?>
-    <div class="calculator-tab-shell">
-      <div class="calculator-tab-bar" role="tablist" aria-label="Calculator categories">
-        <button type="button" class="calculator-tab active" role="tab" id="tab-retirement" data-tab="retirement" aria-selected="true" aria-controls="tab-panel-retirement">In or Near Retirement (Boomers &amp; Gen X)</button>
-        <button type="button" class="calculator-tab" role="tab" id="tab-ynab" data-tab="ynab" aria-selected="false" aria-controls="tab-panel-ynab">Active Budgeters &amp; Cash Flow (YNAB Community)</button>
-        <button type="button" class="calculator-tab" role="tab" id="tab-foundation" data-tab="foundation" aria-selected="false" aria-controls="tab-panel-foundation">Building or Strengthening Foundation (Millennials &amp; Gen Z)</button>
+    <main class="planning-shell" id="planning-tools">
+      <?php if (!$hide_site_header): ?>
+        <p class="section-kicker">Planning workspace</p>
+        <h2 class="section-title">What would you like to work on today?</h2>
+        <p class="section-copy">Start with a complete retirement plan, or jump directly into a specific planning topic. Every tool is designed to help answer an important financial planning question.</p>
+      <?php endif; ?>
+
+      <?php if (!$hide_site_header): ?>
+      <div class="calculator-tab-shell">
+        <div class="calculator-tab-bar" role="tablist" aria-label="Calculator categories">
+          <button type="button" class="calculator-tab active" role="tab" id="tab-retirement" data-tab="retirement" aria-selected="true" aria-controls="tab-panel-retirement">In or Near Retirement (Boomers &amp; Gen X)</button>
+          <button type="button" class="calculator-tab" role="tab" id="tab-ynab" data-tab="ynab" aria-selected="false" aria-controls="tab-panel-ynab">Active Budgeters &amp; Cash Flow (YNAB Community)</button>
+          <button type="button" class="calculator-tab" role="tab" id="tab-foundation" data-tab="foundation" aria-selected="false" aria-controls="tab-panel-foundation">Building or Strengthening Foundation (Millennials &amp; Gen Z)</button>
+        </div>
       </div>
-    </div>
-    <?php endif; ?>
+      <?php endif; ?>
 
-    <div id="tab-panel-retirement" class="tab-panel active" data-tab="retirement" role="tabpanel" aria-labelledby="tab-retirement"<?php if ($hide_site_header): ?> style="display:block"<?php endif; ?>>
-    <div class="tier" aria-label="Retirement app links">
-      <div class="tier-title">Start here</div>
-      <p class="tier-hint">Build one consistent retirement timeline first. Premium Monte Carlo stress testing lives here—you usually do not need a separate tool.</p>
-      <div class="grid tight">
-        <section class="card card-featured">
-          <h3>Retirement Plan Builder</h3>
-          <p>Enter your numbers once and see how savings, Social Security, spending, RMDs, and estimated federal taxes fit together year by year. Premium adds a Monte Carlo stress test on the same plan, plus PDF export and AI explanations of your specific results.</p>
-          <a class="btn" href="retirement-plan/">Open</a>
+      <div id="tab-panel-retirement" class="tab-panel active" data-tab="retirement" role="tabpanel" aria-labelledby="tab-retirement"<?php if ($hide_site_header): ?> style="display:block"<?php endif; ?>>
+        <section class="primary-tool" aria-label="Retirement app links">
+          <div>
+            <h3>Retirement Plan Builder</h3>
+            <p>Enter your numbers once and see how savings, Social Security, spending, RMDs, and estimated federal taxes fit together year by year. Premium adds a Monte Carlo stress test on the same plan, plus PDF export and AI explanations of your specific results.</p>
+          </div>
+          <a class="btn btn-primary" href="retirement-plan/">Open</a>
         </section>
 
-        <section class="card">
-          <h3>Social Security Claiming Analyzer</h3>
-          <p>Compare claiming ages and see how lifetime Social Security benefits change over time.</p>
-          <a class="btn" href="social-security-claiming-analyzer/">Open</a>
+        <section aria-label="Popular Planning Tools">
+          <p class="section-kicker">Planning shortcuts</p>
+          <div class="popular-grid">
+            <a class="tool-card" href="social-security-claiming-analyzer/"><h3>Social Security Claiming Analyzer</h3><p>Compare claiming ages and see how lifetime Social Security benefits change over time.</p><span class="tool-action">Open</span></a>
+            <a class="tool-card" href="retirement-spending-checkup/"><h3>Retirement Spending &amp; On-Track Checkup</h3><p>Estimate a retirement budget from your current spending, factor in guaranteed income, and see whether your savings look on track using a simple withdrawal-rate rule of thumb.</p><span class="tool-action">Open</span></a>
+            <a class="tool-card" href="roth-conv/"><h3>Roth Conversion Calculator</h3><p>Analyze the benefits of converting traditional IRA funds to Roth, considering current vs future tax brackets, RMDs, and Medicare IRMAA thresholds.</p><span class="tool-action">Open</span></a>
+            <a class="tool-card" href="plan-success/"><h3>Plan Success (Monte Carlo)</h3><p>Standalone stress test: portfolio, annual withdrawal, years, return, and volatility. Best for quick experiments; most users should start with Retirement Plan Builder instead.</p><span class="tool-action">Open</span></a>
+          </div>
         </section>
 
-        <section class="card">
-          <h3>Early Exit Social Security Impact</h3>
-          <p>See how stopping work earlier than planned can lower the Social Security benefit your SSA statement assumes.</p>
-          <a class="btn" href="ss-early-exit/">Open</a>
-        </section>
+        <div class="goal-grid">
+          <section class="goal-section">
+            <div class="goal-heading"><div class="goal-icon" aria-hidden="true">SS</div><div><h2>Social Security</h2><p>Decide when to claim, how couples should coordinate, and what income Social Security will actually cover.</p></div></div>
+            <div class="tool-list">
+              <a class="tool-row" href="social-security-claiming-analyzer/"><span><h3>Social Security Claiming Analyzer</h3><p>Compare claiming ages and see how lifetime Social Security benefits change over time.</p></span><span class="tool-action">Open</span></a>
+              <a class="tool-row" href="ss-early-exit/"><span><h3>Early Exit Social Security Impact</h3><p>See how stopping work earlier than planned can lower the Social Security benefit your SSA statement assumes.</p></span><span class="tool-action">Open</span></a>
+              <a class="tool-row" href="ss-survivor-impact/"><span><h3>Social Security Survivor Impact Calculator</h3><p>Should the lower earner delay to age 70? Not always. Compare claiming strategies for both spouses and see how survivor benefits, longevity, and COLAs can dramatically change the strategy that produces the highest lifetime household income.</p></span><span class="tool-action">Open</span></a>
+              <a class="tool-row" href="ss-gap/"><span><h3>Social Security + Spending Gap Calculator</h3><p>See how Social Security reduces the portfolio you need by identifying your real retirement spending gap.</p></span><span class="tool-action">Open</span></a>
+            </div>
+          </section>
 
-        <section class="card">
-          <h3>Social Security Survivor Impact Calculator</h3>
-          <p>Should the lower earner delay to age 70? Not always. Compare claiming strategies for both spouses and see how survivor benefits, longevity, and COLAs can dramatically change the strategy that produces the highest lifetime household income.</p>
-          <a class="btn" href="ss-survivor-impact/">Open</a>
-        </section>
+          <section class="goal-section">
+            <div class="goal-heading"><div class="goal-icon" aria-hidden="true">$</div><div><h2>Retirement Income and Spending</h2><p>Turn income sources, spending needs, and timing choices into a clearer retirement paycheck strategy.</p></div></div>
+            <div class="tool-list">
+              <a class="tool-row" href="retirement-spending-checkup/"><span><h3>Retirement Spending &amp; On-Track Checkup</h3><p>Estimate a retirement budget from your current spending, factor in guaranteed income, and see whether your savings look on track using a simple withdrawal-rate rule of thumb.</p></span><span class="tool-action">Open</span></a>
+              <a class="tool-row" href="retirement-timeline/"><span><h3>Retirement Timeline &amp; Checklist</h3><p>Turn your target retirement date into a simple, phased checklist of tasks—from early prep to your last day at work and first year in retirement.</p></span><span class="tool-action">Open</span></a>
+              <a class="tool-row" href="pension-vs-lump-sum/"><span><h3>Pension vs. Lump Sum</h3><p>See how many years it takes for the pension to “pay back” the lump sum and how your life expectancy affects the choice.</p></span><span class="tool-action">Open</span></a>
+              <a class="tool-row" href="future-value-app/"><span><h3>Future Value Calculator</h3><p>Calculate present value, future value, annuities, and required payments to reach your financial goals.</p></span><span class="tool-action">Open</span></a>
+              <a class="tool-row" href="required-vs-desired/"><span><h3>Required vs. Desired Spending Calculator</h3><p>Separate essential expenses from discretionary spending to calculate the minimum portfolio needed for security and the ideal portfolio for your full retirement lifestyle.</p></span><span class="tool-action">Open</span></a>
+            </div>
+          </section>
 
-        <section class="card">
-          <h3>Retirement Spending &amp; On-Track Checkup</h3>
-          <p>Estimate a retirement budget from your current spending, factor in guaranteed income, and see whether your savings look on track using a simple withdrawal-rate rule of thumb.</p>
-          <a class="btn" href="retirement-spending-checkup/">Open</a>
-        </section>
+          <section class="goal-section">
+            <div class="goal-heading"><div class="goal-icon" aria-hidden="true">TX</div><div><h2>Taxes and RMDs</h2><p>Plan around taxable withdrawals, Roth decisions, and required distributions before they surprise you.</p></div></div>
+            <div class="tool-list">
+              <a class="tool-row" href="roth-conv/"><span><h3>Roth Conversion Calculator</h3><p>Analyze the benefits of converting traditional IRA funds to Roth, considering current vs future tax brackets, RMDs, and Medicare IRMAA thresholds.</p></span><span class="tool-action">Open</span></a>
+              <a class="tool-row" href="rmd-impact/"><span><h3>RMD Impact</h3><p>Estimate how Required Minimum Distributions interact with your portfolio, taxes, and retirement income over time.</p></span><span class="tool-action">Open</span></a>
+            </div>
+          </section>
 
-        <section class="card">
-          <h3>Retirement Timeline &amp; Checklist</h3>
-          <p>Turn your target retirement date into a simple, phased checklist of tasks—from early prep to your last day at work and first year in retirement.</p>
-          <a class="btn" href="retirement-timeline/">Open</a>
-        </section>
+          <section class="goal-section">
+            <div class="goal-heading"><div class="goal-icon" aria-hidden="true">%</div><div><h2>Portfolio and Risk</h2><p>Pressure-test whether your plan can handle market uncertainty, debt, survivor needs, and withdrawal choices.</p></div></div>
+            <div class="tool-list">
+              <a class="tool-row" href="plan-success/"><span><h3>Plan Success (Monte Carlo)</h3><p>Standalone stress test: portfolio, annual withdrawal, years, return, and volatility. Best for quick experiments; most users should start with Retirement Plan Builder instead.</p></span><span class="tool-action">Open</span></a>
+              <a class="tool-row" href="survivor-gap/"><span><h3>Survivor Gap Calculator</h3><p>Compare single-life vs joint-life annuity payouts and see how life insurance could fill the gap for your surviving spouse.</p></span><span class="tool-action">Open</span></a>
+              <a class="tool-row" href="debt-payoff/"><span><h3>Debt Payoff Calculator</h3><p>Pay down debt before retirement—compare avalanche vs snowball, see payoff timelines, and how extra payments save interest.</p></span><span class="tool-action">Open</span></a>
+            </div>
+          </section>
 
-        <section class="card">
-          <h3>Social Security + Spending Gap Calculator</h3>
-          <p>See how Social Security reduces the portfolio you need by identifying your real retirement spending gap.</p>
-          <a class="btn" href="ss-gap/">Open</a>
-        </section>
+          <section class="goal-section">
+            <div class="goal-heading"><div class="goal-icon" aria-hidden="true">LG</div><div><h2>Estate and Legacy</h2><p>Think through how retirement account decisions may affect heirs, taxes, and long-term family outcomes.</p></div></div>
+            <div class="tool-list">
+              <a class="tool-row" href="/estate-planning/"><span><h3>Estate &amp; Legacy Planning Suite</h3><p>Model inherited IRA taxes under the 10-year rule, compare Roth conversion strategies across generations, and explore SECURE Act planning tools.</p></span><span class="tool-action">Open</span></a>
+            </div>
+          </section>
+
+          <section class="goal-section">
+            <div class="goal-heading"><div class="goal-icon" aria-hidden="true">↔</div><div><h2>Comparisons and Specialist Tools</h2><p>Evaluate focused trade-offs when fees, advice models, or investment choices could change the outcome.</p></div></div>
+            <div class="tool-list">
+              <a class="tool-row" href="managed-vs-vanguard/"><span><h3>Managed Portfolio vs Vanguard Index Fund</h3><p>See the true cost of advisor fees - including opportunity cost - compared to low-cost Vanguard index funds.</p></span><span class="tool-action">Open</span></a>
+              <a class="tool-row" href="vanguard-pas-vs-target-date/"><span><h3>Vanguard Personal Advisor vs Target Date Funds</h3><p>Compare the cost of Vanguard PAS (0.30%) with a self-managed blend of Target Date funds. Allocate conservative, moderate, and aggressive.</p></span><span class="tool-action">Open</span></a>
+            </div>
+          </section>
+        </div>
       </div>
-    </div>
 
-    <div class="tier">
-      <div class="tier-title">Income &amp; savings building blocks</div>
-      <p class="tier-hint">Add up predictable income sources and see how your savings can grow (or be drawn down) over time.</p>
-      <div class="grid tight">
-        <section class="card">
-          <h3>Pension vs. Lump Sum</h3>
-          <p>See how many years it takes for the pension to “pay back” the lump sum and how your life expectancy affects the choice.</p>
-          <a class="btn" href="pension-vs-lump-sum/">Open</a>
-        </section>
-
-        <section class="card">
-          <h3>Future Value Calculator</h3>
-          <p>Calculate present value, future value, annuities, and required payments to reach your financial goals.</p>
-          <a class="btn" href="future-value-app/">Open</a>
-        </section>
-      </div>
-    </div>
-
-    <div class="tier">
-      <div class="tier-title">Sustainability &amp; protection</div>
-      <p class="tier-hint">Pressure-test needs vs wants and look at risks that matter after retirement begins. For portfolio odds, use the Monte Carlo in Retirement Plan Builder (Premium).</p>
-      <div class="grid tight">
-        <section class="card">
-          <h3>Required vs. Desired Spending Calculator</h3>
-          <p>Separate essential expenses from discretionary spending to calculate the minimum portfolio needed for security and the ideal portfolio for your full retirement lifestyle.</p>
-          <a class="btn" href="required-vs-desired/">Open</a>
-        </section>
-
-        <section class="card">
-          <h3>Survivor Gap Calculator</h3>
-          <p>Compare single-life vs joint-life annuity payouts and see how life insurance could fill the gap for your surviving spouse.</p>
-          <a class="btn" href="survivor-gap/">Open</a>
-        </section>
-
-        <section class="card">
-          <h3>Debt Payoff Calculator</h3>
-          <p>Pay down debt before retirement—compare avalanche vs snowball, see payoff timelines, and how extra payments save interest.</p>
-          <a class="btn" href="debt-payoff/">Open</a>
-        </section>
-      </div>
-    </div>
-
-    <div class="tier">
-      <div class="tier-title">Quick Monte Carlo (specialist)</div>
-      <p class="tier-hint">Already built into Premium Retirement Plan Builder. Use this standalone tool only when you want a fast what-if without a full plan—constant withdrawals, a calendar start date, or annual vs monthly timing.</p>
-      <div class="grid tight">
-        <section class="card">
-          <h3>Plan Success (Monte Carlo)</h3>
-          <p>Standalone stress test: portfolio, annual withdrawal, years, return, and volatility. Best for quick experiments; most users should start with Retirement Plan Builder instead.</p>
-          <a class="btn" href="plan-success/">Open</a>
+      <div id="tab-panel-ynab" class="tab-panel" data-tab="ynab" role="tabpanel" aria-labelledby="tab-ynab"<?php echo $hide_site_header ? '' : ' hidden'; ?>>
+        <section class="primary-tool" aria-label="YNAB budgeting tools">
+          <div>
+            <h3>AI Budget Auditor &amp; Financial Assistant <span class="feature-badge">AI-Powered</span></h3>
+            <p>Connect your YNAB budget to generate instant, rule-based category snapshots completely free. Upgrade to Premium to unlock interactive GPT-4o budget audits, overspending anomaly alerts, and personalized live chat follow-ups.</p>
+          </div>
+          <a class="btn btn-primary" href="tools/ai-budget-auditor/">Open</a>
         </section>
       </div>
-    </div>
 
-    <div class="tier">
-      <div class="tier-title">Advanced planning (taxes, rules, optimization)</div>
-      <p class="tier-hint">These tools can be powerful, but they’ll make more sense after you’ve established the basics above.</p>
-      <div class="grid tight">
-        <section class="card">
-          <h3>Roth Conversion Calculator</h3>
-          <p>Analyze the benefits of converting traditional IRA funds to Roth, considering current vs future tax brackets, RMDs, and Medicare IRMAA thresholds.</p>
-          <a class="btn" href="roth-conv/">Open</a>
-        </section>
+      <div id="tab-panel-foundation" class="tab-panel" data-tab="foundation" role="tabpanel" aria-labelledby="tab-foundation"<?php echo $hide_site_header ? '' : ' hidden'; ?>>
+        <div class="goal-grid">
+          <section class="goal-section">
+            <div class="goal-heading"><div class="goal-icon" aria-hidden="true">FD</div><div><h2>Foundational Planning</h2><p>Build a stronger base by improving cash reserves, reducing debt, and deciding where extra dollars should go.</p></div></div>
+            <div class="tool-list">
+              <a class="tool-row" href="emergency-fund/"><span><h3>Emergency Fund Builder</h3><p>Set a target (e.g. 3–6 months of expenses) and see how long it takes to get there at your savings rate.</p></span><span class="tool-action">Open</span></a>
+              <a class="tool-row" href="debt-payoff/"><span><h3>Debt Payoff Calculator</h3><p>Compare avalanche vs snowball, see payoff timelines, and see how extra payments shorten your journey and save interest.</p></span><span class="tool-action">Open</span></a>
+              <a class="tool-row" href="debt-vs-saving/"><span><h3>Debt vs Saving: Which First?</h3><p>Compare putting extra cash toward high-interest debt versus investing it for retirement and see which leaves you with higher net worth over time.</p></span><span class="tool-action">Open</span></a>
+            </div>
+          </section>
 
-        <section class="card">
-          <h3>RMD Impact</h3>
-          <p>Estimate how Required Minimum Distributions interact with your portfolio, taxes, and retirement income over time.</p>
-          <a class="btn" href="rmd-impact/">Open</a>
-        </section>
+          <section class="goal-section">
+            <div class="goal-heading"><div class="goal-icon" aria-hidden="true">GO</div><div><h2>Big Goals</h2><p>Map large financial milestones so student loans, housing, and savings goals fit into the bigger plan.</p></div></div>
+            <div class="tool-list">
+              <a class="tool-row" href="student-loan-payoff/"><span><h3>Student Loan Payoff</h3><p>Model extra payments, refinancing, and payoff timelines so you can choose a strategy that fits.</p></span><span class="tool-action">Open</span></a>
+              <a class="tool-row" href="down-payment/"><span><h3>Down Payment / House Savings</h3><p>See how much to save each month to reach your down payment goal and when you'll get there.</p></span><span class="tool-action">Open</span></a>
+            </div>
+          </section>
 
-        <section class="card">
-          <h3>Estate &amp; Legacy Planning Suite</h3>
-          <p>Model inherited IRA taxes under the 10-year rule, compare Roth conversion strategies across generations, and explore SECURE Act planning tools.</p>
-          <a class="btn" href="/estate-planning/">Open</a>
-        </section>
+          <section class="goal-section full">
+            <div class="goal-heading"><div class="goal-icon" aria-hidden="true">RT</div><div><h2>Retirement Growth</h2><p>Estimate where you are headed and see how savings, time, compounding, and trade-offs can improve the path.</p></div></div>
+            <div class="tool-list">
+              <a class="tool-row" href="401k-on-track/"><span><h3>401(k) / IRA On Track?</h3><p>See if your current balance and contributions put you on track for retirement by your target age.</p></span><span class="tool-action">Open</span></a>
+              <a class="tool-row" href="nest-egg-target/"><span><h3>How Much Do I Need? Nest Egg Target</h3><p>Get a rule-of-thumb target for how much to have saved by retirement. Enter the income you want, subtract Social Security and pensions, and see the nest egg you’re aiming for.</p></span><span class="tool-action">Open</span></a>
+              <a class="tool-row" href="compound-interest/"><span><h3>The Power of Compound Interest</h3><p>Play with starting amount, monthly contributions, years, and return to see how compounding drives long-term growth.</p></span><span class="tool-action">Open</span></a>
+              <a class="tool-row" href="trade-off-explorer/"><span><h3>Retirement Trade-Off Explorer</h3><p>See how retiring later, saving more each year, or spending less (or adding part-time income) changes whether you look on track for your retirement income goal.</p></span><span class="tool-action">Open</span></a>
+            </div>
+          </section>
+        </div>
       </div>
-    </div>
-
-    <div class="tier">
-      <div class="tier-title">Costs &amp; comparisons</div>
-      <p class="tier-hint">If you’re deciding between DIY vs managed options, these show how fees can add up over time.</p>
-      <div class="grid tight">
-        <section class="card">
-          <h3>Managed Portfolio vs Vanguard Index Fund</h3>
-          <p>See the true cost of advisor fees - including opportunity cost - compared to low-cost Vanguard index funds.</p>
-          <a class="btn" href="managed-vs-vanguard/">Open</a>
-        </section>
-
-        <section class="card">
-          <h3>Vanguard Personal Advisor vs Target Date Funds</h3>
-          <p>Compare the cost of Vanguard PAS (0.30%) with a self-managed blend of Target Date funds. Allocate conservative, moderate, and aggressive.</p>
-          <a class="btn" href="vanguard-pas-vs-target-date/">Open</a>
-        </section>
-      </div>
-    </div>
-    </div>
-
-    <div id="tab-panel-ynab" class="tab-panel" data-tab="ynab" role="tabpanel" aria-labelledby="tab-ynab"<?php echo $hide_site_header ? '' : ' hidden'; ?>>
-    <div class="tier" aria-label="YNAB budgeting tools">
-      <div class="tier-title">Start here</div>
-      <p class="tier-hint">Analyze monthly cash flow, audit spending patterns, and optimize category balances using native YNAB data logic.</p>
-      <div class="grid tight ynab-tool-grid">
-        <section class="card card-featured">
-          <h3>AI Budget Auditor &amp; Financial Assistant <span class="feature-badge">AI-Powered</span></h3>
-          <p>Connect your YNAB budget to generate instant, rule-based category snapshots completely free. Upgrade to Premium to unlock interactive GPT-4o budget audits, overspending anomaly alerts, and personalized live chat follow-ups.</p>
-          <a class="btn" href="tools/ai-budget-auditor/">Open</a>
-        </section>
-      </div>
-    </div>
-    </div>
-
-    <div id="tab-panel-foundation" class="tab-panel" data-tab="foundation" role="tabpanel" aria-labelledby="tab-foundation"<?php echo $hide_site_header ? '' : ' hidden'; ?>>
-    <div class="tier" aria-label="Early career app links">
-      <div class="tier-title">Foundation (stabilize first)</div>
-      <p class="tier-hint">Build a buffer, get control of debt, and make the “debt vs investing” trade-off with clear numbers.</p>
-      <div class="grid tight">
-        <section class="card">
-          <h3>Emergency Fund Builder</h3>
-          <p>Set a target (e.g. 3–6 months of expenses) and see how long it takes to get there at your savings rate.</p>
-          <a class="btn" href="emergency-fund/">Open</a>
-        </section>
-
-        <section class="card">
-          <h3>Debt Payoff Calculator</h3>
-          <p>Compare avalanche vs snowball, see payoff timelines, and see how extra payments shorten your journey and save interest.</p>
-          <a class="btn" href="debt-payoff/">Open</a>
-        </section>
-
-        <section class="card">
-          <h3>Debt vs Saving: Which First?</h3>
-          <p>Compare putting extra cash toward high-interest debt versus investing it for retirement and see which leaves you with higher net worth over time.</p>
-          <a class="btn" href="debt-vs-saving/">Open</a>
-        </section>
-      </div>
-    </div>
-
-    <div class="tier">
-      <div class="tier-title">Big goals (life milestones)</div>
-      <p class="tier-hint">Plan for the big moving parts—student loans and housing—without losing track of your long-term plan.</p>
-      <div class="grid tight">
-        <section class="card">
-          <h3>Student Loan Payoff</h3>
-          <p>Model extra payments, refinancing, and payoff timelines so you can choose a strategy that fits.</p>
-          <a class="btn" href="student-loan-payoff/">Open</a>
-        </section>
-
-        <section class="card">
-          <h3>Down Payment / House Savings</h3>
-          <p>See how much to save each month to reach your down payment goal and when you'll get there.</p>
-          <a class="btn" href="down-payment/">Open</a>
-        </section>
-      </div>
-    </div>
-
-    <div class="tier">
-      <div class="tier-title">Retirement growth (get on track)</div>
-      <p class="tier-hint">Once the basics are stable, use these to set a target and see the levers that move your long-term outcome.</p>
-      <div class="grid tight">
-        <section class="card">
-          <h3>401(k) / IRA On Track?</h3>
-          <p>See if your current balance and contributions put you on track for retirement by your target age.</p>
-          <a class="btn" href="401k-on-track/">Open</a>
-        </section>
-
-        <section class="card">
-          <h3>How Much Do I Need? Nest Egg Target</h3>
-          <p>Get a rule-of-thumb target for how much to have saved by retirement. Enter the income you want, subtract Social Security and pensions, and see the nest egg you’re aiming for.</p>
-          <a class="btn" href="nest-egg-target/">Open</a>
-        </section>
-
-        <section class="card">
-          <h3>The Power of Compound Interest</h3>
-          <p>Play with starting amount, monthly contributions, years, and return to see how compounding drives long-term growth.</p>
-          <a class="btn" href="compound-interest/">Open</a>
-        </section>
-
-        <section class="card">
-          <h3>Retirement Trade-Off Explorer</h3>
-          <p>See how retiring later, saving more each year, or spending less (or adding part-time income) changes whether you look on track for your retirement income goal.</p>
-          <a class="btn" href="trade-off-explorer/">Open</a>
-        </section>
-      </div>
-    </div>
-    </div>
+    </main>
 
     <?php if (!$hide_site_header): ?>
     <script>
@@ -1001,13 +856,13 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
     <?php endif; ?>
 
     <?php if (!$hide_site_header): ?>
-      <div class="brand-subtitle" style="margin: 24px auto 0; padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(148,163,184,.45); background: #f1f5f9; max-width: 960px;">
-        <p style="margin: 0 0 4px; font-weight: 600; color: #0f172a;">New: Investing guidance site</p>
-        <p style="margin: 0 0 6px; font-size: 14px; color: #334155;">
+      <div class="integrated-note">
+        <p>New: Investing guidance site</p>
+        <p>
           A small companion site with plain‑English explanations, advisor fee impact examples, and a guide to using these calculators to make better decisions.
         </p>
-        <p style="margin: 0; font-size: 14px; color: #1f2937;">
-          <a href="https://ronbelisle.com/invest-guidance.ronbelisle.com/" style="color: #1d4ed8; text-decoration: underline;">Go to the investing guidance site</a>
+        <p>
+          <a href="https://ronbelisle.com/invest-guidance.ronbelisle.com/">Go to the investing guidance site</a>
         </p>
       </div>
     <?php endif; ?>
