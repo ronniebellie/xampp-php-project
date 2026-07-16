@@ -577,6 +577,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
           <a class="mark" href="/about-me.php" aria-label="About Ron Belisle">RB</a>
           <h1 class="brand-title">Retirement Planning Tools &amp; AI Insights</h1>
           <p class="brand-tagline">Build one coordinated retirement plan instead of juggling separate calculators. Model Social Security, taxes, withdrawals, RMDs, Medicare, spending, and investments together so every financial decision reflects the others.</p>
+          <p class="brand-tagline">Every planning tool on this site is free to use. Premium is completely optional. If you want to go further, Premium adds features such as saved scenarios, PDF and CSV exports, longer projections where supported, and AI-generated explanations tailored to your results.</p>
           <div class="hero-primary-actions">
             <a href="retirement-plan/" class="hero-btn hero-btn-primary">Start Retirement Plan Builder</a>
             <a href="#planning-tools" class="hero-btn hero-btn-secondary">Browse Planning Tools</a>
