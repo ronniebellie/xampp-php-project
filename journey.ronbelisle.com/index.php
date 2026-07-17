@@ -1,0 +1,97 @@
+<?php
+$active_phase = '';
+$page_title = 'Your Retirement Planning Journey';
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex,nofollow">
+    <title><?php echo htmlspecialchars($page_title); ?></title>
+    <link rel="stylesheet" href="/assets/css/journey.css">
+</head>
+<body>
+    <header class="site-header">
+        <a class="site-brand" href="/" aria-label="Retirement Planning Journey home">
+            <span class="brand-mark" aria-hidden="true">RB</span>
+            <span>Retirement Planning Journey</span>
+        </a>
+    </header>
+
+    <main>
+        <section class="hero-section" aria-labelledby="journey-title">
+            <div class="container hero-grid">
+                <div class="hero-copy">
+                    <p class="eyebrow">Guided retirement planning</p>
+                    <h1 id="journey-title">Your Retirement Planning Journey</h1>
+                    <div class="intro-copy">
+                        <p>Retirement planning isn't a single decision.</p>
+                        <p>It's a series of connected decisions about spending, Social Security, investments, taxes, and protecting your family.</p>
+                        <p>This guided experience helps you work through those decisions one step at a time, so you can make more informed choices about your retirement.</p>
+                    </div>
+                    <a class="primary-action" href="/phases/spending-goals.php">Begin Your Journey</a>
+                </div>
+
+                <aside class="phase-overview" aria-label="Journey phases overview">
+                    <h2>Six planning phases</h2>
+                    <?php include __DIR__ . '/includes/progress-nav.php'; ?>
+                </aside>
+            </div>
+        </section>
+
+        <section class="phase-section" aria-labelledby="phases-title">
+            <div class="container">
+                <div class="section-heading">
+                    <p class="eyebrow">Planning path</p>
+                    <h2 id="phases-title">Work through retirement decisions in a practical order.</h2>
+                </div>
+
+                <div class="phase-grid">
+                    <article class="phase-card is-available" id="spending-goals">
+                        <span class="phase-number">1</span>
+                        <h3>Spending &amp; Goals</h3>
+                        <p>Start by clarifying the lifestyle, expenses, and priorities your plan needs to support.</p>
+                        <a href="/phases/spending-goals.php">Start this phase</a>
+                    </article>
+
+                    <article class="phase-card is-next" id="social-security">
+                        <span class="phase-number">2</span>
+                        <h3>Social Security</h3>
+                        <p>Think through claiming age, household benefits, and how Social Security fits your income plan.</p>
+                        <span class="phase-note">Coming next</span>
+                    </article>
+
+                    <article class="phase-card" id="build-your-plan">
+                        <span class="phase-number">3</span>
+                        <h3>Build Your Plan</h3>
+                        <p>Combine income, withdrawals, taxes, and investment assumptions into a coordinated plan.</p>
+                        <span class="phase-note">Planned</span>
+                    </article>
+
+                    <article class="phase-card" id="stress-test">
+                        <span class="phase-number">4</span>
+                        <h3>Stress Test</h3>
+                        <p>Check whether the plan can handle market downturns, longevity, inflation, and spending changes.</p>
+                        <span class="phase-note">Planned</span>
+                    </article>
+
+                    <article class="phase-card" id="tax-strategy">
+                        <span class="phase-number">5</span>
+                        <h3>Tax Strategy</h3>
+                        <p>Review Roth conversions, RMDs, taxable income timing, and tax-aware withdrawal choices.</p>
+                        <span class="phase-note">Planned</span>
+                    </article>
+
+                    <article class="phase-card" id="survivor-legacy">
+                        <span class="phase-number">6</span>
+                        <h3>Survivor &amp; Legacy</h3>
+                        <p>Consider survivor income, beneficiary planning, estate questions, and family protection.</p>
+                        <span class="phase-note">Planned</span>
+                    </article>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
