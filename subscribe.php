@@ -176,7 +176,7 @@ if ($user['subscription_status'] === 'premium') {
 <body>
     <div class="subscription-container">
         <h1>Upgrade to Premium</h1>
-        <p>Get unlimited access to all retirement calculators and planning tools</p>
+        <p>Unlock Premium features for supported retirement planning tools</p>
 
         <div class="trial-callout">
             <strong>7-day free trial</strong>
