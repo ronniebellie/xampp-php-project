@@ -199,6 +199,8 @@ $isPremium = has_premium_access();
         <h3 style="margin-top: 0;">Next step</h3>
         <p id="nextStepText">
           Use the <a href="../401k-on-track/">401(k) / IRA On Track?</a> calculator to see if your current balance and contributions will get you to this target by your chosen retirement age.
+          Paying AUM fees? See how they change a 4% withdrawal plan in
+          <a href="../swr-fee-impact/">Safe Withdrawal Rate &amp; Fee Impact</a>.
         </p>
       </div>
 

@@ -981,6 +981,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
           <section class="goal-section">
             <div class="goal-heading"><div class="goal-icon" aria-hidden="true">↔</div><div><h2>Comparisons and Specialist Tools</h2><p>Evaluate focused trade-offs when fees, advice models, or investment choices could change the outcome.</p></div></div>
             <div class="tool-list">
+              <a class="tool-row" href="swr-fee-impact/"><span><h3>Safe Withdrawal Rate &amp; Fee Impact</h3><p>See how AUM and fund fees change the 4% rule — spending power and ending wealth — without assuming fees cut the SWR dollar-for-dollar.</p></span><span class="tool-action">Open</span></a>
               <a class="tool-row" href="managed-vs-vanguard/"><span><h3>Managed Portfolio vs Vanguard Index Fund</h3><p>See the true cost of advisor fees - including opportunity cost - compared to low-cost Vanguard index funds.</p></span><span class="tool-action">Open</span></a>
               <a class="tool-row" href="vanguard-pas-vs-target-date/"><span><h3>Vanguard Personal Advisor vs Target Date Funds</h3><p>Compare the cost of Vanguard PAS (0.30%) with a self-managed blend of Target Date funds. Allocate conservative, moderate, and aggressive.</p></span><span class="tool-action">Open</span></a>
             </div>

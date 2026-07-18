@@ -33,6 +33,7 @@ $isPremium = has_premium_access();
         <div class="info-box-blue" style="margin-bottom: 30px;">
             <h2>Understanding Vanguard Index Funds</h2>
             <p>A Vanguard index fund tracks a broad market index (for example, VTSAX follows the total U.S. stock market) rather than trying to beat it with stock picking. Because there is no expensive active management layer, index funds often charge around 0.04% per year compared with 1% or more for many managed portfolios.</p>
+            <p style="margin-top: 8px;">Already in retirement (or modeling withdrawals)? See how AUM fees change the 4% rule in <a href="../swr-fee-impact/">Safe Withdrawal Rate &amp; Fee Impact</a>.</p>
         </div>
 
 <?php if ($isPremium): ?>
