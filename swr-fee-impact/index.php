@@ -31,7 +31,7 @@ $isPremium = has_premium_access();
     <header>
       <h1>Safe Withdrawal Rate &amp; Fee Impact</h1>
       <p class="sub">
-        The 4% rule is a <em>gross</em> portfolio withdrawal idea. AUM fees come out of the account, so they change
+        The 4% rule is a <em>gross</em> portfolio withdrawal idea. Assets under management (AUM) fees come out of the account, so they change
         both spending power and ending wealth — but <strong>not</strong> by simply subtracting the fee from 4%
         (for example, 4% − 1% is not 3%).
       </p>
