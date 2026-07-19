@@ -40,6 +40,28 @@ $page_title = 'Your Retirement Planning Journey';
             </div>
         </section>
 
+        <section class="progress-section" aria-labelledby="progress-title">
+            <div class="container">
+                <div class="journey-progress-summary" data-journey-progress-summary>
+                    <div>
+                        <p class="eyebrow">Your progress</p>
+                        <h2 id="progress-title" data-journey-completed-count>0 of 6 phases completed</h2>
+                    </div>
+                    <div>
+                        <h3>Completed phases</h3>
+                        <ul data-journey-completed-list>
+                            <li>No phases completed yet.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Current recommended phase</h3>
+                        <p data-journey-recommended-phase>Spending &amp; Goals</p>
+                    </div>
+                    <button class="reset-action" type="button" data-journey-reset>Reset Journey</button>
+                </div>
+            </div>
+        </section>
+
         <section class="phase-section" aria-labelledby="phases-title">
             <div class="container">
                 <div class="section-heading">
@@ -48,42 +70,42 @@ $page_title = 'Your Retirement Planning Journey';
                 </div>
 
                 <div class="phase-grid">
-                    <article class="phase-card is-available" id="spending-goals">
+                    <article class="phase-card is-available" id="spending-goals" data-journey-phase="spending-goals">
                         <span class="phase-number">1</span>
                         <h3>Spending &amp; Goals</h3>
                         <p>Start by clarifying the lifestyle, expenses, and priorities your plan needs to support.</p>
                         <a href="/phases/spending-goals.php">Start this phase</a>
                     </article>
 
-                    <article class="phase-card is-next" id="social-security">
+                    <article class="phase-card is-next" id="social-security" data-journey-phase="social-security">
                         <span class="phase-number">2</span>
                         <h3>Social Security</h3>
                         <p>Think through claiming age, household benefits, and how Social Security fits your income plan.</p>
                         <span class="phase-note">Coming next</span>
                     </article>
 
-                    <article class="phase-card" id="build-your-plan">
+                    <article class="phase-card" id="build-your-plan" data-journey-phase="build-your-plan">
                         <span class="phase-number">3</span>
                         <h3>Build Your Plan</h3>
                         <p>Combine income, withdrawals, taxes, and investment assumptions into a coordinated plan.</p>
                         <span class="phase-note">Planned</span>
                     </article>
 
-                    <article class="phase-card" id="stress-test">
+                    <article class="phase-card" id="stress-test" data-journey-phase="stress-test">
                         <span class="phase-number">4</span>
                         <h3>Stress Test</h3>
                         <p>Check whether the plan can handle market downturns, longevity, inflation, and spending changes.</p>
                         <span class="phase-note">Planned</span>
                     </article>
 
-                    <article class="phase-card" id="tax-strategy">
+                    <article class="phase-card" id="tax-strategy" data-journey-phase="tax-strategy">
                         <span class="phase-number">5</span>
                         <h3>Tax Strategy</h3>
                         <p>Review Roth conversions, RMDs, taxable income timing, and tax-aware withdrawal choices.</p>
                         <span class="phase-note">Planned</span>
                     </article>
 
-                    <article class="phase-card" id="survivor-legacy">
+                    <article class="phase-card" id="survivor-legacy" data-journey-phase="survivor-legacy">
                         <span class="phase-number">6</span>
                         <h3>Survivor &amp; Legacy</h3>
                         <p>Consider survivor income, beneficiary planning, estate questions, and family protection.</p>
