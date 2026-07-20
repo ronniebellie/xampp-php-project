@@ -39,8 +39,8 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                         <h2>What to bring</h2>
                         <div class="prompt-list" aria-label="What to bring before using the Retirement Spending Planner">
                             <div>
-                                <h3>Current spending estimate</h3>
-                                <p>A monthly or annual estimate of what you spend now, even if it is approximate.</p>
+                                <h3>Current household spending</h3>
+                                <p>Don't worry if you don't know exactly what you spend today. The Retirement Spending Planner will help you estimate it.</p>
                             </div>
                             <div>
                                 <h3>Retirement lifestyle goals</h3>
