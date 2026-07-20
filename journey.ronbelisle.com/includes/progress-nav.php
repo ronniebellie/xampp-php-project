@@ -11,8 +11,8 @@ $journey_phases = [
         'key' => 'social-security',
         'number' => '2',
         'title' => 'Social Security',
-        'href' => '/#social-security',
-        'status' => 'next',
+        'href' => '/phases/social-security.php',
+        'status' => 'available',
     ],
     [
         'key' => 'build-your-plan',

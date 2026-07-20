@@ -1,12 +1,12 @@
 (function () {
     var storageKey = 'rbJourneyProgressV1';
     var phases = [
-        { key: 'spending-goals', title: 'Spending & Goals' },
-        { key: 'social-security', title: 'Social Security' },
-        { key: 'build-your-plan', title: 'Build Your Plan' },
-        { key: 'stress-test', title: 'Stress Test' },
-        { key: 'tax-strategy', title: 'Tax Strategy' },
-        { key: 'survivor-legacy', title: 'Survivor & Legacy' }
+        { key: 'spending-goals', title: 'Spending & Goals', href: '/phases/spending-goals.php' },
+        { key: 'social-security', title: 'Social Security', href: '/phases/social-security.php' },
+        { key: 'build-your-plan', title: 'Build Your Plan', href: '/#build-your-plan' },
+        { key: 'stress-test', title: 'Stress Test', href: '/#stress-test' },
+        { key: 'tax-strategy', title: 'Tax Strategy', href: '/#tax-strategy' },
+        { key: 'survivor-legacy', title: 'Survivor & Legacy', href: '/#survivor-legacy' }
     ];
 
     function readProgress() {
@@ -43,9 +43,20 @@
         var count = summary.querySelector('[data-journey-completed-count]');
         var completedList = summary.querySelector('[data-journey-completed-list]');
         var recommendedLabel = summary.querySelector('[data-journey-recommended-phase]');
+        var recommendedLink = summary.querySelector('[data-journey-recommended-link]');
+        var progressBar = summary.querySelector('[data-journey-progress-bar]');
+        var progressFill = summary.querySelector('[data-journey-progress-fill]');
 
         if (count) {
             count.textContent = completed.length + ' of ' + phases.length + ' phases completed';
+        }
+
+        if (progressBar) {
+            progressBar.setAttribute('aria-valuenow', String(completed.length));
+        }
+
+        if (progressFill) {
+            progressFill.style.width = Math.round((completed.length / phases.length) * 100) + '%';
         }
 
         if (completedList) {
@@ -65,6 +76,11 @@
 
         if (recommendedLabel) {
             recommendedLabel.textContent = recommended ? recommended.title : 'Journey complete';
+        }
+
+        if (recommendedLink) {
+            recommendedLink.href = recommended ? recommended.href : '/';
+            recommendedLink.textContent = recommended ? 'Continue Your Journey' : 'Review Journey';
         }
     }
 

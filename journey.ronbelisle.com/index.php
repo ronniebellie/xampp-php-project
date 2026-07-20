@@ -43,21 +43,30 @@ $page_title = 'Your Retirement Planning Journey';
         <section class="progress-section" aria-labelledby="progress-title">
             <div class="container">
                 <div class="journey-progress-summary" data-journey-progress-summary>
-                    <div>
+                    <div class="progress-card-header">
                         <p class="eyebrow">Your progress</p>
-                        <h2 id="progress-title" data-journey-completed-count>0 of 6 phases completed</h2>
+                        <h2 id="progress-title">Your Progress</h2>
                     </div>
-                    <div>
-                        <h3>Completed phases</h3>
+
+                    <div class="progress-card-status">
+                        <p class="progress-count" data-journey-completed-count>0 of 6 phases completed</p>
+                        <div class="progress-bar" role="progressbar" aria-label="Journey completion" aria-valuemin="0" aria-valuemax="6" aria-valuenow="0" data-journey-progress-bar>
+                            <span data-journey-progress-fill></span>
+                        </div>
+                        <p class="progress-next">Next step: <span data-journey-recommended-phase>Spending &amp; Goals</span></p>
+                    </div>
+
+                    <div class="progress-card-completed">
+                        <h3>Completed</h3>
                         <ul data-journey-completed-list>
                             <li>No phases completed yet.</li>
                         </ul>
                     </div>
-                    <div>
-                        <h3>Current recommended phase</h3>
-                        <p data-journey-recommended-phase>Spending &amp; Goals</p>
+
+                    <div class="progress-card-actions">
+                        <a class="primary-action" href="/phases/spending-goals.php" data-journey-recommended-link>Continue Your Journey</a>
+                        <button class="reset-action" type="button" data-journey-reset>Reset Journey</button>
                     </div>
-                    <button class="reset-action" type="button" data-journey-reset>Reset Journey</button>
                 </div>
             </div>
         </section>
@@ -77,11 +86,11 @@ $page_title = 'Your Retirement Planning Journey';
                         <a href="/phases/spending-goals.php">Start this phase</a>
                     </article>
 
-                    <article class="phase-card is-next" id="social-security" data-journey-phase="social-security">
+                    <article class="phase-card is-available" id="social-security" data-journey-phase="social-security">
                         <span class="phase-number">2</span>
                         <h3>Social Security</h3>
                         <p>Think through claiming age, household benefits, and how Social Security fits your income plan.</p>
-                        <span class="phase-note">Coming next</span>
+                        <a href="/phases/social-security.php">Start this phase</a>
                     </article>
 
                     <article class="phase-card" id="build-your-plan" data-journey-phase="build-your-plan">

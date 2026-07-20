@@ -57,7 +57,7 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
 
                         <h2>Continue to the next phase</h2>
                         <p>After completing the Retirement Spending Planner, return to the Journey and continue to Phase 2: Social Security.</p>
-                        <a class="secondary-action" href="/#social-security" data-journey-complete-phase="spending-goals">Continue to Next Phase</a>
+                        <a class="secondary-action" href="/phases/social-security.php" data-journey-complete-phase="spending-goals">Continue to Next Phase</a>
                     </article>
                 </div>
 
