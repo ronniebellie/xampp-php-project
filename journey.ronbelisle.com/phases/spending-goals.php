@@ -47,8 +47,8 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                                 <p>Notes about travel, hobbies, family support, charitable giving, or other flexible priorities.</p>
                             </div>
                             <div>
-                                <h3>Guaranteed income sources</h3>
-                                <p>Any pension, annuity, or other reliable income you expect before adding Social Security.</p>
+                                <h3>Other retirement income</h3>
+                                <p>Any pension, annuity payment, or other regular income you expect before adding Social Security. Do not include planned withdrawals from IRAs, 401(k)s, or other investment accounts yet.</p>
                             </div>
                         </div>
 
