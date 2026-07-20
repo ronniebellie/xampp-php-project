@@ -34,6 +34,16 @@
         }) || null;
     }
 
+    function hasJourneyData(progress) {
+        var hasPhaseState = phases.some(function (phase) {
+            return Object.prototype.hasOwnProperty.call(progress, phase.key);
+        });
+        var hasRecords = progress.records &&
+            typeof progress.records === 'object' &&
+            Object.keys(progress.records).length > 0;
+        return hasPhaseState || hasRecords;
+    }
+
     function recordStatus(progress, key) {
         if (!window.rbJourneyRecords) return '';
         return window.rbJourneyRecords.recordStatus(progress, key);
@@ -58,6 +68,11 @@
         var progressFill = summary.querySelector('[data-journey-progress-fill]');
         var recordSummary = summary.querySelector('[data-journey-record-summary]');
         var recordList = summary.querySelector('[data-journey-record-list]');
+        var context = summary.querySelector('[data-journey-progress-context]');
+        var actions = summary.querySelector('[data-journey-progress-actions]');
+        var reset = summary.querySelector('[data-journey-reset]');
+        var started = hasJourneyData(progress);
+        var journeyComplete = completed.length === phases.length;
 
         if (count) {
             count.textContent = completed.length + ' of ' + phases.length + ' phases completed';
@@ -87,12 +102,28 @@
         }
 
         if (recommendedLabel) {
-            recommendedLabel.textContent = recommended ? recommended.title : 'Journey complete';
+            recommendedLabel.textContent = recommended ? recommended.title : 'Initial Journey complete';
         }
 
         if (recommendedLink) {
             recommendedLink.href = recommended ? recommended.href : '/';
-            recommendedLink.textContent = recommended ? 'Continue Your Journey' : 'Review Journey';
+            recommendedLink.textContent = journeyComplete
+                ? 'Review Your Retirement Plan'
+                : 'Continue Your Journey';
+        }
+
+        if (context) {
+            context.textContent = journeyComplete
+                ? 'Your initial Journey is complete. Return anytime to review your retirement plan and keep it current.'
+                : 'You’re building your retirement plan one decision at a time.';
+        }
+
+        if (actions) {
+            actions.hidden = !started;
+        }
+
+        if (reset) {
+            reset.hidden = !started;
         }
 
         if (recordSummary && recordList) {
@@ -134,6 +165,10 @@
     function render(progress) {
         renderSummary(progress);
         renderPhaseStates(progress);
+        var startLink = document.querySelector('[data-journey-start-link]');
+        if (startLink) {
+            startLink.hidden = hasJourneyData(progress);
+        }
     }
 
     function markComplete(key) {

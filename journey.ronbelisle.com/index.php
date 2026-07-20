@@ -26,15 +26,15 @@ $page_title = 'Your Retirement Planning Journey';
                     <p class="eyebrow">Guided retirement planning</p>
                     <h1 id="journey-title">Your Retirement Planning Journey</h1>
                     <div class="intro-copy">
-                        <p>Retirement planning isn't a single decision.</p>
-                        <p>It's a series of connected decisions about spending, Social Security, investments, taxes, and protecting your family.</p>
-                        <p>This guided experience helps you work through those decisions one step at a time, so you can make more informed choices about your retirement.</p>
+                        <p>Retirement planning is a series of connected decisions about spending, Social Security, investments, taxes, and protecting your family.</p>
+                        <p>This guided six-phase Journey helps you build your initial retirement plan one decision at a time.</p>
+                        <p>When your initial plan is complete, you can return to review it and keep it current as your life changes.</p>
                     </div>
-                    <a class="primary-action" href="/phases/spending-goals.php">Begin Your Journey</a>
+                    <a class="primary-action" href="/phases/spending-goals.php" data-journey-start-link>Begin Your Journey</a>
                 </div>
 
                 <aside class="phase-overview" aria-label="Journey phases overview">
-                    <h2>Six planning phases</h2>
+                    <h2>Six phases to build your plan</h2>
                     <?php include __DIR__ . '/includes/progress-nav.php'; ?>
                 </aside>
             </div>
@@ -50,6 +50,7 @@ $page_title = 'Your Retirement Planning Journey';
 
                     <div class="progress-card-status">
                         <p class="progress-count" data-journey-completed-count>0 of 6 phases completed</p>
+                        <p class="progress-context" data-journey-progress-context>You’re building your retirement plan one decision at a time.</p>
                         <div class="progress-bar" role="progressbar" aria-label="Journey completion" aria-valuemin="0" aria-valuemax="6" aria-valuenow="0" data-journey-progress-bar>
                             <span data-journey-progress-fill></span>
                         </div>
@@ -68,9 +69,9 @@ $page_title = 'Your Retirement Planning Journey';
                         <ul data-journey-record-list></ul>
                     </div>
 
-                    <div class="progress-card-actions">
+                    <div class="progress-card-actions" data-journey-progress-actions hidden>
                         <a class="primary-action" href="/phases/spending-goals.php" data-journey-recommended-link>Continue Your Journey</a>
-                        <button class="reset-action" type="button" data-journey-reset>Clear Journey data</button>
+                        <button class="reset-action" type="button" data-journey-reset hidden>Clear Journey data</button>
                     </div>
                 </div>
             </div>
@@ -79,8 +80,8 @@ $page_title = 'Your Retirement Planning Journey';
         <section class="phase-section" aria-labelledby="phases-title">
             <div class="container">
                 <div class="section-heading">
-                    <p class="eyebrow">Planning path</p>
-                    <h2 id="phases-title">Work through retirement decisions in a practical order.</h2>
+                    <p class="eyebrow">Your planning process</p>
+                    <h2 id="phases-title">Build your initial retirement plan in six guided phases.</h2>
                 </div>
 
                 <div class="phase-grid">
