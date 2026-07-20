@@ -59,10 +59,14 @@ $active_phase = $active_phase ?? '';
             <li class="<?php echo htmlspecialchars(implode(' ', $class_names)); ?>" data-journey-phase="<?php echo htmlspecialchars($phase['key']); ?>">
                 <a href="<?php echo htmlspecialchars($phase['href']); ?>" <?php echo $is_active ? 'aria-current="step"' : ''; ?>>
                     <span class="step-number"><?php echo htmlspecialchars($phase['number']); ?></span>
-                    <span class="step-title"><?php echo htmlspecialchars($phase['title']); ?></span>
+                    <span class="step-label">
+                        <span class="step-title"><?php echo htmlspecialchars($phase['title']); ?></span>
+                        <span class="step-record-status" data-journey-record-status hidden></span>
+                    </span>
                 </a>
             </li>
         <?php endforeach; ?>
     </ol>
 </nav>
+<script src="/assets/js/journey-records.js" defer></script>
 <script src="/assets/js/journey-progress.js" defer></script>

@@ -34,6 +34,16 @@
         }) || null;
     }
 
+    function recordStatus(progress, key) {
+        if (!window.rbJourneyRecords) return '';
+        return window.rbJourneyRecords.recordStatus(progress, key);
+    }
+
+    function recordStatusLabel(status) {
+        if (!window.rbJourneyRecords) return '';
+        return window.rbJourneyRecords.statusLabel(status);
+    }
+
     function renderSummary(progress) {
         var summary = document.querySelector('[data-journey-progress-summary]');
         if (!summary) return;
@@ -46,6 +56,8 @@
         var recommendedLink = summary.querySelector('[data-journey-recommended-link]');
         var progressBar = summary.querySelector('[data-journey-progress-bar]');
         var progressFill = summary.querySelector('[data-journey-progress-fill]');
+        var recordSummary = summary.querySelector('[data-journey-record-summary]');
+        var recordList = summary.querySelector('[data-journey-record-list]');
 
         if (count) {
             count.textContent = completed.length + ' of ' + phases.length + ' phases completed';
@@ -82,6 +94,25 @@
             recommendedLink.href = recommended ? recommended.href : '/';
             recommendedLink.textContent = recommended ? 'Continue Your Journey' : 'Review Journey';
         }
+
+        if (recordSummary && recordList) {
+            recordList.innerHTML = '';
+            phases.forEach(function (phase) {
+                var status = recordStatus(progress, phase.key);
+                if (!status) return;
+                var item = document.createElement('li');
+                var link = document.createElement('a');
+                var label = document.createElement('span');
+                link.href = phase.href;
+                link.textContent = phase.title;
+                label.textContent = recordStatusLabel(status);
+                label.className = 'record-status-badge is-' + status;
+                item.appendChild(link);
+                item.appendChild(label);
+                recordList.appendChild(item);
+            });
+            recordSummary.hidden = recordList.children.length === 0;
+        }
     }
 
     function renderPhaseStates(progress) {
@@ -90,6 +121,13 @@
             var complete = progress[key] === true;
             element.classList.toggle('is-complete', complete);
             element.setAttribute('data-journey-complete', complete ? 'true' : 'false');
+            var statusElement = element.querySelector('[data-journey-record-status]');
+            if (statusElement) {
+                var status = recordStatus(progress, key);
+                statusElement.textContent = recordStatusLabel(status);
+                statusElement.className = 'step-record-status' + (status ? ' is-' + status : '');
+                statusElement.hidden = !status;
+            }
         });
     }
 
@@ -115,6 +153,9 @@
 
         var resetTrigger = event.target.closest('[data-journey-reset]');
         if (resetTrigger) {
+            if (!window.confirm('Clear all Journey progress and saved planning records in this browser? This cannot be undone.')) {
+                return;
+            }
             localStorage.removeItem(storageKey);
             render({});
         }

@@ -4,7 +4,8 @@
     var storageKey = 'rbJourneyProgressV1';
     var recordKey = 'social-security';
     var form = document.getElementById('phase2RecordForm');
-    if (!form) return;
+    var recordTools = window.rbJourneyRecords;
+    if (!form || !recordTools) return;
 
     var labels = {
         'sooner': 'it provides income sooner',
@@ -44,7 +45,9 @@
     function existingRecord(progress) {
         if (!progress.records || typeof progress.records !== 'object') return {};
         var record = progress.records[recordKey];
-        return record && typeof record === 'object' ? record : {};
+        return record && typeof record === 'object'
+            ? recordTools.normalizeSocialSecurityRecord(record, progress[recordKey] === true)
+            : {};
     }
 
     function selectedValue(name) {
@@ -95,11 +98,18 @@
         var progress = readProgress();
         var oldRecord = existingRecord(progress);
         var record = buildRecord();
-        record.saved = saved === true || (saved === undefined && oldRecord.saved === true);
+        record.saved = saved === true || oldRecord.saved === true;
+        record.hasUnsavedChanges = saved === false
+            ? true
+            : (saved === true ? false : oldRecord.hasUnsavedChanges === true);
         if (oldRecord.completedAt) record.completedAt = oldRecord.completedAt;
+        record = recordTools.createSocialSecurityRecord(record, {
+            oldRecord: oldRecord,
+            journeyComplete: progress[recordKey] === true,
+            reviewed: saved === true
+        });
         progress.records = progress.records && typeof progress.records === 'object' ? progress.records : {};
         progress.records[recordKey] = record;
-        if (saved === false) progress[recordKey] = false;
         writeProgress(progress);
         return record;
     }
@@ -300,11 +310,10 @@
     function showIncompleteState() {
         document.getElementById('phase2SaveConfirmation').hidden = true;
         document.getElementById('phase2CompletionMessage').hidden = true;
-        document.getElementById('completePhase2Button').textContent = 'Save and Continue to Phase 3';
-        document.querySelectorAll('[data-journey-phase="' + recordKey + '"]').forEach(function (element) {
-            element.classList.remove('is-complete');
-            element.setAttribute('data-journey-complete', 'false');
-        });
+        var complete = readProgress()[recordKey] === true;
+        document.getElementById('completePhase2Button').textContent = complete
+            ? 'Save Updates Before Continuing'
+            : 'Save and Continue to Phase 3';
     }
 
     function currency(value) {
@@ -325,35 +334,52 @@
     }
 
     function renderAssumption(record) {
-        var statement = document.getElementById('assumptionStatement');
-        var revise = document.getElementById('reviseAssumptionButton');
+        var statements = document.querySelectorAll('[data-phase2-summary]');
+        var reviseButtons = document.querySelectorAll('[data-revise-assumption]');
+        var reviewGuidance = document.querySelectorAll('[data-phase2-review-guidance]');
+        var statusBadges = document.querySelectorAll('[data-phase2-record-status]');
+        var status = record && record.saved ? record.planningRecordStatus : '';
+        var statusLabel = recordTools.statusLabel(status);
+
+        statusBadges.forEach(function (badge) {
+            badge.textContent = statusLabel;
+            badge.className = 'record-status-badge' + (status ? ' is-' + status : '');
+            badge.hidden = !status;
+        });
+
         if (!record || !record.saved) {
-            statement.innerHTML = '<p>Save your claiming choice to create a short summary for Phase 3.</p>';
-            revise.hidden = true;
+            statements.forEach(function (statement) {
+                statement.innerHTML = '<p>Save your claiming choice to create a short summary for Phase 3.</p>';
+            });
+            reviseButtons.forEach(function (revise) { revise.hidden = true; });
+            reviewGuidance.forEach(function (guidance) { guidance.hidden = true; });
             return;
         }
 
+        var summary = '';
         if (record.decisionStatus === 'provisional') {
-            statement.innerHTML =
-                '<p><strong>My current claiming choice</strong></p>' +
+            summary =
+                '<p><strong>My current Social Security position</strong></p>' +
                 '<p>I will test claiming at age <strong>' + record.claimAge + '</strong>. My benefit at Full Retirement Age is approximately <strong>' + currency(record.benefitAtFra) + ' per month</strong>, and my estimated benefit at age <strong>' + record.claimAge + '</strong> is approximately <strong>' + currency(record.estimatedMonthlyBenefit) + ' per month</strong>.</p>' +
                 '<p>I prefer this choice because ' + (labels[record.rationale] || 'it is a useful starting point') + '.</p>' +
                 '<p>The main tradeoff is: <strong>' + tradeoffText(record) + '</strong>.</p>' +
-                '<p>Before acting, I need to verify <strong>' + verificationText(record) + '</strong>.</p>' +
-                '<p>This is a choice to test, not advice to file. Phase 3 will show how it fits with my spending, savings, and other income.</p>';
+                '<p>What remains uncertain: <strong>' + verificationText(record) + '</strong>.</p>' +
+                '<p>Phase 3 will use this claiming age and monthly benefit to test how they fit with my spending, savings, and other income. This is a planning choice, not advice to file.</p>';
         } else if (record.decisionStatus === 'need-more-information') {
-            statement.innerHTML =
-                '<p><strong>Where I am with my Social Security decision</strong></p>' +
+            summary =
+                '<p><strong>My current Social Security position</strong></p>' +
                 '<p>I am not ready to select a claiming age. Before choosing, I need to check <strong>' + verificationText(record) + '</strong>.</p>' +
-                '<p>I can continue to Phase 3 with a temporary claiming age, but I should return to this phase before relying on the plan.</p>';
+                '<p>Phase 3 may use a temporary claiming age, but this record is not ready to rely on. I should return after I have the missing information.</p>';
         } else {
-            statement.innerHTML =
-                '<p><strong>My current Social Security benefit</strong></p>' +
+            summary =
+                '<p><strong>My current Social Security position</strong></p>' +
                 '<p>I am already receiving approximately <strong>' + currency(record.currentMonthlyBenefit) + ' per month</strong> in gross Social Security benefits.</p>' +
                 '<p>Phase 3 should use this current benefit rather than model a future claiming age.</p>' +
-                '<p>I still need to verify <strong>' + verificationText(record) + '</strong>, if applicable.</p>';
+                '<p>What remains uncertain: <strong>' + verificationText(record) + '</strong>.</p>';
         }
-        revise.hidden = false;
+        statements.forEach(function (statement) { statement.innerHTML = summary; });
+        reviseButtons.forEach(function (revise) { revise.hidden = false; });
+        reviewGuidance.forEach(function (guidance) { guidance.hidden = false; });
     }
 
     function saveRecord(event) {
@@ -365,6 +391,9 @@
 
         record = persistDraft(true);
         renderAssumption(record);
+        if (readProgress()[recordKey] === true) {
+            document.getElementById('completePhase2Button').textContent = 'Phase 2 Complete';
+        }
         var confirmation = document.getElementById('phase2SaveConfirmation');
         confirmation.hidden = false;
         confirmation.focus();
@@ -376,10 +405,12 @@
         var errors = validateRecord(record);
         showErrors(errors);
 
-        if (errors.length || !record.saved) {
+        if (errors.length || !record.saved || record.hasUnsavedChanges) {
             document.getElementById('record-title').scrollIntoView({ behavior: 'smooth', block: 'start' });
             if (!record.saved && !errors.length) {
                 showErrors(['Save your claiming choice before continuing.']);
+            } else if (record.hasUnsavedChanges && !errors.length) {
+                showErrors(['Save your updated Social Security record before continuing.']);
             }
             return;
         }
@@ -387,6 +418,7 @@
         progress[recordKey] = true;
         progress.records = progress.records && typeof progress.records === 'object' ? progress.records : {};
         record.completedAt = new Date().toISOString();
+        record.journeyCompletionStatus = 'completed';
         progress.records[recordKey] = record;
         writeProgress(progress);
 
@@ -397,9 +429,13 @@
 
         var message = document.getElementById('phase2CompletionMessage');
         if (record.decisionStatus === 'need-more-information') {
-            message.innerHTML = '<strong>Phase 2 complete with follow-up needed.</strong><span>Phase 3 may use a temporary claiming age, but you still need to verify your Social Security information.</span>';
+            message.innerHTML = '<strong>Phase 2 complete. Planning-record status: Needs information.</strong><span>Your Journey progress is saved, but return when you have the information needed to update this record.</span>';
+        } else if (record.planningRecordStatus === 'needs-verification') {
+            message.innerHTML = '<strong>Phase 2 complete. Planning-record status: Needs verification.</strong><span>Phase 3 can test this choice, but keep the noted verification item with your plan.</span>';
+        } else if (record.decisionStatus === 'already-receiving') {
+            message.innerHTML = '<strong>Phase 2 complete. Planning-record status: Already receiving benefits.</strong><span>Phase 3 will use your current benefit, and you can review this record later.</span>';
         } else {
-            message.innerHTML = '<strong>Phase 2 complete.</strong><span>Your claiming choice is ready to test in Phase 3.</span>';
+            message.innerHTML = '<strong>Phase 2 complete. Planning-record status: Current.</strong><span>Your claiming choice is ready to test in Phase 3 and can be reviewed later.</span>';
         }
         message.hidden = false;
         message.focus();
@@ -431,12 +467,28 @@
     });
     form.addEventListener('submit', saveRecord);
     document.getElementById('completePhase2Button').addEventListener('click', completePhase);
-    document.getElementById('reviseAssumptionButton').addEventListener('click', function () {
-        document.getElementById('record-title').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        document.getElementById('decisionStatus').focus({ preventScroll: true });
+    document.querySelectorAll('[data-revise-assumption]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            document.getElementById('record-title').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.getElementById('decisionStatus').focus({ preventScroll: true });
+        });
     });
 
-    var record = existingRecord(readProgress());
+    var progressAtLoad = readProgress();
+    var rawRecordAtLoad = progressAtLoad.records && progressAtLoad.records[recordKey];
+    var record = existingRecord(progressAtLoad);
+    if (record.saved === true && rawRecordAtLoad && rawRecordAtLoad.schemaVersion !== recordTools.schemaVersion) {
+        progressAtLoad.records[recordKey] = record;
+        writeProgress(progressAtLoad);
+    }
+    var returningMember = record.saved === true;
+    if (returningMember) {
+        document.querySelector('[data-returning-record]').hidden = false;
+        document.querySelector('[data-first-visit-summary]').hidden = true;
+    }
+    if (progressAtLoad[recordKey] === true && record.saved === true && record.hasUnsavedChanges !== true) {
+        document.getElementById('completePhase2Button').textContent = 'Phase 2 Complete';
+    }
     restoreRecord(record);
     updateEstimateResponse();
     updateRationaleResponse();

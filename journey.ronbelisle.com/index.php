@@ -63,9 +63,14 @@ $page_title = 'Your Retirement Planning Journey';
                         </ul>
                     </div>
 
+                    <div class="progress-card-records" data-journey-record-summary hidden>
+                        <h3>Planning records</h3>
+                        <ul data-journey-record-list></ul>
+                    </div>
+
                     <div class="progress-card-actions">
                         <a class="primary-action" href="/phases/spending-goals.php" data-journey-recommended-link>Continue Your Journey</a>
-                        <button class="reset-action" type="button" data-journey-reset>Reset Journey</button>
+                        <button class="reset-action" type="button" data-journey-reset>Clear Journey data</button>
                     </div>
                 </div>
             </div>

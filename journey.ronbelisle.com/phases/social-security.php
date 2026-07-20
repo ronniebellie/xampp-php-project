@@ -31,6 +31,25 @@ $page_title = 'Social Security | Retirement Planning Journey';
                         <p class="phase-time">Allow about 15 minutes, including time in the Claiming Analyzer.</p>
                     </div>
 
+                    <section class="current-record-overview" id="current-record-overview" aria-labelledby="current-record-title" data-returning-record hidden>
+                        <p class="eyebrow">Your saved planning record</p>
+                        <div class="record-overview-heading">
+                            <h2 id="current-record-title">Your current Social Security position</h2>
+                            <span class="record-status-badge" data-phase2-record-status></span>
+                        </div>
+                        <p>Welcome back. Review what your retirement plan currently uses, update anything that changed, or return to the guidance and analyzer when you need them.</p>
+                        <div class="assumption-statement" data-phase2-summary></div>
+                        <div class="review-guidance">
+                            <h3>When to review this again</h3>
+                            <p>Review this record during your annual plan review, or sooner if your retirement date, claiming age, Social Security statement, earnings record, spouse’s plan, or benefit status changes.</p>
+                        </div>
+                        <div class="record-overview-actions">
+                            <a class="primary-action" href="#record-title">Update My Record</a>
+                            <a class="secondary-action" href="#question-title">Review Phase 2 Guidance</a>
+                            <a class="secondary-action" href="https://ronbelisle.com/social-security-claiming-analyzer/" target="_blank" rel="noopener">Open Claiming Analyzer</a>
+                        </div>
+                    </section>
+
                     <article class="planning-panel phase-2-panel">
                         <section class="phase-content-section" aria-labelledby="question-title">
                             <p class="eyebrow">The Question</p>
@@ -254,8 +273,8 @@ $page_title = 'Social Security | Retirement Planning Journey';
 
                                 <button type="submit" class="primary-action journey-button">Save My Claiming Choice</button>
                                 <div class="save-confirmation" id="phase2SaveConfirmation" role="status" tabindex="-1" hidden>
-                                    <strong>Your claiming choice has been saved for the Retirement Planning Journey.</strong>
-                                    <span>This does not apply for benefits, and you can revise it later.</span>
+                                    <strong>Your current Social Security planning record has been saved in this browser.</strong>
+                                    <span>Your retirement plan can use this choice in Phase 3. You can review and update it later.</span>
                                 </div>
                             </section>
                         </form>
@@ -296,12 +315,19 @@ $page_title = 'Social Security | Retirement Planning Journey';
                             </div>
                         </section>
 
-                        <section class="phase-content-section" id="assumption-section" aria-labelledby="assumption-title">
-                            <h2 id="assumption-title">Your claiming choice</h2>
-                            <div class="assumption-statement" id="assumptionStatement">
+                        <section class="phase-content-section" id="assumption-section" aria-labelledby="assumption-title" data-first-visit-summary>
+                            <div class="record-overview-heading">
+                                <h2 id="assumption-title">Your Social Security planning record</h2>
+                                <span class="record-status-badge" data-phase2-record-status hidden></span>
+                            </div>
+                            <div class="assumption-statement" data-phase2-summary>
                                 <p>Save your claiming choice to create a short summary for Phase 3.</p>
                             </div>
-                            <button type="button" class="secondary-action journey-button" id="reviseAssumptionButton" hidden>Revise My Choice</button>
+                            <div class="review-guidance" data-phase2-review-guidance hidden>
+                                <h3>When to review this again</h3>
+                                <p>Review this record during your annual plan review, or sooner if your retirement date, claiming age, Social Security statement, earnings record, spouse’s plan, or benefit status changes.</p>
+                            </div>
+                            <button type="button" class="secondary-action journey-button" data-revise-assumption hidden>Revise My Record</button>
                         </section>
 
                         <section class="phase-content-section" aria-labelledby="before-continue-title">
@@ -325,6 +351,7 @@ $page_title = 'Social Security | Retirement Planning Journey';
                             <button type="button" class="primary-action journey-button" id="completePhase2Button">Save and Continue to Phase 3</button>
                             <a class="secondary-action" href="/">Return to My Journey</a>
                             <div class="completion-message" id="phase2CompletionMessage" role="status" tabindex="-1" hidden></div>
+                            <p class="trust-note">Completing Phase 2 records your progress through the Journey. Your Social Security planning record remains separate and can still need information, verification, or a later review.</p>
                         </section>
                     </article>
                 </div>
