@@ -746,6 +746,11 @@ h1 {
     color: #14532d;
 }
 
+.phase-completion-panel {
+    gap: 12px;
+    justify-items: start;
+}
+
 .error-summary {
     margin: 18px 0;
     padding: 16px;

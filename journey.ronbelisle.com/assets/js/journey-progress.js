@@ -38,10 +38,13 @@
         var hasPhaseState = phases.some(function (phase) {
             return Object.prototype.hasOwnProperty.call(progress, phase.key);
         });
+        var hasToolLaunches = progress.toolLaunches &&
+            typeof progress.toolLaunches === 'object' &&
+            Object.keys(progress.toolLaunches).length > 0;
         var hasRecords = progress.records &&
             typeof progress.records === 'object' &&
             Object.keys(progress.records).length > 0;
-        return hasPhaseState || hasRecords;
+        return hasPhaseState || hasToolLaunches || hasRecords;
     }
 
     function recordStatus(progress, key) {
@@ -162,9 +165,20 @@
         });
     }
 
+    function renderToolLaunchPanels(progress) {
+        document.querySelectorAll('[data-journey-reveal-after-launch]').forEach(function (element) {
+            var key = element.getAttribute('data-journey-reveal-after-launch');
+            var launched = progress.toolLaunches &&
+                typeof progress.toolLaunches === 'object' &&
+                progress.toolLaunches[key] === true;
+            element.hidden = !launched;
+        });
+    }
+
     function render(progress) {
         renderSummary(progress);
         renderPhaseStates(progress);
+        renderToolLaunchPanels(progress);
         var startLink = document.querySelector('[data-journey-start-link]');
         if (startLink) {
             startLink.hidden = hasJourneyData(progress);
@@ -179,7 +193,24 @@
         render(progress);
     }
 
+    function markToolLaunched(key) {
+        if (!key) return;
+        var progress = readProgress();
+        progress.toolLaunches = progress.toolLaunches && typeof progress.toolLaunches === 'object'
+            ? progress.toolLaunches
+            : {};
+        progress.toolLaunches[key] = true;
+        writeProgress(progress);
+        render(progress);
+    }
+
     document.addEventListener('click', function (event) {
+        var toolTrigger = event.target.closest('[data-journey-launch-tool]');
+        if (toolTrigger) {
+            markToolLaunched(toolTrigger.getAttribute('data-journey-launch-tool'));
+            return;
+        }
+
         var completeTrigger = event.target.closest('[data-journey-complete-phase]');
         if (completeTrigger) {
             markComplete(completeTrigger.getAttribute('data-journey-complete-phase'));

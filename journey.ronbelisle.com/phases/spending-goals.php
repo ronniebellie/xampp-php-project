@@ -56,8 +56,11 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                         <p>Open the planner, work through the calculator, and make note of the spending target or gap that stands out. You will use that context in the next phase when thinking about Social Security.</p>
 
                         <h2>Continue to the next phase</h2>
-                        <p>After completing the Retirement Spending Planner, return to the Journey and continue to Phase 2: Social Security.</p>
-                        <a class="secondary-action" href="/phases/social-security.php" data-journey-complete-phase="spending-goals">Continue to Next Phase</a>
+                        <p>After completing the Retirement Spending Planner, return here to continue to Phase 2: Social Security.</p>
+                        <div class="completion-message phase-completion-panel" data-journey-reveal-after-launch="spending-goals" hidden>
+                            <p><strong>Finished with the Retirement Spending Planner?</strong> Continue to Phase 2: Social Security.</p>
+                            <a class="primary-action" href="/phases/social-security.php" data-journey-complete-phase="spending-goals">Continue to Phase 2</a>
+                        </div>
                     </article>
                 </div>
 
@@ -68,7 +71,7 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                         <p class="eyebrow">Recommended Tool</p>
                         <h2 id="next-step-title">Retirement Spending Planner</h2>
                         <p>Estimate a retirement budget from your current spending, factor in guaranteed income, and see whether your savings look on track.</p>
-                        <a class="primary-action" href="https://ronbelisle.com/retirement-spending-checkup/">Launch Retirement Spending Planner</a>
+                        <a class="primary-action" href="https://ronbelisle.com/retirement-spending-checkup/" data-journey-launch-tool="spending-goals">Launch Retirement Spending Planner</a>
                     </div>
                 </aside>
             </div>
