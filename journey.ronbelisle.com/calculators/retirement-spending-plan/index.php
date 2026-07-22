@@ -167,7 +167,7 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
 
                         <section class="calculator-section" aria-labelledby="income-title">
                             <p class="eyebrow">Step 5</p>
-                            <h2 id="income-title">Add other regular retirement income</h2>
+                            <h2 id="income-title">Enter other regular retirement income</h2>
                             <div class="field-group field-group-wide">
                                 <label for="monthlyOtherRegularRetirementIncome">Monthly other regular retirement income</label>
                                 <div class="money-input"><span aria-hidden="true">$</span><input id="monthlyOtherRegularRetirementIncome" name="monthlyOtherRegularRetirementIncome" type="number" min="0" step="1" inputmode="decimal"></div>
