@@ -326,6 +326,17 @@ h1 {
     background: #f7fdf9;
 }
 
+.phase-card.is-next-step {
+    border-color: rgba(29, 78, 216, 0.42);
+    background: #eff6ff;
+}
+
+.phase-card.is-planned {
+    border-color: var(--border);
+    background: var(--paper);
+    box-shadow: none;
+}
+
 .phase-card h3 {
     margin: 12px 0 8px;
     font-size: 19px;
@@ -347,11 +358,37 @@ h1 {
     font-weight: 850;
 }
 
-.phase-note {
+.phase-note,
+.phase-status {
     display: inline-flex;
-    color: #64748b;
+    align-items: center;
+    min-height: 28px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: #475569;
     font-size: 13px;
-    font-weight: 800;
+    font-weight: 850;
+}
+
+.phase-status.is-completed {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.phase-status.is-next-step {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.phase-status.is-available {
+    background: #eef2ff;
+    color: #3730a3;
+}
+
+.phase-status.is-planned {
+    background: #f1f5f9;
+    color: #64748b;
 }
 
 .page-hero h1 {
@@ -861,10 +898,10 @@ h1 {
     grid-column: 1 / -1;
 }
 
-.progress-count {
-    color: var(--text);
+.journey-progress-summary .progress-count {
+    color: var(--text) !important;
     font-size: clamp(28px, 5vw, 44px);
-    font-weight: 900;
+    font-weight: 800 !important;
     line-height: 1.08;
 }
 
@@ -886,21 +923,21 @@ h1 {
     transition: width 0.2s ease;
 }
 
-.progress-next {
+.journey-progress-summary .progress-next {
     color: var(--text) !important;
     font-size: 15px !important;
-    font-weight: 850;
+    font-weight: 800 !important;
 }
 
-.progress-next span {
+.journey-progress-summary .progress-next span {
     color: var(--accent-strong);
-    font-weight: 900;
+    font-weight: 800;
 }
 
-.progress-card-completed h3 {
-    color: var(--text);
-    font-size: 15px;
-    font-weight: 900;
+.journey-progress-summary .progress-card-completed h3 {
+    color: var(--text) !important;
+    font-size: 15px !important;
+    font-weight: 800 !important;
 }
 
 .progress-card-completed {

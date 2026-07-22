@@ -1,12 +1,12 @@
 (function () {
     var storageKey = 'rbJourneyProgressV1';
     var phases = [
-        { key: 'spending-goals', title: 'Spending & Goals', href: '/phases/spending-goals.php' },
-        { key: 'social-security', title: 'Social Security', href: '/phases/social-security.php' },
-        { key: 'build-your-plan', title: 'Build Your Plan', href: '/#build-your-plan' },
-        { key: 'stress-test', title: 'Stress Test', href: '/#stress-test' },
-        { key: 'tax-strategy', title: 'Tax Strategy', href: '/#tax-strategy' },
-        { key: 'survivor-legacy', title: 'Survivor & Legacy', href: '/#survivor-legacy' }
+        { key: 'spending-goals', title: 'Spending & Goals', href: '/phases/spending-goals.php', available: true },
+        { key: 'social-security', title: 'Social Security', href: '/phases/social-security.php', available: true },
+        { key: 'build-your-plan', title: 'Build Your Plan', href: '/#build-your-plan', available: false },
+        { key: 'stress-test', title: 'Stress Test', href: '/#stress-test', available: false },
+        { key: 'tax-strategy', title: 'Tax Strategy', href: '/#tax-strategy', available: false },
+        { key: 'survivor-legacy', title: 'Survivor & Legacy', href: '/#survivor-legacy', available: false }
     ];
 
     function readProgress() {
@@ -32,6 +32,40 @@
         return phases.find(function (phase) {
             return progress[phase.key] !== true;
         }) || null;
+    }
+
+    function recommendedAvailablePhase(progress) {
+        return phases.find(function (phase) {
+            return phase.available && progress[phase.key] !== true;
+        }) || null;
+    }
+
+    function lastAvailablePhase() {
+        var available = phases.filter(function (phase) {
+            return phase.available;
+        });
+        return available[available.length - 1] || phases[0];
+    }
+
+    function homepageCtaTarget(progress) {
+        var started = hasJourneyData(progress);
+        var recommended = recommendedAvailablePhase(progress);
+        if (!started) {
+            return {
+                href: phases[0].href,
+                label: 'Begin Your Journey'
+            };
+        }
+        if (recommended) {
+            return {
+                href: recommended.href,
+                label: 'Continue Your Journey'
+            };
+        }
+        return {
+            href: lastAvailablePhase().href,
+            label: 'Continue Your Journey'
+        };
     }
 
     function hasJourneyData(progress) {
@@ -62,7 +96,7 @@
         if (!summary) return;
 
         var completed = completedPhases(progress);
-        var recommended = recommendedPhase(progress);
+        var recommended = recommendedAvailablePhase(progress);
         var count = summary.querySelector('[data-journey-completed-count]');
         var completedList = summary.querySelector('[data-journey-completed-list]');
         var recommendedLabel = summary.querySelector('[data-journey-recommended-phase]');
@@ -105,14 +139,12 @@
         }
 
         if (recommendedLabel) {
-            recommendedLabel.textContent = recommended ? recommended.title : 'Initial Journey complete';
+            recommendedLabel.textContent = recommended ? recommended.title : 'Review Social Security';
         }
 
         if (recommendedLink) {
-            recommendedLink.href = recommended ? recommended.href : '/';
-            recommendedLink.textContent = journeyComplete
-                ? 'Review Your Retirement Plan'
-                : 'Continue Your Journey';
+            recommendedLink.href = recommended ? recommended.href : lastAvailablePhase().href;
+            recommendedLink.textContent = 'Continue Your Journey';
         }
 
         if (context) {
@@ -150,11 +182,33 @@
     }
 
     function renderPhaseStates(progress) {
+        var recommended = recommendedAvailablePhase(progress);
         document.querySelectorAll('[data-journey-phase]').forEach(function (element) {
             var key = element.getAttribute('data-journey-phase');
+            var phase = phases.find(function (item) {
+                return item.key === key;
+            });
             var complete = progress[key] === true;
             element.classList.toggle('is-complete', complete);
+            element.classList.toggle('is-next-step', !complete && recommended && recommended.key === key);
+            element.classList.toggle('is-planned', Boolean(phase && !phase.available));
             element.setAttribute('data-journey-complete', complete ? 'true' : 'false');
+            var phaseStatus = element.querySelector('[data-journey-phase-status]');
+            if (phaseStatus) {
+                if (complete) {
+                    phaseStatus.textContent = 'Completed';
+                    phaseStatus.className = 'phase-status is-completed';
+                } else if (recommended && recommended.key === key) {
+                    phaseStatus.textContent = 'Next step';
+                    phaseStatus.className = 'phase-status is-next-step';
+                } else if (phase && phase.available) {
+                    phaseStatus.textContent = 'Available';
+                    phaseStatus.className = 'phase-status is-available';
+                } else {
+                    phaseStatus.textContent = 'Planned';
+                    phaseStatus.className = 'phase-status is-planned';
+                }
+            }
             var statusElement = element.querySelector('[data-journey-record-status]');
             if (statusElement) {
                 var status = recordStatus(progress, key);
@@ -179,10 +233,12 @@
         renderSummary(progress);
         renderPhaseStates(progress);
         renderToolLaunchPanels(progress);
-        var startLink = document.querySelector('[data-journey-start-link]');
-        if (startLink) {
-            startLink.hidden = hasJourneyData(progress);
-        }
+        var ctaTarget = homepageCtaTarget(progress);
+        document.querySelectorAll('[data-journey-home-cta]').forEach(function (link) {
+            link.href = ctaTarget.href;
+            link.textContent = ctaTarget.label;
+            link.hidden = false;
+        });
     }
 
     function markComplete(key) {

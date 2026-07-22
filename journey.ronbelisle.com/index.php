@@ -30,7 +30,7 @@ $page_title = 'Your Retirement Planning Journey';
                         <p>This guided six-phase Journey helps you build your initial retirement plan one decision at a time.</p>
                         <p>When your initial plan is complete, you can return to review it and keep it current as your life changes.</p>
                     </div>
-                    <a class="primary-action" href="/phases/spending-goals.php" data-journey-start-link>Begin Your Journey</a>
+                    <a class="primary-action" href="/phases/spending-goals.php" data-journey-home-cta>Begin Your Journey</a>
                 </div>
 
                 <aside class="phase-overview" aria-label="Journey phases overview">
@@ -89,45 +89,47 @@ $page_title = 'Your Retirement Planning Journey';
                         <span class="phase-number">1</span>
                         <h3>Spending &amp; Goals</h3>
                         <p>Start by clarifying the lifestyle, expenses, and priorities your plan needs to support.</p>
+                        <span class="phase-status" data-journey-phase-status>Next step</span>
                     </article>
 
                     <article class="phase-card is-available" id="social-security" data-journey-phase="social-security">
                         <span class="phase-number">2</span>
                         <h3>Social Security</h3>
                         <p>Think through claiming age, household benefits, and how Social Security fits your income plan.</p>
+                        <span class="phase-status" data-journey-phase-status>Available</span>
                     </article>
 
                     <article class="phase-card" id="build-your-plan" data-journey-phase="build-your-plan">
                         <span class="phase-number">3</span>
                         <h3>Build Your Plan</h3>
                         <p>Combine income, withdrawals, taxes, and investment assumptions into a coordinated plan.</p>
-                        <span class="phase-note">Planned</span>
+                        <span class="phase-status" data-journey-phase-status>Planned</span>
                     </article>
 
                     <article class="phase-card" id="stress-test" data-journey-phase="stress-test">
                         <span class="phase-number">4</span>
                         <h3>Stress Test</h3>
                         <p>Check whether the plan can handle market downturns, longevity, inflation, and spending changes.</p>
-                        <span class="phase-note">Planned</span>
+                        <span class="phase-status" data-journey-phase-status>Planned</span>
                     </article>
 
                     <article class="phase-card" id="tax-strategy" data-journey-phase="tax-strategy">
                         <span class="phase-number">5</span>
                         <h3>Tax Strategy</h3>
                         <p>Review Roth conversions, RMDs, taxable income timing, and tax-aware withdrawal choices.</p>
-                        <span class="phase-note">Planned</span>
+                        <span class="phase-status" data-journey-phase-status>Planned</span>
                     </article>
 
                     <article class="phase-card" id="survivor-legacy" data-journey-phase="survivor-legacy">
                         <span class="phase-number">6</span>
                         <h3>Survivor &amp; Legacy</h3>
                         <p>Consider survivor income, beneficiary planning, estate questions, and family protection.</p>
-                        <span class="phase-note">Planned</span>
+                        <span class="phase-status" data-journey-phase-status>Planned</span>
                     </article>
                 </div>
 
                 <div class="phase-overview-cta">
-                    <a class="primary-action" href="/phases/spending-goals.php">Begin Your Journey</a>
+                    <a class="primary-action" href="/phases/spending-goals.php" data-journey-home-cta>Begin Your Journey</a>
                 </div>
             </div>
         </section>
