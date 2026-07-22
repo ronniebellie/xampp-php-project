@@ -9,7 +9,7 @@ $page_title = 'Your Retirement Planning Journey';
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260722-phase-badges">
 </head>
 <body>
     <header class="site-header">
@@ -96,35 +96,35 @@ $page_title = 'Your Retirement Planning Journey';
                         <span class="phase-number">2</span>
                         <h3>Social Security</h3>
                         <p>Think through claiming age, household benefits, and how Social Security fits your income plan.</p>
-                        <span class="phase-status" data-journey-phase-status>Available</span>
+                        <span class="phase-status" data-journey-phase-status hidden></span>
                     </article>
 
                     <article class="phase-card" id="build-your-plan" data-journey-phase="build-your-plan">
                         <span class="phase-number">3</span>
                         <h3>Build Your Plan</h3>
                         <p>Combine income, withdrawals, taxes, and investment assumptions into a coordinated plan.</p>
-                        <span class="phase-status" data-journey-phase-status>Planned</span>
+                        <span class="phase-status is-coming-soon" data-journey-phase-status>Coming soon</span>
                     </article>
 
                     <article class="phase-card" id="stress-test" data-journey-phase="stress-test">
                         <span class="phase-number">4</span>
                         <h3>Stress Test</h3>
                         <p>Check whether the plan can handle market downturns, longevity, inflation, and spending changes.</p>
-                        <span class="phase-status" data-journey-phase-status>Planned</span>
+                        <span class="phase-status is-coming-soon" data-journey-phase-status>Coming soon</span>
                     </article>
 
                     <article class="phase-card" id="tax-strategy" data-journey-phase="tax-strategy">
                         <span class="phase-number">5</span>
                         <h3>Tax Strategy</h3>
                         <p>Review Roth conversions, RMDs, taxable income timing, and tax-aware withdrawal choices.</p>
-                        <span class="phase-status" data-journey-phase-status>Planned</span>
+                        <span class="phase-status is-coming-soon" data-journey-phase-status>Coming soon</span>
                     </article>
 
                     <article class="phase-card" id="survivor-legacy" data-journey-phase="survivor-legacy">
                         <span class="phase-number">6</span>
                         <h3>Survivor &amp; Legacy</h3>
                         <p>Consider survivor income, beneficiary planning, estate questions, and family protection.</p>
-                        <span class="phase-status" data-journey-phase-status>Planned</span>
+                        <span class="phase-status is-coming-soon" data-journey-phase-status>Coming soon</span>
                     </article>
                 </div>
 

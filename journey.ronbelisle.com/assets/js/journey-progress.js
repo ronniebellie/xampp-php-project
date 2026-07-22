@@ -202,11 +202,15 @@
                     phaseStatus.textContent = 'Next step';
                     phaseStatus.className = 'phase-status is-next-step';
                 } else if (phase && phase.available) {
-                    phaseStatus.textContent = 'Available';
-                    phaseStatus.className = 'phase-status is-available';
+                    phaseStatus.textContent = '';
+                    phaseStatus.className = 'phase-status';
+                    phaseStatus.hidden = true;
                 } else {
-                    phaseStatus.textContent = 'Planned';
-                    phaseStatus.className = 'phase-status is-planned';
+                    phaseStatus.textContent = 'Coming soon';
+                    phaseStatus.className = 'phase-status is-coming-soon';
+                }
+                if (phaseStatus.textContent) {
+                    phaseStatus.hidden = false;
                 }
             }
             var statusElement = element.querySelector('[data-journey-record-status]');
