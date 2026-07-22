@@ -109,10 +109,9 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
 
                         <section class="calculator-section" data-method-section="monthly_estimate" hidden aria-labelledby="monthly-title">
                             <p class="eyebrow">Step 2</p>
-                            <h2 id="monthly-title">Enter your monthly estimate</h2>
+                            <h2 id="monthly-title">Enter your current monthly household spending</h2>
                             <div class="field-group field-group-wide">
-                                <label for="currentMonthlySpending">Current monthly household spending</label>
-                                <div class="money-input"><span aria-hidden="true">$</span><input id="currentMonthlySpending" name="currentMonthlySpending" type="number" min="0" step="1" inputmode="decimal"></div>
+                                <div class="money-input"><span aria-hidden="true">$</span><input id="currentMonthlySpending" name="currentMonthlySpending" type="number" min="0" step="1" inputmode="decimal" aria-labelledby="monthly-title"></div>
                                 <small>Use your best estimate of what your household spends in a typical month. The number does not need to be perfect.</small>
                             </div>
                         </section>
