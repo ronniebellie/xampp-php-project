@@ -129,30 +129,22 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
 
                         <section class="calculator-section" aria-labelledby="adjustments-title">
                             <p class="eyebrow">Step 3</p>
-                            <h2 id="adjustments-title">Adjust for retirement</h2>
-                            <p>Add or subtract monthly amounts you expect to change in retirement. Leave any field at zero if it does not apply.</p>
-                            <div class="journey-form-grid">
-                                <div class="field-group">
-                                    <label for="expensesEnding">Monthly expenses expected to end</label>
-                                    <div class="money-input"><span aria-hidden="true">$</span><input id="expensesEnding" name="expensesEnding" type="number" min="0" step="1" inputmode="decimal"></div>
-                                    <small>Work commuting, payroll retirement contributions, or debt payments expected to end.</small>
-                                </div>
-                                <div class="field-group">
-                                    <label for="expensesDecreasing">Monthly expenses expected to decrease</label>
-                                    <div class="money-input"><span aria-hidden="true">$</span><input id="expensesDecreasing" name="expensesDecreasing" type="number" min="0" step="1" inputmode="decimal"></div>
-                                    <small>Enter only the expected monthly decrease, not the full expense.</small>
-                                </div>
-                                <div class="field-group">
-                                    <label for="expensesIncreasing">Monthly expenses expected to increase</label>
-                                    <div class="money-input"><span aria-hidden="true">$</span><input id="expensesIncreasing" name="expensesIncreasing" type="number" min="0" step="1" inputmode="decimal"></div>
-                                    <small>Additional healthcare, home maintenance, family travel, or other costs.</small>
-                                </div>
-                                <div class="field-group">
-                                    <label for="newRetirementExpenses">Monthly new retirement goals or expenses</label>
-                                    <div class="money-input"><span aria-hidden="true">$</span><input id="newRetirementExpenses" name="newRetirementExpenses" type="number" min="0" step="1" inputmode="decimal"></div>
-                                    <small>Travel, hobbies, home projects, family support, or other retirement goals.</small>
-                                </div>
+                            <h2 id="adjustments-title">Expected monthly household spending in retirement</h2>
+                            <p>Enter your best estimate of what your household will spend in a typical month after you retire. Consider expenses that may end, decrease, increase, or begin—but you do not need to calculate each change separately.</p>
+                            <div class="field-group field-group-wide">
+                                <label for="expectedMonthlyRetirementSpending">Expected monthly household spending in retirement</label>
+                                <div class="money-input"><span aria-hidden="true">$</span><input id="expectedMonthlyRetirementSpending" name="expectedMonthlyRetirementSpending" type="number" min="0" step="1" inputmode="decimal"></div>
+                                <small>This becomes your monthly retirement spending target.</small>
                             </div>
+                            <details class="calculator-help">
+                                <summary>Need help estimating this?</summary>
+                                <ul>
+                                    <li>Commuting or payroll contributions may end.</li>
+                                    <li>Debt payments may end or decrease.</li>
+                                    <li>Healthcare or insurance may increase.</li>
+                                    <li>Travel, hobbies, family support, or home maintenance may change.</li>
+                                </ul>
+                            </details>
                         </section>
 
                         <section class="calculator-section" aria-labelledby="split-title">

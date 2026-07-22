@@ -21,13 +21,6 @@
         'otherSpending'
     ];
 
-    var adjustmentFields = [
-        'expensesEnding',
-        'expensesDecreasing',
-        'expensesIncreasing',
-        'newRetirementExpenses'
-    ];
-
     function now() {
         return new Date().toISOString();
     }
@@ -94,12 +87,8 @@
 
     function inputsFromForm() {
         var categories = {};
-        var adjustments = {};
         categoryFields.forEach(function (field) {
             categories[field] = numberValue(field);
-        });
-        adjustmentFields.forEach(function (field) {
-            adjustments[field] = numberValue(field);
         });
 
         return {
@@ -107,7 +96,7 @@
             currentMonthlySpending: optionalNumberValue('currentMonthlySpending'),
             currentAnnualSpending: optionalNumberValue('currentAnnualSpending'),
             categories: categories,
-            adjustments: adjustments,
+            expectedMonthlyRetirementSpending: optionalNumberValue('expectedMonthlyRetirementSpending'),
             essentialMonthlySpending: optionalNumberValue('essentialMonthlySpending'),
             flexibleMonthlySpending: optionalNumberValue('flexibleMonthlySpending'),
             monthlyOtherRegularRetirementIncome: numberValue('monthlyOtherRegularRetirementIncome'),
@@ -123,9 +112,10 @@
 
     function nonNegativeErrors(inputs) {
         var errors = [];
-        var fields = categoryFields.concat(adjustmentFields, [
+        var fields = categoryFields.concat([
             'currentMonthlySpending',
             'currentAnnualSpending',
+            'expectedMonthlyRetirementSpending',
             'essentialMonthlySpending',
             'flexibleMonthlySpending',
             'monthlyOtherRegularRetirementIncome'
@@ -171,6 +161,9 @@
         } else {
             errors.push('Choose how you would like to estimate spending.');
         }
+        if (!inputs.expectedMonthlyRetirementSpending || inputs.expectedMonthlyRetirementSpending <= 0) {
+            errors.push('Enter expected monthly household spending in retirement.');
+        }
 
         return errors;
     }
@@ -213,6 +206,23 @@
         return totalValues(inputs.categories, categoryFields) * 12;
     }
 
+    function legacyRetirementSpending(record, inputs) {
+        var outputs = record && record.outputs && typeof record.outputs === 'object' ? record.outputs : {};
+        if (Number(outputs.monthlyRetirementSpendingTarget) > 0) {
+            return Number(outputs.monthlyRetirementSpendingTarget);
+        }
+        var adjustments = inputs && inputs.adjustments && typeof inputs.adjustments === 'object' ? inputs.adjustments : null;
+        if (!adjustments) return null;
+        var annualCurrent = currentAnnualSpending(inputs);
+        var monthlyCurrent = annualCurrent / 12;
+        var monthlyNetAdjustments =
+            (Number(adjustments.expensesIncreasing) || 0) +
+            (Number(adjustments.newRetirementExpenses) || 0) -
+            (Number(adjustments.expensesEnding) || 0) -
+            (Number(adjustments.expensesDecreasing) || 0);
+        return Math.max(monthlyCurrent + monthlyNetAdjustments, 0);
+    }
+
     function suggestedEssential(inputs, monthlyTarget) {
         if (inputs.startingMethod === 'guided_categories') {
             var categories = inputs.categories;
@@ -229,13 +239,7 @@
     function calculate(inputs) {
         var annualCurrent = currentAnnualSpending(inputs);
         var monthlyCurrent = annualCurrent / 12;
-        var adjustments = inputs.adjustments;
-        var monthlyNetAdjustments =
-            (adjustments.expensesIncreasing || 0) +
-            (adjustments.newRetirementExpenses || 0) -
-            (adjustments.expensesEnding || 0) -
-            (adjustments.expensesDecreasing || 0);
-        var monthlyTarget = Math.max(monthlyCurrent + monthlyNetAdjustments, 0);
+        var monthlyTarget = Math.max(inputs.expectedMonthlyRetirementSpending || 0, 0);
         var annualTarget = monthlyTarget * 12;
 
         var essential = inputs.essentialMonthlySpending;
@@ -263,6 +267,7 @@
         return {
             currentAnnualSpending: annualCurrent,
             currentMonthlySpending: monthlyCurrent,
+            expectedMonthlyRetirementSpending: monthlyTarget,
             monthlyRetirementSpendingTarget: monthlyTarget,
             annualRetirementSpendingTarget: annualTarget,
             monthlyEssentialSpending: essential,
@@ -296,13 +301,13 @@
         resultsPanel.querySelector('[data-result="remainingMonthly"]').textContent = money(outputs.monthlyRemainingNeedBeforeSocialSecurityAndInvestments);
         resultsPanel.querySelector('[data-result="assumptions"]').textContent =
             'Based on your ' + methodLabel(inputs.startingMethod) +
-            ', retirement adjustments, and other regular retirement income before Social Security.';
+            ', expected monthly retirement spending, and other regular retirement income before Social Security.';
     }
 
     function buildRecord(inputs, outputs, status) {
         var timestamp = status === 'completed' ? now() : null;
         return {
-            schemaVersion: 1,
+            schemaVersion: 2,
             calculatorId: 'retirement-spending-plan',
             phaseId: 'spending-goals',
             completionStatus: status,
@@ -410,9 +415,10 @@
         categoryFields.forEach(function (field) {
             setNumberValue(field, inputs.categories && inputs.categories[field]);
         });
-        adjustmentFields.forEach(function (field) {
-            setNumberValue(field, inputs.adjustments && inputs.adjustments[field]);
-        });
+        if (inputs.expectedMonthlyRetirementSpending === null || inputs.expectedMonthlyRetirementSpending === undefined) {
+            inputs.expectedMonthlyRetirementSpending = legacyRetirementSpending(record, inputs);
+        }
+        setNumberValue('expectedMonthlyRetirementSpending', inputs.expectedMonthlyRetirementSpending);
         setNumberValue('essentialMonthlySpending', inputs.essentialMonthlySpending);
         setNumberValue('flexibleMonthlySpending', inputs.flexibleMonthlySpending);
         setNumberValue('monthlyOtherRegularRetirementIncome', inputs.monthlyOtherRegularRetirementIncome);

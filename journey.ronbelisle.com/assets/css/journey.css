@@ -1094,6 +1094,32 @@ h1 {
     resize: vertical;
 }
 
+.calculator-help {
+    max-width: 640px;
+    margin-top: 14px;
+    padding: 12px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    background: var(--paper-soft);
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.calculator-help summary {
+    color: var(--accent-strong);
+    cursor: pointer;
+    font-weight: 800;
+}
+
+.calculator-help ul {
+    margin: 10px 0 0;
+    padding-left: 20px;
+}
+
+.calculator-help li + li {
+    margin-top: 4px;
+}
+
 .calculator-actions {
     display: flex;
     flex-wrap: wrap;
