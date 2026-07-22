@@ -89,14 +89,12 @@ $page_title = 'Your Retirement Planning Journey';
                         <span class="phase-number">1</span>
                         <h3>Spending &amp; Goals</h3>
                         <p>Start by clarifying the lifestyle, expenses, and priorities your plan needs to support.</p>
-                        <a href="/phases/spending-goals.php">Start this phase</a>
                     </article>
 
                     <article class="phase-card is-available" id="social-security" data-journey-phase="social-security">
                         <span class="phase-number">2</span>
                         <h3>Social Security</h3>
                         <p>Think through claiming age, household benefits, and how Social Security fits your income plan.</p>
-                        <a href="/phases/social-security.php">Start this phase</a>
                     </article>
 
                     <article class="phase-card" id="build-your-plan" data-journey-phase="build-your-plan">

@@ -864,7 +864,7 @@ h1 {
 .progress-count {
     color: var(--text);
     font-size: clamp(28px, 5vw, 44px);
-    font-weight: 850;
+    font-weight: 900;
     line-height: 1.08;
 }
 
@@ -887,7 +887,20 @@ h1 {
 }
 
 .progress-next {
-    font-weight: 700;
+    color: var(--text) !important;
+    font-size: 15px !important;
+    font-weight: 850;
+}
+
+.progress-next span {
+    color: var(--accent-strong);
+    font-weight: 900;
+}
+
+.progress-card-completed h3 {
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 900;
 }
 
 .progress-card-completed {
