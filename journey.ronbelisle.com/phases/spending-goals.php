@@ -29,6 +29,44 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                         <p class="page-lede">Use this phase to get ready for the Retirement Spending Planner. The goal is to enter the calculator with clearer spending estimates, useful context, and a practical question you want answered.</p>
                     </div>
 
+                    <section class="current-record-overview" aria-labelledby="spending-plan-summary-title" data-spending-plan-summary hidden>
+                        <p class="eyebrow">Your saved spending plan</p>
+                        <div class="record-overview-heading">
+                            <h2 id="spending-plan-summary-title">Your current retirement spending target</h2>
+                            <span class="record-status-badge is-current">Current</span>
+                        </div>
+                        <div class="result-metrics compact-results">
+                            <div class="result-metric is-primary">
+                                <span>Monthly target</span>
+                                <strong data-spending-plan-field="monthlyTarget">$0</strong>
+                            </div>
+                            <div class="result-metric">
+                                <span>Annual target</span>
+                                <strong data-spending-plan-field="annualTarget">$0</strong>
+                            </div>
+                            <div class="result-metric">
+                                <span>Essential monthly</span>
+                                <strong data-spending-plan-field="essentialMonthly">$0</strong>
+                            </div>
+                            <div class="result-metric">
+                                <span>Flexible monthly</span>
+                                <strong data-spending-plan-field="flexibleMonthly">$0</strong>
+                            </div>
+                            <div class="result-metric">
+                                <span>Other regular income</span>
+                                <strong data-spending-plan-field="otherIncomeMonthly">$0</strong>
+                            </div>
+                            <div class="result-metric">
+                                <span>Last updated</span>
+                                <strong data-spending-plan-field="lastUpdated">Not saved yet</strong>
+                            </div>
+                        </div>
+                        <div class="record-overview-actions">
+                            <a class="primary-action" href="/phases/social-security.php">Continue to Phase 2</a>
+                            <a class="secondary-action" href="/calculators/retirement-spending-plan/">Update Spending Plan</a>
+                        </div>
+                    </section>
+
                     <article class="planning-panel">
                         <h2>Why this step matters</h2>
                         <p>Your spending target is the foundation for the rest of your retirement plan. Before you estimate Social Security timing, withdrawals, taxes, or investment risk, it helps to know what kind of retirement income you are trying to support.</p>
@@ -53,13 +91,15 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                         </div>
 
                         <h2>Before you continue</h2>
-                        <p>Open the planner, work through the calculator, and make note of the spending target or gap that stands out. You will use that context in the next phase when thinking about Social Security.</p>
+                        <p>Open the planner, work through the calculator, and save your retirement spending target. You will use that number in the next phase when thinking about Social Security.</p>
 
                         <h2>Continue to the next phase</h2>
-                        <p>After completing the Retirement Spending Planner, return here to continue to Phase 2: Social Security.</p>
-                        <div class="completion-message phase-completion-panel" data-journey-reveal-after-launch="spending-goals" hidden>
-                            <p><strong>Finished with the Retirement Spending Planner?</strong> Continue to Phase 2: Social Security.</p>
-                            <a class="primary-action" href="/phases/social-security.php" data-journey-complete-phase="spending-goals">Continue to Phase 2</a>
+                        <div data-spending-plan-empty>
+                            <p>After saving your Retirement Spending Plan, return here to review your spending summary and continue to Phase 2: Social Security.</p>
+                        </div>
+                        <div class="completion-message phase-completion-panel" data-spending-plan-summary hidden>
+                            <p><strong>Your spending plan is saved.</strong> Continue to Phase 2: Social Security when you are ready.</p>
+                            <a class="primary-action" href="/phases/social-security.php">Continue to Phase 2</a>
                         </div>
                     </article>
                 </div>
@@ -69,13 +109,14 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
 
                     <div class="next-step-card" aria-labelledby="next-step-title">
                         <p class="eyebrow">Recommended Tool</p>
-                        <h2 id="next-step-title">Retirement Spending Planner</h2>
-                        <p>Estimate a retirement budget from your current spending, factor in guaranteed income, and see whether your savings look on track.</p>
-                        <a class="primary-action" href="https://ronbelisle.com/retirement-spending-checkup/" data-journey-launch-tool="spending-goals">Launch Retirement Spending Planner</a>
+                        <h2 id="next-step-title">Your Retirement Spending Plan</h2>
+                        <p>Estimate a retirement budget from your current spending, separate essential and flexible expenses, and save the target for the rest of your Journey.</p>
+                        <a class="primary-action" href="/calculators/retirement-spending-plan/">Launch Retirement Spending Planner</a>
                     </div>
                 </aside>
             </div>
         </section>
     </main>
+    <script src="/assets/js/spending-goals-phase.js" defer></script>
 </body>
 </html>

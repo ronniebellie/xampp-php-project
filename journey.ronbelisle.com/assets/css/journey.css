@@ -760,6 +760,7 @@ h1 {
     color: #7f1d1d;
 }
 
+.error-summary h2,
 .error-summary h3 {
     margin: 0 0 8px;
     font-size: 17px;
@@ -956,6 +957,173 @@ h1 {
     outline-offset: 3px;
 }
 
+.calculator-hero .phase-template-grid {
+    grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+}
+
+.journey-calculator {
+    display: grid;
+    gap: 28px;
+}
+
+.calculator-section {
+    padding-top: 28px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.calculator-section:first-of-type {
+    padding-top: 0;
+    border-top: 0;
+}
+
+.calculator-section h2 {
+    margin-bottom: 8px;
+}
+
+.method-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.method-card {
+    display: flex;
+    min-height: 118px;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid #dbe3ec;
+    border-radius: 12px;
+    background: #ffffff;
+    cursor: pointer;
+}
+
+.method-card:has(input:checked) {
+    border-color: rgba(29, 78, 216, 0.48);
+    background: #eff6ff;
+}
+
+.method-card input {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    margin: 3px 0 0;
+}
+
+.method-card strong,
+.method-card small {
+    display: block;
+}
+
+.method-card strong {
+    color: var(--text);
+    line-height: 1.25;
+}
+
+.method-card small {
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.field-group-wide {
+    max-width: 640px;
+}
+
+.field-group textarea {
+    width: 100%;
+    min-height: 110px;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    background: #ffffff;
+    color: var(--text);
+    font: inherit;
+    resize: vertical;
+}
+
+.calculator-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    padding-top: 6px;
+}
+
+.button-action {
+    min-height: 46px;
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+}
+
+.secondary-action.button-action {
+    border: 1px solid var(--border);
+}
+
+.save-status {
+    margin: -12px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.result-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.result-metric {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #dbe3ec;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.result-metric.is-primary {
+    border-color: rgba(29, 78, 216, 0.32);
+    background: #eff6ff;
+}
+
+.result-metric span {
+    display: block;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.result-metric strong {
+    display: block;
+    margin-top: 5px;
+    color: var(--text);
+    font-size: 24px;
+    line-height: 1.1;
+}
+
+.result-metric.is-primary strong {
+    color: var(--accent-strong);
+    font-size: 30px;
+}
+
+.compact-results {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.compact-results .result-metric {
+    padding: 14px;
+}
+
+.compact-results .result-metric strong {
+    font-size: 20px;
+}
+
+.compact-results .result-metric.is-primary strong {
+    font-size: 24px;
+}
+
 @media (max-width: 880px) {
     .hero-grid,
     .page-grid,
@@ -1054,7 +1222,10 @@ h1 {
     }
 
     .journey-form-grid,
-    .compact-choice-grid {
+    .compact-choice-grid,
+    .method-grid,
+    .result-metrics,
+    .compact-results {
         grid-template-columns: 1fr;
     }
 
@@ -1078,8 +1249,19 @@ h1 {
     .phase-completion .primary-action,
     .phase-completion .secondary-action,
     .record-overview-actions .primary-action,
-    .record-overview-actions .secondary-action {
+    .record-overview-actions .secondary-action,
+    .calculator-actions .primary-action,
+    .calculator-actions .secondary-action {
         width: 100%;
         margin-right: 0;
+    }
+
+    .method-card {
+        min-height: 0;
+    }
+
+    .result-metric strong,
+    .result-metric.is-primary strong {
+        font-size: 22px;
     }
 }
