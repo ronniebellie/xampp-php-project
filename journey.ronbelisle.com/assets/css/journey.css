@@ -302,6 +302,12 @@ h1 {
     gap: 14px;
 }
 
+.phase-overview-cta {
+    display: flex;
+    justify-content: center;
+    margin: 30px 0 8px;
+}
+
 .phase-card {
     min-height: 220px;
     padding: 18px;

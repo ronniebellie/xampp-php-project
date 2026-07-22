@@ -127,6 +127,10 @@ $page_title = 'Your Retirement Planning Journey';
                         <span class="phase-note">Planned</span>
                     </article>
                 </div>
+
+                <div class="phase-overview-cta">
+                    <a class="primary-action" href="/phases/spending-goals.php">Begin Your Journey</a>
+                </div>
             </div>
         </section>
     </main>
