@@ -212,7 +212,7 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
 
                         <div class="calculator-actions">
                             <button type="button" class="secondary-action button-action" id="calculateSpendingPlan">Calculate My Spending Target</button>
-                            <button type="submit" class="primary-action button-action">Save and Continue to Phase 1</button>
+                            <button type="submit" class="primary-action button-action">Save and Continue Phase 1</button>
                         </div>
                         <p class="save-status" id="spendingPlanSaveStatus" aria-live="polite">Draft inputs are saved in this browser for the prototype.</p>
                     </form>

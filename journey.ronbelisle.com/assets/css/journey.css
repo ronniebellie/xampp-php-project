@@ -427,6 +427,23 @@ h1 {
     margin: 0;
 }
 
+.journey-success-message {
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    border: 1px solid #bbf7d0;
+    border-left: 4px solid var(--success);
+    border-radius: 8px;
+    background: #f0fdf4;
+    color: #14532d;
+}
+
+.journey-success-message strong {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 850;
+}
+
 .record-status-badge {
     display: inline-flex;
     align-items: center;

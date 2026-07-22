@@ -50,11 +50,37 @@
         });
     }
 
+    function freshSaveFlag() {
+        try {
+            return new URLSearchParams(window.location.search).get('spendingPlan') === 'saved';
+        } catch (error) {
+            return false;
+        }
+    }
+
+    function clearFreshSaveFlag() {
+        if (!window.history || typeof window.history.replaceState !== 'function') return;
+        try {
+            var url = new URL(window.location.href);
+            url.searchParams.delete('spendingPlan');
+            window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+        } catch (error) {
+            return;
+        }
+    }
+
+    function renderSuccessMessage(show) {
+        document.querySelectorAll('[data-spending-plan-success]').forEach(function (element) {
+            element.hidden = !show;
+        });
+    }
+
     function render() {
         var record = readRecord();
         var hasSavedPlan = record.completionStatus === 'completed' &&
             record.outputs &&
             Number(record.outputs.monthlyRetirementSpendingTarget) > 0;
+        var showFreshSave = hasSavedPlan && freshSaveFlag();
 
         document.querySelectorAll('[data-spending-plan-summary]').forEach(function (element) {
             element.hidden = !hasSavedPlan;
@@ -64,6 +90,9 @@
         document.querySelectorAll('[data-spending-plan-empty]').forEach(function (element) {
             element.hidden = hasSavedPlan;
         });
+
+        renderSuccessMessage(showFreshSave);
+        if (showFreshSave) clearFreshSaveFlag();
     }
 
     render();

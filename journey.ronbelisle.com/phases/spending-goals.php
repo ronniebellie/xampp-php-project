@@ -31,6 +31,9 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
 
                     <section class="current-record-overview" aria-labelledby="spending-plan-summary-title" data-spending-plan-summary hidden>
                         <p class="eyebrow">Your saved spending plan</p>
+                        <div class="journey-success-message" role="status" data-spending-plan-success hidden>
+                            <strong>Spending plan saved ✓</strong>
+                        </div>
                         <div class="record-overview-heading">
                             <h2 id="spending-plan-summary-title">Your current retirement spending target</h2>
                             <span class="record-status-badge is-current">Current</span>
