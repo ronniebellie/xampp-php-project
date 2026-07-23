@@ -64,7 +64,7 @@ $page_title = 'Social Security | Retirement Planning Journey';
                             <h2 id="why-title">Why this step matters</h2>
                             <p>Social Security can provide income for the rest of your life. The age at which you claim affects when that income begins and how much you receive each month.</p>
                             <p>Claiming earlier usually means smaller monthly payments that begin sooner. Waiting usually means larger monthly payments that begin later, but you must have another way to support your spending while you wait.</p>
-                            <p>The useful question is not simply, “Which age produces the largest total?” It is, “Which tradeoff fits my retirement plan best?”</p>
+                            <p>The useful question isn’t simply, “Which claiming age produces the largest lifetime Social Security benefit?” It’s, “Which claiming strategy gives me the best balance between income now and income later, given my own retirement plan and circumstances?”</p>
                         </section>
 
                         <section class="phase-content-section" aria-labelledby="accomplish-title">
@@ -74,8 +74,7 @@ $page_title = 'Social Security | Retirement Planning Journey';
                                 <li>See how claiming age changes your estimated monthly benefit.</li>
                                 <li>Understand what the break-even age and lifetime totals mean—and what they don’t.</li>
                                 <li>Record the claiming age you want to test in your retirement plan.</li>
-                                <li>Note the main tradeoff and anything you still need to verify.</li>
-                                <li>Carry your Social Security choice into Phase 3.</li>
+                                <li>Carry your Social Security choice forward as a working assumption.</li>
                             </ul>
                             <p class="supporting-note">This is a starting point. You may revise it when your work, health, household, or retirement plan changes.</p>
                         </section>
@@ -152,11 +151,11 @@ $page_title = 'Social Security | Retirement Planning Journey';
 
                         <section class="phase-content-section return-section" id="return-from-analyzer" aria-labelledby="return-title">
                             <p class="eyebrow">After the analyzer</p>
-                            <h2 id="return-title">Welcome back. Let’s make sense of what you found.</h2>
-                            <p>Now consider how the benefit amounts fit your retirement.</p>
+                            <h2 id="return-title">Welcome back. Choose the claiming age to test.</h2>
+                            <p>Select the working assumption you want your retirement plan to use. You can change it later.</p>
 
                             <fieldset class="journey-fieldset" data-field-group="interest">
-                                <legend>Which claiming age do you want to test in Phase 3?</legend>
+                                <legend>Which claiming age do you want to test in your plan?</legend>
                                 <div class="compact-choice-grid">
                                     <?php for ($age = 62; $age <= 70; $age++): ?>
                                         <label class="choice-row"><input type="radio" name="interest" value="<?php echo $age; ?>"> <span>Age <?php echo $age; ?></span></label>
@@ -166,23 +165,13 @@ $page_title = 'Social Security | Retirement Planning Journey';
                                 <label class="choice-row"><input type="radio" name="interest" value="not-ready"> <span>I am not ready to select an age.</span></label>
                             </fieldset>
 
-                            <fieldset class="journey-fieldset" data-field-group="rationale">
-                                <legend>What made this option stand out?</legend>
-                                <label class="choice-row"><input type="radio" name="rationale" value="sooner"> <span>It provides income sooner.</span></label>
-                                <label class="choice-row"><input type="radio" name="rationale" value="later"> <span>It provides a larger dependable benefit later.</span></label>
-                                <label class="choice-row"><input type="radio" name="rationale" value="balance"> <span>It appears to balance earlier income and later security.</span></label>
-                                <label class="choice-row"><input type="radio" name="rationale" value="lifetime"> <span>It produced the highest estimated lifetime total.</span></label>
-                                <label class="choice-row"><input type="radio" name="rationale" value="retirement"> <span>It aligns with when I expect to retire.</span></label>
-                                <label class="choice-row"><input type="radio" name="rationale" value="starting-point"> <span>I selected it as a starting point, not a final choice.</span></label>
-                                <label class="choice-row"><input type="radio" name="rationale" value="not-ready"> <span>I am not ready to choose.</span></label>
-                            </fieldset>
-                            <div class="coach-response" id="rationaleResponse" aria-live="polite" hidden></div>
+                            <div class="coach-response" id="claimingConfirmation" aria-live="polite" hidden></div>
                         </section>
 
                         <form id="phase2RecordForm" novalidate>
                             <section class="phase-content-section" aria-labelledby="record-title">
                                 <h2 id="record-title">Record the claiming age you want to test</h2>
-                                <p>Save the numbers you want to use in Phase 3. This does not apply for benefits.</p>
+                                <p>Save the numbers you want your plan to use. This is a planning assumption, not a Social Security filing action.</p>
 
                                 <div class="error-summary" id="phase2ErrorSummary" role="alert" tabindex="-1" hidden>
                                     <h3>Please review the following</h3>
@@ -193,7 +182,7 @@ $page_title = 'Social Security | Retirement Planning Journey';
                                     <div class="field-group">
                                         <label for="birthYear">Birth year <span class="optional-label">(optional)</span></label>
                                         <input id="birthYear" name="birthYear" type="number" min="1920" max="<?php echo date('Y'); ?>" step="1" inputmode="numeric">
-                                        <small>Saved for Phase 3 when you provide it.</small>
+                                        <small>Helpful later when your plan needs your age.</small>
                                     </div>
 
                                     <div class="field-group">
@@ -201,7 +190,7 @@ $page_title = 'Social Security | Retirement Planning Journey';
                                         <select id="decisionStatus" name="decisionStatus">
                                             <option value="">Choose a status</option>
                                             <option value="provisional">Claiming age to test</option>
-                                            <option value="need-more-information">Need more information</option>
+                                            <option value="need-more-information">I am not ready to select an age</option>
                                             <option value="already-receiving">Already receiving benefits</option>
                                         </select>
                                         <small id="decisionStatusHelp">Choose the option that best describes your decision today.</small>
@@ -219,65 +208,28 @@ $page_title = 'Social Security | Retirement Planning Journey';
                                     </div>
 
                                     <div class="field-group" id="benefitAtFraGroup">
-                                        <label for="benefitAtFra">Monthly benefit at Full Retirement Age</label>
+                                        <label for="benefitAtFra">Monthly benefit at your full retirement age</label>
                                         <div class="money-input"><span aria-hidden="true">$</span><input id="benefitAtFra" name="benefitAtFra" type="number" min="0" step="1" inputmode="decimal"></div>
-                                        <small>Use the amount from your Social Security statement before Medicare deductions.</small>
+                                        <small>Use the amount from your Social Security statement for the age Social Security treats as full retirement, before Medicare deductions.</small>
                                     </div>
 
                                     <div class="field-group">
-                                        <label for="selectedMonthlyBenefit" id="selectedMonthlyBenefitLabel">Estimated monthly benefit at the selected age</label>
+                                        <label for="selectedMonthlyBenefit" id="selectedMonthlyBenefitLabel">Monthly benefit shown by the Claiming Analyzer</label>
                                         <div class="money-input"><span aria-hidden="true">$</span><input id="selectedMonthlyBenefit" name="selectedMonthlyBenefit" type="number" min="0" step="1" inputmode="decimal"></div>
-                                        <small id="selectedMonthlyBenefitHelp">Use the amount shown by the Claiming Analyzer for the age you selected.</small>
+                                        <small id="selectedMonthlyBenefitHelp">After comparing claiming ages in the Claiming Analyzer, enter the monthly benefit shown for the age you selected.</small>
                                     </div>
                                 </div>
 
-                                <fieldset class="journey-fieldset" data-field-group="mainTradeoff">
-                                    <legend>Main tradeoff</legend>
-                                    <p class="fieldset-help">Complete this thought: “With this choice, I gain ___, but I give up or must provide ___.”</p>
-                                    <label class="choice-row"><input type="radio" name="mainTradeoff" value="income-sooner"> <span>Income sooner, but a smaller monthly benefit for life.</span></label>
-                                    <label class="choice-row"><input type="radio" name="mainTradeoff" value="larger-later"> <span>A larger later benefit, but I must cover my expenses while I wait.</span></label>
-                                    <label class="choice-row"><input type="radio" name="mainTradeoff" value="balance"> <span>A balance between earlier income and later security.</span></label>
-                                    <label class="choice-row"><input type="radio" name="mainTradeoff" value="lifetime-assumption"> <span>A higher estimated lifetime total, but the result depends more on how long I live.</span></label>
-                                    <label class="choice-row"><input type="radio" name="mainTradeoff" value="unresolved"> <span>I have not decided which tradeoff I prefer.</span></label>
-                                    <label class="choice-row"><input type="radio" name="mainTradeoff" value="other"> <span>Another tradeoff.</span></label>
-                                    <div class="field-group nested-field" id="otherTradeoffGroup" hidden>
-                                        <label for="otherTradeoff">Describe the other tradeoff</label>
-                                        <input id="otherTradeoff" name="otherTradeoff" type="text" maxlength="240">
-                                    </div>
-                                </fieldset>
-
-                                <fieldset class="journey-fieldset" data-field-group="verificationNeeded">
-                                    <legend>What do you still need to check?</legend>
-                                    <p class="fieldset-help">Choose all that apply, then select the most important next step.</p>
-                                    <label class="choice-row"><input type="checkbox" name="verificationNeeded" value="earnings-record"> <span>My earnings record</span></label>
-                                    <label class="choice-row"><input type="checkbox" name="verificationNeeded" value="fra-benefit"> <span>My benefit at Full Retirement Age</span></label>
-                                    <label class="choice-row"><input type="checkbox" name="verificationNeeded" value="early-exit"> <span>The effect of stopping work early</span></label>
-                                    <label class="choice-row"><input type="checkbox" name="verificationNeeded" value="survivor"> <span>How this choice affects my spouse or survivor</span></label>
-                                    <label class="choice-row"><input type="checkbox" name="verificationNeeded" value="delay-affordability"> <span>Whether I can afford to delay</span></label>
-                                    <label class="choice-row"><input type="checkbox" name="verificationNeeded" value="current-rules"> <span>Current Social Security rules</span></label>
-                                    <label class="choice-row"><input type="checkbox" name="verificationNeeded" value="nothing-yet"> <span>Nothing yet</span></label>
-                                    <label class="choice-row"><input type="checkbox" name="verificationNeeded" value="other"> <span>Another item</span></label>
-
-                                    <div class="field-group nested-field">
-                                        <label for="verificationPriority">Most important next step</label>
-                                        <select id="verificationPriority" name="verificationPriority">
-                                            <option value="">Choose one</option>
-                                            <option value="earnings-record">My earnings record</option>
-                                            <option value="fra-benefit">My benefit at Full Retirement Age</option>
-                                            <option value="early-exit">The effect of stopping work early</option>
-                                            <option value="survivor">How this choice affects my spouse or survivor</option>
-                                            <option value="delay-affordability">Whether I can afford to delay</option>
-                                            <option value="current-rules">Current Social Security rules</option>
-                                            <option value="nothing-yet">Nothing yet</option>
-                                            <option value="other">Another item</option>
-                                        </select>
-                                    </div>
-                                </fieldset>
+                                <div class="field-group field-group-wide">
+                                    <label for="decisionNotes">Optional notes</label>
+                                    <textarea id="decisionNotes" name="decisionNotes" maxlength="2000" rows="3"></textarea>
+                                    <small>Is there anything you’d like to remember about this decision?</small>
+                                </div>
 
                                 <button type="submit" class="primary-action journey-button">Save My Claiming Choice</button>
                                 <div class="save-confirmation" id="phase2SaveConfirmation" role="status" tabindex="-1" hidden>
                                     <strong>Your current Social Security planning record has been saved in this browser.</strong>
-                                    <span>Your retirement plan can use this choice in Phase 3. You can review and update it later.</span>
+                                    <span>This is a working assumption you can revisit and change later.</span>
                                 </div>
                             </section>
                         </form>
@@ -324,7 +276,7 @@ $page_title = 'Social Security | Retirement Planning Journey';
                                 <span class="record-status-badge" data-phase2-record-status hidden></span>
                             </div>
                             <div class="assumption-statement" data-phase2-summary>
-                                <p>Save your claiming choice to create a short summary for Phase 3.</p>
+                                <p>Save your claiming choice to create a short summary for later phases.</p>
                             </div>
                             <div class="review-guidance" data-phase2-review-guidance hidden>
                                 <h3>When to review this again</h3>
@@ -337,24 +289,21 @@ $page_title = 'Social Security | Retirement Planning Journey';
                             <h2 id="before-continue-title">Before you continue</h2>
                             <p>Make sure you can answer these questions:</p>
                             <ul class="coach-list">
-                                <li>Which claiming age or current benefit should Phase 3 use?</li>
-                                <li>What monthly benefit should Phase 3 use?</li>
-                                <li>What is the main tradeoff?</li>
-                                <li>What still needs verification?</li>
-                                <li>Is this a claiming age to test, a decision that still needs work, or an existing benefit?</li>
+                                <li>Which claiming age or current benefit should your plan use?</li>
+                                <li>What monthly benefit should your plan assume?</li>
+                                <li>Do you understand this is a working assumption you can change later?</li>
                             </ul>
                             <p class="trust-note">Completing Phase 2 does not file for Social Security or make your choice permanent. Verify official benefit information and current rules before acting.</p>
                         </section>
 
                         <section class="phase-content-section phase-completion" aria-labelledby="continue-title">
-                            <h2 id="continue-title">Continue to Phase 3: Build Your Plan</h2>
-                            <p>You now have a claiming age to test alongside your retirement spending, savings, and other income.</p>
-                            <p>In Phase 3, you will combine it with your spending, savings, and other income to see how your plan works year by year.</p>
-                            <p><strong>You’re ready to bring the major pieces together.</strong></p>
-                            <button type="button" class="primary-action journey-button" id="completePhase2Button">Save and Continue to Phase 3</button>
+                            <h2 id="continue-title">Save your Phase 2 progress</h2>
+                            <p>When your claiming assumption is saved, your Journey can mark Phase 2 complete.</p>
+                            <p>Phase 3 is not ready yet. For now, return to your Journey homepage after saving.</p>
+                            <button type="button" class="primary-action journey-button" id="completePhase2Button">Save Phase 2 Progress</button>
                             <a class="secondary-action" href="/">Return to My Journey</a>
                             <div class="completion-message" id="phase2CompletionMessage" role="status" tabindex="-1" hidden></div>
-                            <p class="trust-note">Completing Phase 2 records your progress through the Journey. Your Social Security planning record remains separate and can still need information, verification, or a later review.</p>
+                            <p class="trust-note">Completing Phase 2 records your progress through the Journey. Your Social Security planning record remains in this browser and can be updated later.</p>
                         </section>
                     </article>
                 </div>

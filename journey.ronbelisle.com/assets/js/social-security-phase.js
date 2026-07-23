@@ -7,28 +7,6 @@
     var recordTools = window.rbJourneyRecords;
     if (!form || !recordTools) return;
 
-    var labels = {
-        'sooner': 'it provides income sooner',
-        'later': 'it provides a larger dependable benefit later',
-        'balance': 'it appears to balance earlier income and later security',
-        'lifetime': 'it produced the highest estimated lifetime total',
-        'retirement': 'it aligns with when I expect to retire',
-        'starting-point': 'it is a useful starting point rather than a final choice',
-        'not-ready': 'I am not ready to choose',
-        'income-sooner': 'income sooner, but a smaller monthly benefit for life',
-        'larger-later': 'a larger later benefit, but I must cover my expenses while I wait',
-        'lifetime-assumption': 'a higher estimated lifetime total, but the result depends more on how long I live',
-        'unresolved': 'I have not decided which tradeoff I prefer',
-        'earnings-record': 'my earnings record',
-        'fra-benefit': 'my benefit at Full Retirement Age',
-        'early-exit': 'the effect of stopping work early',
-        'survivor': 'how this choice affects my spouse or survivor',
-        'delay-affordability': 'whether I can afford to delay',
-        'current-rules': 'current Social Security rules',
-        'nothing-yet': 'nothing yet',
-        'other': 'another item'
-    };
-
     function readProgress() {
         try {
             var parsed = JSON.parse(localStorage.getItem(storageKey) || '{}');
@@ -55,22 +33,21 @@
         return selected ? selected.value : '';
     }
 
-    function checkedValues(name) {
-        return Array.prototype.map.call(
-            document.querySelectorAll('input[name="' + name + '"]:checked'),
-            function (input) { return input.value; }
-        );
-    }
-
     function numberOrNull(value) {
         if (value === '') return null;
         var number = Number(value);
         return Number.isFinite(number) ? number : null;
     }
 
+    function notesValue() {
+        var element = document.getElementById('decisionNotes');
+        return element ? element.value.trim() : '';
+    }
+
     function buildRecord() {
         var selectedBenefit = numberOrNull(document.getElementById('selectedMonthlyBenefit').value);
         var status = document.getElementById('decisionStatus').value;
+
         return {
             estimateReadiness: selectedValue('estimateReadiness'),
             birthYear: numberOrNull(document.getElementById('birthYear').value),
@@ -79,11 +56,14 @@
             benefitAtFra: status === 'provisional' ? numberOrNull(document.getElementById('benefitAtFra').value) : null,
             estimatedMonthlyBenefit: status === 'provisional' ? selectedBenefit : null,
             currentMonthlyBenefit: status === 'already-receiving' ? selectedBenefit : null,
-            rationale: selectedValue('rationale'),
-            mainTradeoff: selectedValue('mainTradeoff'),
-            otherTradeoff: document.getElementById('otherTradeoff').value.trim(),
-            verificationNeeded: checkedValues('verificationNeeded'),
-            verificationPriority: document.getElementById('verificationPriority').value,
+            decisionNotes: notesValue(),
+            // Legacy justification fields are no longer collected. Keep empty on save so older
+            // values do not keep the record stuck in "needs verification."
+            rationale: '',
+            mainTradeoff: '',
+            otherTradeoff: '',
+            verificationNeeded: [],
+            verificationPriority: '',
             companionAnswers: {
                 earlyExit: selectedValue('earlyExitAnswer'),
                 survivor: selectedValue('survivorAnswer'),
@@ -120,31 +100,26 @@
         if (input) input.checked = true;
     }
 
-    function setChecks(name, values) {
-        if (!Array.isArray(values)) return;
-        values.forEach(function (value) {
-            var input = document.querySelector('input[name="' + name + '"][value="' + value + '"]');
-            if (input) input.checked = true;
-        });
-    }
-
     function restoreRecord(record) {
         setRadio('estimateReadiness', record.estimateReadiness);
-        setRadio('rationale', record.rationale);
-        setRadio('mainTradeoff', record.mainTradeoff);
-        setChecks('verificationNeeded', record.verificationNeeded);
         setRadio('earlyExitAnswer', record.companionAnswers && record.companionAnswers.earlyExit);
         setRadio('survivorAnswer', record.companionAnswers && record.companionAnswers.survivor);
         setRadio('spendingGapAnswer', record.companionAnswers && record.companionAnswers.spendingGap);
 
         if (record.decisionStatus) document.getElementById('decisionStatus').value = record.decisionStatus;
         if (record.birthYear !== null && record.birthYear !== undefined) document.getElementById('birthYear').value = record.birthYear;
-        if (record.claimAge !== null && record.claimAge !== undefined) document.getElementById('claimAge').value = String(record.claimAge);
+        if (record.claimAge !== null && record.claimAge !== undefined) {
+            document.getElementById('claimAge').value = String(record.claimAge);
+            setRadio('interest', String(record.claimAge));
+        } else if (record.decisionStatus === 'already-receiving') {
+            setRadio('interest', 'receiving');
+        } else if (record.decisionStatus === 'need-more-information') {
+            setRadio('interest', 'not-ready');
+        }
         if (record.benefitAtFra !== null && record.benefitAtFra !== undefined) document.getElementById('benefitAtFra').value = record.benefitAtFra;
         var benefit = record.decisionStatus === 'already-receiving' ? record.currentMonthlyBenefit : record.estimatedMonthlyBenefit;
         if (benefit !== null && benefit !== undefined) document.getElementById('selectedMonthlyBenefit').value = benefit;
-        if (record.otherTradeoff) document.getElementById('otherTradeoff').value = record.otherTradeoff;
-        if (record.verificationPriority) document.getElementById('verificationPriority').value = record.verificationPriority;
+        if (record.decisionNotes) document.getElementById('decisionNotes').value = record.decisionNotes;
     }
 
     function syncInterest() {
@@ -160,6 +135,7 @@
             status.value = 'need-more-information';
         }
         updateStatusFields();
+        updateClaimingConfirmation();
     }
 
     function updateEstimateResponse() {
@@ -169,26 +145,40 @@
         if (missing && !document.getElementById('decisionStatus').value) {
             document.getElementById('decisionStatus').value = 'need-more-information';
             updateStatusFields();
+            updateClaimingConfirmation();
         }
     }
 
-    function updateRationaleResponse() {
-        var value = selectedValue('rationale');
-        var response = document.getElementById('rationaleResponse');
-        var messages = {
-            lifetime: 'That result is useful, but it isn’t the whole answer. Before relying on it, Phase 3 should test whether you can comfortably support your spending while waiting.',
-            retirement: 'Remember that retirement and claiming do not have to occur at the same age. Phase 3 can test whether separating those dates improves or weakens your plan.',
-            sooner: 'Earlier income may be practical when it supports a real need. The tradeoff is a permanently smaller monthly retirement benefit.',
-            later: 'A larger later benefit can help if you live a long time. You will need income or savings to cover your expenses while you wait.',
-            'not-ready': 'It is okay not to choose yet. Record what you still need to learn below.'
-        };
-        if (!messages[value]) {
-            response.hidden = true;
-            response.textContent = '';
+    function updateClaimingConfirmation() {
+        var box = document.getElementById('claimingConfirmation');
+        if (!box) return;
+
+        var status = document.getElementById('decisionStatus').value;
+        var claimAge = document.getElementById('claimAge').value;
+        var html = '';
+
+        if (status === 'provisional' && claimAge) {
+            html =
+                '<p><strong>You’ve selected age ' + claimAge + ' as the claiming age you want to test in your retirement plan.</strong></p>' +
+                '<p>This is a planning assumption, not a Social Security filing action. You can revisit and change it later.</p>';
+        } else if (status === 'already-receiving') {
+            html =
+                '<p><strong>You’ve indicated that you are already receiving Social Security benefits.</strong></p>' +
+                '<p>Your plan can use your current benefit as the working assumption. This is a planning assumption, not a filing action. You can revisit and change it later.</p>';
+        } else if (status === 'need-more-information') {
+            html =
+                '<p><strong>You’ve indicated that you are not ready to select a claiming age yet.</strong></p>' +
+                '<p>That’s fine. Save what you know now and return when you have a clearer estimate. This remains a planning assumption, not a filing action.</p>';
+        }
+
+        if (!html) {
+            box.hidden = true;
+            box.innerHTML = '';
             return;
         }
-        response.textContent = messages[value];
-        response.hidden = false;
+
+        box.innerHTML = html;
+        box.hidden = false;
     }
 
     function updateStatusFields() {
@@ -197,24 +187,26 @@
         var fraGroup = document.getElementById('benefitAtFraGroup');
         var label = document.getElementById('selectedMonthlyBenefitLabel');
         var help = document.getElementById('selectedMonthlyBenefitHelp');
+        var claimAge = document.getElementById('claimAge').value;
 
-        claimAgeGroup.hidden = status === 'already-receiving';
-        fraGroup.hidden = status === 'already-receiving';
+        claimAgeGroup.hidden = status === 'already-receiving' || status === 'need-more-information';
+        fraGroup.hidden = status === 'already-receiving' || status === 'need-more-information';
 
         if (status === 'already-receiving') {
             label.textContent = 'Current gross monthly Social Security benefit';
             help.textContent = 'Enter the gross amount before Medicare is deducted.';
         } else if (status === 'need-more-information') {
-            label.textContent = 'Estimated monthly benefit at the selected age';
-            help.textContent = 'Leave blank if you do not yet have a selected claiming age.';
+            label.textContent = 'Monthly benefit shown by the Claiming Analyzer';
+            help.textContent = 'Leave blank for now if you have not selected a claiming age.';
+        } else if (claimAge) {
+            label.textContent = 'Monthly benefit shown by the Claiming Analyzer';
+            help.textContent = 'Enter the monthly benefit the Claiming Analyzer shows for age ' + claimAge + '.';
         } else {
-            label.textContent = 'Estimated monthly benefit at the selected age';
-            help.textContent = 'Use the amount shown by the Claiming Analyzer for the age you selected.';
+            label.textContent = 'Monthly benefit shown by the Claiming Analyzer';
+            help.textContent = 'After comparing claiming ages in the Claiming Analyzer, enter the monthly benefit shown for the age you selected.';
         }
-    }
 
-    function updateTradeoffField() {
-        document.getElementById('otherTradeoffGroup').hidden = selectedValue('mainTradeoff') !== 'other';
+        updateClaimingConfirmation();
     }
 
     function companionRecommendation() {
@@ -255,7 +247,7 @@
         if (!recommendation) {
             result.innerHTML = '<h3>Complete the three questions above</h3><p>Your answers will show whether another calculator could help.</p>';
         } else if (recommendation === 'none') {
-            result.innerHTML = '<h3>You are ready to continue</h3><p>You do not need another Social Security calculator for this phase. Phase 3 will combine your claiming choice with spending, savings, and other income.</p>';
+            result.innerHTML = '<h3>You are ready to continue</h3><p>You do not need another Social Security calculator for this phase. Your saved claiming assumption can move forward with the rest of your Journey when later phases are ready.</p>';
         } else {
             var item = content[recommendation];
             result.innerHTML = '<p class="eyebrow">One useful next step</p><h3>' + item.title + '</h3><p>' + item.text + '</p><a class="secondary-action" target="_blank" rel="noopener" href="' + item.href + '">' + item.action + '</a><p class="action-note">Optional. You can complete Phase 2 without it. Opens in a separate tab.</p>';
@@ -272,23 +264,14 @@
 
         if (record.decisionStatus === 'provisional') {
             if (!record.claimAge) errors.push('Choose a claiming age to test.');
-            if (!(record.benefitAtFra > 0)) errors.push('Enter your monthly benefit at Full Retirement Age.');
-            if (!(record.estimatedMonthlyBenefit > 0)) errors.push('Enter the estimated monthly benefit at your selected age.');
-            if (!record.mainTradeoff) errors.push('Choose the main tradeoff.');
-            if (record.mainTradeoff === 'other' && !record.otherTradeoff) errors.push('Describe the other tradeoff.');
-            if (!record.verificationNeeded.length) errors.push('Select what needs verification.');
-            if (!record.verificationPriority) errors.push('Choose the most important next step.');
-        }
-
-        if (record.decisionStatus === 'need-more-information') {
-            if (!record.verificationNeeded.length) errors.push('Select at least one item that needs verification.');
-            if (!record.verificationPriority) errors.push('Choose the most important next step.');
+            if (!(record.benefitAtFra > 0)) errors.push('Enter your monthly benefit at full retirement age.');
+            if (!(record.estimatedMonthlyBenefit > 0)) {
+                errors.push('Enter the monthly benefit shown by the Claiming Analyzer for the age you selected.');
+            }
         }
 
         if (record.decisionStatus === 'already-receiving') {
             if (!(record.currentMonthlyBenefit > 0)) errors.push('Enter your current gross monthly Social Security benefit.');
-            if (!record.verificationNeeded.length) errors.push('Select what needs verification.');
-            if (!record.verificationPriority) errors.push('Choose the most important next step.');
         }
 
         return errors;
@@ -312,8 +295,8 @@
         document.getElementById('phase2CompletionMessage').hidden = true;
         var complete = readProgress()[recordKey] === true;
         document.getElementById('completePhase2Button').textContent = complete
-            ? 'Save Updates Before Continuing'
-            : 'Save and Continue to Phase 3';
+            ? 'Save Updates'
+            : 'Save Phase 2 Progress';
     }
 
     function currency(value) {
@@ -322,15 +305,6 @@
             currency: 'USD',
             maximumFractionDigits: 0
         }).format(value || 0);
-    }
-
-    function tradeoffText(record) {
-        if (record.mainTradeoff === 'other') return record.otherTradeoff || 'another tradeoff';
-        return labels[record.mainTradeoff] || 'not yet recorded';
-    }
-
-    function verificationText(record) {
-        return labels[record.verificationPriority] || 'the information noted above';
     }
 
     function renderAssumption(record) {
@@ -349,7 +323,7 @@
 
         if (!record || !record.saved) {
             statements.forEach(function (statement) {
-                statement.innerHTML = '<p>Save your claiming choice to create a short summary for Phase 3.</p>';
+                statement.innerHTML = '<p>Save your claiming choice to create a short summary for later phases.</p>';
             });
             reviseButtons.forEach(function (revise) { revise.hidden = true; });
             reviewGuidance.forEach(function (guidance) { guidance.hidden = true; });
@@ -360,26 +334,34 @@
         if (record.decisionStatus === 'provisional') {
             summary =
                 '<p><strong>My current Social Security position</strong></p>' +
-                '<p>I will test claiming at age <strong>' + record.claimAge + '</strong>. My benefit at Full Retirement Age is approximately <strong>' + currency(record.benefitAtFra) + ' per month</strong>, and my estimated benefit at age <strong>' + record.claimAge + '</strong> is approximately <strong>' + currency(record.estimatedMonthlyBenefit) + ' per month</strong>.</p>' +
-                '<p>I prefer this choice because ' + (labels[record.rationale] || 'it is a useful starting point') + '.</p>' +
-                '<p>The main tradeoff is: <strong>' + tradeoffText(record) + '</strong>.</p>' +
-                '<p>What remains uncertain: <strong>' + verificationText(record) + '</strong>.</p>' +
-                '<p>Phase 3 will use this claiming age and monthly benefit to test how they fit with my spending, savings, and other income. This is a planning choice, not advice to file.</p>';
+                '<p>I will test claiming at age <strong>' + record.claimAge + '</strong>. My benefit at full retirement age is approximately <strong>' + currency(record.benefitAtFra) + ' per month</strong>, and the Claiming Analyzer amount I recorded for age <strong>' + record.claimAge + '</strong> is approximately <strong>' + currency(record.estimatedMonthlyBenefit) + ' per month</strong>.</p>' +
+                (record.decisionNotes ? '<p>Notes: ' + escapeHtml(record.decisionNotes) + '</p>' : '') +
+                '<p>This is a planning assumption, not advice to file. I can revisit and change it later.</p>';
         } else if (record.decisionStatus === 'need-more-information') {
             summary =
                 '<p><strong>My current Social Security position</strong></p>' +
-                '<p>I am not ready to select a claiming age. Before choosing, I need to check <strong>' + verificationText(record) + '</strong>.</p>' +
-                '<p>Phase 3 may use a temporary claiming age, but this record is not ready to rely on. I should return after I have the missing information.</p>';
+                '<p>I am not ready to select a claiming age yet.</p>' +
+                (record.decisionNotes ? '<p>Notes: ' + escapeHtml(record.decisionNotes) + '</p>' : '') +
+                '<p>I should return after I have a clearer estimate. This remains a planning assumption, not a filing action.</p>';
         } else {
             summary =
                 '<p><strong>My current Social Security position</strong></p>' +
                 '<p>I am already receiving approximately <strong>' + currency(record.currentMonthlyBenefit) + ' per month</strong> in gross Social Security benefits.</p>' +
-                '<p>Phase 3 should use this current benefit rather than model a future claiming age.</p>' +
-                '<p>What remains uncertain: <strong>' + verificationText(record) + '</strong>.</p>';
+                (record.decisionNotes ? '<p>Notes: ' + escapeHtml(record.decisionNotes) + '</p>' : '') +
+                '<p>My plan can use this current benefit as the working assumption. This is a planning assumption, not a filing action.</p>';
         }
         statements.forEach(function (statement) { statement.innerHTML = summary; });
         reviseButtons.forEach(function (revise) { revise.hidden = false; });
         reviewGuidance.forEach(function (guidance) { guidance.hidden = false; });
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 
     function saveRecord(event) {
@@ -408,9 +390,9 @@
         if (errors.length || !record.saved || record.hasUnsavedChanges) {
             document.getElementById('record-title').scrollIntoView({ behavior: 'smooth', block: 'start' });
             if (!record.saved && !errors.length) {
-                showErrors(['Save your claiming choice before continuing.']);
+                showErrors(['Save your claiming choice before marking Phase 2 complete.']);
             } else if (record.hasUnsavedChanges && !errors.length) {
-                showErrors(['Save your updated Social Security record before continuing.']);
+                showErrors(['Save your updated Social Security record before marking Phase 2 complete.']);
             }
             return;
         }
@@ -429,13 +411,11 @@
 
         var message = document.getElementById('phase2CompletionMessage');
         if (record.decisionStatus === 'need-more-information') {
-            message.innerHTML = '<strong>Phase 2 complete. Planning-record status: Needs information.</strong><span>Your Journey progress is saved, but return when you have the information needed to update this record.</span>';
-        } else if (record.planningRecordStatus === 'needs-verification') {
-            message.innerHTML = '<strong>Phase 2 complete. Planning-record status: Needs verification.</strong><span>Phase 3 can test this choice, but keep the noted verification item with your plan.</span>';
+            message.innerHTML = '<strong>Phase 2 progress saved. Status: Needs information.</strong><span>Return when you have enough information to choose a claiming age to test.</span>';
         } else if (record.decisionStatus === 'already-receiving') {
-            message.innerHTML = '<strong>Phase 2 complete. Planning-record status: Already receiving benefits.</strong><span>Phase 3 will use your current benefit, and you can review this record later.</span>';
+            message.innerHTML = '<strong>Phase 2 progress saved. Status: Already receiving benefits.</strong><span>Your current benefit is recorded as the working assumption.</span>';
         } else {
-            message.innerHTML = '<strong>Phase 2 complete. Planning-record status: Current.</strong><span>Your claiming choice is ready to test in Phase 3 and can be reviewed later.</span>';
+            message.innerHTML = '<strong>Phase 2 progress saved.</strong><span>Your claiming-age assumption is ready for later phases when they become available.</span>';
         }
         message.hidden = false;
         message.focus();
@@ -445,9 +425,9 @@
     function handleDraftChange(event) {
         if (event.target.name === 'interest') syncInterest();
         if (event.target.name === 'estimateReadiness') updateEstimateResponse();
-        if (event.target.name === 'rationale') updateRationaleResponse();
-        if (event.target.id === 'decisionStatus') updateStatusFields();
-        if (event.target.name === 'mainTradeoff') updateTradeoffField();
+        if (event.target.id === 'decisionStatus' || event.target.id === 'claimAge') {
+            updateStatusFields();
+        }
         var companionOnly = event.target.name === 'earlyExitAnswer' || event.target.name === 'survivorAnswer' || event.target.name === 'spendingGapAnswer';
         if (companionOnly) {
             updateCompanionResult();
@@ -461,6 +441,7 @@
     document.addEventListener('change', handleDraftChange);
     document.addEventListener('input', function (event) {
         if (event.target.closest('#phase2RecordForm')) {
+            if (event.target.id === 'claimAge') updateStatusFields();
             persistDraft(false);
             showIncompleteState();
         }
@@ -491,9 +472,7 @@
     }
     restoreRecord(record);
     updateEstimateResponse();
-    updateRationaleResponse();
     updateStatusFields();
-    updateTradeoffField();
     updateCompanionResult();
     renderAssumption(record);
 })();
