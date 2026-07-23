@@ -34,6 +34,20 @@
         });
     }
 
+    function setTextAll(root, selector, value) {
+        if (!root) return;
+        root.querySelectorAll(selector).forEach(function (element) {
+            element.textContent = value;
+        });
+    }
+
+    function setClassState(element, state) {
+        if (!element) return;
+        element.classList.toggle('is-complete', state === 'complete');
+        element.classList.toggle('is-negative', state === 'negative');
+        element.classList.toggle('is-error', state === 'negative');
+    }
+
     function numberValue(id) {
         var element = document.getElementById(id);
         if (!element || element.value === '') return 0;
@@ -173,8 +187,10 @@
             return {
                 isValid: false,
                 splitTotal: 0,
+                remainingToAllocate: 0,
                 difference: 0,
-                tolerance: 1
+                tolerance: 1,
+                target: 0
             };
         }
         var splitTotal = (Number(outputs.monthlyEssentialSpending) || 0) +
@@ -186,20 +202,118 @@
         return {
             isValid: Math.abs(difference) <= tolerance,
             splitTotal: splitTotal,
+            remainingToAllocate: -difference,
             difference: difference,
-            tolerance: tolerance
+            tolerance: tolerance,
+            target: target
         };
     }
 
     function consistencyText(outputs) {
         var check = splitConsistency(outputs);
+        var target = money(check.target);
+        var allocated = money(check.splitTotal);
+
         if (check.isValid) {
-            return 'Your essential and flexible spending split matches your retirement spending target.';
+            return '✓ Your monthly retirement spending target is fully allocated.';
         }
 
-        return 'Your essential and flexible spending total ' + money(check.splitTotal) +
-            ', which does not match your retirement spending target of ' +
-            money(outputs.monthlyRetirementSpendingTarget) + '. Please revise those amounts before saving.';
+        if (check.remainingToAllocate > 0) {
+            return 'You have allocated ' + allocated +
+                ' of your ' + target +
+                ' monthly target. Allocate the remaining ' +
+                money(check.remainingToAllocate) +
+                ' before continuing.';
+        }
+
+        return 'You have allocated ' + allocated +
+            ', which is ' + money(Math.abs(check.remainingToAllocate)) +
+            ' more than your ' + target +
+            ' monthly target. Adjust the amounts before continuing.';
+    }
+
+    function liveAllocationState() {
+        var target = numberValue('expectedMonthlyRetirementSpending');
+        var essential = numberValue('essentialMonthlySpending');
+        var flexible = numberValue('flexibleMonthlySpending');
+        var splitTotal = essential + flexible;
+        var remaining = target - splitTotal;
+        var tolerance = 1;
+        var isComplete = target > 0 && Math.abs(remaining) <= tolerance;
+        var isOver = remaining < -tolerance;
+        var isUnder = remaining > tolerance;
+
+        return {
+            target: target,
+            splitTotal: splitTotal,
+            remaining: remaining,
+            overage: Math.abs(Math.min(remaining, 0)),
+            isComplete: isComplete,
+            isOver: isOver,
+            isUnder: isUnder
+        };
+    }
+
+    function updateAllocationLive() {
+        var panel = document.getElementById('allocationLivePanel');
+        if (!panel) return;
+
+        var state = liveAllocationState();
+        var remainingEl = panel.querySelector('[data-allocation="remaining"]');
+        var remainingLabel = panel.querySelector('[data-allocation="remaining-label"]');
+        var messageEl = panel.querySelector('[data-allocation="message"]');
+
+        setTextAll(panel, '[data-allocation="target"]', money(state.target));
+        setTextAll(panel, '[data-allocation="allocated"]', money(state.splitTotal));
+
+        if (remainingLabel) {
+            remainingLabel.textContent = state.isOver ? 'Amount over target' : 'Remaining to allocate';
+        }
+
+        if (remainingEl) {
+            if (state.isComplete) {
+                remainingEl.textContent = money(0);
+                setClassState(remainingEl, 'complete');
+            } else if (state.isOver) {
+                remainingEl.textContent = money(state.overage);
+                setClassState(remainingEl, 'negative');
+            } else {
+                remainingEl.textContent = money(Math.max(state.remaining, 0));
+                setClassState(remainingEl, '');
+            }
+        }
+
+        if (!messageEl) return;
+
+        messageEl.classList.remove('is-valid', 'is-warning', 'is-error');
+
+        if (!state.target) {
+            messageEl.textContent = 'Enter your expected monthly retirement spending in Step 3 to set the target you will allocate here.';
+            messageEl.setAttribute('role', 'status');
+            return;
+        }
+
+        if (state.isComplete) {
+            messageEl.textContent = '✓ Your monthly retirement spending target is fully allocated.';
+            messageEl.classList.add('is-valid');
+            messageEl.setAttribute('role', 'status');
+            return;
+        }
+
+        if (state.isOver) {
+            messageEl.textContent = 'You have allocated ' + money(state.overage) +
+                ' more than your monthly target.';
+            messageEl.classList.add('is-error');
+            messageEl.setAttribute('role', 'alert');
+            return;
+        }
+
+        messageEl.textContent = 'Allocate the remaining ' + money(state.remaining) +
+            ' between essential and flexible spending.';
+        if (state.isUnder && state.splitTotal > 0) {
+            messageEl.classList.add('is-warning');
+        }
+        messageEl.setAttribute('role', 'status');
     }
 
     function validateForSave(inputs, outputs) {
@@ -336,6 +450,7 @@
 
         resultsPanel.hidden = false;
         setResultText('monthlyTarget', money(outputs.monthlyRetirementSpendingTarget));
+        setResultText('allocationTargetMonthly', money(outputs.monthlyRetirementSpendingTarget));
         setResultText('annualTarget', money(outputs.annualRetirementSpendingTarget));
         setResultText('essentialMonthly', money(outputs.monthlyEssentialSpending));
         setResultText('flexibleMonthly', money(outputs.monthlyFlexibleSpending));
@@ -352,6 +467,18 @@
             consistencyMessage.setAttribute('role', consistency.isValid ? 'status' : 'alert');
             consistencyMessage.textContent = consistencyText(outputs);
         }
+
+        updateAllocationLive();
+    }
+
+    function updateVisibleResults() {
+        updateAllocationLive();
+        if (!lastOutputs || !resultsPanel || resultsPanel.hidden) return;
+        var inputs = inputsFromForm();
+        if (validateForCalculation(inputs).length) return;
+        lastOutputs = calculate(inputs);
+        inputs = inputsFromForm();
+        renderResults(inputs, lastOutputs);
     }
 
     function buildRecord(inputs, outputs, status) {
@@ -495,14 +622,17 @@
     document.getElementById('calculateSpendingPlan').addEventListener('click', calculateAndRender);
     form.addEventListener('submit', saveAndReturn);
     form.addEventListener('input', function () {
+        updateVisibleResults();
         if (saveStatus) saveStatus.textContent = 'Saving draft...';
         window.clearTimeout(form._draftTimer);
         form._draftTimer = window.setTimeout(persistDraft, 300);
     });
     form.addEventListener('change', function (event) {
         if (event.target.name === 'startingMethod') syncMethodSections();
+        updateAllocationLive();
     });
 
     restoreRecord(readCalculatorRecord());
     syncMethodSections();
+    updateAllocationLive();
 })();
