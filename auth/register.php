@@ -8,6 +8,7 @@ $error = '';
 $success = '';
 
 rb_auth_capture_trial_intent_from_request();
+rb_auth_capture_return_from_request();
 $trialIntent = rb_auth_is_trial_intent();
 
 $prefillEmail = '';
@@ -290,9 +291,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         <div class="footer-links">
             <?php if ($trialIntent): ?>
-            Already have an account? <a href="login.php<?php echo rb_auth_intent_query(); ?>">Log in here</a>
+            Already have an account? <a href="login.php<?php echo rb_auth_companion_query(); ?>">Log in here</a>
             <?php else: ?>
-            Already have an account? <a href="login.php">Log in</a>
+            Already have an account? <a href="login.php<?php echo rb_auth_companion_query(); ?>">Log in</a>
             <?php endif; ?>
         </div>
     </div>

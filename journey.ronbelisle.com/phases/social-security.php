@@ -28,6 +28,9 @@ $page_title = 'Social Security | Retirement Planning Journey';
                         <h1 id="phase-title">Social Security</h1>
                         <p class="page-lede">You have estimated what retirement may cost. Now you’ll compare Social Security claiming ages and choose an age to test in your retirement plan.</p>
                         <p class="phase-reassurance">This phase will help you use the Social Security Claiming Analyzer, understand the results, and decide what to verify before you rely on them. You can revisit your choice as your circumstances or priorities change.</p>
+                        <div class="phase-status-note" role="status">
+                            <p><strong>Your Phase 1 spending plan stays in this browser.</strong> The full guided Social Security planner is still being built. This page is the current Phase 2 workspace: coaching, claiming comparison guidance, and a place to record the assumption you want to test next.</p>
+                        </div>
                         <p class="phase-time">Allow about 15 minutes, including time in the Claiming Analyzer.</p>
                     </div>
 

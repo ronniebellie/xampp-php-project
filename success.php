@@ -3,7 +3,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
 rb_session_start();
 require_once 'includes/db_config.php';
 require_once 'includes/stripe_config.php';
+require_once 'includes/auth_flow_helpers.php';
 require_once 'vendor/autoload.php';
+
+$journey_return = rb_auth_peek_premium_return();
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -231,7 +234,14 @@ try {
                 </ul>
             </div>
             
-            <a href="index.php" class="cta-button">Start Planning</a>
+            <?php if ($journey_return !== ''): ?>
+                <?php rb_auth_consume_premium_return(); ?>
+                <a href="<?php echo htmlspecialchars($journey_return); ?>" class="cta-button">Return to Your Retirement Planning Journey</a>
+                <p style="margin-top:16px;color:#64748b;font-size:0.95rem;">Your Journey spending plan remains saved in the browser where you created it.</p>
+                <p style="margin-top:8px;"><a href="index.php" style="color:#2c5282;">Or go to the main site homepage</a></p>
+            <?php else: ?>
+                <a href="index.php" class="cta-button">Start Planning</a>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 </body>

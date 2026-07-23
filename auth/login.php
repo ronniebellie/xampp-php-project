@@ -8,6 +8,7 @@ $error = '';
 $success = '';
 
 rb_auth_capture_trial_intent_from_request();
+rb_auth_capture_return_from_request();
 $trialIntent = rb_auth_is_trial_intent();
 
 if (isset($_GET['msg']) && $_GET['msg'] === 'password_reset') {
@@ -319,9 +320,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         <div class="footer-links">
             <?php if ($trialIntent): ?>
-            <a href="register.php<?php echo rb_auth_intent_query(); ?>">Sign up to start your trial</a>
+            <a href="register.php<?php echo rb_auth_companion_query(); ?>">Sign up to start your trial</a>
             <?php else: ?>
-            Don't have an account? <a href="register.php">Sign up</a>
+            Don't have an account? <a href="register.php<?php echo rb_auth_companion_query(); ?>">Sign up</a>
             <?php endif; ?>
         </div>
     </div>

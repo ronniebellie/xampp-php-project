@@ -30,14 +30,15 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                     </div>
 
                     <section class="current-record-overview" aria-labelledby="spending-plan-summary-title" data-spending-plan-summary hidden>
-                        <p class="eyebrow">Your saved spending plan</p>
+                        <p class="eyebrow">Phase 1 complete</p>
                         <div class="journey-success-message" role="status" data-spending-plan-success hidden>
                             <strong>Spending plan saved ✓</strong>
                         </div>
                         <div class="record-overview-heading">
-                            <h2 id="spending-plan-summary-title">Your current retirement spending target</h2>
-                            <span class="record-status-badge is-current">Current</span>
+                            <h2 id="spending-plan-summary-title">Phase 1 complete</h2>
+                            <span class="record-status-badge is-current">Complete</span>
                         </div>
+                        <p class="phase-complete-lede">You’ve created the monthly spending target that the rest of your retirement plan will build on.</p>
                         <div class="result-metrics compact-results">
                             <div class="result-metric is-primary">
                                 <span>Monthly target</span>
@@ -57,7 +58,7 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                             </div>
                         </div>
                         <div class="record-overview-actions">
-                            <a class="primary-action" href="/phases/social-security.php">Continue to Phase 2</a>
+                            <a class="primary-action" href="/phases/continue-to-phase-2.php">Continue to Phase 2: Social Security</a>
                             <a class="secondary-action" href="/calculators/retirement-spending-plan/">Update Spending Plan</a>
                         </div>
                     </section>
@@ -93,8 +94,8 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                             <p>After saving your Retirement Spending Plan, return here to review your spending summary and continue to Phase 2: Social Security.</p>
                         </div>
                         <div class="completion-message phase-completion-panel" data-spending-plan-summary hidden>
-                            <p><strong>Your spending plan is saved.</strong> Continue to Phase 2: Social Security when you are ready.</p>
-                            <a class="primary-action" href="/phases/social-security.php">Continue to Phase 2</a>
+                            <p><strong>Phase 1 is complete.</strong> Continue to Phase 2: Social Security when you are ready.</p>
+                            <a class="primary-action" href="/phases/continue-to-phase-2.php">Continue to Phase 2: Social Security</a>
                         </div>
                     </article>
                 </div>
