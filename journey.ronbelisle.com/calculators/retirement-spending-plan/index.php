@@ -182,35 +182,39 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
                             <p class="eyebrow">Your result</p>
                             <h2 id="results-title">Your retirement spending plan</h2>
                             <p>Review these numbers before saving to make sure your spending plan is internally consistent.</p>
-                            <div class="plan-review-summary">
-                                <div class="plan-review-item is-primary">
-                                    <span>Expected monthly retirement spending</span>
-                                    <strong data-result="monthlyTarget">$0</strong>
+                            <dl class="plan-review-lines">
+                                <div>
+                                    <dt>Expected monthly retirement spending:</dt>
+                                    <dd data-result="monthlyTarget">$0</dd>
                                 </div>
-                                <div class="plan-review-item">
-                                    <span>Covered by regular retirement income</span>
-                                    <strong data-result="otherIncomeMonthly">$0</strong>
+                                <div>
+                                    <dt>Covered by regular retirement income:</dt>
+                                    <dd data-result="otherIncomeMonthly">$0</dd>
                                 </div>
-                                <div class="plan-review-item">
-                                    <span>Still to be covered by Social Security and investments</span>
-                                    <strong data-result="remainingMonthly">$0</strong>
+                                <div>
+                                    <dt>Still to be covered by Social Security and investments:</dt>
+                                    <dd data-result="remainingMonthly">$0</dd>
                                 </div>
-                            </div>
-                            <p class="plan-review-note">Annual retirement spending target: <strong data-result="annualTarget">$0</strong></p>
+                                <div>
+                                    <dt>Annual retirement spending target:</dt>
+                                    <dd data-result="annualTarget">$0</dd>
+                                </div>
+                            </dl>
+                            <p class="plan-review-handoff">This is the amount your Social Security benefits and investment withdrawals will need to support in later phases of your Journey.</p>
 
                             <div class="spending-split-review" aria-labelledby="split-review-title">
-                                <h3 id="split-review-title">Essential and flexible spending split</h3>
+                                <h3 id="split-review-title">Spending breakdown</h3>
                                 <dl>
                                     <div>
-                                        <dt>Essential spending</dt>
+                                        <dt>Essential spending:</dt>
                                         <dd data-result="essentialMonthly">$0</dd>
                                     </div>
                                     <div>
-                                        <dt>Flexible spending</dt>
+                                        <dt>Flexible spending:</dt>
                                         <dd data-result="flexibleMonthly">$0</dd>
                                     </div>
-                                    <div class="is-total">
-                                        <dt>Total essential + flexible spending</dt>
+                                    <div>
+                                        <dt>Total essential + flexible spending:</dt>
                                         <dd data-result="splitTotalMonthly">$0</dd>
                                     </div>
                                 </dl>
@@ -218,7 +222,6 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
 
                             <div class="consistency-message" data-result="consistencyMessage" role="status"></div>
                             <div class="assumption-statement">
-                                <p data-result="handoffExplanation">This is the amount your Social Security benefits and investment withdrawals will need to support in later phases of your Journey.</p>
                                 <p data-result="assumptions"></p>
                             </div>
                         </section>

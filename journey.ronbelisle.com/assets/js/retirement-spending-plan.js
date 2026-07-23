@@ -197,10 +197,9 @@
             return 'Your essential and flexible spending split matches your retirement spending target.';
         }
 
-        var direction = check.difference > 0 ? 'higher than' : 'lower than';
         return 'Your essential and flexible spending total ' + money(check.splitTotal) +
-            ', which is ' + direction + ' your ' + money(outputs.monthlyRetirementSpendingTarget) +
-            ' retirement spending target. Please revise those amounts before saving.';
+            ', which does not match your retirement spending target of ' +
+            money(outputs.monthlyRetirementSpendingTarget) + '. Please revise those amounts before saving.';
     }
 
     function validateForSave(inputs, outputs) {

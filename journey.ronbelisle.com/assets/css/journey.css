@@ -1162,54 +1162,52 @@ h1 {
     font-size: 14px;
 }
 
-.plan-review-summary {
+.plan-review-lines,
+.spending-split-review dl {
     display: grid;
-    grid-template-columns: minmax(0, 1.25fr) repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 18px 0 0;
+}
+
+.plan-review-lines div,
+.spending-split-review div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 12px;
-    margin-top: 18px;
-}
-
-.plan-review-item {
+    align-items: baseline;
     min-width: 0;
-    padding: 16px;
-    border: 1px solid #dbe3ec;
-    border-radius: 10px;
-    background: #ffffff;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e2e8f0;
 }
 
-.plan-review-item.is-primary {
-    border-color: rgba(29, 78, 216, 0.32);
-    background: #eff6ff;
-}
-
-.plan-review-item span,
+.plan-review-lines dt,
 .spending-split-review dt {
-    display: block;
-    color: var(--muted);
-    font-size: 13px;
-    font-weight: 800;
+    color: var(--text);
+    font-weight: 850;
 }
 
-.plan-review-item strong {
-    display: block;
-    margin-top: 6px;
+.plan-review-lines dd,
+.spending-split-review dd {
+    margin: 0;
     color: var(--text);
-    font-size: 24px;
+    font-size: 22px;
+    font-weight: 850;
     line-height: 1.1;
+    text-align: right;
 }
 
-.plan-review-item.is-primary strong {
+.plan-review-lines div:first-child dd {
     color: var(--accent-strong);
-    font-size: 30px;
+    font-size: 28px;
 }
 
-.plan-review-note {
-    margin: 12px 0 0;
-    color: var(--muted);
-}
-
-.plan-review-note strong {
-    color: var(--text);
+.plan-review-handoff {
+    margin: 14px 0 0;
+    padding: 12px 14px;
+    border-left: 4px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    background: #eff6ff;
+    color: #263241;
 }
 
 .spending-split-review {
@@ -1220,33 +1218,6 @@ h1 {
 
 .spending-split-review h3 {
     margin: 0 0 12px;
-}
-
-.spending-split-review dl {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
-    margin: 0;
-}
-
-.spending-split-review div {
-    min-width: 0;
-    padding: 12px 14px;
-    border: 1px solid #e2e8f0;
-    border-radius: 9px;
-    background: #ffffff;
-}
-
-.spending-split-review div.is-total {
-    background: #f8fafc;
-}
-
-.spending-split-review dd {
-    margin: 5px 0 0;
-    color: var(--text);
-    font-size: 22px;
-    font-weight: 850;
-    line-height: 1.1;
 }
 
 .consistency-message {
@@ -1342,9 +1313,15 @@ h1 {
         grid-template-columns: 1fr;
     }
 
-    .plan-review-summary,
-    .spending-split-review dl {
+    .plan-review-lines div,
+    .spending-split-review div {
         grid-template-columns: 1fr;
+        gap: 5px;
+    }
+
+    .plan-review-lines dd,
+    .spending-split-review dd {
+        text-align: left;
     }
 
     .progress-card-actions {
