@@ -146,42 +146,8 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
                             </details>
                         </section>
 
-                        <section class="calculator-section" aria-labelledby="split-title">
-                            <p class="eyebrow">Step 4</p>
-                            <h2 id="split-title">Allocate your monthly retirement spending target</h2>
-                            <p>Divide your monthly retirement spending target between essential and flexible spending. These amounts are parts of the same total—not additional spending.</p>
-
-                            <div class="allocation-live-panel" id="allocationLivePanel" aria-live="polite">
-                                <div class="allocation-target-banner">
-                                    <span>Monthly retirement spending target</span>
-                                    <strong data-allocation="target">$0</strong>
-                                </div>
-
-                                <div class="journey-form-grid">
-                                    <div class="field-group">
-                                        <label for="essentialMonthlySpending">Monthly essential spending</label>
-                                        <div class="money-input"><span aria-hidden="true">$</span><input id="essentialMonthlySpending" name="essentialMonthlySpending" type="number" min="0" step="1" inputmode="decimal"></div>
-                                        <small>Housing, food, utilities, healthcare, insurance, and required debt payments. What you would try hardest to protect.</small>
-                                    </div>
-                                    <div class="field-group">
-                                        <label for="flexibleMonthlySpending">Monthly flexible spending</label>
-                                        <div class="money-input"><span aria-hidden="true">$</span><input id="flexibleMonthlySpending" name="flexibleMonthlySpending" type="number" min="0" step="1" inputmode="decimal"></div>
-                                        <small>Travel, hobbies, restaurants, gifts, giving, and lifestyle choices. What could be adjusted if conditions change.</small>
-                                    </div>
-                                </div>
-
-                                <dl class="allocation-live-summary">
-                                    <div>
-                                        <dt>Total allocated</dt>
-                                        <dd data-allocation="allocated">$0</dd>
-                                    </div>
-                                </dl>
-                                <p class="allocation-live-message" data-allocation="message" role="status"></p>
-                            </div>
-                        </section>
-
                         <section class="calculator-section" aria-labelledby="income-title">
-                            <p class="eyebrow">Step 5</p>
+                            <p class="eyebrow">Step 4</p>
                             <h2 id="income-title">Enter only retirement income from pensions, annuities, or rental income. Exclude Social Security, IRA, 401(k), and other investment withdrawals for now.</h2>
                             <div class="field-group field-group-wide">
                                 <div class="money-input"><span aria-hidden="true">$</span><input id="monthlyOtherRegularRetirementIncome" name="monthlyOtherRegularRetirementIncome" type="number" min="0" step="1" inputmode="decimal" aria-labelledby="income-title"></div>
@@ -196,7 +162,7 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
                         <section class="calculator-section calculator-results" id="spendingPlanResults" aria-labelledby="results-title" aria-live="polite" hidden>
                             <p class="eyebrow">Your result</p>
                             <h2 id="results-title">Your retirement spending plan</h2>
-                            <p>Review these numbers before saving to make sure your spending plan is internally consistent.</p>
+                            <p>Review these numbers before saving.</p>
                             <dl class="plan-review-lines">
                                 <div>
                                     <dt>Expected monthly retirement spending:</dt>
@@ -216,31 +182,6 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
                                 </div>
                             </dl>
                             <p class="plan-review-handoff">This is the amount your Social Security benefits and investment withdrawals will need to support in later phases of your Journey.</p>
-
-                            <div class="spending-split-review" aria-labelledby="split-review-title">
-                                <h3 id="split-review-title">Spending allocation</h3>
-                                <p>Your monthly retirement spending target has been divided between essential and flexible spending.</p>
-                                <dl>
-                                    <div>
-                                        <dt>Monthly retirement spending target:</dt>
-                                        <dd data-result="allocationTargetMonthly">$0</dd>
-                                    </div>
-                                    <div>
-                                        <dt>Essential spending:</dt>
-                                        <dd data-result="essentialMonthly">$0</dd>
-                                    </div>
-                                    <div>
-                                        <dt>Flexible spending:</dt>
-                                        <dd data-result="flexibleMonthly">$0</dd>
-                                    </div>
-                                    <div>
-                                        <dt>Allocated total:</dt>
-                                        <dd data-result="splitTotalMonthly">$0</dd>
-                                    </div>
-                                </dl>
-                            </div>
-
-                            <div class="consistency-message" data-result="consistencyMessage" role="status"></div>
                             <div class="assumption-statement">
                                 <p data-result="assumptions"></p>
                             </div>

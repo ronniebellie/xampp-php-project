@@ -48,14 +48,6 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                                 <strong data-spending-plan-field="annualTarget">$0</strong>
                             </div>
                             <div class="result-metric">
-                                <span>Essential monthly</span>
-                                <strong data-spending-plan-field="essentialMonthly">$0</strong>
-                            </div>
-                            <div class="result-metric">
-                                <span>Flexible monthly</span>
-                                <strong data-spending-plan-field="flexibleMonthly">$0</strong>
-                            </div>
-                            <div class="result-metric">
                                 <span>Other regular income</span>
                                 <strong data-spending-plan-field="otherIncomeMonthly">$0</strong>
                             </div>
@@ -75,7 +67,7 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                         <p>Your spending target is the foundation for the rest of your retirement plan. Before you estimate Social Security timing, withdrawals, taxes, or investment risk, it helps to know what kind of retirement income you are trying to support.</p>
 
                         <h2>What you'll accomplish</h2>
-                        <p>You will prepare a reasonable retirement spending target, separate essential expenses from flexible goals, and identify the assumptions you want the planner to test.</p>
+                        <p>You will prepare a reasonable retirement spending target and identify the assumptions you want the planner to test.</p>
 
                         <h2>What to bring</h2>
                         <div class="prompt-list" aria-label="What to bring before using the Retirement Spending Planner">
@@ -113,7 +105,7 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                     <div class="next-step-card" aria-labelledby="next-step-title">
                         <p class="eyebrow">Recommended Tool</p>
                         <h2 id="next-step-title">Your Retirement Spending Plan</h2>
-                        <p>Estimate a retirement budget from your current spending, separate essential and flexible expenses, and save the target for the rest of your Journey.</p>
+                        <p>Estimate a retirement budget from your current spending and save the target for the rest of your Journey.</p>
                         <a class="primary-action" href="/calculators/retirement-spending-plan/">Launch Retirement Spending Planner</a>
                     </div>
                 </aside>

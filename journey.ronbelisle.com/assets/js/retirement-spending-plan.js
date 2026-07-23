@@ -34,13 +34,6 @@
         });
     }
 
-    function setTextAll(root, selector, value) {
-        if (!root) return;
-        root.querySelectorAll(selector).forEach(function (element) {
-            element.textContent = value;
-        });
-    }
-
     function numberValue(id) {
         var element = document.getElementById(id);
         if (!element || element.value === '') return 0;
@@ -104,8 +97,6 @@
             currentAnnualSpending: optionalNumberValue('currentAnnualSpending'),
             categories: categories,
             expectedMonthlyRetirementSpending: optionalNumberValue('expectedMonthlyRetirementSpending'),
-            essentialMonthlySpending: optionalNumberValue('essentialMonthlySpending'),
-            flexibleMonthlySpending: optionalNumberValue('flexibleMonthlySpending'),
             monthlyOtherRegularRetirementIncome: numberValue('monthlyOtherRegularRetirementIncome'),
             notes: document.getElementById('spendingNotes').value.trim()
         };
@@ -123,8 +114,6 @@
             'currentMonthlySpending',
             'currentAnnualSpending',
             'expectedMonthlyRetirementSpending',
-            'essentialMonthlySpending',
-            'flexibleMonthlySpending',
             'monthlyOtherRegularRetirementIncome'
         ]);
 
@@ -175,126 +164,10 @@
         return errors;
     }
 
-    function splitConsistency(outputs) {
-        if (!outputs) {
-            return {
-                isValid: false,
-                splitTotal: 0,
-                remainingToAllocate: 0,
-                difference: 0,
-                tolerance: 1,
-                target: 0
-            };
-        }
-        var splitTotal = (Number(outputs.monthlyEssentialSpending) || 0) +
-            (Number(outputs.monthlyFlexibleSpending) || 0);
-        var target = Number(outputs.monthlyRetirementSpendingTarget) || 0;
-        var difference = splitTotal - target;
-        var tolerance = 1;
-
-        return {
-            isValid: Math.abs(difference) <= tolerance,
-            splitTotal: splitTotal,
-            remainingToAllocate: -difference,
-            difference: difference,
-            tolerance: tolerance,
-            target: target
-        };
-    }
-
-    function consistencyText(outputs) {
-        var check = splitConsistency(outputs);
-        var target = money(check.target);
-        var allocated = money(check.splitTotal);
-
-        if (check.isValid) {
-            return '✓ Your monthly retirement spending target is fully allocated.';
-        }
-
-        if (check.remainingToAllocate > 0) {
-            return 'You have allocated ' + allocated +
-                ' of your ' + target +
-                ' monthly target. Allocate the remaining ' +
-                money(check.remainingToAllocate) +
-                ' before continuing.';
-        }
-
-        return 'You have allocated ' + allocated +
-            ', which is ' + money(Math.abs(check.remainingToAllocate)) +
-            ' more than your ' + target +
-            ' monthly target. Adjust the amounts before continuing.';
-    }
-
-    function liveAllocationState() {
-        var target = numberValue('expectedMonthlyRetirementSpending');
-        var essential = numberValue('essentialMonthlySpending');
-        var flexible = numberValue('flexibleMonthlySpending');
-        var splitTotal = essential + flexible;
-        var remaining = target - splitTotal;
-        var tolerance = 1;
-        var isComplete = target > 0 && Math.abs(remaining) <= tolerance;
-        var isOver = remaining < -tolerance;
-        var isUnder = remaining > tolerance;
-
-        return {
-            target: target,
-            splitTotal: splitTotal,
-            remaining: remaining,
-            overage: Math.abs(Math.min(remaining, 0)),
-            isComplete: isComplete,
-            isOver: isOver,
-            isUnder: isUnder
-        };
-    }
-
-    function updateAllocationLive() {
-        var panel = document.getElementById('allocationLivePanel');
-        if (!panel) return;
-
-        var state = liveAllocationState();
-        var messageEl = panel.querySelector('[data-allocation="message"]');
-
-        setTextAll(panel, '[data-allocation="target"]', money(state.target));
-        setTextAll(panel, '[data-allocation="allocated"]', money(state.splitTotal));
-
-        if (!messageEl) return;
-
-        messageEl.classList.remove('is-valid', 'is-warning', 'is-error');
-
-        if (!state.target) {
-            messageEl.textContent = 'Enter your expected monthly retirement spending in Step 3 to set the target you will allocate here.';
-            messageEl.setAttribute('role', 'status');
-            return;
-        }
-
-        if (state.isComplete) {
-            messageEl.textContent = '✓ Your monthly retirement spending target is fully allocated.';
-            messageEl.classList.add('is-valid');
-            messageEl.setAttribute('role', 'status');
-            return;
-        }
-
-        if (state.isOver) {
-            messageEl.textContent = 'You have allocated ' + money(state.overage) +
-                ' more than your monthly retirement spending target.';
-            messageEl.classList.add('is-error');
-            messageEl.setAttribute('role', 'alert');
-            return;
-        }
-
-        messageEl.textContent = 'You still have ' + money(state.remaining) + ' to allocate.';
-        messageEl.setAttribute('role', 'status');
-    }
-
     function validateForSave(inputs, outputs) {
         var errors = validateForCalculation(inputs);
         if (!outputs || outputs.monthlyRetirementSpendingTarget <= 0) {
             errors.push('Calculate a retirement spending target before saving.');
-        }
-        if (outputs) {
-            if (!splitConsistency(outputs).isValid) {
-                errors.push(consistencyText(outputs));
-            }
         }
         return errors;
     }
@@ -346,43 +219,11 @@
         return Math.max(monthlyCurrent + monthlyNetAdjustments, 0);
     }
 
-    function suggestedEssential(inputs, monthlyTarget) {
-        if (inputs.startingMethod === 'guided_categories') {
-            var categories = inputs.categories;
-            var essential = (categories.housing || 0) +
-                (categories.foodHousehold || 0) +
-                (categories.transportation || 0) +
-                (categories.healthcare || 0) +
-                (categories.insuranceDebt || 0);
-            return Math.min(essential, monthlyTarget);
-        }
-        return Math.round(monthlyTarget * 0.75);
-    }
-
     function calculate(inputs) {
         var annualCurrent = currentAnnualSpending(inputs);
         var monthlyCurrent = annualCurrent / 12;
         var monthlyTarget = Math.max(inputs.expectedMonthlyRetirementSpending || 0, 0);
         var annualTarget = monthlyTarget * 12;
-
-        var essential = inputs.essentialMonthlySpending;
-        var flexible = inputs.flexibleMonthlySpending;
-        if (essential === null && flexible === null) {
-            essential = suggestedEssential(inputs, monthlyTarget);
-            flexible = Math.max(monthlyTarget - essential, 0);
-            setNumberValue('essentialMonthlySpending', Math.round(essential));
-            setNumberValue('flexibleMonthlySpending', Math.round(flexible));
-        } else if (essential !== null && flexible === null) {
-            flexible = Math.max(monthlyTarget - essential, 0);
-            setNumberValue('flexibleMonthlySpending', Math.round(flexible));
-        } else if (essential === null && flexible !== null) {
-            essential = Math.max(monthlyTarget - flexible, 0);
-            setNumberValue('essentialMonthlySpending', Math.round(essential));
-        }
-
-        essential = Number(essential) || 0;
-        flexible = Number(flexible) || 0;
-
         var monthlyOtherIncome = inputs.monthlyOtherRegularRetirementIncome || 0;
         var annualOtherIncome = monthlyOtherIncome * 12;
         var annualRemaining = Math.max(annualTarget - annualOtherIncome, 0);
@@ -393,10 +234,6 @@
             expectedMonthlyRetirementSpending: monthlyTarget,
             monthlyRetirementSpendingTarget: monthlyTarget,
             annualRetirementSpendingTarget: annualTarget,
-            monthlyEssentialSpending: essential,
-            annualEssentialSpending: essential * 12,
-            monthlyFlexibleSpending: flexible,
-            annualFlexibleSpending: flexible * 12,
             monthlyOtherRegularRetirementIncome: monthlyOtherIncome,
             annualOtherRegularRetirementIncome: annualOtherIncome,
             monthlyRemainingNeedBeforeSocialSecurityAndInvestments: annualRemaining / 12,
@@ -415,34 +252,18 @@
 
     function renderResults(inputs, outputs) {
         if (!resultsPanel) return;
-        var consistency = splitConsistency(outputs);
-        var consistencyMessage = resultsPanel.querySelector('[data-result="consistencyMessage"]');
 
         resultsPanel.hidden = false;
         setResultText('monthlyTarget', money(outputs.monthlyRetirementSpendingTarget));
-        setResultText('allocationTargetMonthly', money(outputs.monthlyRetirementSpendingTarget));
         setResultText('annualTarget', money(outputs.annualRetirementSpendingTarget));
-        setResultText('essentialMonthly', money(outputs.monthlyEssentialSpending));
-        setResultText('flexibleMonthly', money(outputs.monthlyFlexibleSpending));
-        setResultText('splitTotalMonthly', money(consistency.splitTotal));
         setResultText('otherIncomeMonthly', money(outputs.monthlyOtherRegularRetirementIncome));
         setResultText('remainingMonthly', money(outputs.monthlyRemainingNeedBeforeSocialSecurityAndInvestments));
         resultsPanel.querySelector('[data-result="assumptions"]').textContent =
             'Based on your ' + methodLabel(inputs.startingMethod) +
             ', expected monthly retirement spending, and pension, annuity, or rental income before Social Security.';
-
-        if (consistencyMessage) {
-            consistencyMessage.classList.toggle('is-valid', consistency.isValid);
-            consistencyMessage.classList.toggle('is-warning', !consistency.isValid);
-            consistencyMessage.setAttribute('role', consistency.isValid ? 'status' : 'alert');
-            consistencyMessage.textContent = consistencyText(outputs);
-        }
-
-        updateAllocationLive();
     }
 
     function updateVisibleResults() {
-        updateAllocationLive();
         if (!lastOutputs || !resultsPanel || resultsPanel.hidden) return;
         var inputs = inputsFromForm();
         if (validateForCalculation(inputs).length) return;
@@ -471,8 +292,6 @@
                 dataForLaterPhases: {
                     monthlyRetirementSpendingTarget: outputs.monthlyRetirementSpendingTarget,
                     annualRetirementSpendingTarget: outputs.annualRetirementSpendingTarget,
-                    monthlyEssentialSpending: outputs.monthlyEssentialSpending,
-                    monthlyFlexibleSpending: outputs.monthlyFlexibleSpending,
                     monthlyOtherRegularRetirementIncome: outputs.monthlyOtherRegularRetirementIncome,
                     lastUpdated: timestamp
                 }
@@ -566,13 +385,12 @@
             inputs.expectedMonthlyRetirementSpending = legacyRetirementSpending(record, inputs);
         }
         setNumberValue('expectedMonthlyRetirementSpending', inputs.expectedMonthlyRetirementSpending);
-        setNumberValue('essentialMonthlySpending', inputs.essentialMonthlySpending);
-        setNumberValue('flexibleMonthlySpending', inputs.flexibleMonthlySpending);
         setNumberValue('monthlyOtherRegularRetirementIncome', inputs.monthlyOtherRegularRetirementIncome);
         if (inputs.notes) document.getElementById('spendingNotes').value = inputs.notes;
         var outputs = record.draftOutputs || record.outputs;
         if (outputs && outputs.monthlyRetirementSpendingTarget) {
-            lastOutputs = outputs;
+            // Recalculate so saved essential/flexible fields are ignored and review numbers stay current.
+            lastOutputs = calculate(inputsFromForm());
             renderResults(inputsFromForm(), lastOutputs);
         }
         if (saveStatus && record.completionStatus === 'completed') {
@@ -599,10 +417,8 @@
     });
     form.addEventListener('change', function (event) {
         if (event.target.name === 'startingMethod') syncMethodSections();
-        updateAllocationLive();
     });
 
     restoreRecord(readCalculatorRecord());
     syncMethodSections();
-    updateAllocationLive();
 })();

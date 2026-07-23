@@ -37,8 +37,6 @@
         var fields = {
             monthlyTarget: outputs.monthlyRetirementSpendingTarget,
             annualTarget: outputs.annualRetirementSpendingTarget,
-            essentialMonthly: outputs.monthlyEssentialSpending,
-            flexibleMonthly: outputs.monthlyFlexibleSpending,
             otherIncomeMonthly: outputs.monthlyOtherRegularRetirementIncome,
             lastUpdated: record.lastUpdated
         };

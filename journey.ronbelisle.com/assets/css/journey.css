@@ -1209,88 +1209,6 @@ h1 {
     color: #b91c1c;
 }
 
-.allocation-live-panel {
-    margin-top: 18px;
-}
-
-.allocation-target-banner {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 12px;
-    align-items: baseline;
-    margin-bottom: 16px;
-    padding: 0 0 14px;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.allocation-target-banner span {
-    color: var(--muted);
-    font-size: 15px;
-    font-weight: 700;
-}
-
-.allocation-target-banner strong {
-    color: var(--accent-strong);
-    font-size: 26px;
-    font-weight: 850;
-    line-height: 1.1;
-    text-align: right;
-}
-
-.allocation-live-panel .journey-form-grid {
-    margin-top: 0;
-}
-
-.allocation-live-summary {
-    display: grid;
-    gap: 8px;
-    margin: 14px 0 0;
-}
-
-.allocation-live-summary div {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 12px;
-    align-items: baseline;
-}
-
-.allocation-live-summary dt {
-    color: var(--muted);
-    font-weight: 700;
-}
-
-.allocation-live-summary dd {
-    margin: 0;
-    color: var(--text);
-    font-size: 20px;
-    font-weight: 850;
-    line-height: 1.1;
-    text-align: right;
-}
-
-.allocation-live-message {
-    margin: 8px 0 0;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: var(--muted);
-    font-size: 15px;
-    font-weight: 600;
-    line-height: 1.45;
-}
-
-.allocation-live-message.is-valid {
-    color: var(--success);
-}
-
-.allocation-live-message.is-warning {
-    color: #9a3412;
-}
-
-.allocation-live-message.is-error {
-    color: #b91c1c;
-}
-
 .plan-review-handoff {
     margin: 14px 0 0;
     padding: 12px 14px;
@@ -1404,17 +1322,13 @@ h1 {
     }
 
     .plan-review-lines div,
-    .spending-split-review div,
-    .allocation-target-banner,
-    .allocation-live-summary div {
+    .spending-split-review div {
         grid-template-columns: 1fr;
         gap: 5px;
     }
 
     .plan-review-lines dd,
-    .spending-split-review dd,
-    .allocation-target-banner strong,
-    .allocation-live-summary dd {
+    .spending-split-review dd {
         text-align: left;
     }
 
