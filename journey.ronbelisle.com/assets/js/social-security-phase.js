@@ -175,6 +175,7 @@
         var interest = selectedValue('interest');
         var status = document.getElementById('decisionStatus');
         var claimAge = document.getElementById('claimAge');
+        interestChooserExpanded = false;
         if (/^\d+$/.test(interest)) {
             claimAge.value = interest;
             status.value = 'provisional';
@@ -198,31 +199,62 @@
         }
     }
 
+    var interestChooserExpanded = false;
+
+    function expandInterestChooser() {
+        interestChooserExpanded = true;
+        updateClaimingConfirmation();
+        var fieldset = document.getElementById('interestFieldset');
+        if (fieldset) {
+            fieldset.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
     function updateClaimingConfirmation() {
         var box = document.getElementById('claimingConfirmation');
+        var ageChoices = document.getElementById('interestAgeChoices');
+        var altChoices = document.getElementById('interestAltChoices');
+        var altLabel = altChoices ? altChoices.querySelector('.interest-alt-label') : null;
         if (!box) return;
 
+        var interest = selectedValue('interest');
         var status = document.getElementById('decisionStatus').value;
         var claimAge = document.getElementById('claimAge').value;
+        var ageSelected = /^\d+$/.test(interest) || (status === 'provisional' && !!claimAge);
+        var altSelected = interest === 'receiving' || interest === 'not-ready' ||
+            status === 'already-receiving' || status === 'need-more-information';
+        var showFullChooser = interestChooserExpanded || (!ageSelected && !altSelected);
         var html = '';
+        var changeControl =
+            '<p><button type="button" class="change-selection-button" data-change-interest-selection>Change selection</button></p>';
+
+        if (ageChoices) ageChoices.hidden = !showFullChooser && altSelected && !ageSelected;
+        if (altChoices) altChoices.hidden = !showFullChooser && ageSelected;
+        if (altLabel) altLabel.hidden = !showFullChooser;
 
         if (status === 'provisional' && claimAge) {
             html =
-                '<p><strong>You’ve selected age ' + claimAge + ' as the claiming age you want to test in your retirement plan.</strong></p>' +
-                '<p>This is a planning assumption, not a Social Security filing action. You can revisit and change it later.</p>';
+                '<p><strong>You’ve selected Age ' + claimAge + ' as the claiming age to test in your retirement plan.</strong></p>' +
+                '<p>This is a planning assumption, not a Social Security filing action. You can revisit and change it later.</p>' +
+                changeControl;
         } else if (status === 'already-receiving') {
             html =
-                '<p><strong>You’ve indicated that you are already receiving Social Security benefits.</strong></p>' +
-                '<p>Your plan can use your current benefit as the working assumption. This is a planning assumption, not a filing action. You can revisit and change it later.</p>';
+                '<p><strong>You’ve chosen the alternative path: already receiving benefits.</strong></p>' +
+                '<p>Your plan can use your current benefit as the working assumption. This is a planning assumption, not a filing action. You can revisit and change it later.</p>' +
+                changeControl;
         } else if (status === 'need-more-information') {
             html =
-                '<p><strong>You’ve indicated that you are not ready to select a claiming age yet.</strong></p>' +
-                '<p>That’s fine. Save what you know now and return when you have a clearer estimate. This remains a planning assumption, not a filing action.</p>';
+                '<p><strong>You’ve chosen the alternative path: not ready to select an age.</strong></p>' +
+                '<p>That’s fine. Save what you know now and return when you have a clearer estimate. This remains a planning assumption, not a filing action.</p>' +
+                changeControl;
         }
 
         if (!html) {
             box.hidden = true;
             box.innerHTML = '';
+            if (ageChoices) ageChoices.hidden = false;
+            if (altChoices) altChoices.hidden = false;
+            if (altLabel) altLabel.hidden = false;
             return;
         }
 
@@ -550,6 +582,13 @@
     }
 
     document.addEventListener('change', handleDraftChange);
+    document.addEventListener('click', function (event) {
+        var changeButton = event.target.closest('[data-change-interest-selection]');
+        if (changeButton) {
+            event.preventDefault();
+            expandInterestChooser();
+        }
+    });
     document.addEventListener('input', function (event) {
         if (event.target.closest('#phase2RecordForm')) {
             if (

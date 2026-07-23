@@ -786,6 +786,37 @@ h1 {
     gap: 8px;
 }
 
+.interest-alt-choices {
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.interest-alt-label {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.change-selection-button {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #1d4ed8;
+    font: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.change-selection-button:hover,
+.change-selection-button:focus-visible {
+    color: #1e3a8a;
+}
+
 .inline-choices {
     display: flex;
     flex-wrap: wrap;

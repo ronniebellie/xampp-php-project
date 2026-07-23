@@ -152,17 +152,20 @@ $page_title = 'Social Security | Retirement Planning Journey';
                         <section class="phase-content-section return-section" id="return-from-analyzer" aria-labelledby="return-title">
                             <p class="eyebrow">After the analyzer</p>
                             <h2 id="return-title">Welcome back. Choose the claiming age to test.</h2>
-                            <p>Select the working assumption you want your retirement plan to use. You can change it later.</p>
+                            <p>Choose one starting path for your plan. Selecting an age is your decision; the other two options are alternative paths if you are not selecting an age.</p>
 
-                            <fieldset class="journey-fieldset" data-field-group="interest">
+                            <fieldset class="journey-fieldset" data-field-group="interest" id="interestFieldset">
                                 <legend>Which claiming age do you want to test in your plan?</legend>
-                                <div class="compact-choice-grid">
+                                <div class="compact-choice-grid" id="interestAgeChoices">
                                     <?php for ($age = 62; $age <= 70; $age++): ?>
                                         <label class="choice-row"><input type="radio" name="interest" value="<?php echo $age; ?>"> <span>Age <?php echo $age; ?></span></label>
                                     <?php endfor; ?>
                                 </div>
-                                <label class="choice-row"><input type="radio" name="interest" value="receiving"> <span>I am already receiving benefits.</span></label>
-                                <label class="choice-row"><input type="radio" name="interest" value="not-ready"> <span>I am not ready to select an age.</span></label>
+                                <div class="interest-alt-choices" id="interestAltChoices">
+                                    <p class="interest-alt-label">Or choose an alternative path</p>
+                                    <label class="choice-row"><input type="radio" name="interest" value="receiving"> <span>I am already receiving benefits.</span></label>
+                                    <label class="choice-row"><input type="radio" name="interest" value="not-ready"> <span>I am not ready to select an age.</span></label>
+                                </div>
                             </fieldset>
 
                             <div class="coach-response" id="claimingConfirmation" aria-live="polite" hidden></div>
