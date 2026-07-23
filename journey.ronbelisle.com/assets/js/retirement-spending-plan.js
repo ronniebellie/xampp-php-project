@@ -168,16 +168,49 @@
         return errors;
     }
 
+    function splitConsistency(outputs) {
+        if (!outputs) {
+            return {
+                isValid: false,
+                splitTotal: 0,
+                difference: 0,
+                tolerance: 1
+            };
+        }
+        var splitTotal = (Number(outputs.monthlyEssentialSpending) || 0) +
+            (Number(outputs.monthlyFlexibleSpending) || 0);
+        var target = Number(outputs.monthlyRetirementSpendingTarget) || 0;
+        var difference = splitTotal - target;
+        var tolerance = 1;
+
+        return {
+            isValid: Math.abs(difference) <= tolerance,
+            splitTotal: splitTotal,
+            difference: difference,
+            tolerance: tolerance
+        };
+    }
+
+    function consistencyText(outputs) {
+        var check = splitConsistency(outputs);
+        if (check.isValid) {
+            return 'Your essential and flexible spending split matches your retirement spending target.';
+        }
+
+        var direction = check.difference > 0 ? 'higher than' : 'lower than';
+        return 'Your essential and flexible spending total ' + money(check.splitTotal) +
+            ', which is ' + direction + ' your ' + money(outputs.monthlyRetirementSpendingTarget) +
+            ' retirement spending target. Please revise those amounts before saving.';
+    }
+
     function validateForSave(inputs, outputs) {
         var errors = validateForCalculation(inputs);
         if (!outputs || outputs.monthlyRetirementSpendingTarget <= 0) {
             errors.push('Calculate a retirement spending target before saving.');
         }
         if (outputs) {
-            var splitTotal = outputs.monthlyEssentialSpending + outputs.monthlyFlexibleSpending;
-            var tolerance = Math.max(25, outputs.monthlyRetirementSpendingTarget * 0.02);
-            if (Math.abs(splitTotal - outputs.monthlyRetirementSpendingTarget) > tolerance) {
-                errors.push('Make sure essential and flexible spending add up to the retirement spending target.');
+            if (!splitConsistency(outputs).isValid) {
+                errors.push(consistencyText(outputs));
             }
         }
         return errors;
@@ -194,6 +227,13 @@
         });
         errorSummary.hidden = errors.length === 0;
         if (errors.length) errorSummary.focus();
+    }
+
+    function setResultText(key, value) {
+        if (!resultsPanel) return;
+        resultsPanel.querySelectorAll('[data-result="' + key + '"]').forEach(function (element) {
+            element.textContent = value;
+        });
     }
 
     function currentAnnualSpending(inputs) {
@@ -292,16 +332,27 @@
 
     function renderResults(inputs, outputs) {
         if (!resultsPanel) return;
+        var consistency = splitConsistency(outputs);
+        var consistencyMessage = resultsPanel.querySelector('[data-result="consistencyMessage"]');
+
         resultsPanel.hidden = false;
-        resultsPanel.querySelector('[data-result="monthlyTarget"]').textContent = money(outputs.monthlyRetirementSpendingTarget);
-        resultsPanel.querySelector('[data-result="annualTarget"]').textContent = money(outputs.annualRetirementSpendingTarget);
-        resultsPanel.querySelector('[data-result="essentialMonthly"]').textContent = money(outputs.monthlyEssentialSpending);
-        resultsPanel.querySelector('[data-result="flexibleMonthly"]').textContent = money(outputs.monthlyFlexibleSpending);
-        resultsPanel.querySelector('[data-result="otherIncomeMonthly"]').textContent = money(outputs.monthlyOtherRegularRetirementIncome);
-        resultsPanel.querySelector('[data-result="remainingMonthly"]').textContent = money(outputs.monthlyRemainingNeedBeforeSocialSecurityAndInvestments);
+        setResultText('monthlyTarget', money(outputs.monthlyRetirementSpendingTarget));
+        setResultText('annualTarget', money(outputs.annualRetirementSpendingTarget));
+        setResultText('essentialMonthly', money(outputs.monthlyEssentialSpending));
+        setResultText('flexibleMonthly', money(outputs.monthlyFlexibleSpending));
+        setResultText('splitTotalMonthly', money(consistency.splitTotal));
+        setResultText('otherIncomeMonthly', money(outputs.monthlyOtherRegularRetirementIncome));
+        setResultText('remainingMonthly', money(outputs.monthlyRemainingNeedBeforeSocialSecurityAndInvestments));
         resultsPanel.querySelector('[data-result="assumptions"]').textContent =
             'Based on your ' + methodLabel(inputs.startingMethod) +
             ', expected monthly retirement spending, and other regular retirement income before Social Security.';
+
+        if (consistencyMessage) {
+            consistencyMessage.classList.toggle('is-valid', consistency.isValid);
+            consistencyMessage.classList.toggle('is-warning', !consistency.isValid);
+            consistencyMessage.setAttribute('role', consistency.isValid ? 'status' : 'alert');
+            consistencyMessage.textContent = consistencyText(outputs);
+        }
     }
 
     function buildRecord(inputs, outputs, status) {

@@ -1162,6 +1162,114 @@ h1 {
     font-size: 14px;
 }
 
+.plan-review-summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.plan-review-item {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #dbe3ec;
+    border-radius: 10px;
+    background: #ffffff;
+}
+
+.plan-review-item.is-primary {
+    border-color: rgba(29, 78, 216, 0.32);
+    background: #eff6ff;
+}
+
+.plan-review-item span,
+.spending-split-review dt {
+    display: block;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.plan-review-item strong {
+    display: block;
+    margin-top: 6px;
+    color: var(--text);
+    font-size: 24px;
+    line-height: 1.1;
+}
+
+.plan-review-item.is-primary strong {
+    color: var(--accent-strong);
+    font-size: 30px;
+}
+
+.plan-review-note {
+    margin: 12px 0 0;
+    color: var(--muted);
+}
+
+.plan-review-note strong {
+    color: var(--text);
+}
+
+.spending-split-review {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+}
+
+.spending-split-review h3 {
+    margin: 0 0 12px;
+}
+
+.spending-split-review dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0;
+}
+
+.spending-split-review div {
+    min-width: 0;
+    padding: 12px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    background: #ffffff;
+}
+
+.spending-split-review div.is-total {
+    background: #f8fafc;
+}
+
+.spending-split-review dd {
+    margin: 5px 0 0;
+    color: var(--text);
+    font-size: 22px;
+    font-weight: 850;
+    line-height: 1.1;
+}
+
+.consistency-message {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-weight: 800;
+}
+
+.consistency-message.is-valid {
+    border: 1px solid #bbf7d0;
+    border-left: 4px solid var(--success);
+    background: #f0fdf4;
+    color: #14532d;
+}
+
+.consistency-message.is-warning {
+    border: 1px solid #fed7aa;
+    border-left: 4px solid #f97316;
+    background: #fff7ed;
+    color: #7c2d12;
+}
+
 .result-metrics {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1231,6 +1339,11 @@ h1 {
     }
 
     .journey-progress-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .plan-review-summary,
+    .spending-split-review dl {
         grid-template-columns: 1fr;
     }
 

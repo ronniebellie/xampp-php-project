@@ -180,34 +180,47 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
 
                         <section class="calculator-section calculator-results" id="spendingPlanResults" aria-labelledby="results-title" aria-live="polite" hidden>
                             <p class="eyebrow">Your result</p>
-                            <h2 id="results-title">Review your retirement spending target</h2>
-                            <div class="result-metrics">
-                                <div class="result-metric is-primary">
-                                    <span>Monthly retirement spending target</span>
+                            <h2 id="results-title">Your retirement spending plan</h2>
+                            <p>Review these numbers before saving to make sure your spending plan is internally consistent.</p>
+                            <div class="plan-review-summary">
+                                <div class="plan-review-item is-primary">
+                                    <span>Expected monthly retirement spending</span>
                                     <strong data-result="monthlyTarget">$0</strong>
                                 </div>
-                                <div class="result-metric">
-                                    <span>Annual retirement spending target</span>
-                                    <strong data-result="annualTarget">$0</strong>
-                                </div>
-                                <div class="result-metric">
-                                    <span>Essential monthly spending</span>
-                                    <strong data-result="essentialMonthly">$0</strong>
-                                </div>
-                                <div class="result-metric">
-                                    <span>Flexible monthly spending</span>
-                                    <strong data-result="flexibleMonthly">$0</strong>
-                                </div>
-                                <div class="result-metric">
-                                    <span>Other regular monthly income</span>
+                                <div class="plan-review-item">
+                                    <span>Covered by regular retirement income</span>
                                     <strong data-result="otherIncomeMonthly">$0</strong>
                                 </div>
-                                <div class="result-metric">
-                                    <span>Remaining monthly need</span>
+                                <div class="plan-review-item">
+                                    <span>Still to be covered by Social Security and investments</span>
                                     <strong data-result="remainingMonthly">$0</strong>
                                 </div>
                             </div>
-                            <div class="assumption-statement" data-result="assumptions"></div>
+                            <p class="plan-review-note">Annual retirement spending target: <strong data-result="annualTarget">$0</strong></p>
+
+                            <div class="spending-split-review" aria-labelledby="split-review-title">
+                                <h3 id="split-review-title">Essential and flexible spending split</h3>
+                                <dl>
+                                    <div>
+                                        <dt>Essential spending</dt>
+                                        <dd data-result="essentialMonthly">$0</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Flexible spending</dt>
+                                        <dd data-result="flexibleMonthly">$0</dd>
+                                    </div>
+                                    <div class="is-total">
+                                        <dt>Total essential + flexible spending</dt>
+                                        <dd data-result="splitTotalMonthly">$0</dd>
+                                    </div>
+                                </dl>
+                            </div>
+
+                            <div class="consistency-message" data-result="consistencyMessage" role="status"></div>
+                            <div class="assumption-statement">
+                                <p data-result="handoffExplanation">This is the amount your Social Security benefits and investment withdrawals will need to support in later phases of your Journey.</p>
+                                <p data-result="assumptions"></p>
+                            </div>
                         </section>
 
                         <div class="calculator-actions">
