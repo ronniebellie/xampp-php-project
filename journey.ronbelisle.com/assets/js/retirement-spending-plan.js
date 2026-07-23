@@ -344,7 +344,7 @@
         setResultText('remainingMonthly', money(outputs.monthlyRemainingNeedBeforeSocialSecurityAndInvestments));
         resultsPanel.querySelector('[data-result="assumptions"]').textContent =
             'Based on your ' + methodLabel(inputs.startingMethod) +
-            ', expected monthly retirement spending, and other regular retirement income before Social Security.';
+            ', expected monthly retirement spending, and pension, annuity, or rental income before Social Security.';
 
         if (consistencyMessage) {
             consistencyMessage.classList.toggle('is-valid', consistency.isValid);
