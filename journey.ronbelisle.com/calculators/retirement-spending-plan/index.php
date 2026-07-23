@@ -172,12 +172,8 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
 
                                 <dl class="allocation-live-summary">
                                     <div>
-                                        <dt>Allocated so far</dt>
+                                        <dt>Total allocated</dt>
                                         <dd data-allocation="allocated">$0</dd>
-                                    </div>
-                                    <div>
-                                        <dt data-allocation="remaining-label">Remaining to allocate</dt>
-                                        <dd data-allocation="remaining">$0</dd>
                                     </div>
                                 </dl>
                                 <p class="allocation-live-message" data-allocation="message" role="status"></p>

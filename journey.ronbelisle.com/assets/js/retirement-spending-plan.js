@@ -41,13 +41,6 @@
         });
     }
 
-    function setClassState(element, state) {
-        if (!element) return;
-        element.classList.toggle('is-complete', state === 'complete');
-        element.classList.toggle('is-negative', state === 'negative');
-        element.classList.toggle('is-error', state === 'negative');
-    }
-
     function numberValue(id) {
         var element = document.getElementById(id);
         if (!element || element.value === '') return 0;
@@ -259,29 +252,10 @@
         if (!panel) return;
 
         var state = liveAllocationState();
-        var remainingEl = panel.querySelector('[data-allocation="remaining"]');
-        var remainingLabel = panel.querySelector('[data-allocation="remaining-label"]');
         var messageEl = panel.querySelector('[data-allocation="message"]');
 
         setTextAll(panel, '[data-allocation="target"]', money(state.target));
         setTextAll(panel, '[data-allocation="allocated"]', money(state.splitTotal));
-
-        if (remainingLabel) {
-            remainingLabel.textContent = state.isOver ? 'Amount over target' : 'Remaining to allocate';
-        }
-
-        if (remainingEl) {
-            if (state.isComplete) {
-                remainingEl.textContent = money(0);
-                setClassState(remainingEl, 'complete');
-            } else if (state.isOver) {
-                remainingEl.textContent = money(state.overage);
-                setClassState(remainingEl, 'negative');
-            } else {
-                remainingEl.textContent = money(Math.max(state.remaining, 0));
-                setClassState(remainingEl, '');
-            }
-        }
 
         if (!messageEl) return;
 
@@ -302,17 +276,13 @@
 
         if (state.isOver) {
             messageEl.textContent = 'You have allocated ' + money(state.overage) +
-                ' more than your monthly target.';
+                ' more than your monthly retirement spending target.';
             messageEl.classList.add('is-error');
             messageEl.setAttribute('role', 'alert');
             return;
         }
 
-        messageEl.textContent = 'Allocate the remaining ' + money(state.remaining) +
-            ' between essential and flexible spending.';
-        if (state.isUnder && state.splitTotal > 0) {
-            messageEl.classList.add('is-warning');
-        }
+        messageEl.textContent = 'You still have ' + money(state.remaining) + ' to allocate.';
         messageEl.setAttribute('role', 'status');
     }
 
