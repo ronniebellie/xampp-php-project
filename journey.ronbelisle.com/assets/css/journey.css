@@ -835,6 +835,29 @@ h1 {
     margin-top: 18px;
 }
 
+.workflow-steps {
+    margin: 14px 0 0;
+    padding-left: 1.25rem;
+    color: var(--muted);
+}
+
+.workflow-steps li {
+    margin: 0 0 6px;
+}
+
+.workflow-steps li:last-child {
+    margin-bottom: 0;
+}
+
+.benefit-same-as-fra {
+    margin-top: 0;
+}
+
+.benefit-same-as-fra .benefit-amount {
+    font-weight: 800;
+    color: var(--text);
+}
+
 .field-group {
     min-width: 0;
 }
@@ -1207,6 +1230,11 @@ h1 {
 
 .field-group-wide {
     max-width: 640px;
+}
+
+.journey-form-grid > .field-group-wide {
+    grid-column: 1 / -1;
+    max-width: none;
 }
 
 .field-group textarea {

@@ -172,6 +172,11 @@ $page_title = 'Social Security | Retirement Planning Journey';
                             <section class="phase-content-section" aria-labelledby="record-title">
                                 <h2 id="record-title">Record the claiming age you want to test</h2>
                                 <p>Save the numbers you want your plan to use. This is a planning assumption, not a Social Security filing action.</p>
+                                <ol class="workflow-steps" aria-label="How to record your benefit amounts">
+                                    <li>Enter your Full Retirement Age monthly benefit from your Social Security statement.</li>
+                                    <li>Run the Claiming Analyzer.</li>
+                                    <li>If your selected claiming age differs from your Full Retirement Age, enter the monthly benefit the analyzer shows for that age.</li>
+                                </ol>
 
                                 <div class="error-summary" id="phase2ErrorSummary" role="alert" tabindex="-1" hidden>
                                     <h3>Please review the following</h3>
@@ -180,20 +185,20 @@ $page_title = 'Social Security | Retirement Planning Journey';
 
                                 <div class="journey-form-grid">
                                     <div class="field-group">
-                                        <label for="birthYear">Birth year <span class="optional-label">(optional)</span></label>
+                                        <label for="birthYear">Birth year <span class="optional-label">(recommended)</span></label>
                                         <input id="birthYear" name="birthYear" type="number" min="1920" max="<?php echo date('Y'); ?>" step="1" inputmode="numeric">
-                                        <small>Helpful later when your plan needs your age.</small>
+                                        <small>Used to determine your Full Retirement Age so this form can avoid asking for the same benefit twice.</small>
                                     </div>
 
                                     <div class="field-group">
-                                        <label for="decisionStatus">Where are you now?</label>
+                                        <label for="decisionStatus">What best describes your situation today?</label>
                                         <select id="decisionStatus" name="decisionStatus">
                                             <option value="">Choose a status</option>
                                             <option value="provisional">Claiming age to test</option>
                                             <option value="need-more-information">I am not ready to select an age</option>
                                             <option value="already-receiving">Already receiving benefits</option>
                                         </select>
-                                        <small id="decisionStatusHelp">Choose the option that best describes your decision today.</small>
+                                        <small id="decisionStatusHelp">This describes your decision status—not the claiming age itself. Most people who just chose an age to test should leave this as “Claiming age to test.”</small>
                                     </div>
 
                                     <div class="field-group" id="claimAgeGroup">
@@ -210,14 +215,19 @@ $page_title = 'Social Security | Retirement Planning Journey';
                                     <div class="field-group" id="benefitAtFraGroup">
                                         <label for="benefitAtFra">Monthly benefit at your full retirement age</label>
                                         <div class="money-input"><span aria-hidden="true">$</span><input id="benefitAtFra" name="benefitAtFra" type="number" min="0" step="1" inputmode="decimal"></div>
-                                        <small>Use the amount from your Social Security statement for the age Social Security treats as full retirement, before Medicare deductions.</small>
+                                        <small>Step 1: Enter the Full Retirement Age monthly benefit from your Social Security statement, before Medicare deductions.</small>
                                     </div>
 
-                                    <div class="field-group">
+                                    <div class="field-group" id="selectedBenefitGroup">
                                         <label for="selectedMonthlyBenefit" id="selectedMonthlyBenefitLabel">Monthly benefit shown by the Claiming Analyzer</label>
-                                        <div class="money-input"><span aria-hidden="true">$</span><input id="selectedMonthlyBenefit" name="selectedMonthlyBenefit" type="number" min="0" step="1" inputmode="decimal"></div>
-                                        <small id="selectedMonthlyBenefitHelp">After comparing claiming ages in the Claiming Analyzer, enter the monthly benefit shown for the age you selected.</small>
+                                        <div class="money-input" id="selectedMonthlyBenefitInput">
+                                            <span aria-hidden="true">$</span>
+                                            <input id="selectedMonthlyBenefit" name="selectedMonthlyBenefit" type="number" min="0" step="1" inputmode="decimal">
+                                        </div>
+                                        <small id="selectedMonthlyBenefitHelp">Step 3: After comparing claiming ages in the Claiming Analyzer, enter the monthly benefit shown for the age you selected.</small>
                                     </div>
+
+                                    <div class="field-group field-group-wide coach-response benefit-same-as-fra" id="fraBenefitConfirmation" aria-live="polite" hidden></div>
                                 </div>
 
                                 <div class="field-group field-group-wide">

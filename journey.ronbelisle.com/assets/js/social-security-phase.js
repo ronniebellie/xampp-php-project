@@ -44,17 +44,66 @@
         return element ? element.value.trim() : '';
     }
 
-    function buildRecord() {
-        var selectedBenefit = numberOrNull(document.getElementById('selectedMonthlyBenefit').value);
+    function fraFromBirthYear(birthYear) {
+        if (birthYear === null || birthYear === undefined || !Number.isFinite(birthYear)) return null;
+        if (birthYear <= 1937) return { years: 65, months: 0 };
+        if (birthYear === 1938) return { years: 65, months: 2 };
+        if (birthYear === 1939) return { years: 65, months: 4 };
+        if (birthYear === 1940) return { years: 65, months: 6 };
+        if (birthYear === 1941) return { years: 65, months: 8 };
+        if (birthYear === 1942) return { years: 65, months: 10 };
+        if (birthYear >= 1943 && birthYear <= 1954) return { years: 66, months: 0 };
+        if (birthYear === 1955) return { years: 66, months: 2 };
+        if (birthYear === 1956) return { years: 66, months: 4 };
+        if (birthYear === 1957) return { years: 66, months: 6 };
+        if (birthYear === 1958) return { years: 66, months: 8 };
+        if (birthYear === 1959) return { years: 66, months: 10 };
+        return { years: 67, months: 0 };
+    }
+
+    function formatFraLabel(fra) {
+        if (!fra) return '';
+        if (!fra.months) return String(fra.years);
+        return fra.years + ' and ' + fra.months + ' months';
+    }
+
+    function isClaimingAtFra(birthYear, claimAge) {
+        var fra = fraFromBirthYear(birthYear);
+        if (!fra || claimAge === null || claimAge === undefined) return false;
+        // Claim ages on this page are whole years; only treat as FRA when FRA is a whole year.
+        return fra.months === 0 && Number(claimAge) === fra.years;
+    }
+
+    function currentBirthYear() {
+        return numberOrNull(document.getElementById('birthYear').value);
+    }
+
+    function currentClaimAge() {
+        return numberOrNull(document.getElementById('claimAge').value);
+    }
+
+    function planningBenefitUsesFraAmount() {
         var status = document.getElementById('decisionStatus').value;
+        return status === 'provisional' && isClaimingAtFra(currentBirthYear(), currentClaimAge());
+    }
+
+    function buildRecord() {
+        var status = document.getElementById('decisionStatus').value;
+        var claimAge = status === 'provisional' ? currentClaimAge() : null;
+        var birthYear = currentBirthYear();
+        var benefitAtFra = status === 'provisional' ? numberOrNull(document.getElementById('benefitAtFra').value) : null;
+        var selectedBenefit = numberOrNull(document.getElementById('selectedMonthlyBenefit').value);
+        var usesFraAmount = status === 'provisional' && isClaimingAtFra(birthYear, claimAge);
 
         return {
             estimateReadiness: selectedValue('estimateReadiness'),
-            birthYear: numberOrNull(document.getElementById('birthYear').value),
+            birthYear: birthYear,
             decisionStatus: status,
-            claimAge: status === 'provisional' ? numberOrNull(document.getElementById('claimAge').value) : null,
-            benefitAtFra: status === 'provisional' ? numberOrNull(document.getElementById('benefitAtFra').value) : null,
-            estimatedMonthlyBenefit: status === 'provisional' ? selectedBenefit : null,
+            claimAge: claimAge,
+            benefitAtFra: benefitAtFra,
+            estimatedMonthlyBenefit: status === 'provisional'
+                ? (usesFraAmount ? benefitAtFra : selectedBenefit)
+                : null,
             currentMonthlyBenefit: status === 'already-receiving' ? selectedBenefit : null,
             decisionNotes: notesValue(),
             // Legacy justification fields are no longer collected. Keep empty on save so older
@@ -185,25 +234,70 @@
         var status = document.getElementById('decisionStatus').value;
         var claimAgeGroup = document.getElementById('claimAgeGroup');
         var fraGroup = document.getElementById('benefitAtFraGroup');
+        var selectedGroup = document.getElementById('selectedBenefitGroup');
+        var selectedInputWrap = document.getElementById('selectedMonthlyBenefitInput');
+        var fraConfirmation = document.getElementById('fraBenefitConfirmation');
         var label = document.getElementById('selectedMonthlyBenefitLabel');
         var help = document.getElementById('selectedMonthlyBenefitHelp');
         var claimAge = document.getElementById('claimAge').value;
+        var birthYear = currentBirthYear();
+        var fra = fraFromBirthYear(birthYear);
+        var usesFraAmount = planningBenefitUsesFraAmount();
+        var benefitAtFra = numberOrNull(document.getElementById('benefitAtFra').value);
 
         claimAgeGroup.hidden = status === 'already-receiving' || status === 'need-more-information';
         fraGroup.hidden = status === 'already-receiving' || status === 'need-more-information';
 
         if (status === 'already-receiving') {
+            selectedGroup.hidden = false;
+            if (selectedInputWrap) selectedInputWrap.hidden = false;
+            label.hidden = false;
+            help.hidden = false;
+            fraConfirmation.hidden = true;
+            fraConfirmation.innerHTML = '';
             label.textContent = 'Current gross monthly Social Security benefit';
             help.textContent = 'Enter the gross amount before Medicare is deducted.';
         } else if (status === 'need-more-information') {
-            label.textContent = 'Monthly benefit shown by the Claiming Analyzer';
-            help.textContent = 'Leave blank for now if you have not selected a claiming age.';
-        } else if (claimAge) {
-            label.textContent = 'Monthly benefit shown by the Claiming Analyzer';
-            help.textContent = 'Enter the monthly benefit the Claiming Analyzer shows for age ' + claimAge + '.';
+            selectedGroup.hidden = true;
+            fraConfirmation.hidden = true;
+            fraConfirmation.innerHTML = '';
+        } else if (usesFraAmount) {
+            selectedGroup.hidden = true;
+            if (selectedInputWrap) selectedInputWrap.hidden = true;
+            label.hidden = true;
+            help.hidden = true;
+            if (benefitAtFra !== null && benefitAtFra > 0) {
+                document.getElementById('selectedMonthlyBenefit').value = String(benefitAtFra);
+            }
+            fraConfirmation.hidden = false;
+            fraConfirmation.innerHTML =
+                '<p>Because you selected your Full Retirement Age' +
+                (fra ? ' (age ' + formatFraLabel(fra) + ')' : '') +
+                ', your planning benefit is the same as your Full Retirement Age benefit.</p>' +
+                '<p>Planning monthly benefit: <span class="benefit-amount">' +
+                (benefitAtFra !== null && benefitAtFra > 0 ? currency(benefitAtFra) : 'Enter the Full Retirement Age amount above') +
+                '</span></p>';
         } else {
-            label.textContent = 'Monthly benefit shown by the Claiming Analyzer';
-            help.textContent = 'After comparing claiming ages in the Claiming Analyzer, enter the monthly benefit shown for the age you selected.';
+            selectedGroup.hidden = false;
+            if (selectedInputWrap) selectedInputWrap.hidden = false;
+            label.hidden = false;
+            help.hidden = false;
+            fraConfirmation.hidden = true;
+            fraConfirmation.innerHTML = '';
+
+            if (claimAge) {
+                label.textContent = 'Monthly benefit at Age ' + claimAge + ' (from the Claiming Analyzer)';
+                help.textContent = 'Step 3: Enter the monthly benefit the Claiming Analyzer shows for age ' + claimAge + '.';
+            } else {
+                label.textContent = 'Monthly benefit shown by the Claiming Analyzer';
+                help.textContent = 'Step 3: After comparing claiming ages in the Claiming Analyzer, enter the monthly benefit shown for the age you selected.';
+            }
+
+            if (fra && fra.months > 0 && claimAge) {
+                help.textContent += ' Your Full Retirement Age is ' + formatFraLabel(fra) + ', so Age ' + claimAge + ' is not exact FRA—use the analyzer amount for the age you selected.';
+            } else if (!birthYear && claimAge) {
+                help.textContent += ' Enter your birth year above if this age is your Full Retirement Age; then this second entry can be skipped.';
+            }
         }
 
         updateClaimingConfirmation();
@@ -265,7 +359,7 @@
         if (record.decisionStatus === 'provisional') {
             if (!record.claimAge) errors.push('Choose a claiming age to test.');
             if (!(record.benefitAtFra > 0)) errors.push('Enter your monthly benefit at full retirement age.');
-            if (!(record.estimatedMonthlyBenefit > 0)) {
+            if (!isClaimingAtFra(record.birthYear, record.claimAge) && !(record.estimatedMonthlyBenefit > 0)) {
                 errors.push('Enter the monthly benefit shown by the Claiming Analyzer for the age you selected.');
             }
         }
@@ -332,11 +426,23 @@
 
         var summary = '';
         if (record.decisionStatus === 'provisional') {
-            summary =
-                '<p><strong>My current Social Security position</strong></p>' +
-                '<p>I will test claiming at age <strong>' + record.claimAge + '</strong>. My benefit at full retirement age is approximately <strong>' + currency(record.benefitAtFra) + ' per month</strong>, and the Claiming Analyzer amount I recorded for age <strong>' + record.claimAge + '</strong> is approximately <strong>' + currency(record.estimatedMonthlyBenefit) + ' per month</strong>.</p>' +
-                (record.decisionNotes ? '<p>Notes: ' + escapeHtml(record.decisionNotes) + '</p>' : '') +
-                '<p>This is a planning assumption, not advice to file. I can revisit and change it later.</p>';
+            var sameAsFra = isClaimingAtFra(record.birthYear, record.claimAge) ||
+                (record.estimatedMonthlyBenefit !== null &&
+                    record.benefitAtFra !== null &&
+                    Number(record.estimatedMonthlyBenefit) === Number(record.benefitAtFra));
+            if (sameAsFra) {
+                summary =
+                    '<p><strong>My current Social Security position</strong></p>' +
+                    '<p>I will test claiming at age <strong>' + record.claimAge + '</strong>, my Full Retirement Age. My planning benefit is approximately <strong>' + currency(record.benefitAtFra) + ' per month</strong>.</p>' +
+                    (record.decisionNotes ? '<p>Notes: ' + escapeHtml(record.decisionNotes) + '</p>' : '') +
+                    '<p>This is a planning assumption, not advice to file. I can revisit and change it later.</p>';
+            } else {
+                summary =
+                    '<p><strong>My current Social Security position</strong></p>' +
+                    '<p>I will test claiming at age <strong>' + record.claimAge + '</strong>. My benefit at full retirement age is approximately <strong>' + currency(record.benefitAtFra) + ' per month</strong>, and the Claiming Analyzer amount I recorded for age <strong>' + record.claimAge + '</strong> is approximately <strong>' + currency(record.estimatedMonthlyBenefit) + ' per month</strong>.</p>' +
+                    (record.decisionNotes ? '<p>Notes: ' + escapeHtml(record.decisionNotes) + '</p>' : '') +
+                    '<p>This is a planning assumption, not advice to file. I can revisit and change it later.</p>';
+            }
         } else if (record.decisionStatus === 'need-more-information') {
             summary =
                 '<p><strong>My current Social Security position</strong></p>' +
@@ -425,7 +531,12 @@
     function handleDraftChange(event) {
         if (event.target.name === 'interest') syncInterest();
         if (event.target.name === 'estimateReadiness') updateEstimateResponse();
-        if (event.target.id === 'decisionStatus' || event.target.id === 'claimAge') {
+        if (
+            event.target.id === 'decisionStatus' ||
+            event.target.id === 'claimAge' ||
+            event.target.id === 'birthYear' ||
+            event.target.id === 'benefitAtFra'
+        ) {
             updateStatusFields();
         }
         var companionOnly = event.target.name === 'earlyExitAnswer' || event.target.name === 'survivorAnswer' || event.target.name === 'spendingGapAnswer';
@@ -441,7 +552,13 @@
     document.addEventListener('change', handleDraftChange);
     document.addEventListener('input', function (event) {
         if (event.target.closest('#phase2RecordForm')) {
-            if (event.target.id === 'claimAge') updateStatusFields();
+            if (
+                event.target.id === 'claimAge' ||
+                event.target.id === 'birthYear' ||
+                event.target.id === 'benefitAtFra'
+            ) {
+                updateStatusFields();
+            }
             persistDraft(false);
             showIncompleteState();
         }
