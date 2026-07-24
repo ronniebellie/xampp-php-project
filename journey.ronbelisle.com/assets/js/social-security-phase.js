@@ -275,7 +275,7 @@
 
         if (status === 'provisional' && claimAge) {
             html =
-                '<p><strong>You’ve selected Age ' + claimAge + ' as the claiming age to test in your retirement plan.</strong></p>' +
+                '<p><strong>Your current planning assumption is to claim Social Security at age ' + claimAge + '.</strong></p>' +
                 changeControl;
         } else if (status === 'already-receiving') {
             html =

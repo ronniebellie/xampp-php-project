@@ -348,6 +348,6 @@ $page_title = 'Social Security | Retirement Planning Journey';
         </section>
     </main>
 
-    <script src="/assets/js/social-security-phase.js?v=20260723-interest-chooser" defer></script>
+    <script src="/assets/js/social-security-phase.js?v=20260723-assumption-wording" defer></script>
 </body>
 </html>
