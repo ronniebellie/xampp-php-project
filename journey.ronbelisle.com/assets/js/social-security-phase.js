@@ -413,8 +413,8 @@
             },
             'plan-builder': {
                 eyebrow: 'My recommendation for you',
-                title: 'See how much of your spending investments may still need to cover',
-                text: 'Because you want to understand what remains after Social Security, the most useful next step is the Retirement Plan Builder. It helps you connect spending, Social Security, and investment withdrawals into one working plan.',
+                title: 'Estimate how much you’ll need to withdraw from your retirement savings',
+                text: 'Based on your answers, the next helpful step is estimating how much of your retirement spending will need to come from your retirement savings after Social Security and other dependable income. This gives you a clearer picture of whether your retirement plan is sustainable.',
                 href: 'https://ronbelisle.com/retirement-plan/',
                 action: 'Open Retirement Plan Builder'
             }
