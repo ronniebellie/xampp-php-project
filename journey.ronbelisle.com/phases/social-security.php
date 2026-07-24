@@ -252,7 +252,7 @@ $page_title = 'Social Security | Retirement Planning Journey';
                             <p>Answer these three questions. We’ll point you to no more than one additional calculator.</p>
 
                             <fieldset class="journey-fieldset">
-                                <legend>Do you expect to stop working several years before claiming Social Security?</legend>
+                                <legend>Do you expect to retire before you begin claiming Social Security?</legend>
                                 <p class="fieldset-help">If yes, the benefit estimate on your Social Security statement may be higher than the amount you eventually receive. We can help you estimate that difference.</p>
                                 <div class="inline-choices">
                                     <label class="choice-row"><input type="radio" name="earlyExitAnswer" value="yes"> <span>Yes</span></label>
