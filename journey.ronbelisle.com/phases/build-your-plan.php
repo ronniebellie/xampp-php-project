@@ -117,10 +117,6 @@ $page_title = 'Build Your Plan | Retirement Planning Journey';
                                         <strong id="pictureSpending">$0</strong>
                                     </div>
                                     <div class="result-metric">
-                                        <span>Monthly dependable income</span>
-                                        <strong id="pictureDependable">$0</strong>
-                                    </div>
-                                    <div class="result-metric">
                                         <span>Social Security</span>
                                         <strong id="pictureSs">$0</strong>
                                     </div>
@@ -129,11 +125,15 @@ $page_title = 'Build Your Plan | Retirement Planning Journey';
                                         <strong id="pictureOther">$0</strong>
                                     </div>
                                     <div class="result-metric">
-                                        <span>Monthly from retirement savings</span>
+                                        <span>Total dependable income</span>
+                                        <strong id="pictureDependable">$0</strong>
+                                    </div>
+                                    <div class="result-metric">
+                                        <span>Monthly needed from retirement savings</span>
                                         <strong id="pictureMonthlyNeed">$0</strong>
                                     </div>
                                     <div class="result-metric">
-                                        <span>Annual from retirement savings</span>
+                                        <span>Annual needed from retirement savings</span>
                                         <strong id="pictureAnnualNeed">$0</strong>
                                     </div>
                                 </div>
@@ -186,6 +186,6 @@ $page_title = 'Build Your Plan | Retirement Planning Journey';
         </section>
     </main>
 
-    <script src="/assets/js/build-your-plan-phase.js?v=20260724-phase3" defer></script>
+    <script src="/assets/js/build-your-plan-phase.js?v=20260724-income-hierarchy" defer></script>
 </body>
 </html>
