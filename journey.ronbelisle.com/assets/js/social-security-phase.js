@@ -379,44 +379,68 @@
         var survivor = selectedValue('survivorAnswer');
         var gap = selectedValue('spendingGapAnswer');
         if (!early || !survivor || !gap) return '';
+
+        // One recommendation only, in planning-value order:
+        // 1) retire-before-claiming risk, 2) survivor income, 3) investment shortfall.
         if (early === 'yes' || early === 'not-sure') return 'early-exit';
         if (survivor === 'yes') return 'survivor';
-        if (gap === 'yes') return 'spending-gap';
+        if (gap === 'yes') return 'plan-builder';
         return 'none';
     }
 
     function updateCompanionResult() {
         var result = document.getElementById('companionResult');
+        var early = selectedValue('earlyExitAnswer');
         var recommendation = companionRecommendation();
         var content = {
             'early-exit': {
-                title: 'Next check: Early Exit Social Security Impact',
-                text: 'Your Social Security estimate may assume that you keep working at about the same pay. This calculator shows how leaving work earlier could lower your benefit.',
+                eyebrow: 'My recommendation for you',
+                title: early === 'not-sure'
+                    ? 'Check whether retiring before claiming changes your benefit'
+                    : 'Estimate how retiring before claiming affects your benefit',
+                text: early === 'not-sure'
+                    ? 'Because you’re not sure yet, the most useful next step is to see whether a gap between retirement and claiming could make the benefit on your Social Security statement higher than what you may actually receive.'
+                    : 'Because you expect to retire before claiming, the benefit estimate on your Social Security statement may assume more working years than you will have. The Early Exit calculator helps you estimate a more realistic benefit for your plan.',
                 href: 'https://ronbelisle.com/ss-early-exit/',
-                action: 'Check the Impact of Leaving Work Early'
+                action: 'Open Early Exit Social Security Impact'
             },
             survivor: {
-                title: 'Next check: Social Security Survivor Impact',
-                text: 'The Claiming Analyzer compares one person at a time. Because survivor income matters to your household, review how the higher benefit may affect the spouse who lives longer.',
+                eyebrow: 'My recommendation for you',
+                title: 'Review how survivor Social Security income could change',
+                text: 'Because household survivor income matters to you, the most useful next step is to see how benefits may change for the spouse who lives longer. That gives you a clearer picture than looking at one person’s claiming age alone.',
                 href: 'https://ronbelisle.com/ss-survivor-impact/',
-                action: 'Review Survivor Income'
+                action: 'Open Social Security Survivor Impact'
             },
-            'spending-gap': {
-                title: 'Next check: Social Security + Spending Gap',
-                text: 'Compare your expected Social Security and other dependable income with your retirement spending target to estimate what may still need to come from savings.',
-                href: 'https://ronbelisle.com/ss-gap/',
-                action: 'Review My Social Security Spending Gap'
+            'plan-builder': {
+                eyebrow: 'My recommendation for you',
+                title: 'See how much of your spending investments may still need to cover',
+                text: 'Because you want to understand what remains after Social Security, the most useful next step is the Retirement Plan Builder. It helps you connect spending, Social Security, and investment withdrawals into one working plan.',
+                href: 'https://ronbelisle.com/retirement-plan/',
+                action: 'Open Retirement Plan Builder'
             }
         };
 
         if (!recommendation) {
-            result.innerHTML = '<h3>Complete the three questions above</h3><p>Your answers will show whether another calculator could help.</p>';
-        } else if (recommendation === 'none') {
-            result.innerHTML = '<h3>You are ready to continue</h3><p>You do not need another Social Security calculator for this phase. Your saved claiming assumption can move forward with the rest of your Journey when later phases are ready.</p>';
-        } else {
-            var item = content[recommendation];
-            result.innerHTML = '<p class="eyebrow">One useful next step</p><h3>' + item.title + '</h3><p>' + item.text + '</p><a class="secondary-action" target="_blank" rel="noopener" href="' + item.href + '">' + item.action + '</a><p class="action-note">Optional. You can complete Phase 2 without it. Opens in a separate tab.</p>';
+            result.innerHTML =
+                '<h3>Answer all three questions</h3>' +
+                '<p>Once you finish, I’ll recommend no more than one next planning tool—or tell you that you can continue without one.</p>';
+            return;
         }
+
+        if (recommendation === 'none') {
+            result.innerHTML =
+                '<h3>No additional calculator is needed right now</h3>' +
+                '<p>Based on your answers, you do not need another planning tool for this step. Continue with Phase 2 and carry your Social Security planning assumption into the rest of your Journey.</p>';
+            return;
+        }
+
+        var item = content[recommendation];
+        result.innerHTML =
+            '<p class="eyebrow">' + item.eyebrow + '</p>' +
+            '<h3>' + item.title + '</h3>' +
+            '<p>' + item.text + '</p>' +
+            '<a class="secondary-action" target="_blank" rel="noopener" href="' + item.href + '">' + item.action + '</a>' +
+            '<p class="action-note">Optional. You can finish Phase 2 without it. Opens in a separate tab.</p>';
     }
 
     function validateRecord(record) {

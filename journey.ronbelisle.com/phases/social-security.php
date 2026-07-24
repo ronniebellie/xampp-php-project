@@ -279,8 +279,8 @@ $page_title = 'Social Security | Retirement Planning Journey';
                             </fieldset>
 
                             <div class="companion-result" id="companionResult" aria-live="polite">
-                                <h3>Complete the three questions above</h3>
-                                <p>Your answers will show whether another calculator could help.</p>
+                                <h3>Answer all three questions</h3>
+                                <p>Once you finish, I’ll recommend no more than one next planning tool—or tell you that you can continue without one.</p>
                             </div>
                         </section>
 
@@ -349,6 +349,6 @@ $page_title = 'Social Security | Retirement Planning Journey';
         </section>
     </main>
 
-    <script src="/assets/js/social-security-phase.js?v=20260723-assumption-wording" defer></script>
+    <script src="/assets/js/social-security-phase.js?v=20260724-companion-logic" defer></script>
 </body>
 </html>
