@@ -799,6 +799,12 @@ h1 {
     font-weight: 600;
 }
 
+.interest-age-choices.is-concealed,
+.interest-alt-choices.is-concealed,
+.compact-choice-grid.is-concealed {
+    display: none !important;
+}
+
 .change-selection-button {
     display: inline-block;
     margin-top: 4px;

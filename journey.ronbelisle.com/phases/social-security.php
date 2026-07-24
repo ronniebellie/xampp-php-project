@@ -9,7 +9,7 @@ $page_title = 'Social Security | Retirement Planning Journey';
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260723-interest-chooser">
 </head>
 <body>
     <header class="site-header">
@@ -156,13 +156,13 @@ $page_title = 'Social Security | Retirement Planning Journey';
 
                             <fieldset class="journey-fieldset" data-field-group="interest" id="interestFieldset">
                                 <legend>Which claiming age do you want to test in your plan?</legend>
-                                <div class="compact-choice-grid" id="interestAgeChoices">
+                                <div class="compact-choice-grid interest-age-choices" id="interestAgeChoices">
                                     <?php for ($age = 62; $age <= 70; $age++): ?>
                                         <label class="choice-row"><input type="radio" name="interest" value="<?php echo $age; ?>"> <span>Age <?php echo $age; ?></span></label>
                                     <?php endfor; ?>
                                 </div>
                                 <div class="interest-alt-choices" id="interestAltChoices">
-                                    <p class="interest-alt-label">Or choose an alternative path</p>
+                                    <p class="interest-alt-label" id="interestAltLabel">Or choose an alternative path</p>
                                     <label class="choice-row"><input type="radio" name="interest" value="receiving"> <span>I am already receiving benefits.</span></label>
                                     <label class="choice-row"><input type="radio" name="interest" value="not-ready"> <span>I am not ready to select an age.</span></label>
                                 </div>
@@ -348,6 +348,6 @@ $page_title = 'Social Security | Retirement Planning Journey';
         </section>
     </main>
 
-    <script src="/assets/js/social-security-phase.js" defer></script>
+    <script src="/assets/js/social-security-phase.js?v=20260723-interest-chooser" defer></script>
 </body>
 </html>
