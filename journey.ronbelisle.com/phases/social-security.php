@@ -312,9 +312,9 @@ $page_title = 'Social Security | Retirement Planning Journey';
 
                         <section class="phase-content-section phase-completion" aria-labelledby="continue-title">
                             <h2 id="continue-title">Save your Phase 2 progress</h2>
-                            <p>When your claiming assumption is saved, your Journey can mark Phase 2 complete.</p>
-                            <p>Phase 3 is not ready yet. For now, return to your Journey homepage after saving.</p>
+                            <p>When your claiming assumption is saved, continue to Phase 3: Build Your Plan.</p>
                             <button type="button" class="primary-action journey-button" id="completePhase2Button">Save Phase 2 Progress</button>
+                            <a class="secondary-action" href="/phases/build-your-plan.php">Continue to Phase 3: Build Your Plan</a>
                             <a class="secondary-action" href="/">Return to My Journey</a>
                             <div class="completion-message" id="phase2CompletionMessage" role="status" tabindex="-1" hidden></div>
                             <p class="trust-note">Completing Phase 2 records your progress through the Journey. Your Social Security planning record remains in this browser and can be updated later.</p>
@@ -349,6 +349,6 @@ $page_title = 'Social Security | Retirement Planning Journey';
         </section>
     </main>
 
-    <script src="/assets/js/social-security-phase.js?v=20260724-savings-wording" defer></script>
+    <script src="/assets/js/social-security-phase.js?v=20260724-phase3" defer></script>
 </body>
 </html>

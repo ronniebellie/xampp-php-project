@@ -818,9 +818,64 @@ h1 {
     cursor: pointer;
 }
 
-.change-selection-button:hover,
-.change-selection-button:focus-visible {
-    color: #1e3a8a;
+.record-status-badge.is-temporary,
+.record-status-badge.is-workable,
+.record-status-badge.is-close,
+.record-status-badge.is-difficult {
+    display: inline-flex;
+}
+
+.record-status-badge.is-temporary {
+    border-color: #f59e0b;
+    background: #fffbeb;
+    color: #92400e;
+}
+
+.record-status-badge.is-workable {
+    border-color: #86efac;
+    background: #f0fdf4;
+    color: #166534;
+}
+
+.record-status-badge.is-close {
+    border-color: #fcd34d;
+    background: #fffbeb;
+    color: #92400e;
+}
+
+.record-status-badge.is-difficult {
+    border-color: #fca5a5;
+    background: #fef2f2;
+    color: #991b1b;
+}
+
+.assessment-card.is-workable {
+    border-color: #86efac;
+    background: #f0fdf4;
+}
+
+.assessment-card.is-close {
+    border-color: #fcd34d;
+    background: #fffbeb;
+}
+
+.assessment-card.is-difficult {
+    border-color: #fca5a5;
+    background: #fef2f2;
+}
+
+.withdrawal-rate-note {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.decision-statement {
+    margin: 18px 0 12px;
+}
+
+.uses-temporary-ss .coach-response.assessment-card {
+    box-shadow: inset 3px 0 0 #f59e0b;
 }
 
 .inline-choices {

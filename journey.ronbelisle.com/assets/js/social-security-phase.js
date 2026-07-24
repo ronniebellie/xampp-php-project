@@ -415,8 +415,8 @@
                 eyebrow: 'My recommendation for you',
                 title: 'Estimate how much you’ll need to withdraw from your retirement savings',
                 text: 'Based on your answers, the next helpful step is estimating how much of your retirement spending will need to come from your retirement savings after Social Security and other dependable income. This gives you a clearer picture of whether your retirement plan is sustainable.',
-                href: 'https://ronbelisle.com/retirement-plan/',
-                action: 'Open Retirement Plan Builder'
+                href: '/phases/build-your-plan.php',
+                action: 'Continue to Phase 3: Build Your Plan'
             }
         };
 
@@ -435,12 +435,17 @@
         }
 
         var item = content[recommendation];
+        var external = /^https?:\/\//i.test(item.href);
+        var linkAttrs = external ? ' class="secondary-action" target="_blank" rel="noopener"' : ' class="secondary-action"';
+        var note = external
+            ? 'Optional. You can finish Phase 2 without it. Opens in a separate tab.'
+            : 'Optional. You can finish Phase 2 without it.';
         result.innerHTML =
             '<p class="eyebrow">' + item.eyebrow + '</p>' +
             '<h3>' + item.title + '</h3>' +
             '<p>' + item.text + '</p>' +
-            '<a class="secondary-action" target="_blank" rel="noopener" href="' + item.href + '">' + item.action + '</a>' +
-            '<p class="action-note">Optional. You can finish Phase 2 without it. Opens in a separate tab.</p>';
+            '<a' + linkAttrs + ' href="' + item.href + '">' + item.action + '</a>' +
+            '<p class="action-note">' + note + '</p>';
     }
 
     function validateRecord(record) {
@@ -616,7 +621,7 @@
         } else if (record.decisionStatus === 'already-receiving') {
             message.innerHTML = '<strong>Phase 2 progress saved. Status: Already receiving benefits.</strong><span>Your current benefit is recorded as the working assumption.</span>';
         } else {
-            message.innerHTML = '<strong>Phase 2 progress saved.</strong><span>Your claiming-age assumption is ready for later phases when they become available.</span>';
+            message.innerHTML = '<strong>Phase 2 progress saved.</strong><span>Your claiming-age assumption is ready for Phase 3: Build Your Plan.</span>';
         }
         message.hidden = false;
         message.focus();

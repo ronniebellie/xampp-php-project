@@ -6,7 +6,10 @@
         current: 'Current',
         'needs-information': 'Needs information',
         'needs-verification': 'Needs verification',
-        'already-receiving': 'Already receiving benefits'
+        'already-receiving': 'Already receiving benefits',
+        workable: 'Looks workable',
+        close: 'Looks close',
+        difficult: 'Looks difficult'
     };
 
     function now() {
@@ -88,7 +91,7 @@
             ],
             downstreamMappings: {
                 phase: 'build-your-plan',
-                tool: 'retirement-plan-builder',
+                tool: 'journey-native-phase-3',
                 fields: {
                     claimAge: 'socialSecurity.claimAge',
                     benefitAtFra: 'socialSecurity.benefitAtFra',
@@ -140,12 +143,90 @@
         });
     }
 
+    function buildYourPlanResult(record) {
+        return {
+            monthlyRetirementSpendingGoal: record.monthlyRetirementSpendingGoal === undefined ? null : record.monthlyRetirementSpendingGoal,
+            annualRetirementSpendingGoal: record.annualRetirementSpendingGoal === undefined ? null : record.annualRetirementSpendingGoal,
+            monthlySocialSecurityAssumption: record.monthlySocialSecurityAssumption === undefined ? null : record.monthlySocialSecurityAssumption,
+            socialSecuritySource: record.socialSecuritySource || '',
+            temporarySocialSecurityEstimateUsed: record.temporarySocialSecurityEstimateUsed === true,
+            monthlyOtherDependableIncome: record.monthlyOtherDependableIncome === undefined ? null : record.monthlyOtherDependableIncome,
+            monthlyNeededFromRetirementSavings: record.monthlyNeededFromRetirementSavings === undefined ? null : record.monthlyNeededFromRetirementSavings,
+            annualNeededFromRetirementSavings: record.annualNeededFromRetirementSavings === undefined ? null : record.annualNeededFromRetirementSavings,
+            retirementSavingsBalance: record.retirementSavingsBalance === undefined ? null : record.retirementSavingsBalance,
+            impliedInitialWithdrawalRate: record.impliedInitialWithdrawalRate === undefined ? null : record.impliedInitialWithdrawalRate,
+            baseCaseAssessment: record.baseCaseAssessment || '',
+            assessmentStatus: record.assessmentStatus || '',
+            baseCaseOnly: record.baseCaseOnly !== false
+        };
+    }
+
+    function createBuildYourPlanRecord(record, options) {
+        var settings = options || {};
+        var oldRecord = settings.oldRecord || {};
+        var timestamp = settings.timestamp || now();
+        var complete = settings.journeyComplete === true;
+        var saved = record.saved === true;
+        var firstCreated = oldRecord.createdAt || oldRecord.completedAt || (saved ? timestamp : '');
+        var status = record.planningRecordStatus || record.baseCaseAssessment || 'needs-information';
+
+        return Object.assign({}, record, {
+            phaseId: 'build-your-plan',
+            schemaVersion: schemaVersion,
+            journeyCompletionStatus: complete ? 'completed' : 'incomplete',
+            planningRecordStatus: status,
+            result: buildYourPlanResult(record),
+            baseCaseOnly: true,
+            source: {
+                type: 'journey-native',
+                toolId: 'build-your-plan',
+                name: 'Build Your Plan',
+                url: '/phases/build-your-plan.php'
+            },
+            createdAt: firstCreated,
+            updatedAt: saved ? timestamp : (oldRecord.updatedAt || ''),
+            lastReviewedAt: settings.reviewed === true ? timestamp : (oldRecord.lastReviewedAt || ''),
+            downstreamReady: saved === true && record.assessmentStatus === 'complete',
+            downstreamMappings: {
+                phase: 'stress-test',
+                tool: 'journey-native-phase-4',
+                fields: {
+                    spendingGoal: 'plan.monthlyRetirementSpendingGoal',
+                    socialSecurity: 'plan.monthlySocialSecurityAssumption',
+                    otherIncome: 'plan.monthlyOtherDependableIncome',
+                    savingsNeed: 'plan.monthlyNeededFromRetirementSavings',
+                    savingsBalance: 'plan.retirementSavingsBalance'
+                }
+            }
+        });
+    }
+
+    function normalizeBuildYourPlanRecord(record, journeyComplete) {
+        if (!record || typeof record !== 'object') return {};
+        var normalized = Object.assign({}, record);
+        var result = record.result && typeof record.result === 'object' ? record.result : {};
+
+        Object.keys(buildYourPlanResult({})).forEach(function (key) {
+            if ((normalized[key] === undefined || normalized[key] === null) && result[key] !== undefined) {
+                normalized[key] = result[key];
+            }
+        });
+
+        return createBuildYourPlanRecord(normalized, {
+            oldRecord: record,
+            journeyComplete: journeyComplete,
+            timestamp: record.updatedAt || record.lastReviewedAt || record.completedAt || now(),
+            reviewed: false
+        });
+    }
+
     function recordStatus(progress, phaseId) {
         if (!progress || !progress.records || typeof progress.records !== 'object') return '';
         var record = progress.records[phaseId];
         if (!record || typeof record !== 'object' || record.saved !== true) return '';
         if (record.planningRecordStatus) return record.planningRecordStatus;
         if (phaseId === 'social-security') return socialSecurityStatus(record);
+        if (phaseId === 'build-your-plan') return record.baseCaseAssessment || '';
         return '';
     }
 
@@ -158,6 +239,8 @@
         socialSecurityStatus: socialSecurityStatus,
         createSocialSecurityRecord: createSocialSecurityRecord,
         normalizeSocialSecurityRecord: normalizeSocialSecurityRecord,
+        createBuildYourPlanRecord: createBuildYourPlanRecord,
+        normalizeBuildYourPlanRecord: normalizeBuildYourPlanRecord,
         recordStatus: recordStatus
     };
 })();

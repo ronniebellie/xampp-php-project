@@ -99,11 +99,11 @@ $page_title = 'Your Retirement Planning Journey';
                         <span class="phase-status" data-journey-phase-status hidden></span>
                     </article>
 
-                    <article class="phase-card" id="build-your-plan" data-journey-phase="build-your-plan">
+                    <article class="phase-card is-available" id="build-your-plan" data-journey-phase="build-your-plan">
                         <span class="phase-number">3</span>
                         <h3>Build Your Plan</h3>
-                        <p>Combine income, withdrawals, taxes, and investment assumptions into a coordinated plan.</p>
-                        <span class="phase-status is-coming-soon" data-journey-phase-status>Coming soon</span>
+                        <p>See whether your retirement savings can support the lifestyle you’ve planned under your current assumptions.</p>
+                        <span class="phase-status" data-journey-phase-status hidden></span>
                     </article>
 
                     <article class="phase-card" id="stress-test" data-journey-phase="stress-test">

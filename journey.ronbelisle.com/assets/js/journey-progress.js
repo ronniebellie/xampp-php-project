@@ -3,7 +3,7 @@
     var phases = [
         { key: 'spending-goals', title: 'Spending & Goals', href: '/phases/spending-goals.php', available: true },
         { key: 'social-security', title: 'Social Security', href: '/phases/social-security.php', available: true },
-        { key: 'build-your-plan', title: 'Build Your Plan', href: '/#build-your-plan', available: false },
+        { key: 'build-your-plan', title: 'Build Your Plan', href: '/phases/build-your-plan.php', available: true },
         { key: 'stress-test', title: 'Stress Test', href: '/#stress-test', available: false },
         { key: 'tax-strategy', title: 'Tax Strategy', href: '/#tax-strategy', available: false },
         { key: 'survivor-legacy', title: 'Survivor & Legacy', href: '/#survivor-legacy', available: false }
