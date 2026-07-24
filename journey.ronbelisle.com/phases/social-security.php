@@ -248,11 +248,11 @@ $page_title = 'Social Security | Retirement Planning Journey';
                         </form>
 
                         <section class="phase-content-section" id="companion-section" aria-labelledby="companion-title">
-                            <h2 id="companion-title">Would one more calculator help?</h2>
+                            <h2 id="companion-title">Would another planning tool help?</h2>
                             <p>Answer these three questions. We’ll point you to no more than one additional calculator.</p>
 
                             <fieldset class="journey-fieldset">
-                                <legend>Do you expect to stop working several years before you claim Social Security?</legend>
+                                <legend>Do you expect to stop working several years before claiming Social Security?</legend>
                                 <p class="fieldset-help">If yes, the benefit estimate on your Social Security statement may be higher than the amount you eventually receive. We can help you estimate that difference.</p>
                                 <div class="inline-choices">
                                     <label class="choice-row"><input type="radio" name="earlyExitAnswer" value="yes"> <span>Yes</span></label>
@@ -262,7 +262,7 @@ $page_title = 'Social Security | Retirement Planning Journey';
                             </fieldset>
 
                             <fieldset class="journey-fieldset">
-                                <legend>Would you like to see how one spouse’s death could change the Social Security income left for the survivor?</legend>
+                                <legend>Would you like to understand how the death of a spouse could affect the survivor’s Social Security income?</legend>
                                 <div class="inline-choices">
                                     <label class="choice-row"><input type="radio" name="survivorAnswer" value="yes"> <span>Yes</span></label>
                                     <label class="choice-row"><input type="radio" name="survivorAnswer" value="no"> <span>No</span></label>
@@ -271,7 +271,7 @@ $page_title = 'Social Security | Retirement Planning Journey';
                             </fieldset>
 
                             <fieldset class="journey-fieldset">
-                                <legend>Would you like to see how much spending remains after Social Security and other dependable income?</legend>
+                                <legend>Would you like help estimating how much of your retirement spending will still need to come from your investments?</legend>
                                 <div class="inline-choices">
                                     <label class="choice-row"><input type="radio" name="spendingGapAnswer" value="yes"> <span>Yes</span></label>
                                     <label class="choice-row"><input type="radio" name="spendingGapAnswer" value="no"> <span>No</span></label>
