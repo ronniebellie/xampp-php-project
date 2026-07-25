@@ -33,6 +33,38 @@
         difficult: 'Looks difficult on these assumptions'
     };
 
+    // Visitor-facing presentation copy only — does not affect issue selection.
+    var ISSUE_COPY = {
+        tax_deferred_pressure: {
+            title: 'Your plan may rely heavily on tax-deferred withdrawals.',
+            body: 'Much of what you take from Traditional IRAs or 401(k)s may count as taxable income, so the gross Phase 3 picture may overstate spendable cash.'
+        },
+        gross_vs_spendable: {
+            title: 'Taxes may require larger withdrawals than your spending goal alone suggests.',
+            body: 'If withdrawals are taxable, you may need to withdraw more than your spending goal in order to have enough after taxes.'
+        },
+        rmd_attention: {
+            title: 'Required minimum distributions deserve attention.',
+            body: 'Required withdrawals can increase taxable income even if your spending needs don’t change.'
+        },
+        roth_review: {
+            title: 'Roth planning may be worth a closer look.',
+            body: 'When tax-deferred savings do much of the work as required withdrawals approach, reviewing Roth options later may be useful. This is not a recommendation to convert.'
+        },
+        ss_income_interaction: {
+            title: 'Social Security and other income may interact with withdrawals.',
+            body: 'Looking at those pieces together may help before you rely on the withdrawal plan.'
+        },
+        account_mix_unclear: {
+            title: 'Confirm how your retirement savings are divided among account types.',
+            body: 'Traditional, Roth, and taxable accounts can affect taxable income differently. Confirming your mix would make future tax-planning decisions more useful.'
+        },
+        none_dominant: {
+            title: 'No single tax issue stands out strongly from these answers.',
+            body: 'An annual review may be enough for now. Revisit this when balances, Social Security, or tax rules change.'
+        }
+    };
+
     function $(id) {
         return document.getElementById(id);
     }
@@ -235,11 +267,68 @@
         $('savePriorityBtn').disabled = true;
     }
 
+    function issuePresentation(id, result) {
+        var copy = ISSUE_COPY[id] || ISSUE_COPY.none_dominant;
+        var title = copy.title;
+        var body = copy.body;
+        // Prefer the timing-specific RMD note as the priority title when RMD is featured.
+        if (id === 'rmd_attention' && result && result.rmdNote && result.rmdNote.text) {
+            title = result.rmdNote.text;
+            body = ISSUE_COPY.rmd_attention.body;
+        }
+        return { id: id, title: title, body: body };
+    }
+
+    function renderMainIssues(result) {
+        var host = $('mainIssueList');
+        var eyebrow = $('mainIssueEyebrow');
+        var live = $('mainIssueLive');
+        host.innerHTML = '';
+
+        var mode = result.pressureMode;
+        var ids = result.mainIssueIds || [];
+        var items = [];
+
+        if (mode === 'none' || (ids.length === 1 && ids[0] === 'none_dominant')) {
+            eyebrow.textContent = 'Main tax-planning priority';
+            items = [issuePresentation('none_dominant', result)];
+        } else if (mode === 'tied' && ids.length >= 2) {
+            eyebrow.textContent = 'Main tax-planning priorities';
+            items = [
+                issuePresentation(ids[0], result),
+                issuePresentation(ids[1], result)
+            ];
+        } else {
+            eyebrow.textContent = 'Main tax-planning priority';
+            items = [issuePresentation(ids[0] || 'none_dominant', result)];
+        }
+
+        items.forEach(function (item) {
+            var title = document.createElement('p');
+            title.innerHTML = '<strong>' + item.title + '</strong>';
+            var body = document.createElement('p');
+            body.className = 'supporting-note';
+            body.textContent = item.body;
+            host.appendChild(title);
+            host.appendChild(body);
+        });
+
+        live.textContent = eyebrow.textContent + '. ' +
+            items.map(function (item) { return item.title + ' ' + item.body; }).join(' ');
+
+        // Keep a readable summary on the result object for save/reload display.
+        result.displayMainIssueSummary = items.map(function (item) { return item.title; }).join(' ');
+        result.displayWhatThisMeans = items.map(function (item) { return item.body; }).join(' ');
+        return items;
+    }
+
     function showResults(result) {
-        $('mainIssueStatement').textContent = result.mainIssueStatement;
-        $('whatThisMeans').textContent = result.whatThisMeans;
+        renderMainIssues(result);
         $('taxDragGuidance').textContent = result.taxDragGuidance.text;
         $('rmdNote').textContent = result.rmdNote.text;
+        // When RMD is already shown as a main priority title, avoid repeating the same sentence below.
+        var rmdAsPriority = (result.mainIssueIds || []).indexOf('rmd_attention') !== -1;
+        $('rmdNote').hidden = rmdAsPriority;
         var roth = $('rothSignal');
         if (result.rothReviewFlag && result.rothReviewText) {
             roth.textContent = result.rothReviewText;
@@ -308,8 +397,8 @@
             result: {
                 pressureMode: result.pressureMode,
                 mainIssueIds: result.mainIssueIds.slice(),
-                mainIssueStatement: result.mainIssueStatement,
-                whatThisMeans: result.whatThisMeans,
+                mainIssueStatement: result.displayMainIssueSummary || result.mainIssueStatement,
+                whatThisMeans: result.displayWhatThisMeans || result.whatThisMeans,
                 taxDragGuidance: result.taxDragGuidance,
                 rmdNote: result.rmdNote,
                 rothReviewFlag: result.rothReviewFlag === true,
@@ -353,11 +442,27 @@
 
     function renderSavedSummary(record) {
         var el = $('savedReviewSummary');
-        var issue = (record.result && record.result.mainIssueStatement) || '';
+        var result = record.result || {};
+        var ids = result.mainIssueIds || record.mainIssueIds || [];
+        var issueHtml = '';
+        if (ids.length && !(ids.length === 1 && ids[0] === 'none_dominant')) {
+            var mode = result.pressureMode || (ids.length > 1 ? 'tied' : 'single');
+            var heading = mode === 'tied' ? 'Main tax-planning priorities' : 'Main tax-planning priority';
+            issueHtml = '<p class="eyebrow">' + heading + '</p>';
+            ids.slice(0, 2).forEach(function (id) {
+                var item = issuePresentation(id, result);
+                issueHtml += '<p><strong>' + item.title + '</strong></p><p>' + item.body + '</p>';
+            });
+        } else {
+            var noneItem = issuePresentation('none_dominant', result);
+            issueHtml = '<p class="eyebrow">Main tax-planning priority</p>' +
+                '<p><strong>' + (result.mainIssueStatement || noneItem.title) + '</strong></p>' +
+                '<p>' + (result.whatThisMeans || noneItem.body) + '</p>';
+        }
         var priority = record.nextPriorityLabel
             ? (' Priority carried forward: ' + record.nextPriorityLabel + '.')
             : '';
-        el.innerHTML = '<p><strong>' + issue + '</strong></p>' +
+        el.innerHTML = issueHtml +
             '<p>' + (record.decisionStatement || '') + '</p>' +
             '<p class="supporting-note">' + (record.companionExplanation || '') + priority + '</p>';
     }

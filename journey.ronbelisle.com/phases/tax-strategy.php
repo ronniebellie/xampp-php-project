@@ -169,10 +169,10 @@ $page_title = 'Tax Strategy | Retirement Planning Journey';
                             <h2 id="tax-results-title" tabindex="-1">Your tax picture</h2>
                             <p class="supporting-note" id="resultsStaleNote" hidden>Your answers changed after this review. Run Review My Tax Picture again before saving.</p>
 
-                            <div class="assumption-statement">
-                                <p class="eyebrow">Main issue</p>
-                                <p><strong id="mainIssueStatement" aria-live="polite">—</strong></p>
-                                <p id="whatThisMeans"></p>
+                            <div class="assumption-statement" id="mainIssueBlock">
+                                <p class="eyebrow" id="mainIssueEyebrow">Main tax-planning priority</p>
+                                <div id="mainIssueList"></div>
+                                <p id="mainIssueLive" class="visually-hidden" aria-live="polite"></p>
                             </div>
 
                             <div class="coach-response" id="taxDragBlock">
@@ -236,8 +236,8 @@ $page_title = 'Tax Strategy | Retirement Planning Journey';
         </section>
     </main>
 
-    <script src="/assets/js/phase5-tax-engine.js?v=20260725-phase5" defer></script>
-    <script src="/assets/js/phase5-priorities.js?v=20260725-phase5" defer></script>
-    <script src="/assets/js/tax-strategy-phase.js?v=20260725-phase5" defer></script>
+    <script src="/assets/js/phase5-tax-engine.js?v=20260725-phase5-copy" defer></script>
+    <script src="/assets/js/phase5-priorities.js?v=20260725-phase5-copy" defer></script>
+    <script src="/assets/js/tax-strategy-phase.js?v=20260725-phase5-copy" defer></script>
 </body>
 </html>
