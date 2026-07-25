@@ -15,8 +15,8 @@ rb_define('STRIPE_PRICE_ANNUAL', $stripe['price_annual'] ?? rb_env('RB_STRIPE_PR
 rb_define('CALCFORADVISORS_PRICE_MONTHLY', $stripe['calcforadvisors_price_monthly'] ?? rb_env('RB_CALCFORADVISORS_PRICE_MONTHLY'));
 rb_define('CALCFORADVISORS_PRICE_ANNUAL', $stripe['calcforadvisors_price_annual'] ?? rb_env('RB_CALCFORADVISORS_PRICE_ANNUAL'));
 
-// Journey Premium Price/Product IDs (placeholders until product-approved Stripe catalog exists).
-// Prefer RB_JOURNEY_* env keys; bare JOURNEY_* names are also accepted for local clarity.
+// Journey Premium Price/Product IDs from /etc/ronbelisle/config.php (or env).
+// Prefer stripe.journey_* config keys; RB_JOURNEY_* / JOURNEY_* env fallbacks also accepted.
 rb_define(
     'JOURNEY_STRIPE_PRODUCT_ID',
     $stripe['journey_product_id']

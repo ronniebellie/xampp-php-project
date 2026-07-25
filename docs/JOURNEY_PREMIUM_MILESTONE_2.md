@@ -54,7 +54,7 @@ CFA remains on `https://calcforadvisors.com/stripe-webhook.php` until a future c
 
 No secrets or live Price IDs are committed in git.
 
-Until Journey Price IDs are configured, the endpoint verifies signatures (when a signing secret exists) and **ignores non-Journey Prices** without writing Journey entitlement rows.
+Production Journey Product/Price IDs are installed in `/etc/ronbelisle/config.php` (see `docs/JOURNEY_PREMIUM_CATALOG_CONFIG.md`). Checkout and Dashboard webhook registration remain deferred. Unknown / non-Journey Prices are still ignored for Journey entitlement writes.
 
 ---
 
