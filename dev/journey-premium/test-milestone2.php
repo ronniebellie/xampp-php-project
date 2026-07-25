@@ -45,10 +45,20 @@ if (!defined('CALCFORADVISORS_PRICE_ANNUAL')) {
 
 expect2('journey monthly routes', journey_classify_price_id('price_journey_monthly_fixture') === 'journey');
 expect2('journey annual routes', journey_classify_price_id('price_journey_annual_fixture') === 'journey');
-expect2('consumer rejected for journey', journey_classify_price_id('price_consumer_monthly_fixture') === 'consumer');
-expect2('cfa rejected for journey', journey_classify_price_id('price_cfa_monthly_fixture') === 'cfa');
+expect2(
+    'configured consumer price classifies consumer',
+    journey_classify_price_id(defined('STRIPE_PRICE_MONTHLY') ? (string) STRIPE_PRICE_MONTHLY : 'price_consumer_monthly_fixture') === 'consumer'
+);
+expect2(
+    'configured cfa price classifies cfa',
+    journey_classify_price_id(defined('CALCFORADVISORS_PRICE_MONTHLY') ? (string) CALCFORADVISORS_PRICE_MONTHLY : 'price_cfa_monthly_fixture') === 'cfa'
+);
 expect2('unknown price', journey_classify_price_id('price_unknown_xyz') === 'unknown');
 expect2('metadata alone cannot classify', journey_classify_price_id(null) === 'unknown');
+expect2(
+    'non-journey fixture is not journey',
+    journey_classify_price_id('price_consumer_monthly_fixture') !== 'journey'
+);
 
 $now = 1_700_000_000;
 $future = $now + 86400 * 14;
@@ -81,7 +91,8 @@ function makeSub(array $over): array
             ],
         ],
     ];
-    return array_replace_recursive($base, $over);
+    // Top-level replace (not recursive) so empty metadata/items fully override defaults.
+    return array_merge($base, $over);
 }
 
 $eval = journey_evaluate_subscription_entitlement(makeSub(['status' => 'trialing', 'trial_end' => $future]), $now);
@@ -174,9 +185,15 @@ try {
         expect2('unknown price no row', $cnt === 0);
 
         // Consumer / CFA prices do not create journey rows
+        $consumerPrice = defined('STRIPE_PRICE_MONTHLY') && STRIPE_PRICE_MONTHLY !== ''
+            ? (string) STRIPE_PRICE_MONTHLY
+            : 'price_consumer_monthly_fixture';
+        $cfaPrice = defined('CALCFORADVISORS_PRICE_MONTHLY') && CALCFORADVISORS_PRICE_MONTHLY !== ''
+            ? (string) CALCFORADVISORS_PRICE_MONTHLY
+            : 'price_cfa_monthly_fixture';
         foreach ([
-            ['sub_m2_consumer', 'price_consumer_monthly_fixture'],
-            ['sub_m2_cfa', 'price_cfa_monthly_fixture'],
+            ['sub_m2_consumer', $consumerPrice],
+            ['sub_m2_cfa', $cfaPrice],
         ] as $pair) {
             $s = makeSub([
                 'id' => $pair[0],
@@ -184,7 +201,7 @@ try {
                 'metadata' => ['user_id' => (string) $uid],
             ]);
             $r = journey_sync_subscription_row($conn, $s, $uid, $now, $now);
-            expect2($pair[0] . ' ignored', ($r['reason'] ?? '') === 'ignored_non_journey_price');
+            expect2($pair[0] . ' ignored', ($r['reason'] ?? '') === 'ignored_non_journey_price', json_encode($r));
         }
 
         // Journey sync + upsert
