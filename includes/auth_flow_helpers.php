@@ -73,9 +73,35 @@ if (!function_exists('rb_auth_set_trial_intent')) {
     }
 }
 
+if (!function_exists('rb_auth_set_journey_trial_intent')) {
+    function rb_auth_set_journey_trial_intent(): void
+    {
+        $_SESSION['auth_intent'] = 'journey_trial';
+    }
+}
+
+if (!function_exists('rb_auth_is_journey_trial_intent')) {
+    function rb_auth_is_journey_trial_intent(): bool
+    {
+        if (($_GET['intent'] ?? '') === 'journey_trial') {
+            return true;
+        }
+        if (($_SESSION['auth_intent'] ?? '') === 'journey_trial') {
+            return true;
+        }
+        $after = rb_auth_safe_redirect_path($_SESSION['redirect_after_login'] ?? '');
+        return strpos($after, '/premium/journey') === 0;
+    }
+}
+
 if (!function_exists('rb_auth_is_trial_intent')) {
     function rb_auth_is_trial_intent(): bool
     {
+        // Calculator Premium trial only — never Journey.
+        if (($_GET['intent'] ?? '') === 'journey_trial' || ($_SESSION['auth_intent'] ?? '') === 'journey_trial') {
+            return false;
+        }
+
         if (($_GET['intent'] ?? '') === 'trial') {
             return true;
         }
@@ -91,6 +117,10 @@ if (!function_exists('rb_auth_is_trial_intent')) {
 if (!function_exists('rb_auth_capture_trial_intent_from_request')) {
     function rb_auth_capture_trial_intent_from_request(): void
     {
+        if (($_GET['intent'] ?? '') === 'journey_trial') {
+            rb_auth_set_journey_trial_intent();
+            return;
+        }
         if (($_GET['intent'] ?? '') === 'trial') {
             rb_auth_set_trial_intent();
         }
@@ -101,7 +131,8 @@ if (!function_exists('rb_auth_capture_return_from_request')) {
     /**
      * Capture ?return= for post-auth redirects.
      * Free-account returns go to redirect_after_login.
-     * Trial returns are stored as redirect_after_premium so subscribe/checkout still runs first.
+     * Calculator trial returns are stored as redirect_after_premium so subscribe/checkout still runs first.
+     * Journey trial returns to /premium/journey.php first; absolute Journey host returns kept for after success.
      */
     function rb_auth_capture_return_from_request(): void
     {
@@ -111,6 +142,18 @@ if (!function_exists('rb_auth_capture_return_from_request')) {
 
         $safe = rb_auth_safe_redirect_target((string) $_GET['return']);
         if ($safe === '/') {
+            return;
+        }
+
+        if (rb_auth_is_journey_trial_intent()) {
+            if (strpos($safe, 'https://journey.ronbelisle.com') === 0) {
+                $_SESSION['redirect_after_premium'] = $safe;
+                if (empty($_SESSION['redirect_after_login'])) {
+                    $_SESSION['redirect_after_login'] = '/premium/journey.php';
+                }
+                return;
+            }
+            $_SESSION['redirect_after_login'] = rb_auth_safe_redirect_path($safe);
             return;
         }
 
@@ -127,6 +170,12 @@ if (!function_exists('rb_auth_redirect_to_login')) {
     function rb_auth_redirect_to_login(string $return_path, ?string $intent = null): void
     {
         $_SESSION['redirect_after_login'] = rb_auth_safe_redirect_path($return_path);
+
+        if ($intent === 'journey_trial') {
+            rb_auth_set_journey_trial_intent();
+            header('Location: /auth/register.php?intent=journey_trial');
+            exit;
+        }
 
         if ($intent === 'trial') {
             rb_auth_set_trial_intent();
@@ -169,6 +218,8 @@ if (!function_exists('rb_auth_redirect_after_auth')) {
         if (isset($_SESSION['redirect_after_login'])) {
             $redirect = rb_auth_safe_redirect_target((string) $_SESSION['redirect_after_login']);
             unset($_SESSION['redirect_after_login']);
+        } elseif (rb_auth_is_journey_trial_intent()) {
+            $redirect = '/premium/journey.php';
         } elseif (rb_auth_is_trial_intent()) {
             $redirect = '/subscribe.php';
         } else {
@@ -208,6 +259,9 @@ if (!function_exists('rb_auth_peek_premium_return')) {
 if (!function_exists('rb_auth_intent_query')) {
     function rb_auth_intent_query(): string
     {
+        if (rb_auth_is_journey_trial_intent()) {
+            return '?intent=journey_trial';
+        }
         return rb_auth_is_trial_intent() ? '?intent=trial' : '';
     }
 }
@@ -219,7 +273,9 @@ if (!function_exists('rb_auth_companion_query')) {
     function rb_auth_companion_query(): string
     {
         $parts = [];
-        if (rb_auth_is_trial_intent()) {
+        if (rb_auth_is_journey_trial_intent()) {
+            $parts[] = 'intent=journey_trial';
+        } elseif (rb_auth_is_trial_intent()) {
             $parts[] = 'intent=trial';
         }
 
@@ -228,7 +284,8 @@ if (!function_exists('rb_auth_companion_query')) {
             $return = rb_auth_safe_redirect_target((string) $_SESSION['redirect_after_premium']);
         } elseif (!empty($_SESSION['redirect_after_login'])) {
             $candidate = rb_auth_safe_redirect_target((string) $_SESSION['redirect_after_login']);
-            if (strpos($candidate, 'https://journey.ronbelisle.com') === 0) {
+            if (strpos($candidate, 'https://journey.ronbelisle.com') === 0
+                || strpos($candidate, '/premium/journey') === 0) {
                 $return = $candidate;
             }
         }

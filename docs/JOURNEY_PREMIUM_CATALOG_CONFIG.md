@@ -1,8 +1,9 @@
 # Journey Premium — Stripe Catalog Configuration
 
-**Status:** Production Product/Price IDs installed in server config (Checkout not enabled)  
-**Date:** 2026-07-25  
+**Status:** Production Product/Price IDs installed; Milestone 3 review-only Checkout uses these IDs
+**Date:** 2026-07-25
 **Depends on:** Milestone 1 helpers, Milestone 2 Price-ID routing
+**Checkout:** See `docs/JOURNEY_PREMIUM_MILESTONE_3.md` (not linked from public Journey yet)
 
 ---
 

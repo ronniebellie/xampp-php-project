@@ -1,10 +1,10 @@
 # Journey Premium — Implementation Plan
 
-**Status:** Approved; M1 complete; M2 webhook sync implemented (Dashboard registration still manual); production Journey Product/Price IDs installed in `/etc/ronbelisle/config.php` (Checkout not enabled — see `docs/JOURNEY_PREMIUM_CATALOG_CONFIG.md`)
+**Status:** Approved; M1–M3 complete for review-only Checkout; public invitations and Dashboard webhook registration still deferred. Catalog: `docs/JOURNEY_PREMIUM_CATALOG_CONFIG.md`.
 **Primary sources:** `docs/JOURNEY_PREMIUM_ARCHITECTURE_AUDIT.md`, `journey.ronbelisle.com/docs/FREE_TO_PREMIUM_TRANSITION.md`
 **Date:** 2026-07-25
 **Product:** Retirement Planning Journey Premium (`journey.ronbelisle.com`) extending ronbelisle.com consumer auth + shared Stripe account
-**Milestone docs:** `docs/JOURNEY_PREMIUM_MILESTONE_1.md`, `docs/JOURNEY_PREMIUM_MILESTONE_2.md`
+**Milestone docs:** `docs/JOURNEY_PREMIUM_MILESTONE_1.md`, `docs/JOURNEY_PREMIUM_MILESTONE_2.md`, `docs/JOURNEY_PREMIUM_MILESTONE_3.md`
 
 > Later milestones still require explicit approval before coding.
 > Do **not** create Stripe Products/Prices or register live webhooks without ops/product approval.
