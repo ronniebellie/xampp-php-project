@@ -272,6 +272,69 @@
         });
     }
 
+    var taxIssueStatusLabels = {
+        tax_deferred_pressure: 'Tax-deferred withdrawal pressure',
+        gross_vs_spendable: 'Gross vs spendable withdrawals',
+        rmd_attention: 'RMD attention',
+        roth_review: 'Roth planning review',
+        ss_income_interaction: 'Social Security income interaction',
+        account_mix_unclear: 'Account mix unclear',
+        none_dominant: 'No single tax issue stood out'
+    };
+
+    function createTaxStrategyRecord(record, options) {
+        var settings = options || {};
+        var oldRecord = settings.oldRecord || {};
+        var timestamp = settings.timestamp || now();
+        var complete = settings.journeyComplete === true;
+        var saved = record.saved === true;
+        var firstCreated = oldRecord.createdAt || oldRecord.completedAt || (saved ? timestamp : '');
+        var primaryIssue = '';
+        if (record.result && Array.isArray(record.result.mainIssueIds) && record.result.mainIssueIds.length) {
+            primaryIssue = record.result.mainIssueIds[0];
+        } else if (Array.isArray(record.mainIssueIds) && record.mainIssueIds.length) {
+            primaryIssue = record.mainIssueIds[0];
+        }
+
+        return Object.assign({}, record, {
+            phaseId: 'tax-strategy',
+            schemaVersion: schemaVersion,
+            journeyCompletionStatus: complete ? 'completed' : 'incomplete',
+            planningRecordStatus: primaryIssue || oldRecord.planningRecordStatus || '',
+            decisionStatement: record.decisionStatement ||
+                'This is the tax-planning priority I want to carry forward before I rely on my withdrawal plan.',
+            companionExplanation: record.companionExplanation ||
+                'I’ve reviewed how taxes may affect my Phase 3 plan. I’m carrying forward one priority to revisit, not a finished tax strategy.',
+            educationalNonAdvice: record.educationalNonAdvice !== false,
+            notAFinishedTaxStrategy: record.notAFinishedTaxStrategy !== false,
+            source: {
+                type: 'journey-native',
+                toolId: 'tax-strategy',
+                name: 'Tax Strategy',
+                url: '/phases/tax-strategy.php'
+            },
+            createdAt: firstCreated,
+            updatedAt: saved ? timestamp : (oldRecord.updatedAt || ''),
+            lastReviewedAt: settings.reviewed === true ? timestamp : (oldRecord.lastReviewedAt || ''),
+            downstreamReady: saved === true && !!primaryIssue,
+            downstreamMappings: {
+                phase: 'survivor-legacy',
+                tool: 'journey-native-phase-6',
+                fields: {}
+            }
+        });
+    }
+
+    function normalizeTaxStrategyRecord(record, journeyComplete) {
+        if (!record || typeof record !== 'object') return {};
+        return createTaxStrategyRecord(Object.assign({}, record), {
+            oldRecord: record,
+            journeyComplete: journeyComplete,
+            timestamp: record.updatedAt || record.lastReviewedAt || record.completedAt || now(),
+            reviewed: false
+        });
+    }
+
     function recordStatus(progress, phaseId) {
         if (!progress || !progress.records || typeof progress.records !== 'object') return '';
         var record = progress.records[phaseId];
@@ -280,12 +343,21 @@
             if (phaseId === 'stress-test') {
                 return stressStatusLabels[record.planningRecordStatus] || record.planningRecordStatus;
             }
+            if (phaseId === 'tax-strategy') {
+                return taxIssueStatusLabels[record.planningRecordStatus] || record.planningRecordStatus;
+            }
             return record.planningRecordStatus;
         }
         if (phaseId === 'social-security') return socialSecurityStatus(record);
         if (phaseId === 'build-your-plan') return record.baseCaseAssessment || '';
         if (phaseId === 'stress-test') {
             return stressStatusLabels[record.overallResilienceCode] || record.overallResilienceCode || '';
+        }
+        if (phaseId === 'tax-strategy') {
+            var ids = record.result && record.result.mainIssueIds;
+            if (ids && ids.length) {
+                return taxIssueStatusLabels[ids[0]] || ids[0];
+            }
         }
         return '';
     }
@@ -294,7 +366,7 @@
         schemaVersion: schemaVersion,
         statusLabels: statusLabels,
         statusLabel: function (status) {
-            return statusLabels[status] || stressStatusLabels[status] || '';
+            return statusLabels[status] || stressStatusLabels[status] || taxIssueStatusLabels[status] || '';
         },
         socialSecurityStatus: socialSecurityStatus,
         createSocialSecurityRecord: createSocialSecurityRecord,
@@ -303,6 +375,8 @@
         normalizeBuildYourPlanRecord: normalizeBuildYourPlanRecord,
         createStressTestRecord: createStressTestRecord,
         normalizeStressTestRecord: normalizeStressTestRecord,
+        createTaxStrategyRecord: createTaxStrategyRecord,
+        normalizeTaxStrategyRecord: normalizeTaxStrategyRecord,
         recordStatus: recordStatus
     };
 })();

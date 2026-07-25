@@ -1813,3 +1813,48 @@ h1 {
         animation: none !important;
     }
 }
+
+/* Phase 5 Tax Strategy */
+.tax-character-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.tax-character-list li {
+    margin: 0 0 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--line, #d9d2c5);
+    border-radius: 6px;
+}
+
+.tax-character-list strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.tax-character-list span {
+    color: var(--muted, #5c564c);
+}
+
+.tax-results .assumption-statement {
+    margin-bottom: 16px;
+}
+
+.inline-error {
+    color: #8a2f2f;
+    margin: 0 0 12px;
+}
+
+@media (max-width: 700px) {
+    .tax-character-list li {
+        padding: 12px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tax-results {
+        transition: none !important;
+        animation: none !important;
+    }
+}
