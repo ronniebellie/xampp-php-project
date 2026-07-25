@@ -1,0 +1,9 @@
+{
+  "_comment": "Copy to plan-g.local.json (gitignored). Paste actual Phase 3 values for a private Hybrid Round 2 run. Do not commit plan-g.local.json.",
+  "monthlySpending": null,
+  "monthlySocialSecurity": null,
+  "monthlyOtherIncome": null,
+  "monthlyFromSavings": null,
+  "savingsBalance": null,
+  "notes": "monthlyFromSavings is optional — if omitted, computed as max(0, spending − SS − other)."
+}

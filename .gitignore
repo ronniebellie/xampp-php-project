@@ -13,3 +13,9 @@ includes/db_config.php.DS_Store
 
 # Personal finance utility; kept local, not part of the public site
 tools/fidelity_cma_to_ynab.py
+
+# Cursor IDE local rules/state — never commit
+.cursor/
+
+# Phase 4 calibration — private Plan G Phase 3 values (never commit)
+journey.ronbelisle.com/dev/phase-4-calibration/plan-g.local.json
