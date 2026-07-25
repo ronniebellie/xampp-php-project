@@ -47,13 +47,18 @@ Expect:
 
 ## Production
 
-**Do not apply in production until explicitly approved.**
+**Status: applied** on production database `ronbelisle_premium` at **2026-07-25T22:39:23Z**.
 
-Code deploy for Milestone 1 may ship without the production migration. Helpers degrade safely when tables are absent (Checkout/webhook handlers are not live yet).
+Pre-migration backup (server):
 
-When approved:
+`/var/backups/ronbelisle-mysql/ronbelisle_premium_pre_journey_m1_20260725T223910Z.sql.gz`
 
-1. Backup production DB.
-2. Apply `20260725_001_journey_premium_m1_up.sql` via the normal ops mysql path.
-3. Run the verify SQL above.
-4. Record approval / operator / timestamp in the deploy notes.
+Verified after apply:
+
+- Tables `user_product_subscriptions`, `stripe_webhook_events`, and `schema_migrations` exist
+- `schema_migrations` contains `20260725_001_journey_premium_m1`
+- Legacy `users.subscription_status` distribution unchanged
+- `calcforadvisors_subscribers` row count unchanged
+- No persistent fabricated Journey subscription or webhook rows left after verification
+
+Code deploy for Milestone 1 may ship without the production migration on other environments. Helpers degrade safely when tables are absent (Checkout/webhook handlers are not live yet).
