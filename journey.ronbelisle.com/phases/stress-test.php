@@ -133,9 +133,11 @@ $page_title = 'Stress Test | Retirement Planning Journey';
 
                             <section class="phase-content-section" aria-labelledby="next-title" id="phase5Handoff" hidden>
                                 <h3 id="next-title">What’s next</h3>
-                                <p>You’ve reviewed how sensitive your plan may be to markets and longevity. Phase 5 will examine how taxes may affect the same retirement income and withdrawal plan.</p>
-                                <p class="supporting-note">Phase 5 is not available yet.</p>
-                                <a class="secondary-action" href="/">Return to My Journey</a>
+                                <p>You’ve reviewed how sensitive your plan may be to markets and longevity. Phase 5 examines how taxes may affect the same retirement income and withdrawal plan.</p>
+                                <div class="phase-actions">
+                                    <a class="primary-action" href="/phases/tax-strategy.php">Continue to Phase 5</a>
+                                    <a class="secondary-action" href="/">Return to My Journey</a>
+                                </div>
                             </section>
                         </section>
 
@@ -144,6 +146,7 @@ $page_title = 'Stress Test | Retirement Planning Journey';
                             <div class="assumption-statement" id="savedReviewSummary"></div>
                             <div class="phase-actions">
                                 <button type="button" class="secondary-action journey-button" id="retestBtn">Test My Plan Again</button>
+                                <a class="primary-action" href="/phases/tax-strategy.php">Continue to Phase 5</a>
                                 <a class="secondary-action" href="/">Return to My Journey</a>
                             </div>
                         </section>

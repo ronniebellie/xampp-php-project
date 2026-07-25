@@ -5,14 +5,28 @@
         { key: 'social-security', title: 'Social Security', href: '/phases/social-security.php', available: true },
         { key: 'build-your-plan', title: 'Build Your Plan', href: '/phases/build-your-plan.php', available: true },
         { key: 'stress-test', title: 'Stress Test', href: '/phases/stress-test.php', available: true },
-        { key: 'tax-strategy', title: 'Tax Strategy', href: '/#tax-strategy', available: false },
-        { key: 'survivor-legacy', title: 'Survivor & Legacy', href: '/#survivor-legacy', available: false }
+        { key: 'tax-strategy', title: 'Tax Strategy', href: '/phases/tax-strategy.php', available: true },
+        { key: 'survivor-planning', title: 'Survivor Planning', href: '/phases/survivor-planning.php', available: true }
     ];
+
+    function migrateLegacyKeys(progress) {
+        if (!progress || typeof progress !== 'object') return progress;
+        // Safe fallback: Phase 6 was never publicly open under survivor-legacy,
+        // but migrate an unexpected old progress flag if present.
+        if (progress['survivor-legacy'] === true && progress['survivor-planning'] !== true) {
+            progress['survivor-planning'] = true;
+        }
+        if (progress.records && typeof progress.records === 'object' &&
+            progress.records['survivor-legacy'] && !progress.records['survivor-planning']) {
+            progress.records['survivor-planning'] = progress.records['survivor-legacy'];
+        }
+        return progress;
+    }
 
     function readProgress() {
         try {
             var parsed = JSON.parse(localStorage.getItem(storageKey) || '{}');
-            return parsed && typeof parsed === 'object' ? parsed : {};
+            return migrateLegacyKeys(parsed && typeof parsed === 'object' ? parsed : {});
         } catch (error) {
             return {};
         }
@@ -50,10 +64,17 @@
     function homepageCtaTarget(progress) {
         var started = hasJourneyData(progress);
         var recommended = recommendedAvailablePhase(progress);
+        var journeyComplete = completedPhases(progress).length === phases.length;
         if (!started) {
             return {
                 href: phases[0].href,
                 label: 'Begin Your Journey'
+            };
+        }
+        if (journeyComplete) {
+            return {
+                href: '/phases/build-your-plan.php',
+                label: 'Review Your Plan'
             };
         }
         if (recommended) {
@@ -139,12 +160,15 @@
         }
 
         if (recommendedLabel) {
-            recommendedLabel.textContent = recommended ? recommended.title : 'Review Social Security';
+            recommendedLabel.textContent = journeyComplete
+                ? 'Review your plan anytime'
+                : (recommended ? recommended.title : 'Review Social Security');
         }
 
         if (recommendedLink) {
-            recommendedLink.href = recommended ? recommended.href : lastAvailablePhase().href;
-            recommendedLink.textContent = 'Continue Your Journey';
+            var cta = homepageCtaTarget(progress);
+            recommendedLink.href = cta.href;
+            recommendedLink.textContent = cta.label;
         }
 
         if (context) {

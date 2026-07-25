@@ -7,9 +7,8 @@ $page_title = 'Survivor Planning | Retirement Planning Journey';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260725-phase6">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260725-phase6-open">
 </head>
 <body>
     <header class="site-header">
@@ -247,8 +246,8 @@ $page_title = 'Survivor Planning | Retirement Planning Journey';
         </section>
     </main>
 
-    <script src="/assets/js/phase6-survivor-engine.js?v=20260725-phase6" defer></script>
-    <script src="/assets/js/phase6-priorities.js?v=20260725-phase6" defer></script>
-    <script src="/assets/js/survivor-planning-phase.js?v=20260725-phase6" defer></script>
+    <script src="/assets/js/phase6-survivor-engine.js?v=20260725-phase6-open" defer></script>
+    <script src="/assets/js/phase6-priorities.js?v=20260725-phase6-open" defer></script>
+    <script src="/assets/js/survivor-planning-phase.js?v=20260725-phase6-open" defer></script>
 </body>
 </html>

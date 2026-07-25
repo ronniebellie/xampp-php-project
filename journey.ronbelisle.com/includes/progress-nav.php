@@ -32,15 +32,15 @@ $journey_phases = [
         'key' => 'tax-strategy',
         'number' => '5',
         'title' => 'Tax Strategy',
-        'href' => '/#tax-strategy',
-        'status' => 'planned',
+        'href' => '/phases/tax-strategy.php',
+        'status' => 'available',
     ],
     [
-        'key' => 'survivor-legacy',
+        'key' => 'survivor-planning',
         'number' => '6',
-        'title' => 'Survivor & Legacy',
-        'href' => '/#survivor-legacy',
-        'status' => 'planned',
+        'title' => 'Survivor Planning',
+        'href' => '/phases/survivor-planning.php',
+        'status' => 'available',
     ],
 ];
 
@@ -69,4 +69,4 @@ $active_phase = $active_phase ?? '';
     </ol>
 </nav>
 <script src="/assets/js/journey-records.js" defer></script>
-<script src="/assets/js/journey-progress.js?v=20260725-phase4-open" defer></script>
+<script src="/assets/js/journey-progress.js?v=20260725-phase6-open" defer></script>

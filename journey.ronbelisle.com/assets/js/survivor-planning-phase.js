@@ -424,7 +424,7 @@
         });
         progress.records = progress.records && typeof progress.records === 'object' ? progress.records : {};
         progress.records[recordKey] = record;
-        // Public nav remains closed — do not set progress['survivor-planning'] = true.
+        progress[recordKey] = true;
         writeProgress(progress);
         state.savedRecord = record;
         $('saveConfirm').hidden = false;

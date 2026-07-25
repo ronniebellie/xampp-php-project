@@ -433,6 +433,7 @@
             }
             renderSavedSummary(state.savedRecord);
             $('savedReviewSection').hidden = false;
+            $('phase5Handoff').hidden = false;
         }
 
         $('testMyPlanBtn').addEventListener('click', runTest);

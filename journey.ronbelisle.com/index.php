@@ -113,18 +113,20 @@ $page_title = 'Your Retirement Planning Journey';
                         <span class="phase-status" data-journey-phase-status hidden></span>
                     </article>
 
-                    <article class="phase-card" id="tax-strategy" data-journey-phase="tax-strategy">
+                    <article class="phase-card is-available" id="tax-strategy" data-journey-phase="tax-strategy">
                         <span class="phase-number">5</span>
                         <h3>Tax Strategy</h3>
-                        <p>Review Roth conversions, RMDs, taxable income timing, and tax-aware withdrawal choices.</p>
-                        <span class="phase-status is-coming-soon" data-journey-phase-status>Coming soon</span>
+                        <p>See how taxes may affect the retirement income plan you already built, then carry forward one issue to revisit.</p>
+                        <span class="phase-status" data-journey-phase-status hidden></span>
+                        <a href="/phases/tax-strategy.php">Open Tax Strategy</a>
                     </article>
 
-                    <article class="phase-card" id="survivor-legacy" data-journey-phase="survivor-legacy">
+                    <article class="phase-card is-available" id="survivor-planning" data-journey-phase="survivor-planning">
                         <span class="phase-number">6</span>
-                        <h3>Survivor &amp; Legacy</h3>
-                        <p>Consider survivor income, beneficiary planning, estate questions, and family protection.</p>
-                        <span class="phase-status is-coming-soon" data-journey-phase-status>Coming soon</span>
+                        <h3>Survivor Planning</h3>
+                        <p>See how the household income plan may change if one spouse dies, then carry forward one survivor-planning priority.</p>
+                        <span class="phase-status" data-journey-phase-status hidden></span>
+                        <a href="/phases/survivor-planning.php">Open Survivor Planning</a>
                     </article>
                 </div>
 

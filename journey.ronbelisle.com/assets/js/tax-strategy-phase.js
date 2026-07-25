@@ -429,8 +429,7 @@
         });
         progress.records = progress.records && typeof progress.records === 'object' ? progress.records : {};
         progress.records[recordKey] = record;
-        // Public nav remains closed — do not set progress['tax-strategy'] = true,
-        // which would surface Phase 5 completion on the homepage/progress UI.
+        progress[recordKey] = true;
         writeProgress(progress);
         state.savedRecord = record;
         $('saveConfirm').hidden = false;
@@ -510,6 +509,7 @@
             }
             renderSavedSummary(state.savedRecord);
             $('savedReviewSection').hidden = false;
+            $('phase6Handoff').hidden = false;
         }
 
         $('reviewTaxPictureBtn').addEventListener('click', runReview);

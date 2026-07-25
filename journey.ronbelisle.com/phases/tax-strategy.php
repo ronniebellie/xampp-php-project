@@ -7,9 +7,8 @@ $page_title = 'Tax Strategy | Retirement Planning Journey';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260725-phase5">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260725-phase6-open">
 </head>
 <body>
     <header class="site-header">
@@ -201,15 +200,16 @@ $page_title = 'Tax Strategy | Retirement Planning Journey';
                                 </div>
                                 <p class="supporting-note" id="saveConfirm" role="status" tabindex="-1" hidden>
                                     <strong>Your tax-planning priority is saved in this browser.</strong>
-                                    Phase 6 is not available yet.
                                 </p>
                             </section>
 
                             <section class="phase-content-section" aria-labelledby="next-title" id="phase6Handoff" hidden>
                                 <h3 id="next-title">What’s next</h3>
-                                <p>You have identified the tax-planning issue most important to your current retirement income plan. Phase 6 examines how that plan may change if one spouse dies and how income, beneficiaries, and legacy decisions carry forward.</p>
-                                <p class="supporting-note">Phase 6 is not available yet.</p>
-                                <a class="secondary-action" href="/">Return to My Journey</a>
+                                <p>You have identified the tax-planning issue most important to your current retirement income plan. Phase 6 examines how that plan may change if one spouse dies and what survivor-planning priority to carry forward.</p>
+                                <div class="phase-actions">
+                                    <a class="primary-action" href="/phases/survivor-planning.php">Continue to Phase 6</a>
+                                    <a class="secondary-action" href="/">Return to My Journey</a>
+                                </div>
                             </section>
                         </section>
 
@@ -218,6 +218,7 @@ $page_title = 'Tax Strategy | Retirement Planning Journey';
                             <div class="assumption-statement" id="savedReviewSummary"></div>
                             <div class="phase-actions">
                                 <button type="button" class="secondary-action journey-button" id="revisitBtn">Review My Tax Picture Again</button>
+                                <a class="primary-action" href="/phases/survivor-planning.php">Continue to Phase 6</a>
                                 <a class="secondary-action" href="/">Return to My Journey</a>
                             </div>
                         </section>
@@ -236,8 +237,8 @@ $page_title = 'Tax Strategy | Retirement Planning Journey';
         </section>
     </main>
 
-    <script src="/assets/js/phase5-tax-engine.js?v=20260725-phase5-copy" defer></script>
-    <script src="/assets/js/phase5-priorities.js?v=20260725-phase5-copy" defer></script>
-    <script src="/assets/js/tax-strategy-phase.js?v=20260725-phase5-copy" defer></script>
+    <script src="/assets/js/phase5-tax-engine.js?v=20260725-phase6-open" defer></script>
+    <script src="/assets/js/phase5-priorities.js?v=20260725-phase6-open" defer></script>
+    <script src="/assets/js/tax-strategy-phase.js?v=20260725-phase6-open" defer></script>
 </body>
 </html>
