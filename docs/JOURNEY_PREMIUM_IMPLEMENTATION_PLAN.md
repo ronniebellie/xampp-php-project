@@ -1,12 +1,13 @@
 # Journey Premium — Implementation Plan
 
-**Status:** Official engineering plan for review — **not approved for coding until checkpoints below are cleared**  
-**Primary sources:** `docs/JOURNEY_PREMIUM_ARCHITECTURE_AUDIT.md`, `journey.ronbelisle.com/docs/FREE_TO_PREMIUM_TRANSITION.md`  
-**Date:** 2026-07-25  
-**Product:** Retirement Planning Journey Premium (`journey.ronbelisle.com`) extending ronbelisle.com consumer auth + shared Stripe account  
+**Status:** Approved; Milestone 1 complete; Milestone 2 webhook sync implemented (Dashboard registration still manual)
+**Primary sources:** `docs/JOURNEY_PREMIUM_ARCHITECTURE_AUDIT.md`, `journey.ronbelisle.com/docs/FREE_TO_PREMIUM_TRANSITION.md`
+**Date:** 2026-07-25
+**Product:** Retirement Planning Journey Premium (`journey.ronbelisle.com`) extending ronbelisle.com consumer auth + shared Stripe account
+**Milestone docs:** `docs/JOURNEY_PREMIUM_MILESTONE_1.md`, `docs/JOURNEY_PREMIUM_MILESTONE_2.md`
 
-> Do **not** implement from this document until an implementation milestone is explicitly approved.  
-> Do **not** create Stripe Products/Prices, webhooks, schema, or application code from this plan alone.
+> Later milestones still require explicit approval before coding.
+> Do **not** create Stripe Products/Prices or register live webhooks without ops/product approval.
 
 ---
 

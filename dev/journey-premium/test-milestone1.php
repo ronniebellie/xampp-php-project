@@ -176,7 +176,11 @@ try {
         $first = journey_webhook_event_claim($conn, $eventId, 'customer.subscription.updated', $now, false);
         expect('webhook claim first', $first === 'claimed', $first . ' ' . $conn->error);
         $second = journey_webhook_event_claim($conn, $eventId, 'customer.subscription.updated', $now, false);
-        expect('webhook claim duplicate', $second === 'duplicate', $second);
+        expect(
+            'webhook claim duplicate idempotent',
+            in_array($second, ['duplicate', 'already_processed', 'in_progress'], true),
+            $second
+        );
         expect('webhook mark processed', journey_webhook_event_mark($conn, $eventId, 'processed'));
 
         $uid = 900001;

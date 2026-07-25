@@ -37,6 +37,13 @@ rb_define(
 );
 
 rb_define('STRIPE_WEBHOOK_SECRET', $stripe['webhook_secret'] ?? rb_env('RB_STRIPE_WEBHOOK_SECRET'));
+// Optional dedicated signing secret for /stripe/webhook.php; falls back to STRIPE_WEBHOOK_SECRET.
+rb_define(
+    'JOURNEY_STRIPE_WEBHOOK_SECRET',
+    $stripe['journey_webhook_secret']
+        ?? rb_env('RB_JOURNEY_STRIPE_WEBHOOK_SECRET')
+        ?? rb_env('JOURNEY_STRIPE_WEBHOOK_SECRET')
+);
 rb_define('CALCFORADVISORS_AUTH_SECRET', $stripe['calcforadvisors_auth_secret'] ?? rb_env('RB_CALCFORADVISORS_AUTH_SECRET'));
 
 rb_define('CALCFORADVISORS_BASE_URL', $stripe['calcforadvisors_base_url'] ?? rb_env('RB_CALCFORADVISORS_BASE_URL', 'https://calcforadvisors.com'));

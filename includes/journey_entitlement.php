@@ -21,10 +21,28 @@ require_once __DIR__ . '/stripe_config.php';
 const JOURNEY_PRODUCT_KEY = 'journey';
 
 /**
+ * Optional in-process Price ID overrides for tests (never used for production config).
+ * @var array{monthly?:string,annual?:string}|null
+ */
+$GLOBALS['_journey_price_id_overrides'] = $GLOBALS['_journey_price_id_overrides'] ?? null;
+
+/**
+ * @param array{monthly?:string,annual?:string}|null $overrides
+ */
+function journey_price_id_overrides_set(?array $overrides): void
+{
+    $GLOBALS['_journey_price_id_overrides'] = $overrides;
+}
+
+/**
  * Return configured Journey monthly Price ID, or empty string if unset.
  */
 function journey_stripe_monthly_price_id(): string
 {
+    $overrides = $GLOBALS['_journey_price_id_overrides'] ?? null;
+    if (is_array($overrides) && !empty($overrides['monthly'])) {
+        return (string) $overrides['monthly'];
+    }
     return defined('JOURNEY_STRIPE_MONTHLY_PRICE_ID') ? (string) JOURNEY_STRIPE_MONTHLY_PRICE_ID : '';
 }
 
@@ -33,6 +51,10 @@ function journey_stripe_monthly_price_id(): string
  */
 function journey_stripe_annual_price_id(): string
 {
+    $overrides = $GLOBALS['_journey_price_id_overrides'] ?? null;
+    if (is_array($overrides) && array_key_exists('annual', $overrides)) {
+        return (string) ($overrides['annual'] ?? '');
+    }
     return defined('JOURNEY_STRIPE_ANNUAL_PRICE_ID') ? (string) JOURNEY_STRIPE_ANNUAL_PRICE_ID : '';
 }
 
@@ -255,15 +277,19 @@ function journey_parse_time_value($value): ?int
 }
 
 /**
- * Insert a webhook event row for idempotency. Returns:
- * - 'claimed' when this caller should process the event
- * - 'duplicate' when stripe_event_id already exists
- * - 'error' on failure
+ * Insert / reclaim a webhook event row for idempotency.
  *
- * Milestone 1 foundation only; full product handlers arrive in Milestone 2.
+ * Returns:
+ * - claimed            — new row; caller should process
+ * - reclaimed          — prior failed row reset to processing; caller should process
+ * - already_processed  — successfully handled before; no-op
+ * - in_progress        — another worker holds received/processing; no-op (HTTP 200)
+ * - duplicate          — alias of already_processed/in_progress for older callers
+ * - error              — unexpected DB failure
  *
- * @param mysqli $conn
- * @return string claimed|duplicate|error
+ * Safe under MYSQLI_REPORT_STRICT (duplicate key does not escape as an uncaught throw).
+ *
+ * @return string claimed|reclaimed|already_processed|in_progress|duplicate|error
  */
 function journey_webhook_event_claim(
     mysqli $conn,
@@ -276,24 +302,85 @@ function journey_webhook_event_claim(
         return 'error';
     }
 
-    $status = 'received';
     $livemodeSql = $livemode === null ? 'NULL' : ($livemode ? '1' : '0');
     $createdSql = $stripeCreatedAt === null ? 'NULL' : (string) (int) $stripeCreatedAt;
     $eventIdEsc = $conn->real_escape_string($stripeEventId);
     $typeEsc = $conn->real_escape_string($eventType);
-    $statusEsc = $conn->real_escape_string($status);
 
     $sql = "INSERT INTO stripe_webhook_events
             (stripe_event_id, event_type, stripe_created_at, livemode, processing_status, attempts)
-            VALUES ('{$eventIdEsc}', '{$typeEsc}', {$createdSql}, {$livemodeSql}, '{$statusEsc}', 0)";
+            VALUES ('{$eventIdEsc}', '{$typeEsc}', {$createdSql}, {$livemodeSql}, 'received', 0)";
 
-    if ($conn->query($sql)) {
-        return 'claimed';
+    try {
+        if ($conn->query($sql)) {
+            return 'claimed';
+        }
+        $errno = (int) $conn->errno;
+    } catch (Throwable $e) {
+        // mysqli_sql_exception on duplicate under MYSQLI_REPORT_STRICT / ERROR
+        $errno = (int) ($e->getCode() > 0 ? $e->getCode() : $conn->errno);
+        $msg = $e->getMessage();
+        if ($errno !== 1062 && stripos($msg, 'Duplicate') === false) {
+            error_log('journey_webhook_event_claim: unexpected DB exception');
+            return 'error';
+        }
+        $errno = 1062;
     }
-    if ((int) $conn->errno === 1062) {
-        return 'duplicate';
+
+    if ($errno !== 1062) {
+        error_log('journey_webhook_event_claim: insert failed errno=' . $errno);
+        return 'error';
     }
-    return 'error';
+
+    // Duplicate stripe_event_id — inspect prior state for reclaim / skip.
+    try {
+        $stmt = $conn->prepare(
+            'SELECT processing_status FROM stripe_webhook_events WHERE stripe_event_id = ? LIMIT 1'
+        );
+        if (!$stmt) {
+            return 'error';
+        }
+        $stmt->bind_param('s', $stripeEventId);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $row = $res ? $res->fetch_assoc() : null;
+        $stmt->close();
+    } catch (Throwable $e) {
+        error_log('journey_webhook_event_claim: select after duplicate failed');
+        return 'error';
+    }
+
+    if (!$row) {
+        return 'error';
+    }
+
+    $status = (string) ($row['processing_status'] ?? '');
+    if ($status === 'processed') {
+        return 'already_processed';
+    }
+    if ($status === 'failed') {
+        try {
+            $upd = $conn->prepare(
+                "UPDATE stripe_webhook_events
+                 SET processing_status = 'processing', last_error = NULL, updated_at = CURRENT_TIMESTAMP
+                 WHERE stripe_event_id = ? AND processing_status = 'failed'"
+            );
+            if (!$upd) {
+                return 'error';
+            }
+            $upd->bind_param('s', $stripeEventId);
+            $upd->execute();
+            $affected = $upd->affected_rows;
+            $upd->close();
+            return $affected > 0 ? 'reclaimed' : 'in_progress';
+        } catch (Throwable $e) {
+            error_log('journey_webhook_event_claim: reclaim failed');
+            return 'error';
+        }
+    }
+
+    // received / processing / unknown — treat as in-flight
+    return 'in_progress';
 }
 
 /**
@@ -321,6 +408,17 @@ function journey_webhook_event_mark(
             return false;
         }
         $stmt->bind_param('ss', $processingStatus, $stripeEventId);
+    } elseif ($lastError === null) {
+        $stmt = $conn->prepare(
+            'UPDATE stripe_webhook_events
+             SET processing_status = ?, last_error = NULL, attempts = attempts + 1,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE stripe_event_id = ?'
+        );
+        if (!$stmt) {
+            return false;
+        }
+        $stmt->bind_param('ss', $processingStatus, $stripeEventId);
     } else {
         $stmt = $conn->prepare(
             'UPDATE stripe_webhook_events
@@ -334,7 +432,12 @@ function journey_webhook_event_mark(
         $stmt->bind_param('sss', $processingStatus, $lastError, $stripeEventId);
     }
 
-    $ok = $stmt->execute();
+    try {
+        $ok = $stmt->execute();
+    } catch (Throwable $e) {
+        $stmt->close();
+        return false;
+    }
     $stmt->close();
     return $ok;
 }
