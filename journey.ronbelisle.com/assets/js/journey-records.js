@@ -318,7 +318,7 @@
             lastReviewedAt: settings.reviewed === true ? timestamp : (oldRecord.lastReviewedAt || ''),
             downstreamReady: saved === true && !!primaryIssue,
             downstreamMappings: {
-                phase: 'survivor-legacy',
+                phase: 'survivor-planning',
                 tool: 'journey-native-phase-6',
                 fields: {}
             }
@@ -328,6 +328,67 @@
     function normalizeTaxStrategyRecord(record, journeyComplete) {
         if (!record || typeof record !== 'object') return {};
         return createTaxStrategyRecord(Object.assign({}, record), {
+            oldRecord: record,
+            journeyComplete: journeyComplete,
+            timestamp: record.updatedAt || record.lastReviewedAt || record.completedAt || now(),
+            reviewed: false
+        });
+    }
+
+    var survivorIssueStatusLabels = {
+        beneficiary_review: 'Account-recipient review',
+        survivor_income_review: 'Survivor income review',
+        social_security_change: 'Social Security change',
+        survivor_spending_look: 'Survivor spending look',
+        none_dominant: 'No single survivor issue stood out'
+    };
+
+    function createSurvivorPlanningRecord(record, options) {
+        var settings = options || {};
+        var oldRecord = settings.oldRecord || {};
+        var timestamp = settings.timestamp || now();
+        var complete = settings.journeyComplete === true;
+        var saved = record.saved === true;
+        var firstCreated = oldRecord.createdAt || oldRecord.completedAt || (saved ? timestamp : '');
+        var primaryIssue = '';
+        if (record.result && Array.isArray(record.result.mainIssueIds) && record.result.mainIssueIds.length) {
+            primaryIssue = record.result.mainIssueIds[0];
+        } else if (Array.isArray(record.mainIssueIds) && record.mainIssueIds.length) {
+            primaryIssue = record.mainIssueIds[0];
+        }
+
+        return Object.assign({}, record, {
+            phaseId: 'survivor-planning',
+            schemaVersion: schemaVersion,
+            journeyCompletionStatus: complete ? 'completed' : 'incomplete',
+            planningRecordStatus: primaryIssue || oldRecord.planningRecordStatus || '',
+            decisionStatement: record.decisionStatement ||
+                'This is the survivor-planning priority I want to carry forward for our household plan.',
+            companionExplanation: record.companionExplanation ||
+                'I’ve reviewed how our retirement income plan may change if one of us dies. I’m carrying forward one priority to revisit—not a finished estate plan.',
+            educationalNonAdvice: record.educationalNonAdvice !== false,
+            notAnEstatePlan: record.notAnEstatePlan !== false,
+            source: {
+                type: 'journey-native',
+                toolId: 'survivor-planning',
+                name: 'Survivor Planning',
+                url: '/phases/survivor-planning.php'
+            },
+            createdAt: firstCreated,
+            updatedAt: saved ? timestamp : (oldRecord.updatedAt || ''),
+            lastReviewedAt: settings.reviewed === true ? timestamp : (oldRecord.lastReviewedAt || ''),
+            downstreamReady: saved === true && !!primaryIssue,
+            downstreamMappings: {
+                phase: 'premium-workspace',
+                tool: 'journey-ongoing-planning',
+                fields: {}
+            }
+        });
+    }
+
+    function normalizeSurvivorPlanningRecord(record, journeyComplete) {
+        if (!record || typeof record !== 'object') return {};
+        return createSurvivorPlanningRecord(Object.assign({}, record), {
             oldRecord: record,
             journeyComplete: journeyComplete,
             timestamp: record.updatedAt || record.lastReviewedAt || record.completedAt || now(),
@@ -346,6 +407,9 @@
             if (phaseId === 'tax-strategy') {
                 return taxIssueStatusLabels[record.planningRecordStatus] || record.planningRecordStatus;
             }
+            if (phaseId === 'survivor-planning') {
+                return survivorIssueStatusLabels[record.planningRecordStatus] || record.planningRecordStatus;
+            }
             return record.planningRecordStatus;
         }
         if (phaseId === 'social-security') return socialSecurityStatus(record);
@@ -359,6 +423,12 @@
                 return taxIssueStatusLabels[ids[0]] || ids[0];
             }
         }
+        if (phaseId === 'survivor-planning') {
+            var sIds = record.result && record.result.mainIssueIds;
+            if (sIds && sIds.length) {
+                return survivorIssueStatusLabels[sIds[0]] || sIds[0];
+            }
+        }
         return '';
     }
 
@@ -366,7 +436,11 @@
         schemaVersion: schemaVersion,
         statusLabels: statusLabels,
         statusLabel: function (status) {
-            return statusLabels[status] || stressStatusLabels[status] || taxIssueStatusLabels[status] || '';
+            return statusLabels[status] ||
+                stressStatusLabels[status] ||
+                taxIssueStatusLabels[status] ||
+                survivorIssueStatusLabels[status] ||
+                '';
         },
         socialSecurityStatus: socialSecurityStatus,
         createSocialSecurityRecord: createSocialSecurityRecord,
@@ -377,6 +451,8 @@
         normalizeStressTestRecord: normalizeStressTestRecord,
         createTaxStrategyRecord: createTaxStrategyRecord,
         normalizeTaxStrategyRecord: normalizeTaxStrategyRecord,
+        createSurvivorPlanningRecord: createSurvivorPlanningRecord,
+        normalizeSurvivorPlanningRecord: normalizeSurvivorPlanningRecord,
         recordStatus: recordStatus
     };
 })();

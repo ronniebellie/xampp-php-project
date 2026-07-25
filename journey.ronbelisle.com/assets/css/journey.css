@@ -1858,3 +1858,13 @@ h1 {
         animation: none !important;
     }
 }
+
+/* Phase 6 Survivor Planning */
+.journey-complete-recap {
+    margin: 12px 0 18px;
+    padding-left: 1.2em;
+}
+
+.journey-complete-recap li {
+    margin: 0 0 6px;
+}
