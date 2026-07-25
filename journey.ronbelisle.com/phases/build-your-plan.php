@@ -162,9 +162,9 @@ $page_title = 'Build Your Plan | Retirement Planning Journey';
 
                         <section class="phase-content-section phase-completion" aria-labelledby="continue-title">
                             <h2 id="continue-title">What’s next</h2>
-                            <p>You now have a working retirement income plan. Phase 4 will test how it holds up if markets are weaker, inflation is higher, or retirement lasts longer than expected.</p>
-                            <p>Phase 4 is not ready yet. For now, return to your Journey homepage after saving.</p>
+                            <p>You now have a working retirement income plan. Phase 4 tests how it may hold up if markets grow more slowly, decline early, or retirement lasts longer than expected.</p>
                             <button type="button" class="primary-action journey-button" id="completePhase3Button">Save Phase 3 Progress</button>
+                            <a class="secondary-action" href="/phases/stress-test.php" id="continueToPhase4Link">Continue to Phase 4</a>
                             <a class="secondary-action" href="/">Return to My Journey</a>
                             <div class="completion-message" id="phase3CompletionMessage" role="status" tabindex="-1" hidden></div>
                             <p class="trust-note">Completing Phase 3 records your base-case income plan in this browser. It does not run a stress test.</p>
@@ -186,6 +186,6 @@ $page_title = 'Build Your Plan | Retirement Planning Journey';
         </section>
     </main>
 
-    <script src="/assets/js/build-your-plan-phase.js?v=20260724-income-hierarchy" defer></script>
+    <script src="/assets/js/build-your-plan-phase.js?v=20260725-phase4-open" defer></script>
 </body>
 </html>

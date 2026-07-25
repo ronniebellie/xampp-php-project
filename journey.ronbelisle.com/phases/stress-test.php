@@ -7,9 +7,8 @@ $page_title = 'Stress Test | Retirement Planning Journey';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260725-phase4">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260725-phase4-open">
 </head>
 <body>
     <header class="site-header">
@@ -129,7 +128,7 @@ $page_title = 'Stress Test | Retirement Planning Journey';
                                 <div class="phase-actions">
                                     <button type="button" class="primary-action journey-button" id="saveReviewBtn">Save My Resilience Review</button>
                                 </div>
-                                <p class="supporting-note" id="saveConfirm" hidden>Your resilience review is saved for later phases.</p>
+                                <p class="supporting-note" id="saveConfirm" role="status" tabindex="-1" hidden><strong>Phase 4 is complete.</strong> Your resilience review is saved in this browser.</p>
                             </section>
 
                             <section class="phase-content-section" aria-labelledby="next-title" id="phase5Handoff" hidden>
@@ -163,9 +162,9 @@ $page_title = 'Stress Test | Retirement Planning Journey';
         </section>
     </main>
 
-    <script src="/assets/js/phase4-config.js?v=20260725-phase4" defer></script>
-    <script src="/assets/js/phase4-stress-engine.js?v=20260725-phase4" defer></script>
-    <script src="/assets/js/phase4-adjustments.js?v=20260725-phase4" defer></script>
-    <script src="/assets/js/stress-test-phase.js?v=20260725-phase4" defer></script>
+    <script src="/assets/js/phase4-config.js?v=20260725-phase4-open" defer></script>
+    <script src="/assets/js/phase4-stress-engine.js?v=20260725-phase4-open" defer></script>
+    <script src="/assets/js/phase4-adjustments.js?v=20260725-phase4-open" defer></script>
+    <script src="/assets/js/stress-test-phase.js?v=20260725-phase4-open" defer></script>
 </body>
 </html>

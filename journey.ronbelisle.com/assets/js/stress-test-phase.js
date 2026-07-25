@@ -370,9 +370,28 @@
         progress[recordKey] = true;
         writeProgress(progress);
         state.savedRecord = record;
+        document.querySelectorAll('[data-journey-phase="' + recordKey + '"]').forEach(function (element) {
+            element.classList.add('is-complete');
+            element.classList.remove('is-next-step', 'is-planned');
+            element.setAttribute('data-journey-complete', 'true');
+            var status = element.querySelector('[data-journey-phase-status]');
+            if (status) {
+                status.textContent = 'Completed';
+                status.className = 'phase-status is-completed';
+                status.hidden = false;
+            }
+            var recordStatus = element.querySelector('[data-journey-record-status]');
+            if (recordStatus) {
+                recordStatus.textContent = 'Saved';
+                recordStatus.className = 'step-record-status is-saved';
+                recordStatus.hidden = false;
+            }
+        });
         $('saveConfirm').hidden = false;
         $('phase5Handoff').hidden = false;
+        $('savedReviewSection').hidden = false;
         renderSavedSummary(record);
+        $('saveConfirm').focus();
     }
 
     function renderSavedSummary(record) {

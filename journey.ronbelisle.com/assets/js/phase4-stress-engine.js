@@ -204,7 +204,7 @@
         if (scenarioPath.cannotFundFirstYear) {
             return {
                 code: IMPACT.SEVERE,
-                reason: 'Cannot fund the first year’s withdrawal after the applied shock (or with starting balance).',
+                reason: 'Under this test, retirement savings cannot cover the first year’s withdrawal.',
                 severityKind: 'year1_shortfall',
                 yearsOfWithdrawals: yearsLeft,
                 endingRatio: ratio,
@@ -222,10 +222,8 @@
                 if (depYear >= lateStart) {
                     return {
                         code: IMPACT.NOTICEABLE,
-                        reason: 'Scenario depletes only near the end of the horizon (year ' +
-                            depYear + ' of ' + scenarioHorizon + ', final ' +
-                            Math.round(lateFraction * 100) + '% window starting year ' +
-                            lateStart + ') while the base-growth reference lasts.',
+                        reason: 'Under this test, your retirement savings last through most of the planning period but run out near the end (around year ' +
+                            depYear + ' of ' + scenarioHorizon + ').',
                         severityKind: 'late_depletion',
                         yearsOfWithdrawals: 0,
                         endingRatio: ratio,
@@ -234,8 +232,8 @@
                 }
                 return {
                     code: IMPACT.SEVERE,
-                    reason: 'Savings deplete materially before the end of the scenario period (year ' +
-                        depYear + ' of ' + scenarioHorizon + ') while the base-growth reference lasts.',
+                    reason: 'This stress causes the plan to run out of savings well before the end of the test period (around year ' +
+                        depYear + ' of ' + scenarioHorizon + ').',
                     severityKind: 'early_depletion',
                     yearsOfWithdrawals: 0,
                     endingRatio: ratio,
@@ -249,8 +247,8 @@
             if (earlierBy >= earlierYears) {
                 return {
                     code: IMPACT.SEVERE,
-                    reason: 'Scenario depletes at least ' + earlierYears +
-                        ' years earlier than the base-growth reference.',
+                    reason: 'This stress causes the plan to deplete about ' + earlierBy +
+                        ' years earlier than the base path.',
                     severityKind: 'much_earlier_than_base',
                     yearsOfWithdrawals: 0,
                     endingRatio: ratio,
@@ -260,8 +258,8 @@
             if (earlierBy > 0) {
                 return {
                     code: IMPACT.NOTICEABLE,
-                    reason: 'Scenario depletes earlier than the base-growth reference (' +
-                        earlierBy + ' year(s)).',
+                    reason: 'This stress causes the plan to deplete about ' + earlierBy +
+                        ' year' + (earlierBy === 1 ? '' : 's') + ' earlier than the base path.',
                     severityKind: 'somewhat_earlier_than_base',
                     yearsOfWithdrawals: 0,
                     endingRatio: ratio,
@@ -272,7 +270,7 @@
             if (earlierBy === 0) {
                 return {
                     code: IMPACT.LITTLE,
-                    reason: 'Scenario depletes in the same year as the already-depleting base-growth reference — not worse than base solely because both paths eventually deplete.',
+                    reason: 'Under this test, savings run out around the same time as in the base path, so the stress does not make the timing meaningfully worse.',
                     severityKind: 'same_as_base_depletion',
                     yearsOfWithdrawals: 0,
                     endingRatio: ratio,
@@ -281,9 +279,7 @@
             }
             return {
                 code: IMPACT.LITTLE,
-                reason: 'Scenario depletes later than the already-depleting base-growth reference (year ' +
-                    depYear + ' vs base year ' + basePath.depletedYear +
-                    ') — not Severe merely because both paths eventually deplete.',
+                reason: 'Under this test, savings last at least as long as in the base path, so the stress does not make the timing worse.',
                 severityKind: 'better_than_base_depletion',
                 yearsOfWithdrawals: 0,
                 endingRatio: ratio,
@@ -295,7 +291,7 @@
         if (!scenDepleted && baseDepleted) {
             return {
                 code: IMPACT.LITTLE,
-                reason: 'Scenario lasts its horizon while the base-growth reference depletes — not worse than base.',
+                reason: 'Under this test, savings last through the full period even though the base path runs out sooner, so the stress does not make the outcome worse.',
                 severityKind: 'better_than_base_depletion',
                 yearsOfWithdrawals: yearsLeft,
                 endingRatio: ratio,
@@ -307,14 +303,15 @@
             var strongCushion =
                 yearsLeft >= cushionYearsLittle ||
                 (pctOfStart !== null && pctOfStart >= cushionPctStartLittle);
+            var yearsLeftRounded = Number.isFinite(yearsLeft) ? Math.round(yearsLeft) : null;
 
             if (strongCushion) {
                 return {
                     code: IMPACT.LITTLE,
-                    reason: 'Scenario lasts the full horizon with a substantial absolute cushion (' +
-                        (Number.isFinite(yearsLeft) ? yearsLeft.toFixed(1) + ' years of withdrawals' : 'no withdrawal need') +
-                        (pctOfStart !== null ? ', ' + (pctOfStart * 100).toFixed(0) + '% of starting savings' : '') +
-                        ') — absolute-cushion guard; not flagged merely for a lower ratio vs base.',
+                    reason: yearsLeftRounded !== null
+                        ? ('The plan lasts through the full test period with a remaining cushion of about ' +
+                            yearsLeftRounded + ' years of withdrawals.')
+                        : 'The plan lasts through the full test period with a comfortable remaining cushion.',
                     severityKind: 'absolute_cushion_guard',
                     yearsOfWithdrawals: yearsLeft,
                     endingRatio: ratio,
@@ -325,7 +322,7 @@
             if (ratio === null || ratio >= ratioFloor) {
                 return {
                     code: IMPACT.LITTLE,
-                    reason: 'Scenario lasts the full horizon and ending cushion is not meaningfully thin vs the base-growth reference.',
+                    reason: 'The plan lasts through the full test period, and the remaining cushion stays in a similar range to the base path.',
                     severityKind: 'full_horizon_ok',
                     yearsOfWithdrawals: yearsLeft,
                     endingRatio: ratio,
@@ -335,9 +332,10 @@
 
             return {
                 code: IMPACT.NOTICEABLE,
-                reason: 'Scenario lasts the full horizon, but ending cushion is meaningfully reduced vs base (ratio ' +
-                    (ratio * 100).toFixed(1) + '%; ' +
-                    (Number.isFinite(yearsLeft) ? yearsLeft.toFixed(1) + ' years of withdrawals left' : 'n/a') + ').',
+                reason: yearsLeftRounded !== null
+                    ? ('The plan lasts through the full test period, but with a smaller remaining cushion — about ' +
+                        yearsLeftRounded + ' years of withdrawals left.')
+                    : 'The plan lasts through the full test period, but with a smaller remaining cushion than the base path.',
                 severityKind: 'thin_relative_cushion',
                 yearsOfWithdrawals: yearsLeft,
                 endingRatio: ratio,
@@ -347,7 +345,7 @@
 
         return {
             code: IMPACT.SEVERE,
-            reason: 'Scenario does not fully fund withdrawals through its horizon.',
+            reason: 'Under this test, retirement savings do not fully cover withdrawals through the planning period.',
             severityKind: 'incomplete_funding',
             yearsOfWithdrawals: yearsLeft,
             endingRatio: ratio,
@@ -782,7 +780,7 @@
         if (longerPath.cannotFundFirstYear) {
             return {
                 code: IMPACT.SEVERE,
-                reason: 'Cannot fund the first year’s withdrawal.',
+                reason: 'Under this test, retirement savings cannot cover the first year’s withdrawal.',
                 severityKind: 'year1_shortfall',
                 yearsOfWithdrawals: yearsLeftLong,
                 endingRatio: stretchRatio,
@@ -795,7 +793,7 @@
                 longerPath.depletedYear <= basePath.depletedYear) {
                 return {
                     code: IMPACT.SEVERE,
-                    reason: 'Savings already deplete within the base horizon; a longer retirement adds no recovery room.',
+                    reason: 'Your base plan already runs out of savings during the main planning period, so a longer retirement leaves little room to recover.',
                     severityKind: 'early_depletion',
                     yearsOfWithdrawals: 0,
                     endingRatio: stretchRatio,
@@ -804,7 +802,7 @@
             }
             return {
                 code: IMPACT.NOTICEABLE,
-                reason: 'Base horizon already shows depletion pressure; extending longevity increases strain.',
+                reason: 'Your base plan is already under pressure before the extra years, so a longer retirement adds meaningful strain.',
                 severityKind: 'base_already_stressed',
                 yearsOfWithdrawals: yearsLeftLong,
                 endingRatio: stretchRatio,
@@ -817,7 +815,7 @@
             if (longerPath.depletedYear <= baseYears) {
                 return {
                     code: IMPACT.SEVERE,
-                    reason: 'Depletes within the base horizon under longer-retirement comparison.',
+                    reason: 'Even before the extra years, this plan runs out of savings during the main planning period.',
                     severityKind: 'early_depletion',
                     yearsOfWithdrawals: 0,
                     endingRatio: stretchRatio,
@@ -828,7 +826,7 @@
             if (longerPath.depletedYear >= lateStartLong) {
                 return {
                     code: IMPACT.NOTICEABLE,
-                    reason: 'Savings fund the base horizon but run out near the end of the longer period (year ' +
+                    reason: 'Savings cover the main planning period, but run out near the end of the longer test (around year ' +
                         longerPath.depletedYear + ' of ' + longYears + ').',
                     severityKind: 'late_depletion',
                     yearsOfWithdrawals: 0,
@@ -838,7 +836,7 @@
             }
             return {
                 code: IMPACT.SEVERE,
-                reason: 'Extending the horizon causes depletion well before the longer planning period ends (year ' +
+                reason: 'A longer retirement causes savings to run out well before the extended period ends (around year ' +
                     longerPath.depletedYear + ' of ' + longYears + ').',
                 severityKind: 'early_depletion',
                 yearsOfWithdrawals: 0,
@@ -854,11 +852,16 @@
 
         // Educational longevity signal: base-horizon cushion (years of W) shorter than the extension
         var longevityPressure = Number.isFinite(yearsLeftBase) && yearsLeftBase < extension;
+        var yearsLeftBaseRounded = Number.isFinite(yearsLeftBase) ? Math.round(yearsLeftBase) : null;
+        var yearsLeftLongRounded = Number.isFinite(yearsLeftLong) ? Math.round(yearsLeftLong) : null;
 
         if (strongCushion && !longevityPressure && (stretchRatio === null || stretchRatio >= ratioFloor)) {
             return {
                 code: IMPACT.LITTLE,
-                reason: 'Savings last the longer horizon with a substantial remaining cushion.',
+                reason: yearsLeftLongRounded !== null
+                    ? ('Savings last through the longer retirement test with about ' +
+                        yearsLeftLongRounded + ' years of withdrawals still remaining.')
+                    : 'Savings last through the longer retirement test with a comfortable remaining cushion.',
                 severityKind: 'absolute_cushion_guard',
                 yearsOfWithdrawals: yearsLeftLong,
                 endingRatio: stretchRatio,
@@ -869,9 +872,10 @@
         if (longevityPressure) {
             return {
                 code: IMPACT.NOTICEABLE,
-                reason: 'Base-horizon ending cushion is only about ' +
-                    yearsLeftBase.toFixed(1) + ' years of withdrawals, less than the +' +
-                    extension + ' year longevity extension — longer retirement is material.',
+                reason: yearsLeftBaseRounded !== null
+                    ? ('Your base plan has only enough remaining cushion to cover about ' +
+                        yearsLeftBaseRounded + ' additional years, so a longer retirement creates meaningful strain.')
+                    : 'Your base plan’s remaining cushion is thinner than the extra years tested, so a longer retirement creates meaningful strain.',
                 severityKind: 'longevity_cushion_short',
                 yearsOfWithdrawals: yearsLeftLong,
                 endingRatio: stretchRatio,
@@ -882,9 +886,10 @@
         if (stretchRatio !== null && stretchRatio < ratioFloor) {
             return {
                 code: IMPACT.NOTICEABLE,
-                reason: 'Savings last the longer horizon, but the ending cushion is thinner than ' +
-                    Math.round(ratioFloor * 100) + '% of the base-horizon ending balance (ratio ' +
-                    (stretchRatio * 100).toFixed(1) + '%).',
+                reason: yearsLeftLongRounded !== null
+                    ? ('Savings last through the longer retirement test, but with a smaller remaining cushion — about ' +
+                        yearsLeftLongRounded + ' years of withdrawals left.')
+                    : 'Savings last through the longer retirement test, but with a smaller remaining cushion than the base path.',
                 severityKind: 'thin_relative_cushion',
                 yearsOfWithdrawals: yearsLeftLong,
                 endingRatio: stretchRatio,
@@ -895,7 +900,10 @@
         if (strongCushion) {
             return {
                 code: IMPACT.LITTLE,
-                reason: 'Savings last the longer horizon with a substantial absolute cushion.',
+                reason: yearsLeftLongRounded !== null
+                    ? ('Savings last through the longer retirement test with about ' +
+                        yearsLeftLongRounded + ' years of withdrawals still remaining.')
+                    : 'Savings last through the longer retirement test with a comfortable remaining cushion.',
                 severityKind: 'absolute_cushion_guard',
                 yearsOfWithdrawals: yearsLeftLong,
                 endingRatio: stretchRatio,
@@ -905,7 +913,7 @@
 
         return {
             code: IMPACT.LITTLE,
-            reason: 'Longer retirement does not materially change the funding picture under these provisional rules.',
+            reason: 'A longer retirement does not meaningfully change the funding picture in this test.',
             severityKind: 'full_horizon_ok',
             yearsOfWithdrawals: yearsLeftLong,
             endingRatio: stretchRatio,

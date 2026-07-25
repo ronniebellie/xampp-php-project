@@ -106,11 +106,11 @@ $page_title = 'Your Retirement Planning Journey';
                         <span class="phase-status" data-journey-phase-status hidden></span>
                     </article>
 
-                    <article class="phase-card" id="stress-test" data-journey-phase="stress-test">
+                    <article class="phase-card is-available" id="stress-test" data-journey-phase="stress-test">
                         <span class="phase-number">4</span>
                         <h3>Stress Test</h3>
-                        <p>Check whether the plan can handle market downturns, longevity, inflation, and spending changes.</p>
-                        <span class="phase-status is-coming-soon" data-journey-phase-status>Coming soon</span>
+                        <p>See how sensitive your base-case plan may be to weaker growth, an early market decline, and a longer retirement.</p>
+                        <span class="phase-status" data-journey-phase-status hidden></span>
                     </article>
 
                     <article class="phase-card" id="tax-strategy" data-journey-phase="tax-strategy">

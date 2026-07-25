@@ -512,10 +512,15 @@
         var message = document.getElementById('phase3CompletionMessage');
         message.innerHTML =
             '<strong>Phase 3 progress saved.</strong>' +
-            '<span>You now have a working retirement income plan. Phase 4 will test how it holds up if markets are weaker, inflation is higher, or retirement lasts longer than expected.</span>';
+            '<span>You now have a working retirement income plan. When you are ready, continue to Phase 4 to stress-test it.</span>';
         message.hidden = false;
         message.focus();
         document.getElementById('completePhase3Button').textContent = 'Phase 3 Complete';
+        var continueLink = document.getElementById('continueToPhase4Link');
+        if (continueLink) {
+            continueLink.classList.add('primary-action');
+            continueLink.classList.remove('secondary-action');
+        }
     }
 
     document.getElementById('useTemporarySsButton').addEventListener('click', function () {

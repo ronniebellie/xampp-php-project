@@ -25,8 +25,8 @@ $journey_phases = [
         'key' => 'stress-test',
         'number' => '4',
         'title' => 'Stress Test',
-        'href' => '/#stress-test',
-        'status' => 'planned',
+        'href' => '/phases/stress-test.php',
+        'status' => 'available',
     ],
     [
         'key' => 'tax-strategy',
@@ -69,4 +69,4 @@ $active_phase = $active_phase ?? '';
     </ol>
 </nav>
 <script src="/assets/js/journey-records.js" defer></script>
-<script src="/assets/js/journey-progress.js?v=20260724-phase3" defer></script>
+<script src="/assets/js/journey-progress.js?v=20260725-phase4-open" defer></script>
