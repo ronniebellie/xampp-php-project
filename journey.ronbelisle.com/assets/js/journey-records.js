@@ -220,13 +220,73 @@
         });
     }
 
+    var stressStatusLabels = {
+        holds: 'Holds up reasonably well',
+        sensitive: 'Sensitive to one or more risks',
+        needs: 'Needs meaningful adjustment'
+    };
+
+    function createStressTestRecord(record, options) {
+        var settings = options || {};
+        var oldRecord = settings.oldRecord || {};
+        var timestamp = settings.timestamp || now();
+        var complete = settings.journeyComplete === true;
+        var saved = record.saved === true;
+        var firstCreated = oldRecord.createdAt || oldRecord.completedAt || (saved ? timestamp : '');
+
+        return Object.assign({}, record, {
+            phaseId: 'stress-test',
+            schemaVersion: schemaVersion,
+            journeyCompletionStatus: complete ? 'completed' : 'incomplete',
+            planningRecordStatus: record.overallResilienceCode || oldRecord.planningRecordStatus || '',
+            decisionStatement: record.decisionStatement ||
+                'I’ve reviewed how sensitive my Phase 3 plan is, and I’m carrying this resilience review forward.',
+            educationalNonGuarantee: record.educationalNonGuarantee !== false,
+            disclaimer: record.disclaimer ||
+                'These tests are educational. They do not predict markets or guarantee outcomes.',
+            source: {
+                type: 'journey-native',
+                toolId: 'stress-test',
+                name: 'Stress Test',
+                url: '/phases/stress-test.php'
+            },
+            createdAt: firstCreated,
+            updatedAt: saved ? timestamp : (oldRecord.updatedAt || ''),
+            lastReviewedAt: settings.reviewed === true ? timestamp : (oldRecord.lastReviewedAt || ''),
+            downstreamReady: saved === true && !!record.overallResilienceCode,
+            downstreamMappings: {
+                phase: 'tax-strategy',
+                tool: 'journey-native-phase-5',
+                fields: {}
+            }
+        });
+    }
+
+    function normalizeStressTestRecord(record, journeyComplete) {
+        if (!record || typeof record !== 'object') return {};
+        return createStressTestRecord(Object.assign({}, record), {
+            oldRecord: record,
+            journeyComplete: journeyComplete,
+            timestamp: record.updatedAt || record.lastReviewedAt || record.completedAt || now(),
+            reviewed: false
+        });
+    }
+
     function recordStatus(progress, phaseId) {
         if (!progress || !progress.records || typeof progress.records !== 'object') return '';
         var record = progress.records[phaseId];
         if (!record || typeof record !== 'object' || record.saved !== true) return '';
-        if (record.planningRecordStatus) return record.planningRecordStatus;
+        if (record.planningRecordStatus) {
+            if (phaseId === 'stress-test') {
+                return stressStatusLabels[record.planningRecordStatus] || record.planningRecordStatus;
+            }
+            return record.planningRecordStatus;
+        }
         if (phaseId === 'social-security') return socialSecurityStatus(record);
         if (phaseId === 'build-your-plan') return record.baseCaseAssessment || '';
+        if (phaseId === 'stress-test') {
+            return stressStatusLabels[record.overallResilienceCode] || record.overallResilienceCode || '';
+        }
         return '';
     }
 
@@ -234,13 +294,15 @@
         schemaVersion: schemaVersion,
         statusLabels: statusLabels,
         statusLabel: function (status) {
-            return statusLabels[status] || '';
+            return statusLabels[status] || stressStatusLabels[status] || '';
         },
         socialSecurityStatus: socialSecurityStatus,
         createSocialSecurityRecord: createSocialSecurityRecord,
         normalizeSocialSecurityRecord: normalizeSocialSecurityRecord,
         createBuildYourPlanRecord: createBuildYourPlanRecord,
         normalizeBuildYourPlanRecord: normalizeBuildYourPlanRecord,
+        createStressTestRecord: createStressTestRecord,
+        normalizeStressTestRecord: normalizeStressTestRecord,
         recordStatus: recordStatus
     };
 })();

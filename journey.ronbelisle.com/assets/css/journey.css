@@ -1687,3 +1687,129 @@ h1 {
         font-size: 22px;
     }
 }
+
+/* Phase 4 Stress Test */
+.stress-test-list {
+    margin: 0 0 18px;
+    padding-left: 1.2rem;
+}
+
+.stress-test-list li {
+    margin-bottom: 12px;
+}
+
+.stress-test-list li strong {
+    display: block;
+}
+
+.stress-test-list li span {
+    color: var(--muted-text, #5c574f);
+}
+
+.stress-scenario-grid {
+    display: grid;
+    gap: 14px;
+    margin: 18px 0;
+}
+
+.stress-scenario-card {
+    border: 1px solid var(--line, #d9d2c5);
+    border-radius: 8px;
+    padding: 14px 16px;
+    background: #fff;
+}
+
+.stress-scenario-card h3 {
+    margin: 0 0 6px;
+    font-size: 1.05rem;
+}
+
+.stress-scenario-card .scenario-what,
+.stress-scenario-card .scenario-metrics,
+.stress-scenario-card .scenario-why {
+    margin: 0 0 8px;
+    font-size: 0.95rem;
+}
+
+.stress-scenario-card .scenario-why {
+    color: var(--muted-text, #5c574f);
+}
+
+.impact-badge {
+    margin: 0 0 8px;
+}
+
+.impact-badge .impact-text {
+    display: inline-block;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 2px 0;
+}
+
+.impact-little .impact-text { color: #2f5d50; }
+.impact-noticeable .impact-text { color: #8a5a1c; }
+.impact-severe .impact-text { color: #8a2f2f; }
+
+.impact-little { border-left: 4px solid #2f5d50; }
+.impact-noticeable { border-left: 4px solid #c4893a; }
+.impact-severe { border-left: 4px solid #b55252; }
+
+.stress-adjustment-fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.stress-adjustment-option {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--line, #d9d2c5);
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.stress-adjustment-option:has(input:checked) {
+    border-color: var(--accent, #2f5d50);
+    background: #f3f8f5;
+}
+
+.visually-hidden {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.phase-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+@media (max-width: 700px) {
+    .stress-scenario-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .phase-actions .primary-action,
+    .phase-actions .secondary-action {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .stress-results,
+    .stress-scenario-card {
+        transition: none !important;
+        animation: none !important;
+    }
+}
