@@ -9,7 +9,7 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260726-calculator-stack">
 </head>
 <body>
     <header class="site-header">
