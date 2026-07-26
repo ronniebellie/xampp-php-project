@@ -9,6 +9,7 @@ $success = '';
 
 rb_auth_capture_trial_intent_from_request();
 rb_auth_capture_return_from_request();
+$journeyTrialIntent = rb_auth_is_journey_trial_intent();
 $trialIntent = rb_auth_is_trial_intent();
 
 $prefillEmail = '';
@@ -241,7 +242,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <a href="../" class="home-link">← Back to Home</a>
         
         <div class="logo">
-            <?php if ($trialIntent): ?>
+            <?php if ($journeyTrialIntent): ?>
+            <h1>Create Your Account</h1>
+            <p>Create your free account, then start your 30-day Journey Premium trial.</p>
+            <?php elseif ($trialIntent): ?>
             <h1>Start Your 7-Day Free Premium Trial</h1>
             <p>Create your free account to continue. Next you'll pick a plan — your trial starts before any charge.</p>
             <?php else: ?>
@@ -286,11 +290,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="password" id="confirm_password" name="confirm_password" required>
             </div>
             
-            <button type="submit" class="btn"><?php echo $trialIntent ? 'Create Account &amp; Continue' : 'Create Account'; ?></button>
+            <?php if ($journeyTrialIntent): ?>
+            <p class="journey-trial-expect" style="color:#475569;font-size:0.92em;line-height:1.45;margin:0 0 12px;">
+                After creating your account, you’ll continue to secure Stripe Checkout. You will not be charged today.
+            </p>
+            <?php endif; ?>
+            <button type="submit" class="btn"><?php echo ($trialIntent || $journeyTrialIntent) ? 'Create Account &amp; Continue' : 'Create Account'; ?></button>
         </form>
         
         <div class="footer-links">
-            <?php if ($trialIntent): ?>
+            <?php if ($trialIntent || $journeyTrialIntent): ?>
             Already have an account? <a href="login.php<?php echo rb_auth_companion_query(); ?>">Log in here</a>
             <?php else: ?>
             Already have an account? <a href="login.php<?php echo rb_auth_companion_query(); ?>">Log in</a>

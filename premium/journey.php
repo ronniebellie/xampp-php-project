@@ -67,6 +67,17 @@ if (isset($_GET['error'])) {
             background: #ecfdf5; border: 1px solid #6ee7b7; color: #065f46;
             padding: 16px 18px; border-radius: 8px; margin: 18px 0 24px; line-height: 1.5;
         }
+        .jp-trial-heading {
+            display: block;
+            font-size: 1.05em;
+            font-weight: 700;
+            color: #047857;
+            margin: 0 0 8px;
+        }
+        .jp-trial-body {
+            margin: 0;
+            color: #065f46;
+        }
         .jp-error {
             background: #fef2f2; border: 1px solid #fecaca; color: #991b1b;
             padding: 12px 14px; border-radius: 8px; margin-bottom: 16px;
@@ -108,7 +119,7 @@ if (isset($_GET['error'])) {
     <div class="jp-banner"><strong>Review only.</strong> This page is not linked from the public Journey yet.</div>
 
     <h1>Retirement Planning Journey Premium</h1>
-    <p>Save and revisit your Journey later. All six phases remain free to complete.</p>
+    <p>Save your progress, revisit decisions, compare alternatives, and keep your retirement plan current. All six phases remain free to complete.</p>
 
     <?php if ($canceled): ?>
         <div class="jp-cancel">
@@ -129,9 +140,8 @@ if (isset($_GET['error'])) {
         <div class="jp-error">Journey Premium checkout is not configured on this server yet.</div>
     <?php else: ?>
         <div class="jp-trial">
-            <strong>30-day free trial</strong>
-            A payment method is required. You will not be charged today.
-            Cancel before the trial ends to avoid being charged.
+            <strong class="jp-trial-heading">30-day free trial</strong>
+            <p class="jp-trial-body">A payment method is required, but you will not be charged today. Cancel before the trial ends to avoid being charged.</p>
         </div>
 
         <form method="post" action="/premium/journey-checkout.php" id="journey-plan-form">
