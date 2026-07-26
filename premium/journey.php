@@ -91,12 +91,59 @@ if (isset($_GET['error'])) {
         .jp-card {
             display: block; border: 2px solid #cbd5e1; border-radius: 10px; padding: 18px 18px 16px;
             background: #fff; cursor: pointer; transition: border-color .15s, box-shadow .15s;
+            position: relative;
         }
         .jp-card:hover { border-color: #2c5282; }
         .jp-card:has(input:checked), .jp-card.is-selected {
             border-color: #2c5282; box-shadow: 0 0 0 1px #2c5282;
         }
-        .jp-card input { position: absolute; opacity: 0; pointer-events: none; }
+        .jp-card:focus-within {
+            outline: 2px solid #2c5282;
+            outline-offset: 2px;
+        }
+        /* Keep radios focusable/validatable; visually indicated via custom marker. */
+        .jp-card input[type="radio"] {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        .jp-card-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+        .jp-radio-indicator {
+            flex: 0 0 auto;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #64748b;
+            border-radius: 50%;
+            background: #fff;
+            box-sizing: border-box;
+        }
+        .jp-card.is-selected .jp-radio-indicator,
+        .jp-card:has(input:checked) .jp-radio-indicator {
+            border-color: #2c5282;
+            box-shadow: inset 0 0 0 4px #2c5282;
+        }
+        .jp-plan-error {
+            display: none;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin: 0 0 14px;
+            font-size: 0.95em;
+        }
+        .jp-plan-error.is-visible { display: block; }
         .jp-name { font-size: 1.25em; font-weight: 700; color: #2c5282; }
         .jp-price { font-size: 2em; font-weight: 700; margin: 10px 0 6px; color: #111827; }
         .jp-price span { font-size: .45em; font-weight: 600; color: #64748b; }
@@ -144,18 +191,25 @@ if (isset($_GET['error'])) {
             <p class="jp-trial-body">A payment method is required, but you will not be charged today. Cancel before the trial ends if you decide not to continue.</p>
         </div>
 
-        <form method="post" action="/premium/journey-checkout.php" id="journey-plan-form">
+        <form method="post" action="/premium/journey-checkout.php" id="journey-plan-form" novalidate>
             <?php echo rb_csrf_field(); ?>
-            <div class="jp-plans" role="radiogroup" aria-label="Choose a Journey Premium plan">
+            <div id="journey-plan-error" class="jp-plan-error" role="alert" aria-live="polite">Please choose Monthly or Annual.</div>
+            <div class="jp-plans" role="radiogroup" aria-label="Choose a Journey Premium plan" aria-describedby="journey-plan-error">
                 <label class="jp-card<?php echo $planPrefill === 'monthly' ? ' is-selected' : ''; ?>">
                     <input type="radio" name="plan" value="monthly" <?php echo $planPrefill === 'monthly' ? 'checked' : ''; ?> required>
-                    <div class="jp-name">Monthly</div>
+                    <div class="jp-card-top">
+                        <span class="jp-radio-indicator" aria-hidden="true"></span>
+                        <div class="jp-name">Monthly</div>
+                    </div>
                     <div class="jp-price">$4<span> / month after trial</span></div>
                     <p class="jp-note">After the trial, $4 per month until canceled.</p>
                 </label>
                 <label class="jp-card<?php echo $planPrefill === 'annual' ? ' is-selected' : ''; ?>">
                     <input type="radio" name="plan" value="annual" <?php echo $planPrefill === 'annual' ? 'checked' : ''; ?> required>
-                    <div class="jp-name">Annual</div>
+                    <div class="jp-card-top">
+                        <span class="jp-radio-indicator" aria-hidden="true"></span>
+                        <div class="jp-name">Annual</div>
+                    </div>
                     <div class="jp-price">$40<span> / year after trial</span></div>
                     <p class="jp-save">Saves $8 compared with paying monthly for 12 months.</p>
                     <p class="jp-note">After the trial, $40 per year until canceled.</p>
@@ -181,17 +235,68 @@ if (isset($_GET['error'])) {
     var form = document.getElementById('journey-plan-form');
     if (!form) return;
     var cards = form.querySelectorAll('.jp-card');
+    var errorEl = document.getElementById('journey-plan-error');
+    var radios = form.querySelectorAll('input[type="radio"][name="plan"]');
+
+    function selectedPlan() {
+        for (var i = 0; i < radios.length; i++) {
+            if (radios[i].checked) return radios[i].value;
+        }
+        return '';
+    }
+
+    function setErrorVisible(visible) {
+        if (!errorEl) return;
+        errorEl.classList.toggle('is-visible', !!visible);
+    }
+
     function sync() {
         cards.forEach(function (card) {
             var input = card.querySelector('input[type="radio"]');
             card.classList.toggle('is-selected', !!(input && input.checked));
         });
+        if (selectedPlan()) {
+            setErrorVisible(false);
+        }
     }
+
+    function selectCard(card) {
+        var input = card.querySelector('input[type="radio"][name="plan"]');
+        if (!input) return;
+        input.checked = true;
+        // Ensure change listeners and assistive tech see the update.
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        sync();
+    }
+
     cards.forEach(function (card) {
-        card.addEventListener('click', sync);
-        var input = card.querySelector('input');
-        if (input) input.addEventListener('change', sync);
+        card.addEventListener('click', function (e) {
+            // Label already toggles the radio; force-select for reliability.
+            if (e.target && e.target.tagName === 'A') return;
+            selectCard(card);
+        });
+        var input = card.querySelector('input[type="radio"]');
+        if (input) {
+            input.addEventListener('change', sync);
+            input.addEventListener('focus', function () {
+                card.classList.add('is-focused');
+            });
+            input.addEventListener('blur', function () {
+                card.classList.remove('is-focused');
+            });
+        }
     });
+
+    form.addEventListener('submit', function (e) {
+        if (!selectedPlan()) {
+            e.preventDefault();
+            setErrorVisible(true);
+            if (radios[0]) radios[0].focus();
+            return false;
+        }
+        setErrorVisible(false);
+    });
+
     sync();
 })();
 </script>
