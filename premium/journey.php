@@ -141,7 +141,7 @@ if (isset($_GET['error'])) {
     <?php else: ?>
         <div class="jp-trial">
             <strong class="jp-trial-heading">30-day free trial</strong>
-            <p class="jp-trial-body">A payment method is required, but you will not be charged today. Cancel before the trial ends to avoid being charged.</p>
+            <p class="jp-trial-body">A payment method is required, but you will not be charged today. Cancel before the trial ends if you decide not to continue.</p>
         </div>
 
         <form method="post" action="/premium/journey-checkout.php" id="journey-plan-form">
@@ -170,7 +170,7 @@ if (isset($_GET['error'])) {
                 <li>30-day free trial</li>
                 <li>A payment method is required</li>
                 <li>You will not be charged today</li>
-                <li>Cancel before the trial ends to avoid being charged</li>
+                <li>Cancel before the trial ends if you decide not to continue</li>
             </ul>
             <p>Signed in as <?php echo htmlspecialchars((string) $user['email'], ENT_QUOTES, 'UTF-8'); ?>.</p>
         </div>
