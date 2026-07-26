@@ -1543,6 +1543,11 @@ h1 {
         grid-template-columns: 1fr;
     }
 
+    /* Higher specificity than .calculator-hero .phase-template-grid desktop rule */
+    .calculator-hero .phase-template-grid {
+        grid-template-columns: 1fr;
+    }
+
     .phase-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
