@@ -252,15 +252,15 @@
             fraConfirmation.innerHTML = '';
 
             if (claimAge) {
-                label.textContent = 'Monthly benefit at Age ' + claimAge + ' (from the Claiming Analyzer)';
-                help.textContent = 'Step 3: Enter the monthly benefit the Claiming Analyzer shows for age ' + claimAge + '.';
+                label.textContent = 'Monthly benefit to use at Age ' + claimAge;
+                help.textContent = 'If Age ' + claimAge + ' is your Full Retirement Age, enter the same monthly benefit shown above. Otherwise, run the Claiming Analyzer and enter the monthly benefit it shows for Age ' + claimAge + '.';
             } else {
-                label.textContent = 'Monthly benefit shown by the Claiming Analyzer';
-                help.textContent = 'Step 3: After comparing claiming ages in the Claiming Analyzer, enter the monthly benefit shown for the age you selected.';
+                label.textContent = 'Monthly benefit to use at the selected age';
+                help.textContent = 'If the selected age is your Full Retirement Age, enter the same monthly benefit shown above. Otherwise, run the Claiming Analyzer and enter the monthly benefit it shows for the age you are testing.';
             }
 
             if (fra && fra.months > 0 && claimAge) {
-                help.textContent += ' Your Full Retirement Age is ' + formatFraLabel(fra) + ', so Age ' + claimAge + ' is not exact FRA—use the analyzer amount for the age you selected.';
+                help.textContent += ' Your Full Retirement Age is ' + formatFraLabel(fra) + ', so Age ' + claimAge + ' is not exact FRA—enter the monthly benefit to use for Age ' + claimAge + '.';
             } else if (!birthYear && claimAge) {
                 help.textContent += ' Enter your birth year above if this age is your Full Retirement Age; then this second entry can be skipped.';
             }

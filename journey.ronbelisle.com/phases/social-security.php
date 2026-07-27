@@ -175,8 +175,8 @@ $page_title = 'Social Security | Retirement Planning Journey';
                                 <p>Save the numbers you want your plan to use. This is a planning assumption, not a Social Security filing action.</p>
                                 <ol class="workflow-steps" aria-label="How to record your benefit amounts">
                                     <li>Enter your Full Retirement Age monthly benefit from your Social Security statement.</li>
-                                    <li>Run the Claiming Analyzer.</li>
-                                    <li>If your selected claiming age differs from your Full Retirement Age, enter the monthly benefit the analyzer shows for that age.</li>
+                                    <li>Run the Claiming Analyzer if the selected age differs from Full Retirement Age.</li>
+                                    <li>Enter the monthly benefit to use for the selected age.</li>
                                 </ol>
 
                                 <div class="error-summary" id="phase2ErrorSummary" role="alert" tabindex="-1" hidden>
@@ -220,12 +220,12 @@ $page_title = 'Social Security | Retirement Planning Journey';
                                     </div>
 
                                     <div class="field-group" id="selectedBenefitGroup">
-                                        <label for="selectedMonthlyBenefit" id="selectedMonthlyBenefitLabel">Monthly benefit shown by the Claiming Analyzer</label>
+                                        <label for="selectedMonthlyBenefit" id="selectedMonthlyBenefitLabel">Monthly benefit to use at the selected age</label>
                                         <div class="money-input" id="selectedMonthlyBenefitInput">
                                             <span aria-hidden="true">$</span>
                                             <input id="selectedMonthlyBenefit" name="selectedMonthlyBenefit" type="number" min="0" step="1" inputmode="decimal">
                                         </div>
-                                        <small id="selectedMonthlyBenefitHelp">Step 3: After comparing claiming ages in the Claiming Analyzer, enter the monthly benefit shown for the age you selected.</small>
+                                        <small id="selectedMonthlyBenefitHelp">If the selected age is your Full Retirement Age, enter the same monthly benefit shown above. Otherwise, run the Claiming Analyzer and enter the monthly benefit it shows for the age you are testing.</small>
                                     </div>
 
                                     <div class="field-group field-group-wide coach-response benefit-same-as-fra" id="fraBenefitConfirmation" aria-live="polite" hidden></div>
@@ -347,6 +347,6 @@ $page_title = 'Social Security | Retirement Planning Journey';
         </section>
     </main>
 
-    <script src="/assets/js/social-security-phase.js?v=20260727-interest-always-open" defer></script>
+    <script src="/assets/js/social-security-phase.js?v=20260727-benefit-label" defer></script>
 </body>
 </html>
