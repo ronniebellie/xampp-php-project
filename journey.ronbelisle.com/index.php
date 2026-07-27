@@ -117,7 +117,6 @@ $page_title = 'Your Retirement Planning Journey';
                         <h3>Tax Strategy</h3>
                         <p>See how taxes may affect the retirement income plan you already built, then carry forward one issue to revisit.</p>
                         <span class="phase-status" data-journey-phase-status hidden></span>
-                        <a href="/phases/tax-strategy.php">Open Tax Strategy</a>
                     </article>
 
                     <article class="phase-card is-available" id="survivor-planning" data-journey-phase="survivor-planning">
@@ -125,7 +124,6 @@ $page_title = 'Your Retirement Planning Journey';
                         <h3>Survivor Planning</h3>
                         <p>See how the household income plan may change if one spouse dies, then carry forward one survivor-planning priority.</p>
                         <span class="phase-status" data-journey-phase-status hidden></span>
-                        <a href="/phases/survivor-planning.php">Open Survivor Planning</a>
                     </article>
                 </div>
 
