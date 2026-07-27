@@ -15,7 +15,7 @@ $loginUrl = 'https://ronbelisle.com/auth/login.php?return=' . rawurlencode($jour
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260727-login-option">
 </head>
 <body>
     <header class="site-header">
@@ -70,7 +70,10 @@ $loginUrl = 'https://ronbelisle.com/auth/login.php?return=' . rawurlencode($jour
                         </section>
                     </div>
 
-                    <p class="transition-login">Already have an account? <a href="<?php echo htmlspecialchars($loginUrl); ?>">Log in</a>, then return here to continue Phase 2 in this browser.</p>
+                    <section class="transition-login-option" aria-labelledby="existing-account-title">
+                        <h2 id="existing-account-title">Already have an account?</h2>
+                        <a class="secondary-action" href="<?php echo htmlspecialchars($loginUrl); ?>">Log in and continue your Journey</a>
+                    </section>
                     <p class="transition-back"><a href="/phases/spending-goals.php">← Back to Phase 1</a></p>
                 </article>
             </div>

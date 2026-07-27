@@ -550,8 +550,34 @@ h1 {
     font-size: 15px;
 }
 
+.transition-login-option {
+    margin-top: 18px;
+    padding: 18px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.transition-login-option h2 {
+    margin: 0 0 12px;
+    font-size: 20px;
+    color: var(--ink, #0f172a);
+}
+
+.transition-login-option .secondary-action {
+    display: inline-flex;
+    margin-top: 0;
+}
+
 .transition-back {
     margin-top: 10px;
+}
+
+@media (max-width: 640px) {
+    .transition-login-option .secondary-action {
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 .record-status-badge {
