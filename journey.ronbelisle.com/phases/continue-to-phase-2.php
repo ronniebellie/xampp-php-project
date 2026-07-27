@@ -5,7 +5,6 @@ $page_title = 'Save Your Progress | Retirement Planning Journey';
 $phase2Url = '/phases/social-security.php';
 $journeyReturn = 'https://journey.ronbelisle.com/phases/social-security.php?from=account';
 $freeAccountUrl = 'https://ronbelisle.com/auth/register.php?return=' . rawurlencode($journeyReturn);
-$trialUrl = 'https://ronbelisle.com/auth/register.php?intent=trial&return=' . rawurlencode($journeyReturn);
 $loginUrl = 'https://ronbelisle.com/auth/login.php?return=' . rawurlencode($journeyReturn);
 ?>
 <!DOCTYPE html>
@@ -15,7 +14,7 @@ $loginUrl = 'https://ronbelisle.com/auth/login.php?return=' . rawurlencode($jour
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260727-login-option">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260727-continue-phase2-copy">
 </head>
 <body>
     <header class="site-header">
@@ -31,36 +30,35 @@ $loginUrl = 'https://ronbelisle.com/auth/login.php?return=' . rawurlencode($jour
                 <article class="planning-panel phase-transition-panel">
                     <p class="eyebrow">Before Phase 2</p>
                     <h1 id="transition-title">Save your progress before continuing</h1>
-                    <p class="page-lede">You’ve created your retirement spending target. Create a free account so you have a home for your planning on ronbelisle.com while you continue the Journey.</p>
+                    <p class="page-lede">You’ve created your retirement spending target. Create a free account to save your place and continue through the six free phases of the Retirement Planning Journey. After you complete your initial plan, you’ll have the option to start a 30-day Journey Premium trial to keep your plan current over time.</p>
 
                     <div class="transition-honesty" role="note">
-                        <p><strong>Important:</strong> Your Journey plan is saved in <em>this browser</em> right now. Creating an account does not automatically copy that plan into your account or sync it across devices yet.</p>
+                        <p><strong>Important:</strong> Your Journey plan is saved in <em>this browser</em> right now. Creating a free account does not automatically copy that plan into your account or sync it across devices.</p>
                         <p>Keep using this same browser to continue Phase 2 with your saved spending target.</p>
                     </div>
 
                     <div class="transition-options">
                         <section class="transition-option is-primary" aria-labelledby="free-account-title">
                             <h2 id="free-account-title">Create a free account</h2>
-                            <p>A free account gives you a ronbelisle.com login so you can return to calculators and Premium features later. It also helps you continue the Journey with a clearer sense of where your work lives.</p>
+                            <p>A free account gives you a ronbelisle.com login so you can return, save your place, and continue through all six free Journey phases.</p>
                             <ul class="coach-list">
-                                <li>Preserve a login for your planning work</li>
-                                <li>Continue through the core Journey</li>
-                                <li>Return later to ronbelisle.com tools without starting from scratch on that site</li>
+                                <li>Create a login for your planning work on ronbelisle.com</li>
+                                <li>Continue through the six free Journey phases</li>
+                                <li>Return later with a clearer sense of where your work lives</li>
                             </ul>
                             <a class="primary-action" href="<?php echo htmlspecialchars($freeAccountUrl); ?>">Create Free Account and Continue</a>
-                            <p class="action-note">Opens ronbelisle.com registration, then returns you to Phase 2 in this browser.</p>
+                            <p class="action-note">Opens ronbelisle.com registration, then returns you to Phase 2 in this browser. Your current Journey plan stays in this browser unless a later save step explicitly moves it.</p>
                         </section>
 
-                        <section class="transition-option" aria-labelledby="premium-trial-title">
-                            <h2 id="premium-trial-title">Optional: start a Premium trial</h2>
-                            <p>Premium is an ongoing planning workspace on ronbelisle.com. It is <strong>not required</strong> to continue the Journey.</p>
+                        <section class="transition-option" aria-labelledby="premium-later-title">
+                            <h2 id="premium-later-title">Journey Premium is optional</h2>
+                            <p>All six Journey phases are free. Journey Premium is an optional ongoing planning workspace you can choose <strong>after</strong> you complete your initial plan.</p>
                             <ul class="coach-list">
-                                <li>Save and revisit calculator scenarios</li>
-                                <li>Export reports and use AI explanations on supported tools</li>
-                                <li>Keep Premium features available across sessions on ronbelisle.com</li>
+                                <li>Revisit decisions and update assumptions over time</li>
+                                <li>Compare alternatives as your life changes</li>
+                                <li>Keep your plan current in an ongoing workspace</li>
                             </ul>
-                            <a class="secondary-action" href="<?php echo htmlspecialchars($trialUrl); ?>">Start My 7-Day Premium Trial</a>
-                            <p class="action-note">Uses the existing 7-day trial. Payment method required at checkout; you are not charged until the trial ends.</p>
+                            <p class="action-note">When your initial plan is complete, you can start a 30-day Journey Premium trial if you want that ongoing workspace. You do not need Premium to continue to Phase 2.</p>
                         </section>
 
                         <section class="transition-option is-quiet" aria-labelledby="browser-continue-title">
@@ -72,6 +70,7 @@ $loginUrl = 'https://ronbelisle.com/auth/login.php?return=' . rawurlencode($jour
 
                     <section class="transition-login-option" aria-labelledby="existing-account-title">
                         <h2 id="existing-account-title">Already have an account?</h2>
+                        <p>Log in on ronbelisle.com, then return here in this browser to continue Phase 2 with your saved spending target.</p>
                         <a class="secondary-action" href="<?php echo htmlspecialchars($loginUrl); ?>">Log in and continue your Journey</a>
                     </section>
                     <p class="transition-back"><a href="/phases/spending-goals.php">← Back to Phase 1</a></p>
