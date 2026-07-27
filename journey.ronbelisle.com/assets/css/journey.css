@@ -825,25 +825,6 @@ h1 {
     font-weight: 600;
 }
 
-.interest-age-choices.is-concealed,
-.interest-alt-choices.is-concealed,
-.compact-choice-grid.is-concealed {
-    display: none !important;
-}
-
-.change-selection-button {
-    display: inline-block;
-    margin-top: 4px;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: #1d4ed8;
-    font: inherit;
-    font-weight: 700;
-    text-decoration: underline;
-    cursor: pointer;
-}
-
 .record-status-badge.is-temporary,
 .record-status-badge.is-workable,
 .record-status-badge.is-close,
