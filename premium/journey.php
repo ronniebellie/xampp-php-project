@@ -15,6 +15,13 @@ if (!in_array($planPrefill, ['monthly', 'annual'], true)) {
     $planPrefill = '';
 }
 
+if (isset($_GET['return']) && is_string($_GET['return']) && $_GET['return'] !== '') {
+    $safeReturn = rb_auth_safe_redirect_target((string) $_GET['return']);
+    if (strpos($safeReturn, 'https://journey.ronbelisle.com') === 0) {
+        $_SESSION['redirect_after_premium'] = $safeReturn;
+    }
+}
+
 if (!isset($_SESSION['user_id'])) {
     $return = '/premium/journey.php';
     if ($planPrefill !== '') {
@@ -67,7 +74,7 @@ if (isset($_GET['error'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex,nofollow">
-    <title>Journey Premium — Choose a plan (review)</title>
+    <title>Journey Premium — Choose a plan</title>
     <link rel="stylesheet" href="/css/shared-styles.css">
     <style>
         .jp-wrap { max-width: 820px; margin: 40px auto; padding: 20px; }
@@ -185,11 +192,9 @@ if (isset($_GET['error'])) {
 </head>
 <body>
 <div class="jp-wrap">
-    <div class="jp-banner"><strong>Review only.</strong> This page is not linked from the public Journey yet.</div>
-
     <p class="jp-welcome"><?php echo htmlspecialchars($welcomeGreeting, ENT_QUOTES, 'UTF-8'); ?></p>
     <h1>Retirement Planning Journey Premium</h1>
-    <p>Save your progress, revisit decisions, compare alternatives, and keep your retirement plan current. All six phases remain free to complete.</p>
+    <p>Save your progress, revisit decisions, compare alternatives, and keep your retirement plan current.</p>
 
     <?php if ($canceled): ?>
         <div class="jp-cancel">
@@ -204,8 +209,9 @@ if (isset($_GET['error'])) {
     <?php if ($alreadyEntitled): ?>
         <div class="jp-trial">
             <strong>You already have Journey Premium access.</strong>
-            Checkout is not needed right now. Manage billing from your account when Portal support is available.
+            Checkout is not needed right now.
         </div>
+        <p><a class="jp-submit" style="text-align:center;text-decoration:none;max-width:420px;margin:18px auto;display:block;" href="https://journey.ronbelisle.com/">Open My Journey Premium Workspace</a></p>
     <?php elseif (!$configReady): ?>
         <div class="jp-error">Journey Premium checkout is not configured on this server yet.</div>
     <?php else: ?>

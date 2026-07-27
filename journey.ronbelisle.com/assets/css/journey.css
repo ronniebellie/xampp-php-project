@@ -1895,3 +1895,74 @@ h1 {
 .journey-complete-recap li {
     margin: 0 0 6px;
 }
+
+.premium-continuity-panel {
+    margin-top: 20px;
+    padding: 18px 18px 16px;
+    border: 1px solid var(--line, #d9d2c5);
+    border-radius: 10px;
+    background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+}
+
+.premium-continuity-panel h3 {
+    margin: 0 0 10px;
+    color: var(--ink, #1e3a5f);
+    font-size: 1.15rem;
+}
+
+.premium-continuity-panel > p {
+    margin: 0 0 12px;
+    color: var(--ink, #1e3a5f);
+    line-height: 1.55;
+}
+
+.premium-continuity-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.premium-continuity-actions .primary-action {
+    display: inline-block;
+}
+
+.premium-continuity-actions .action-note {
+    margin: 0;
+    color: var(--muted, #5c564c);
+    font-size: 0.92rem;
+    line-height: 1.45;
+}
+
+.journey-review-links {
+    margin-top: 22px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line, #d9d2c5);
+}
+
+.journey-review-heading {
+    margin: 0 0 8px;
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: var(--muted, #5c564c);
+}
+
+.journey-review-actions {
+    margin-top: 0;
+}
+
+.journey-review-actions .text-action {
+    color: var(--muted, #5c564c);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+@media (max-width: 700px) {
+    .premium-continuity-actions .primary-action,
+    .premium-continuity-actions .secondary-action {
+        width: 100%;
+        text-align: center;
+    }
+}

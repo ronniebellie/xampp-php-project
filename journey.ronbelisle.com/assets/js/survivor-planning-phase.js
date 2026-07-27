@@ -35,6 +35,14 @@
         difficult: 'Looks difficult on these assumptions'
     };
 
+    var premiumStatusUrl = 'https://ronbelisle.com/premium/journey-status.php';
+    var premiumCheckoutUrl = 'https://ronbelisle.com/premium/journey.php';
+    var premiumWorkspaceUrl = 'https://journey.ronbelisle.com/';
+    var premiumReturnUrl = 'https://journey.ronbelisle.com/phases/survivor-planning.php';
+    var premiumAuthRegisterUrl =
+        'https://ronbelisle.com/auth/register.php?intent=journey_trial&return=' +
+        encodeURIComponent(premiumReturnUrl);
+
     function $(id) {
         return document.getElementById(id);
     }
@@ -406,6 +414,68 @@
             var li = document.createElement('li');
             li.textContent = text;
             list.appendChild(li);
+        });
+        updatePremiumContinuityCta();
+    }
+
+    function applyPremiumCtaState(status) {
+        var cta = $('premiumPrimaryCta');
+        var reassurance = $('premiumTrialReassurance');
+        if (!cta) return;
+
+        var mode = status && status.cta ? status.cta : 'start_trial';
+        var checkoutUrl = (status && status.checkoutUrl) || premiumCheckoutUrl;
+        var workspaceUrl = (status && status.workspaceUrl) || premiumWorkspaceUrl;
+
+        if (mode === 'open_workspace') {
+            cta.textContent = 'Open My Journey Premium Workspace';
+            cta.href = workspaceUrl;
+            if (reassurance) {
+                reassurance.textContent = 'Your Journey Premium access is already active.';
+            }
+            return;
+        }
+
+        if (mode === 'subscribe') {
+            cta.textContent = 'Continue with Journey Premium';
+            cta.href = checkoutUrl +
+                (checkoutUrl.indexOf('?') === -1 ? '?' : '&') +
+                'return=' + encodeURIComponent(premiumReturnUrl);
+            if (reassurance) {
+                reassurance.textContent = 'Choose a plan to continue your ongoing planning workspace. Checkout will show whether a trial is available for your account.';
+            }
+            return;
+        }
+
+        cta.textContent = 'Start Your 30-Day Free Trial';
+        if (status && status.authenticated === false) {
+            cta.href = premiumAuthRegisterUrl;
+        } else {
+            cta.href = checkoutUrl +
+                (checkoutUrl.indexOf('?') === -1 ? '?' : '&') +
+                'return=' + encodeURIComponent(premiumReturnUrl);
+        }
+        if (reassurance) {
+            reassurance.textContent = 'No charge today. Cancel before the trial ends if you decide not to continue.';
+        }
+    }
+
+    function updatePremiumContinuityCta() {
+        applyPremiumCtaState({ cta: 'start_trial', authenticated: false });
+        if (typeof fetch !== 'function') return;
+
+        fetch(premiumStatusUrl, {
+            method: 'GET',
+            credentials: 'include',
+            headers: { Accept: 'application/json' }
+        }).then(function (response) {
+            if (!response.ok) throw new Error('status ' + response.status);
+            return response.json();
+        }).then(function (data) {
+            if (!data || typeof data !== 'object') return;
+            applyPremiumCtaState(data);
+        }).catch(function () {
+            // Keep the safe default trial CTA; checkout/auth still enforce entitlement.
         });
     }
 

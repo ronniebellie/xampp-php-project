@@ -8,7 +8,7 @@ $page_title = 'Survivor Planning | Retirement Planning Journey';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260725-phase6-open">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260727-premium-transition">
 </head>
 <body>
     <header class="site-header">
@@ -199,7 +199,7 @@ $page_title = 'Survivor Planning | Retirement Planning Journey';
 
                         <section class="phase-content-section" id="journeyCompleteSection" hidden aria-labelledby="journey-complete-title">
                             <h2 id="journey-complete-title">Your initial Retirement Planning Journey is complete.</h2>
-                            <p>You now have an initial retirement plan. The next step is not starting over—it is keeping this plan current as your life changes.</p>
+                            <p>You now have an initial retirement plan. The next step is to keep it current as your life changes.</p>
                             <ul class="journey-complete-recap" id="journeyCompleteRecap">
                                 <li>Retirement spending goal</li>
                                 <li>Social Security assumption</li>
@@ -209,17 +209,25 @@ $page_title = 'Survivor Planning | Retirement Planning Journey';
                                 <li>Survivor-planning priority</li>
                             </ul>
 
-                            <div class="coach-response" id="premiumContinuityBlock">
-                                <p class="eyebrow">Ongoing planning</p>
-                                <p>Your ongoing planning workspace can help you save and revisit this plan, update assumptions after major life changes, review survivor assumptions and who would receive accounts, compare alternatives, and keep the plan current over time.</p>
-                                <p class="supporting-note">This is continuity of the plan you already built—not a requirement to start over.</p>
+                            <div class="premium-continuity-panel" id="premiumContinuityBlock">
+                                <h3 id="premium-continuity-title">Keep your plan current with Journey Premium</h3>
+                                <p>Your free Journey helped you build an initial retirement plan. Journey Premium gives you an ongoing planning workspace where you can save and update assumptions, revisit decisions, compare alternatives, and keep your plan current as your life changes.</p>
+                                <p class="supporting-note">The plan you just built becomes the starting point for your ongoing workspace—you do not need to begin again.</p>
+
+                                <div class="premium-continuity-actions" id="premiumContinuityActions">
+                                    <a class="primary-action" id="premiumPrimaryCta" href="https://ronbelisle.com/premium/journey.php">Start Your 30-Day Free Trial</a>
+                                    <p class="action-note" id="premiumTrialReassurance">No charge today. Cancel before the trial ends if you decide not to continue.</p>
+                                    <a class="secondary-action" href="/">Return to My Journey</a>
+                                </div>
                             </div>
 
-                            <div class="phase-actions">
-                                <a class="primary-action" href="/">Return to My Journey</a>
-                                <a class="secondary-action" href="/phases/build-your-plan.php">Review Phase 3</a>
-                                <a class="secondary-action" href="/phases/stress-test.php">Review Phase 4</a>
-                                <a class="secondary-action" href="/phases/tax-strategy.php">Review Phase 5</a>
+                            <div class="journey-review-links" id="journeyReviewLinks">
+                                <h3 class="journey-review-heading">Review your plan</h3>
+                                <div class="phase-actions journey-review-actions">
+                                    <a class="text-action" href="/phases/build-your-plan.php">Review Phase 3</a>
+                                    <a class="text-action" href="/phases/stress-test.php">Review Phase 4</a>
+                                    <a class="text-action" href="/phases/tax-strategy.php">Review Phase 5</a>
+                                </div>
                             </div>
                         </section>
 
@@ -248,6 +256,6 @@ $page_title = 'Survivor Planning | Retirement Planning Journey';
 
     <script src="/assets/js/phase6-survivor-engine.js?v=20260725-phase6-open" defer></script>
     <script src="/assets/js/phase6-priorities.js?v=20260725-phase6-open" defer></script>
-    <script src="/assets/js/survivor-planning-phase.js?v=20260725-phase6-open" defer></script>
+    <script src="/assets/js/survivor-planning-phase.js?v=20260727-premium-transition" defer></script>
 </body>
 </html>
