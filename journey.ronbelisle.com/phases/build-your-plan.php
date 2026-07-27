@@ -9,7 +9,7 @@ $page_title = 'Build Your Plan | Retirement Planning Journey';
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260724-phase3">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260727-ss-handoff">
 </head>
 <body>
     <header class="site-header">
@@ -76,7 +76,7 @@ $page_title = 'Build Your Plan | Retirement Planning Journey';
 
                         <section class="phase-content-section" id="temporarySsSection" aria-labelledby="temporary-ss-title" hidden>
                             <h2 id="temporary-ss-title">Social Security amount needed</h2>
-                            <p>Your Social Security planning amount is not complete yet. Return to Phase 2 to finish it, or enter a temporary estimate so you can preview this income plan.</p>
+                            <p id="temporarySsExplain">Your Social Security planning amount is not complete yet. Return to Phase 2 to finish it, or enter a temporary estimate so you can preview this income plan.</p>
                             <div class="inline-choices" style="margin-bottom: 14px;">
                                 <a class="secondary-action" href="/phases/social-security.php">Return to Phase 2</a>
                             </div>
@@ -186,6 +186,6 @@ $page_title = 'Build Your Plan | Retirement Planning Journey';
         </section>
     </main>
 
-    <script src="/assets/js/build-your-plan-phase.js?v=20260725-phase4-open" defer></script>
+    <script src="/assets/js/build-your-plan-phase.js?v=20260727-ss-handoff" defer></script>
 </body>
 </html>

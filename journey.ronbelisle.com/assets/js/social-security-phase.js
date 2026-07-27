@@ -94,6 +94,18 @@
         var benefitAtFra = status === 'provisional' ? numberOrNull(document.getElementById('benefitAtFra').value) : null;
         var selectedBenefit = numberOrNull(document.getElementById('selectedMonthlyBenefit').value);
         var usesFraAmount = status === 'provisional' && isClaimingAtFra(birthYear, claimAge);
+        var estimatedMonthlyBenefit = null;
+        var currentMonthlyBenefit = null;
+
+        if (status === 'provisional') {
+            // Canonical monthly planning amount for Phase 3.
+            estimatedMonthlyBenefit = usesFraAmount ? benefitAtFra : selectedBenefit;
+            if (usesFraAmount && benefitAtFra !== null && benefitAtFra > 0) {
+                document.getElementById('selectedMonthlyBenefit').value = String(benefitAtFra);
+            }
+        } else if (status === 'already-receiving') {
+            currentMonthlyBenefit = selectedBenefit;
+        }
 
         return {
             estimateReadiness: selectedValue('estimateReadiness'),
@@ -101,10 +113,8 @@
             decisionStatus: status,
             claimAge: claimAge,
             benefitAtFra: benefitAtFra,
-            estimatedMonthlyBenefit: status === 'provisional'
-                ? (usesFraAmount ? benefitAtFra : selectedBenefit)
-                : null,
-            currentMonthlyBenefit: status === 'already-receiving' ? selectedBenefit : null,
+            estimatedMonthlyBenefit: estimatedMonthlyBenefit,
+            currentMonthlyBenefit: currentMonthlyBenefit,
             decisionNotes: notesValue(),
             // Legacy justification fields are no longer collected. Keep empty on save so older
             // values do not keep the record stuck in "needs verification."
@@ -123,14 +133,74 @@
         };
     }
 
+    function snapshotLastSavedPlanning(record) {
+        return {
+            decisionStatus: record.decisionStatus || '',
+            birthYear: record.birthYear === undefined ? null : record.birthYear,
+            claimAge: record.claimAge === undefined ? null : record.claimAge,
+            benefitAtFra: record.benefitAtFra === undefined ? null : record.benefitAtFra,
+            estimatedMonthlyBenefit: record.estimatedMonthlyBenefit === undefined ? null : record.estimatedMonthlyBenefit,
+            currentMonthlyBenefit: record.currentMonthlyBenefit === undefined ? null : record.currentMonthlyBenefit,
+            decisionNotes: record.decisionNotes || ''
+        };
+    }
+
+    function hasMaterialPlanningInput(record) {
+        return !!(
+            record.decisionStatus ||
+            record.claimAge ||
+            record.birthYear !== null ||
+            (record.benefitAtFra !== null && record.benefitAtFra !== undefined) ||
+            (record.estimatedMonthlyBenefit !== null && record.estimatedMonthlyBenefit !== undefined) ||
+            (record.currentMonthlyBenefit !== null && record.currentMonthlyBenefit !== undefined) ||
+            record.decisionNotes
+        );
+    }
+
+    function updateUnsavedNotice(record) {
+        var show = false;
+        if (!record) {
+            show = false;
+        } else if (record.hasUnsavedChanges === true) {
+            show = true;
+        } else if (record.saved !== true && hasMaterialPlanningInput(record)) {
+            show = true;
+        }
+
+        ['phase2UnsavedNotice', 'phase2ContinueUnsavedNotice'].forEach(function (id) {
+            var notice = document.getElementById(id);
+            if (notice) notice.hidden = !show;
+        });
+    }
+
     function persistDraft(saved) {
         var progress = readProgress();
         var oldRecord = existingRecord(progress);
         var record = buildRecord();
-        record.saved = saved === true || oldRecord.saved === true;
-        record.hasUnsavedChanges = saved === false
-            ? true
-            : (saved === true ? false : oldRecord.hasUnsavedChanges === true);
+
+        if (saved === true) {
+            if (
+                record.decisionStatus === 'provisional' &&
+                isClaimingAtFra(record.birthYear, record.claimAge) &&
+                record.benefitAtFra > 0
+            ) {
+                record.estimatedMonthlyBenefit = record.benefitAtFra;
+            }
+            record.saved = true;
+            record.hasUnsavedChanges = false;
+            record.lastSavedPlanning = snapshotLastSavedPlanning(record);
+        } else {
+            record.saved = oldRecord.saved === true;
+            if (saved === false) {
+                record.hasUnsavedChanges = true;
+            } else {
+                record.hasUnsavedChanges = oldRecord.hasUnsavedChanges === true;
+            }
+            if (oldRecord.lastSavedPlanning) {
+                record.lastSavedPlanning = oldRecord.lastSavedPlanning;
+            }
+        }
+
         if (oldRecord.completedAt) record.completedAt = oldRecord.completedAt;
         record = recordTools.createSocialSecurityRecord(record, {
             oldRecord: oldRecord,
@@ -140,6 +210,7 @@
         progress.records = progress.records && typeof progress.records === 'object' ? progress.records : {};
         progress.records[recordKey] = record;
         writeProgress(progress);
+        updateUnsavedNotice(record);
         return record;
     }
 
@@ -353,7 +424,7 @@
             if (!record.claimAge) errors.push('Choose a claiming age to test.');
             if (!(record.benefitAtFra > 0)) errors.push('Enter your monthly benefit at full retirement age.');
             if (!isClaimingAtFra(record.birthYear, record.claimAge) && !(record.estimatedMonthlyBenefit > 0)) {
-                errors.push('Enter the monthly benefit shown by the Claiming Analyzer for the age you selected.');
+                errors.push('Enter the monthly benefit to use for the age you selected.');
             }
         }
 
@@ -384,6 +455,7 @@
         document.getElementById('completePhase2Button').textContent = complete
             ? 'Save Updates'
             : 'Save Phase 2 Progress';
+        updateUnsavedNotice(existingRecord(readProgress()));
     }
 
     function currency(value) {
@@ -401,6 +473,17 @@
         var statusBadges = document.querySelectorAll('[data-phase2-record-status]');
         var status = record && record.saved ? record.planningRecordStatus : '';
         var statusLabel = recordTools.statusLabel(status);
+        var summaryRecord = record;
+
+        if (
+            record &&
+            record.saved === true &&
+            record.hasUnsavedChanges === true &&
+            record.lastSavedPlanning &&
+            typeof record.lastSavedPlanning === 'object'
+        ) {
+            summaryRecord = Object.assign({}, record, record.lastSavedPlanning);
+        }
 
         statusBadges.forEach(function (badge) {
             badge.textContent = statusLabel;
@@ -414,44 +497,46 @@
             });
             reviseButtons.forEach(function (revise) { revise.hidden = true; });
             reviewGuidance.forEach(function (guidance) { guidance.hidden = true; });
+            updateUnsavedNotice(record);
             return;
         }
 
         var summary = '';
-        if (record.decisionStatus === 'provisional') {
-            var sameAsFra = isClaimingAtFra(record.birthYear, record.claimAge) ||
-                (record.estimatedMonthlyBenefit !== null &&
-                    record.benefitAtFra !== null &&
-                    Number(record.estimatedMonthlyBenefit) === Number(record.benefitAtFra));
+        if (summaryRecord.decisionStatus === 'provisional') {
+            var sameAsFra = isClaimingAtFra(summaryRecord.birthYear, summaryRecord.claimAge) ||
+                (summaryRecord.estimatedMonthlyBenefit !== null &&
+                    summaryRecord.benefitAtFra !== null &&
+                    Number(summaryRecord.estimatedMonthlyBenefit) === Number(summaryRecord.benefitAtFra));
             if (sameAsFra) {
                 summary =
                     '<p><strong>My current Social Security position</strong></p>' +
-                    '<p>I will test claiming at age <strong>' + record.claimAge + '</strong>, my Full Retirement Age. My planning benefit is approximately <strong>' + currency(record.benefitAtFra) + ' per month</strong>.</p>' +
-                    (record.decisionNotes ? '<p>Notes: ' + escapeHtml(record.decisionNotes) + '</p>' : '') +
+                    '<p>I will test claiming at age <strong>' + summaryRecord.claimAge + '</strong>, my Full Retirement Age. My planning benefit is approximately <strong>' + currency(summaryRecord.benefitAtFra) + ' per month</strong>.</p>' +
+                    (summaryRecord.decisionNotes ? '<p>Notes: ' + escapeHtml(summaryRecord.decisionNotes) + '</p>' : '') +
                     '<p>This is a planning assumption, not advice to file. I can revisit and change it later.</p>';
             } else {
                 summary =
                     '<p><strong>My current Social Security position</strong></p>' +
-                    '<p>I will test claiming at age <strong>' + record.claimAge + '</strong>. My benefit at full retirement age is approximately <strong>' + currency(record.benefitAtFra) + ' per month</strong>, and the Claiming Analyzer amount I recorded for age <strong>' + record.claimAge + '</strong> is approximately <strong>' + currency(record.estimatedMonthlyBenefit) + ' per month</strong>.</p>' +
-                    (record.decisionNotes ? '<p>Notes: ' + escapeHtml(record.decisionNotes) + '</p>' : '') +
+                    '<p>I will test claiming at age <strong>' + summaryRecord.claimAge + '</strong>. My benefit at full retirement age is approximately <strong>' + currency(summaryRecord.benefitAtFra) + ' per month</strong>, and the Claiming Analyzer amount I recorded for age <strong>' + summaryRecord.claimAge + '</strong> is approximately <strong>' + currency(summaryRecord.estimatedMonthlyBenefit) + ' per month</strong>.</p>' +
+                    (summaryRecord.decisionNotes ? '<p>Notes: ' + escapeHtml(summaryRecord.decisionNotes) + '</p>' : '') +
                     '<p>This is a planning assumption, not advice to file. I can revisit and change it later.</p>';
             }
-        } else if (record.decisionStatus === 'need-more-information') {
+        } else if (summaryRecord.decisionStatus === 'need-more-information') {
             summary =
                 '<p><strong>My current Social Security position</strong></p>' +
                 '<p>I am not ready to select a claiming age yet.</p>' +
-                (record.decisionNotes ? '<p>Notes: ' + escapeHtml(record.decisionNotes) + '</p>' : '') +
+                (summaryRecord.decisionNotes ? '<p>Notes: ' + escapeHtml(summaryRecord.decisionNotes) + '</p>' : '') +
                 '<p>I should return after I have a clearer estimate. This remains a planning assumption, not a filing action.</p>';
         } else {
             summary =
                 '<p><strong>My current Social Security position</strong></p>' +
-                '<p>I am already receiving approximately <strong>' + currency(record.currentMonthlyBenefit) + ' per month</strong> in gross Social Security benefits.</p>' +
-                (record.decisionNotes ? '<p>Notes: ' + escapeHtml(record.decisionNotes) + '</p>' : '') +
+                '<p>I am already receiving approximately <strong>' + currency(summaryRecord.currentMonthlyBenefit) + ' per month</strong> in gross Social Security benefits.</p>' +
+                (summaryRecord.decisionNotes ? '<p>Notes: ' + escapeHtml(summaryRecord.decisionNotes) + '</p>' : '') +
                 '<p>My plan can use this current benefit as the working assumption. This is a planning assumption, not a filing action.</p>';
         }
         statements.forEach(function (statement) { statement.innerHTML = summary; });
         reviseButtons.forEach(function (revise) { revise.hidden = false; });
         reviewGuidance.forEach(function (guidance) { guidance.hidden = false; });
+        updateUnsavedNotice(record);
     }
 
     function escapeHtml(value) {
@@ -464,11 +549,14 @@
     }
 
     function saveRecord(event) {
-        event.preventDefault();
+        if (event) event.preventDefault();
         var record = buildRecord();
         var errors = validateRecord(record);
         showErrors(errors);
-        if (errors.length) return;
+        if (errors.length) {
+            updateUnsavedNotice(existingRecord(readProgress()));
+            return null;
+        }
 
         record = persistDraft(true);
         renderAssumption(record);
@@ -478,6 +566,38 @@
         var confirmation = document.getElementById('phase2SaveConfirmation');
         confirmation.hidden = false;
         confirmation.focus();
+        return record;
+    }
+
+    function continueToPhase3(event) {
+        event.preventDefault();
+        var href = event.currentTarget.getAttribute('href') || '/phases/build-your-plan.php';
+        var progress = readProgress();
+        var existing = existingRecord(progress);
+        var draft = buildRecord();
+        var draftErrors = validateRecord(draft);
+        var material = hasMaterialPlanningInput(draft);
+
+        if (existing.saved === true && existing.hasUnsavedChanges !== true) {
+            window.location.href = href;
+            return;
+        }
+
+        if (material && draftErrors.length) {
+            showErrors(draftErrors);
+            document.getElementById('record-title').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            updateUnsavedNotice(existing);
+            var notice = document.getElementById('phase2ContinueUnsavedNotice');
+            if (notice) notice.hidden = false;
+            return;
+        }
+
+        if (material) {
+            var saved = saveRecord(null);
+            if (!saved) return;
+        }
+
+        window.location.href = href;
     }
 
     function completePhase() {
@@ -493,6 +613,7 @@
             } else if (record.hasUnsavedChanges && !errors.length) {
                 showErrors(['Save your updated Social Security record before marking Phase 2 complete.']);
             }
+            updateUnsavedNotice(record);
             return;
         }
 
@@ -519,6 +640,7 @@
         message.hidden = false;
         message.focus();
         document.getElementById('completePhase2Button').textContent = 'Phase 2 Complete';
+        updateUnsavedNotice(record);
     }
 
     function handleDraftChange(event) {
@@ -569,6 +691,10 @@
     });
     form.addEventListener('submit', saveRecord);
     document.getElementById('completePhase2Button').addEventListener('click', completePhase);
+    var continueLink = document.getElementById('continueToPhase3Link');
+    if (continueLink) {
+        continueLink.addEventListener('click', continueToPhase3);
+    }
     document.querySelectorAll('[data-revise-assumption]').forEach(function (button) {
         button.addEventListener('click', function () {
             document.getElementById('record-title').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -580,6 +706,19 @@
     var rawRecordAtLoad = progressAtLoad.records && progressAtLoad.records[recordKey];
     var record = existingRecord(progressAtLoad);
     if (record.saved === true && rawRecordAtLoad && rawRecordAtLoad.schemaVersion !== recordTools.schemaVersion) {
+        progressAtLoad.records[recordKey] = record;
+        writeProgress(progressAtLoad);
+    }
+    // Backfill a last-saved planning snapshot for older browser records.
+    if (
+        record.saved === true &&
+        record.hasUnsavedChanges !== true &&
+        (!record.lastSavedPlanning || typeof record.lastSavedPlanning !== 'object')
+    ) {
+        record.lastSavedPlanning = snapshotLastSavedPlanning(record);
+        progressAtLoad.records = progressAtLoad.records && typeof progressAtLoad.records === 'object'
+            ? progressAtLoad.records
+            : {};
         progressAtLoad.records[recordKey] = record;
         writeProgress(progressAtLoad);
     }
@@ -596,4 +735,5 @@
     updateStatusFields();
     updateCompanionResult();
     renderAssumption(record);
+    updateUnsavedNotice(record);
 })();

@@ -909,6 +909,21 @@ h1 {
     color: #1e3a5f;
 }
 
+.unsaved-changes-notice {
+    margin: 12px 0 0;
+    padding: 12px 14px;
+    border: 1px solid #fcd34d;
+    border-radius: 10px;
+    background: #fffbeb;
+    color: #78350f;
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.phase-completion .unsaved-changes-notice {
+    margin-top: 14px;
+}
+
 .coach-response p,
 .analyzer-clarification p,
 .companion-result p,

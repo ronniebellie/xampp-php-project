@@ -14,6 +14,7 @@
         monthlyOther: 0,
         phase2SsUsable: false,
         phase2SsMonthly: null,
+        phase2SsReason: 'missing',
         useTemporarySs: false,
         temporarySsMonthly: null,
         savingsBalance: null
@@ -80,31 +81,92 @@
     function readPhase2SocialSecurity() {
         var progress = readProgress();
         var raw = progress.records && progress.records['social-security'];
-        if (!raw || typeof raw !== 'object' || raw.saved !== true) {
-            return { usable: false, monthly: null, decisionStatus: '', claimAge: null };
+        if (!raw || typeof raw !== 'object') {
+            return { usable: false, monthly: null, decisionStatus: '', claimAge: null, reason: 'missing' };
         }
 
         var record = recordTools.normalizeSocialSecurityRecord(raw, progress['social-security'] === true);
+        var source = null;
+
+        if (record.saved === true && record.lastSavedPlanning && typeof record.lastSavedPlanning === 'object') {
+            // Prefer the last successful Save My Claiming Choice snapshot so drafts cannot leak.
+            source = record.lastSavedPlanning;
+        } else if (record.saved === true && record.hasUnsavedChanges !== true) {
+            source = record;
+        } else if (record.saved !== true) {
+            return {
+                usable: false,
+                monthly: null,
+                decisionStatus: record.decisionStatus || '',
+                claimAge: record.claimAge === undefined ? null : record.claimAge,
+                reason: 'not-saved'
+            };
+        } else {
+            return {
+                usable: false,
+                monthly: null,
+                decisionStatus: record.decisionStatus || '',
+                claimAge: record.claimAge === undefined ? null : record.claimAge,
+                reason: 'unsaved-changes'
+            };
+        }
+
+        var status = source.decisionStatus || '';
         var monthly = null;
-        if (record.decisionStatus === 'already-receiving') {
-            monthly = Number(record.currentMonthlyBenefit);
-        } else if (record.decisionStatus === 'provisional') {
-            monthly = Number(record.estimatedMonthlyBenefit);
-            if (!(monthly > 0) && Number(record.benefitAtFra) > 0 &&
-                Number(record.claimAge) && Number(record.estimatedMonthlyBenefit) === Number(record.benefitAtFra)) {
-                monthly = Number(record.benefitAtFra);
+
+        if (status === 'need-more-information') {
+            return {
+                usable: false,
+                monthly: null,
+                decisionStatus: status,
+                claimAge: null,
+                reason: 'not-ready'
+            };
+        }
+
+        if (status === 'already-receiving') {
+            monthly = Number(source.currentMonthlyBenefit);
+        } else if (status === 'provisional') {
+            monthly = Number(source.estimatedMonthlyBenefit);
+            // FRA-only safety net for older records: never use FRA amount for a different claim age.
+            if (
+                !(monthly > 0) &&
+                Number(source.benefitAtFra) > 0 &&
+                Number(source.claimAge) &&
+                Number(source.estimatedMonthlyBenefit) === Number(source.benefitAtFra)
+            ) {
+                monthly = Number(source.benefitAtFra);
             }
-            if (!(monthly > 0) && Number(record.benefitAtFra) > 0 && Number(record.estimatedMonthlyBenefit) > 0) {
-                monthly = Number(record.estimatedMonthlyBenefit);
-            }
+        } else {
+            return {
+                usable: false,
+                monthly: null,
+                decisionStatus: status,
+                claimAge: source.claimAge === undefined ? null : source.claimAge,
+                reason: 'not-saved'
+            };
         }
 
         return {
             usable: monthly > 0,
             monthly: monthly > 0 ? monthly : null,
-            decisionStatus: record.decisionStatus || '',
-            claimAge: record.claimAge === undefined ? null : record.claimAge
+            decisionStatus: status,
+            claimAge: source.claimAge === undefined ? null : source.claimAge,
+            reason: monthly > 0 ? 'ok' : 'missing-amount'
         };
+    }
+
+    function temporarySsExplanation(reason) {
+        if (reason === 'not-ready') {
+            return 'In Phase 2 you indicated you are not ready to select a claiming age. Return to Phase 2 when you are ready, or enter a temporary estimate so you can preview this income plan.';
+        }
+        if (reason === 'not-saved' || reason === 'unsaved-changes' || reason === 'missing') {
+            return 'Phase 2 has not been completed and saved yet. Return to Phase 2 to save your claiming choice, or enter a temporary estimate so you can preview this income plan.';
+        }
+        if (reason === 'missing-amount') {
+            return 'Phase 2 does not have a usable monthly Social Security planning amount yet. Return to Phase 2 to add one, or enter a temporary estimate so you can preview this income plan.';
+        }
+        return 'Your Social Security planning amount is not complete yet. Return to Phase 2 to finish it, or enter a temporary estimate so you can preview this income plan.';
     }
 
     function existingRecord(progress) {
@@ -299,12 +361,16 @@
         var incomplete = document.getElementById('phase1IncompleteBanner');
         var ssNote = document.getElementById('ssAssumptionNote');
         var tempSection = document.getElementById('temporarySsSection');
+        var tempExplain = document.getElementById('temporarySsExplain');
         var savingsSection = document.getElementById('savingsQuestionSection');
 
         incomplete.hidden = state.phase1Usable;
         panel.hidden = !state.phase1Usable;
         ssNote.hidden = !state.phase1Usable || !state.phase2SsUsable;
         tempSection.hidden = !state.phase1Usable || state.phase2SsUsable;
+        if (tempExplain && !state.phase2SsUsable) {
+            tempExplain.textContent = temporarySsExplanation(state.phase2SsReason);
+        }
         savingsSection.hidden = !state.phase1Usable;
 
         if (!state.phase1Usable) {
@@ -575,6 +641,7 @@
     var phase2 = readPhase2SocialSecurity();
     state.phase2SsUsable = phase2.usable;
     state.phase2SsMonthly = phase2.monthly;
+    state.phase2SsReason = phase2.reason || 'missing';
 
     var progressAtLoad = readProgress();
     var record = existingRecord(progressAtLoad);

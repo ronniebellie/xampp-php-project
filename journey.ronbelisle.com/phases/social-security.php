@@ -9,7 +9,7 @@ $page_title = 'Social Security | Retirement Planning Journey';
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260727-interest-always-open">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260727-ss-handoff">
 </head>
 <body>
     <header class="site-header">
@@ -238,6 +238,7 @@ $page_title = 'Social Security | Retirement Planning Journey';
                                 </div>
 
                                 <button type="submit" class="primary-action journey-button">Save My Claiming Choice</button>
+                                <p class="unsaved-changes-notice" id="phase2UnsavedNotice" role="status" hidden>Your changes have not yet been saved for the next phase.</p>
                                 <div class="save-confirmation" id="phase2SaveConfirmation" role="status" tabindex="-1" hidden>
                                     <strong>Your current Social Security planning record has been saved in this browser.</strong>
                                     <span>This is a working assumption you can revisit and change later.</span>
@@ -312,7 +313,8 @@ $page_title = 'Social Security | Retirement Planning Journey';
                             <h2 id="continue-title">Save your Phase 2 progress</h2>
                             <p>When your claiming assumption is saved, continue to Phase 3: Build Your Plan.</p>
                             <button type="button" class="primary-action journey-button" id="completePhase2Button">Save Phase 2 Progress</button>
-                            <a class="secondary-action" href="/phases/build-your-plan.php">Continue to Phase 3: Build Your Plan</a>
+                            <a class="secondary-action" href="/phases/build-your-plan.php" id="continueToPhase3Link">Continue to Phase 3: Build Your Plan</a>
+                            <p class="unsaved-changes-notice" id="phase2ContinueUnsavedNotice" role="status" hidden>Your changes have not yet been saved for the next phase.</p>
                             <a class="secondary-action" href="/">Return to My Journey</a>
                             <div class="completion-message" id="phase2CompletionMessage" role="status" tabindex="-1" hidden></div>
                             <p class="trust-note">Completing Phase 2 records your progress through the Journey. Your Social Security planning record remains in this browser and can be updated later.</p>
@@ -347,6 +349,6 @@ $page_title = 'Social Security | Retirement Planning Journey';
         </section>
     </main>
 
-    <script src="/assets/js/social-security-phase.js?v=20260727-benefit-label" defer></script>
+    <script src="/assets/js/social-security-phase.js?v=20260727-ss-handoff" defer></script>
 </body>
 </html>
