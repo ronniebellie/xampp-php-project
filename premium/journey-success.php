@@ -82,31 +82,47 @@ $refreshUrl = '/premium/journey-success.php?session_id=' . rawurlencode($session
         .js-wait { color: #92400e; }
         .js-err { color: #991b1b; }
         p { color: #334155; line-height: 1.55; }
+        .js-points {
+            text-align: left;
+            margin: 18px auto 8px;
+            padding: 0 0 0 1.2em;
+            color: #334155;
+            line-height: 1.55;
+            max-width: 34em;
+        }
+        .js-points li + li { margin-top: 8px; }
         a.btn {
             display: inline-block; margin-top: 18px; padding: 12px 18px; background: #2c5282; color: #fff;
             text-decoration: none; border-radius: 8px; font-weight: 600;
         }
         a.btn-secondary { background: #64748b; margin-left: 8px; }
+        @media (max-width: 640px) {
+            .js-wrap { margin: 28px 14px; padding: 22px 18px; }
+            a.btn, a.btn-secondary { display: block; margin-left: 0; margin-top: 12px; }
+        }
     </style>
 </head>
 <body>
 <div class="js-wrap">
     <?php if ($error !== null): ?>
         <h1 class="js-err">We could not confirm this checkout</h1>
-        <p>No Journey Premium access was granted from this page. If you completed payment, please wait a moment and check again, or return to the plan page.</p>
+        <p>Your Journey Premium access is not confirmed yet. If you finished checkout, wait a moment and check again, or return to the plan page.</p>
         <a class="btn" href="/premium/journey.php">Return to plan selection</a>
     <?php elseif ($entitled): ?>
-        <h1 class="js-ok">Your Journey Premium trial is ready</h1>
-        <p>Stripe finished processing your subscription. You will not be charged today. Your 30-day free trial is active<?php echo $plan !== '' ? ' on the ' . htmlspecialchars($plan, ENT_QUOTES, 'UTF-8') . ' plan' : ''; ?>.</p>
-        <p>Cancel before the trial ends to avoid being charged.</p>
+        <h1 class="js-ok">Your Journey Premium trial is now active.</h1>
+        <p>Your 30-day Journey Premium trial has started. You can continue your Journey and save your progress as you build your retirement plan.</p>
+        <ul class="js-points">
+            <li>Your progress is automatically saved so you can return, review decisions, compare alternatives, and update your plan over time.</li>
+            <li>You will not be charged during the trial.</li>
+            <li>Cancel before the trial ends if you decide not to continue.</li>
+        </ul>
         <a class="btn" href="https://journey.ronbelisle.com/">Continue to the Journey</a>
         <a class="btn btn-secondary" href="/premium/journey.php">Back to plan page</a>
     <?php else: ?>
-        <h1 class="js-wait">Finishing setup</h1>
-        <p>Thanks — Stripe is processing your subscription. Journey Premium access is confirmed by our secure webhook, not this page.</p>
-        <p>This usually takes a few seconds.<?php echo $finishing ? ' Checking again…' : ''; ?></p>
+        <h1 class="js-wait">Almost ready</h1>
+        <p>Thanks — we’re finishing your Journey Premium setup. This usually takes only a few seconds.<?php echo $finishing ? ' Checking again…' : ''; ?></p>
         <?php if (!$finishing): ?>
-            <p>If access is still not ready, wait a minute and retry, or return to the plan page. Do not start a second checkout unless you are sure the first one did not complete.</p>
+            <p>If access is still not ready, wait a minute and try again, or return to the plan page. Avoid starting a second checkout unless you are sure the first one did not complete.</p>
         <?php endif; ?>
         <a class="btn" href="<?php echo htmlspecialchars($refreshUrl, ENT_QUOTES, 'UTF-8'); ?>">Check again</a>
         <a class="btn btn-secondary" href="/premium/journey.php">Return to plan selection</a>

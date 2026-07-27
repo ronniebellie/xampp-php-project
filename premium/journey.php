@@ -34,6 +34,18 @@ if (!$user) {
     rb_auth_redirect_to_login('/premium/journey.php', 'journey_trial');
 }
 
+$fullName = trim((string) ($user['full_name'] ?? ''));
+$firstName = '';
+if ($fullName !== '') {
+    $parts = preg_split('/\s+/', $fullName);
+    if (is_array($parts) && isset($parts[0]) && $parts[0] !== '') {
+        $firstName = $parts[0];
+    }
+}
+$welcomeGreeting = $firstName !== ''
+    ? ('Welcome, ' . $firstName . '!')
+    : 'Welcome!';
+
 $alreadyEntitled = has_journey_premium_access($conn, $userId);
 $canceled = isset($_GET['canceled']);
 $configReady = journey_stripe_checkout_config_ready();
@@ -159,12 +171,23 @@ if (isset($_GET['error'])) {
         .jp-fine { margin-top: 22px; color: #475569; font-size: .92em; line-height: 1.55; }
         .jp-fine ul { padding-left: 1.2em; }
         h1 { color: #1e3a5f; margin-bottom: 8px; }
+        .jp-welcome {
+            margin: 0 0 10px;
+            color: #64748b;
+            font-size: 0.95em;
+            font-weight: 600;
+        }
+        @media (max-width: 640px) {
+            .jp-wrap { margin: 24px auto; padding: 16px; }
+            .jp-submit { max-width: none; }
+        }
     </style>
 </head>
 <body>
 <div class="jp-wrap">
     <div class="jp-banner"><strong>Review only.</strong> This page is not linked from the public Journey yet.</div>
 
+    <p class="jp-welcome"><?php echo htmlspecialchars($welcomeGreeting, ENT_QUOTES, 'UTF-8'); ?></p>
     <h1>Retirement Planning Journey Premium</h1>
     <p>Save your progress, revisit decisions, compare alternatives, and keep your retirement plan current. All six phases remain free to complete.</p>
 
