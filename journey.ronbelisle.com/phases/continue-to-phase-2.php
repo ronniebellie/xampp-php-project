@@ -14,7 +14,7 @@ $loginUrl = 'https://ronbelisle.com/auth/login.php?return=' . rawurlencode($jour
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260727-continue-phase2-copy">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260728-continue-phase2-copy">
 </head>
 <body>
     <header class="site-header">
@@ -40,14 +40,14 @@ $loginUrl = 'https://ronbelisle.com/auth/login.php?return=' . rawurlencode($jour
                     <div class="transition-options">
                         <section class="transition-option is-primary" aria-labelledby="free-account-title">
                             <h2 id="free-account-title">Create a free account</h2>
-                            <p>A free account gives you a ronbelisle.com login so you can return, save your place, and continue through all six free Journey phases.</p>
+                            <p>Create a free account so you can continue through all six free Journey phases and sign in later to access your planning work.</p>
                             <ul class="coach-list">
-                                <li>Create a login for your planning work on ronbelisle.com</li>
-                                <li>Continue through the six free Journey phases</li>
-                                <li>Return later with a clearer sense of where your work lives</li>
+                                <li>Create your free Retirement Planning Journey account</li>
+                                <li>Continue through all six free Journey phases</li>
+                                <li>Sign in later to continue where you left off</li>
                             </ul>
                             <a class="primary-action" href="<?php echo htmlspecialchars($freeAccountUrl); ?>">Create Free Account and Continue</a>
-                            <p class="action-note">Opens ronbelisle.com registration, then returns you to Phase 2 in this browser. Your current Journey plan stays in this browser unless a later save step explicitly moves it.</p>
+                            <p class="action-note">Registration opens on ronbelisle.com, then returns you to Phase 2 in this same browser. Your Journey plan currently stays in this browser. Creating the account does not yet automatically sync that browser-stored Journey data across devices.</p>
                         </section>
 
                         <section class="transition-option" aria-labelledby="premium-later-title">

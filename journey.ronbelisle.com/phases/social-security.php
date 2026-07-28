@@ -96,8 +96,8 @@ $page_title = 'Social Security | Retirement Planning Journey';
                                     <p>Keep the monthly or annual spending estimate from Phase 1 nearby. The Claiming Analyzer will not ask for it, but it will help you judge how much of your spending the benefit could cover.</p>
                                 </div>
                                 <div>
-                                    <h3>When you expect to retire</h3>
-                                    <p>Think about when you expect to stop working. Your retirement date and Social Security claiming date do not have to be the same.</p>
+                                    <h3 data-retirement-copy="retire-timing-title">When you expect to retire</h3>
+                                    <p data-retirement-copy="retire-timing-help">Think about when you expect to stop working. Your retirement date and Social Security claiming date do not have to be the same.</p>
                                 </div>
                                 <div>
                                     <h3>Your spouse’s information, if applicable</h3>
@@ -251,8 +251,8 @@ $page_title = 'Social Security | Retirement Planning Journey';
                             <p>Answer these three questions. We’ll point you to no more than one additional calculator.</p>
 
                             <fieldset class="journey-fieldset">
-                                <legend>Do you expect to retire before you begin claiming Social Security?</legend>
-                                <p class="fieldset-help">If yes, the benefit estimate on your Social Security statement may be higher than the amount you eventually receive. We can help you estimate that difference.</p>
+                                <legend data-retirement-copy="early-exit-legend">Do you expect to retire before you begin claiming Social Security?</legend>
+                                <p class="fieldset-help" data-retirement-copy="early-exit-help">If yes, the benefit estimate on your Social Security statement may be higher than the amount you eventually receive. We can help you estimate that difference.</p>
                                 <div class="inline-choices">
                                     <label class="choice-row"><input type="radio" name="earlyExitAnswer" value="yes"> <span>Yes</span></label>
                                     <label class="choice-row"><input type="radio" name="earlyExitAnswer" value="no"> <span>No</span></label>
@@ -349,6 +349,6 @@ $page_title = 'Social Security | Retirement Planning Journey';
         </section>
     </main>
 
-    <script src="/assets/js/social-security-phase.js?v=20260727-ss-handoff" defer></script>
+    <script src="/assets/js/social-security-phase.js?v=20260728-retirement-status" defer></script>
 </body>
 </html>

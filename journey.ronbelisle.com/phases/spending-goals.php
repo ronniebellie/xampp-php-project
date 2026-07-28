@@ -26,7 +26,7 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                     <div class="phase-intro">
                         <p class="eyebrow">Phase 1</p>
                         <h1 id="phase-title">Spending &amp; Goals</h1>
-                        <p class="page-lede">Use this phase to get ready for the Retirement Spending Planner. The goal is to enter the calculator with clearer spending estimates, useful context, and a practical question you want answered.</p>
+                        <p class="page-lede" data-retirement-copy="phase1-lede">Use this phase to get ready for the Retirement Spending Planner. The goal is to enter the calculator with clearer spending estimates, useful context, and a practical question you want answered.</p>
                     </div>
 
                     <section class="current-record-overview" aria-labelledby="spending-plan-summary-title" data-spending-plan-summary hidden>
@@ -38,7 +38,7 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                             <h2 id="spending-plan-summary-title">Phase 1 complete</h2>
                             <span class="record-status-badge is-current">Complete</span>
                         </div>
-                        <p class="phase-complete-lede">You’ve created the monthly spending target that the rest of your retirement plan will build on.</p>
+                        <p class="phase-complete-lede" data-retirement-copy="phase1-complete-lede">You’ve created the monthly spending target that the rest of your retirement plan will build on.</p>
                         <div class="result-metrics compact-results">
                             <div class="result-metric is-primary">
                                 <span>Monthly target</span>
@@ -106,13 +106,13 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                     <div class="next-step-card" aria-labelledby="next-step-title">
                         <p class="eyebrow">Recommended Tool</p>
                         <h2 id="next-step-title">Your Retirement Spending Plan</h2>
-                        <p>Estimate a retirement budget from your current spending and save the target for the rest of your Journey.</p>
+                        <p>Estimate a retirement budget from your household spending and save the target for the rest of your Journey.</p>
                         <a class="primary-action" href="/calculators/retirement-spending-plan/">Launch Retirement Spending Planner</a>
                     </div>
                 </aside>
             </div>
         </section>
     </main>
-    <script src="/assets/js/spending-goals-phase.js" defer></script>
+    <script src="/assets/js/spending-goals-phase.js?v=20260728-retirement-status" defer></script>
 </body>
 </html>

@@ -21,6 +21,37 @@
         'otherSpending'
     ];
 
+    var copyByStatus = {
+        planning: {
+            title: 'Expected monthly household spending in retirement',
+            help: 'Enter your best estimate of what your household will spend in a typical month after you retire. Consider expenses that may end, decrease, increase, or begin—but you do not need to calculate each change separately.',
+            label: 'Expected monthly household spending in retirement',
+            fieldNote: 'This becomes your monthly retirement spending target.',
+            resultMonthly: 'Expected monthly retirement spending:',
+            assumptionsPhrase: 'expected monthly retirement spending',
+            validationMissing: 'Enter expected monthly household spending in retirement.',
+            tipsHtml:
+                '<li>Commuting or payroll contributions may end.</li>' +
+                '<li>Debt payments may end or decrease.</li>' +
+                '<li>Healthcare or insurance may increase.</li>' +
+                '<li>Travel, hobbies, family support, or home maintenance may change.</li>'
+        },
+        retired: {
+            title: 'Current monthly household spending in retirement',
+            help: 'Enter your best estimate of what your household spends in a typical month during retirement. The number does not need to be perfect.',
+            label: 'Current monthly household spending in retirement',
+            fieldNote: 'This becomes your monthly retirement spending target.',
+            resultMonthly: 'Current monthly retirement spending:',
+            assumptionsPhrase: 'current monthly retirement spending',
+            validationMissing: 'Enter current monthly household spending in retirement.',
+            tipsHtml:
+                '<li>Debt payments may end or decrease.</li>' +
+                '<li>Healthcare or insurance may change.</li>' +
+                '<li>Travel, hobbies, family support, or home maintenance may change.</li>' +
+                '<li>Some work-related costs may already have ended.</li>'
+        }
+    };
+
     function now() {
         return new Date().toISOString();
     }
@@ -59,6 +90,58 @@
         return selected ? selected.value : 'guided_categories';
     }
 
+    function normalizeRetirementStatus(value) {
+        return value === 'retired' ? 'retired' : (value === 'planning' ? 'planning' : '');
+    }
+
+    function selectedRetirementStatus() {
+        var selected = form.querySelector('input[name="retirementStatus"]:checked');
+        return selected ? normalizeRetirementStatus(selected.value) : '';
+    }
+
+    function inferRetirementStatus(record, inputs) {
+        var fromInputs = normalizeRetirementStatus(inputs && inputs.retirementStatus);
+        if (fromInputs) return fromInputs;
+
+        var recordInputs = record && record.inputs && typeof record.inputs === 'object' ? record.inputs : null;
+        var fromRecord = normalizeRetirementStatus(recordInputs && recordInputs.retirementStatus);
+        if (fromRecord) return fromRecord;
+
+        var fromLater = normalizeRetirementStatus(
+            record &&
+            record.journeyResult &&
+            record.journeyResult.dataForLaterPhases &&
+            record.journeyResult.dataForLaterPhases.retirementStatus
+        );
+        if (fromLater) return fromLater;
+
+        // Pre-change records never stored retirementStatus — default safely to planning.
+        if (recordInputs && !Object.prototype.hasOwnProperty.call(recordInputs, 'retirementStatus')) {
+            return 'planning';
+        }
+
+        // New/incomplete drafts may leave the choice blank until the user selects one.
+        return '';
+    }
+
+    function copyForStatus(status) {
+        return copyByStatus[status === 'retired' ? 'retired' : 'planning'];
+    }
+
+    function applyRetirementCopy() {
+        var status = selectedRetirementStatus() || 'planning';
+        var copy = copyForStatus(status);
+        form.querySelectorAll('[data-retirement-copy]').forEach(function (element) {
+            var key = element.getAttribute('data-retirement-copy');
+            if (key === 'title') element.textContent = copy.title;
+            else if (key === 'help') element.textContent = copy.help;
+            else if (key === 'label') element.textContent = copy.label;
+            else if (key === 'field-note') element.textContent = copy.fieldNote;
+            else if (key === 'result-monthly') element.textContent = copy.resultMonthly;
+            else if (key === 'tips') element.innerHTML = copy.tipsHtml;
+        });
+    }
+
     function readProgress() {
         try {
             var parsed = JSON.parse(localStorage.getItem(progressKey) || '{}');
@@ -92,6 +175,7 @@
         });
 
         return {
+            retirementStatus: selectedRetirementStatus(),
             startingMethod: selectedMethod(),
             currentMonthlySpending: optionalNumberValue('currentMonthlySpending'),
             currentAnnualSpending: optionalNumberValue('currentAnnualSpending'),
@@ -141,6 +225,12 @@
     function validateForCalculation(inputs) {
         var errors = nonNegativeErrors(inputs);
         var method = inputs.startingMethod;
+        var status = normalizeRetirementStatus(inputs.retirementStatus);
+        var copy = copyForStatus(status || 'planning');
+
+        if (!status) {
+            errors.push('Choose what best describes your situation today.');
+        }
 
         if (method === 'guided_categories') {
             if (totalValues(inputs.categories, categoryFields) <= 0) {
@@ -158,7 +248,7 @@
             errors.push('Choose how you would like to estimate spending.');
         }
         if (!inputs.expectedMonthlyRetirementSpending || inputs.expectedMonthlyRetirementSpending <= 0) {
-            errors.push('Enter expected monthly household spending in retirement.');
+            errors.push(copy.validationMissing);
         }
 
         return errors;
@@ -237,7 +327,8 @@
             monthlyOtherRegularRetirementIncome: monthlyOtherIncome,
             annualOtherRegularRetirementIncome: annualOtherIncome,
             monthlyRemainingNeedBeforeSocialSecurityAndInvestments: annualRemaining / 12,
-            annualRemainingNeedBeforeSocialSecurityAndInvestments: annualRemaining
+            annualRemainingNeedBeforeSocialSecurityAndInvestments: annualRemaining,
+            retirementStatus: normalizeRetirementStatus(inputs.retirementStatus) || 'planning'
         };
     }
 
@@ -252,15 +343,18 @@
 
     function renderResults(inputs, outputs) {
         if (!resultsPanel) return;
+        var copy = copyForStatus(inputs.retirementStatus);
 
         resultsPanel.hidden = false;
         setResultText('monthlyTarget', money(outputs.monthlyRetirementSpendingTarget));
         setResultText('annualTarget', money(outputs.annualRetirementSpendingTarget));
         setResultText('otherIncomeMonthly', money(outputs.monthlyOtherRegularRetirementIncome));
         setResultText('remainingMonthly', money(outputs.monthlyRemainingNeedBeforeSocialSecurityAndInvestments));
+        applyRetirementCopy();
         resultsPanel.querySelector('[data-result="assumptions"]').textContent =
             'Based on your ' + methodLabel(inputs.startingMethod) +
-            ', expected monthly retirement spending, and pension, annuity, or rental income before Social Security.';
+            ', ' + copy.assumptionsPhrase +
+            ', and pension, annuity, or rental income before Social Security.';
     }
 
     function updateVisibleResults() {
@@ -274,6 +368,7 @@
 
     function buildRecord(inputs, outputs, status) {
         var timestamp = status === 'completed' ? now() : null;
+        var retirementStatus = normalizeRetirementStatus(inputs.retirementStatus) || 'planning';
         return {
             schemaVersion: 2,
             calculatorId: 'retirement-spending-plan',
@@ -293,6 +388,7 @@
                     monthlyRetirementSpendingTarget: outputs.monthlyRetirementSpendingTarget,
                     annualRetirementSpendingTarget: outputs.annualRetirementSpendingTarget,
                     monthlyOtherRegularRetirementIncome: outputs.monthlyOtherRegularRetirementIncome,
+                    retirementStatus: retirementStatus,
                     lastUpdated: timestamp
                 }
             } : {
@@ -347,8 +443,9 @@
         var errors = validateForCalculation(inputs);
         showErrors(errors);
         if (errors.length) return null;
+        // Persist a normalized status once the user has chosen and calculated.
+        inputs.retirementStatus = normalizeRetirementStatus(inputs.retirementStatus) || 'planning';
         lastOutputs = calculate(inputs);
-        inputs = inputsFromForm();
         renderResults(inputs, lastOutputs);
         writeDraft(inputs, lastOutputs);
         if (saveStatus) saveStatus.textContent = 'Calculated. Review the result, then save when ready.';
@@ -374,6 +471,12 @@
     function restoreRecord(record) {
         if (!record || !record.inputs) return;
         var inputs = record.draftInputs || record.inputs;
+        var status = inferRetirementStatus(record, inputs);
+        if (status) {
+            var statusInput = form.querySelector('input[name="retirementStatus"][value="' + status + '"]');
+            if (statusInput) statusInput.checked = true;
+        }
+
         var methodInput = form.querySelector('input[name="startingMethod"][value="' + (inputs.startingMethod || 'guided_categories') + '"]');
         if (methodInput) methodInput.checked = true;
         setNumberValue('currentMonthlySpending', inputs.currentMonthlySpending);
@@ -387,6 +490,7 @@
         setNumberValue('expectedMonthlyRetirementSpending', inputs.expectedMonthlyRetirementSpending);
         setNumberValue('monthlyOtherRegularRetirementIncome', inputs.monthlyOtherRegularRetirementIncome);
         if (inputs.notes) document.getElementById('spendingNotes').value = inputs.notes;
+        applyRetirementCopy();
         var outputs = record.draftOutputs || record.outputs;
         if (outputs && outputs.monthlyRetirementSpendingTarget) {
             // Recalculate so saved essential/flexible fields are ignored and review numbers stay current.
@@ -417,8 +521,14 @@
     });
     form.addEventListener('change', function (event) {
         if (event.target.name === 'startingMethod') syncMethodSections();
+        if (event.target.name === 'retirementStatus') {
+            applyRetirementCopy();
+            updateVisibleResults();
+            persistDraft();
+        }
     });
 
     restoreRecord(readCalculatorRecord());
+    applyRetirementCopy();
     syncMethodSections();
 })();

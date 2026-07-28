@@ -12,6 +12,36 @@
         }
     }
 
+    function retirementStatus(record) {
+        var inputs = record && record.inputs ? record.inputs : {};
+        if (inputs.retirementStatus === 'retired' || inputs.retirementStatus === 'planning') {
+            return inputs.retirementStatus;
+        }
+        var later = record && record.journeyResult && record.journeyResult.dataForLaterPhases;
+        if (later && (later.retirementStatus === 'retired' || later.retirementStatus === 'planning')) {
+            return later.retirementStatus;
+        }
+        if (record && record.inputs && !Object.prototype.hasOwnProperty.call(record.inputs, 'retirementStatus')) {
+            return 'planning';
+        }
+        return 'planning';
+    }
+
+    function applyRetirementCopy(record) {
+        var retired = retirementStatus(record) === 'retired';
+        var copy = retired ? {
+            'phase1-lede': 'Use this phase to refine the spending target that supports your life in retirement. Enter the calculator with clearer estimates, useful context, and a practical question you want answered.',
+            'phase1-complete-lede': 'You’ve created the monthly spending target that the rest of your retirement plan will build on.'
+        } : {
+            'phase1-lede': 'Use this phase to get ready for the Retirement Spending Planner. The goal is to enter the calculator with clearer spending estimates, useful context, and a practical question you want answered.',
+            'phase1-complete-lede': 'You’ve created the monthly spending target that the rest of your retirement plan will build on.'
+        };
+        document.querySelectorAll('[data-retirement-copy]').forEach(function (element) {
+            var key = element.getAttribute('data-retirement-copy');
+            if (copy[key]) element.textContent = copy[key];
+        });
+    }
+
     function money(value) {
         if (!Number.isFinite(value)) return '$0';
         return value.toLocaleString(undefined, {
@@ -75,6 +105,7 @@
 
     function render() {
         var record = readRecord();
+        applyRetirementCopy(record);
         var hasSavedPlan = record.completionStatus === 'completed' &&
             record.outputs &&
             Number(record.outputs.monthlyRetirementSpendingTarget) > 0;
