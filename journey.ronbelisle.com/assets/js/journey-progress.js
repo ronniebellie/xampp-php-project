@@ -1,5 +1,11 @@
 (function () {
-    var storageKey = 'rbJourneyProgressV1';
+    // Central list of Journey-owned localStorage keys. Add future Journey calculator
+    // keys here so Clear Journey data remains a complete browser reset.
+    var JOURNEY_STORAGE_KEYS = [
+        'rbJourneyProgressV1',
+        'rbJourneyCalculator:retirementSpendingPlan:v1'
+    ];
+    var storageKey = JOURNEY_STORAGE_KEYS[0];
     var phases = [
         { key: 'spending-goals', title: 'Spending & Goals', href: '/phases/spending-goals.php', available: true },
         { key: 'social-security', title: 'Social Security', href: '/phases/social-security.php', available: true },
@@ -8,6 +14,33 @@
         { key: 'tax-strategy', title: 'Tax Strategy', href: '/phases/tax-strategy.php', available: true },
         { key: 'survivor-planning', title: 'Survivor Planning', href: '/phases/survivor-planning.php', available: true }
     ];
+
+    function journeyStorageKeys() {
+        return JOURNEY_STORAGE_KEYS.slice();
+    }
+
+    function clearJourneyLocalStorage() {
+        journeyStorageKeys().forEach(function (key) {
+            localStorage.removeItem(key);
+        });
+    }
+
+    function hasJourneyCalculatorData() {
+        return JOURNEY_STORAGE_KEYS.some(function (key) {
+            if (key === storageKey) return false;
+            try {
+                var raw = localStorage.getItem(key);
+                return Boolean(raw && raw !== '{}' && raw !== 'null');
+            } catch (error) {
+                return false;
+            }
+        });
+    }
+
+    window.rbJourneyStorage = {
+        keys: journeyStorageKeys,
+        clear: clearJourneyLocalStorage
+    };
 
     function migrateLegacyKeys(progress) {
         if (!progress || typeof progress !== 'object') return progress;
@@ -99,7 +132,9 @@
         var hasRecords = progress.records &&
             typeof progress.records === 'object' &&
             Object.keys(progress.records).length > 0;
-        return hasPhaseState || hasToolLaunches || hasRecords;
+        // Include orphaned Journey calculator records so Clear remains available
+        // even when rbJourneyProgressV1 was already removed.
+        return hasPhaseState || hasToolLaunches || hasRecords || hasJourneyCalculatorData();
     }
 
     function recordStatus(progress, key) {
@@ -303,11 +338,15 @@
 
         var resetTrigger = event.target.closest('[data-journey-reset]');
         if (resetTrigger) {
-            if (!window.confirm('Clear all Journey progress and saved planning records in this browser? This cannot be undone.')) {
+            var confirmed = window.confirm(
+                'Clear all Journey progress saved in this browser?\n\n' +
+                'This removes your saved phase progress and Retirement Spending Plan from this browser. This action cannot be undone.'
+            );
+            if (!confirmed) {
                 return;
             }
-            localStorage.removeItem(storageKey);
-            render({});
+            clearJourneyLocalStorage();
+            window.location.assign('/');
         }
     });
 
