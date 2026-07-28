@@ -469,8 +469,9 @@
     }
 
     function restoreRecord(record) {
-        if (!record || !record.inputs) return;
+        if (!record || (!record.inputs && !record.draftInputs)) return;
         var inputs = record.draftInputs || record.inputs;
+        if (!inputs || typeof inputs !== 'object') return;
         var status = inferRetirementStatus(record, inputs);
         if (status) {
             var statusInput = form.querySelector('input[name="retirementStatus"][value="' + status + '"]');
