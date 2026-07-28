@@ -60,7 +60,7 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
                             </div>
                         </section>
 
-                        <section class="calculator-section" aria-labelledby="start-method-title">
+                        <section class="calculator-section" aria-labelledby="start-method-title" data-start-method-section>
                             <p class="eyebrow">Step 2</p>
                             <h2 id="start-method-title">Choose how to begin</h2>
                             <p>Pick the starting point that feels easiest. The guided worksheet is recommended if you do not already know your household spending.</p>
@@ -134,10 +134,10 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
 
                         <section class="calculator-section" data-method-section="monthly_estimate" hidden aria-labelledby="monthly-title">
                             <p class="eyebrow">Step 3</p>
-                            <h2 id="monthly-title">Enter your current monthly household spending</h2>
+                            <h2 id="monthly-title" data-current-spending-copy="title">Current monthly household spending</h2>
                             <div class="field-group field-group-wide">
                                 <div class="money-input"><span aria-hidden="true">$</span><input id="currentMonthlySpending" name="currentMonthlySpending" type="number" min="0" step="1" inputmode="decimal" aria-labelledby="monthly-title"></div>
-                                <small>Use your best estimate of what your household spends in a typical month. The number does not need to be perfect.</small>
+                                <small data-current-spending-copy="help">Use your best estimate of what your household spends in a typical month. The number does not need to be perfect.</small>
                             </div>
                         </section>
 
@@ -151,7 +151,7 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
                             </div>
                         </section>
 
-                        <section class="calculator-section" aria-labelledby="adjustments-title">
+                        <section class="calculator-section" aria-labelledby="adjustments-title" data-retirement-target-section>
                             <p class="eyebrow">Step 4</p>
                             <h2 id="adjustments-title" data-retirement-copy="title">Expected monthly household spending in retirement</h2>
                             <p data-retirement-copy="help">Enter your best estimate of what your household will spend in a typical month after you retire. Consider expenses that may end, decrease, increase, or begin—but you do not need to calculate each change separately.</p>
@@ -233,6 +233,6 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
             </div>
         </section>
     </main>
-    <script src="/assets/js/retirement-spending-plan.js?v=20260728-spending-term" defer></script>
+    <script src="/assets/js/retirement-spending-plan.js?v=20260728-retired-spending-flow" defer></script>
 </body>
 </html>
