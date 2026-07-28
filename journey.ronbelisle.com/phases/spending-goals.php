@@ -26,7 +26,7 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                     <div class="phase-intro">
                         <p class="eyebrow">Phase 1</p>
                         <h1 id="phase-title">Spending &amp; Goals</h1>
-                        <p class="page-lede" data-retirement-copy="phase1-lede">Use this phase to get ready for the Retirement Spending Planner. The goal is to enter the calculator with clearer spending estimates, useful context, and a practical question you want answered.</p>
+                        <p class="page-lede" data-retirement-copy="phase1-lede">Use this phase to shape your retirement spending plan. You’ll estimate your household living expenses, think through your retirement lifestyle goals, and gather what you need for a realistic plan.</p>
                     </div>
 
                     <section class="current-record-overview" aria-labelledby="spending-plan-summary-title" data-spending-plan-summary hidden>
@@ -38,7 +38,7 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                             <h2 id="spending-plan-summary-title">Phase 1 complete</h2>
                             <span class="record-status-badge is-current">Complete</span>
                         </div>
-                        <p class="phase-complete-lede" data-retirement-copy="phase1-complete-lede">You’ve created the monthly spending target that the rest of your retirement plan will build on.</p>
+                        <p class="phase-complete-lede" data-retirement-copy="phase1-complete-lede">You’ve created the monthly living-expense target that the rest of your retirement plan will build on.</p>
                         <div class="result-metrics compact-results">
                             <div class="result-metric is-primary">
                                 <span>Monthly target</span>
@@ -65,20 +65,20 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
 
                     <article class="planning-panel">
                         <h2>Why this step matters</h2>
-                        <p>Your spending target is the foundation for the rest of your retirement plan. Before you estimate Social Security timing, withdrawals, taxes, or investment risk, it helps to know what kind of retirement income you are trying to support.</p>
+                        <p>Your living-expense target is the foundation for the rest of your retirement plan. Before you estimate Social Security timing, withdrawals, taxes, or investment risk, it helps to know what lifestyle those income sources need to support.</p>
 
                         <h2>What you'll accomplish</h2>
-                        <p>You will prepare a reasonable retirement spending target and identify the assumptions you want the planner to test.</p>
+                        <p>You will estimate a realistic monthly living-expense target for retirement and note the lifestyle goals you want your plan to support.</p>
 
                         <h2>What to bring</h2>
                         <div class="prompt-list" aria-label="What to bring before using the Retirement Spending Planner">
                             <div>
-                                <h3>Current household spending</h3>
-                                <p>Don't worry if you don't know exactly what you spend today. The Retirement Spending Planner will help you estimate it.</p>
+                                <h3>Current household living expenses</h3>
+                                <p>Don’t worry if you don’t know your exact monthly household living expenses. The Retirement Spending Planner will help you estimate them. Focus on lifestyle costs—not income taxes, retirement savings, or investment contributions.</p>
                             </div>
                             <div>
                                 <h3>Retirement lifestyle goals</h3>
-                                <p>Notes about travel, hobbies, family support, charitable giving, or other flexible priorities.</p>
+                                <p>Notes about travel, hobbies, family support, charitable giving, or other priorities you want your retirement plan to support.</p>
                             </div>
                             <div>
                                 <h3>Other retirement income</h3>
@@ -87,11 +87,11 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                         </div>
 
                         <h2>Before you continue</h2>
-                        <p>Open the planner, work through the calculator, and save your retirement spending target. You will use that number in the next phase when thinking about Social Security.</p>
+                        <p>Open the Retirement Spending Planner, estimate your household living expenses, and save your monthly target. You will use that number in the next phase when thinking about Social Security.</p>
 
                         <h2>Continue to the next phase</h2>
                         <div data-spending-plan-empty>
-                            <p>After saving your Retirement Spending Plan, return here to review your spending summary and continue to Phase 2: Social Security.</p>
+                            <p>After saving your Retirement Spending Plan, return here to review your living-expense summary and continue to Phase 2: Social Security.</p>
                         </div>
                         <div class="completion-message phase-completion-panel" data-spending-plan-summary hidden>
                             <p><strong>Phase 1 is complete.</strong> Continue to Phase 2: Social Security when you are ready.</p>
@@ -106,13 +106,13 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                     <div class="next-step-card" aria-labelledby="next-step-title">
                         <p class="eyebrow">Recommended Tool</p>
                         <h2 id="next-step-title">Your Retirement Spending Plan</h2>
-                        <p>Estimate a retirement budget from your household spending and save the target for the rest of your Journey.</p>
+                        <p>Estimate the monthly living expenses your retirement lifestyle will need, then save that target for the rest of your Journey.</p>
                         <a class="primary-action" href="/calculators/retirement-spending-plan/">Launch Retirement Spending Planner</a>
                     </div>
                 </aside>
             </div>
         </section>
     </main>
-    <script src="/assets/js/spending-goals-phase.js?v=20260728-retirement-status" defer></script>
+    <script src="/assets/js/spending-goals-phase.js?v=20260728-phase1-copy" defer></script>
 </body>
 </html>

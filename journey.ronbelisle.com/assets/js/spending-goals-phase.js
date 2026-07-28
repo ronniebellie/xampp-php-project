@@ -30,11 +30,11 @@
     function applyRetirementCopy(record) {
         var retired = retirementStatus(record) === 'retired';
         var copy = retired ? {
-            'phase1-lede': 'Use this phase to refine the spending target that supports your life in retirement. Enter the calculator with clearer estimates, useful context, and a practical question you want answered.',
-            'phase1-complete-lede': 'You’ve created the monthly spending target that the rest of your retirement plan will build on.'
+            'phase1-lede': 'Use this phase to refine the living-expense target that supports your life in retirement. You’ll review household expenses, revisit lifestyle goals, and keep your plan grounded in what daily life actually costs.',
+            'phase1-complete-lede': 'You’ve created the monthly living-expense target that the rest of your retirement plan will build on.'
         } : {
-            'phase1-lede': 'Use this phase to get ready for the Retirement Spending Planner. The goal is to enter the calculator with clearer spending estimates, useful context, and a practical question you want answered.',
-            'phase1-complete-lede': 'You’ve created the monthly spending target that the rest of your retirement plan will build on.'
+            'phase1-lede': 'Use this phase to shape your retirement spending plan. You’ll estimate your household living expenses, think through your retirement lifestyle goals, and gather what you need for a realistic plan.',
+            'phase1-complete-lede': 'You’ve created the monthly living-expense target that the rest of your retirement plan will build on.'
         };
         document.querySelectorAll('[data-retirement-copy]').forEach(function (element) {
             var key = element.getAttribute('data-retirement-copy');

@@ -9,7 +9,7 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260728-retirement-status">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260728-phase1-copy">
 </head>
 <body>
     <header class="site-header">
@@ -26,7 +26,11 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
                     <div class="phase-intro">
                         <p class="eyebrow">Phase 1 calculator</p>
                         <h1 id="calculator-title">Your Retirement Spending Plan</h1>
-                        <p class="page-lede">Estimate a practical retirement spending target you can carry into the rest of your Journey. Use estimates where needed. You can update this plan later.</p>
+                        <p class="page-lede">Estimate the monthly living expenses your retirement lifestyle will need. Use estimates where needed. You can update this plan later.</p>
+                        <div class="phase-status-note" role="note">
+                            <p><strong>What “spending” means here:</strong> Include the costs of your household lifestyle—housing, food, transportation, healthcare, utilities, insurance, entertainment, and similar living expenses.</p>
+                            <p>Do not include retirement savings, investment contributions, or income taxes unless a later step specifically asks for them.</p>
+                        </div>
                     </div>
 
                     <form class="planning-panel journey-calculator" id="retirementSpendingPlanForm" novalidate>
@@ -38,7 +42,7 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
                         <section class="calculator-section" aria-labelledby="retirement-status-title">
                             <p class="eyebrow">Step 1</p>
                             <h2 id="retirement-status-title">What best describes your situation today?</h2>
-                            <p>This helps the planner use wording that matches your situation. It does not change the spending calculation itself.</p>
+                            <p>This helps the planner use wording that matches your situation. It does not change the living-expense calculation itself.</p>
                             <div class="method-grid" role="radiogroup" aria-labelledby="retirement-status-title">
                                 <label class="method-card">
                                     <input type="radio" name="retirementStatus" value="planning">
@@ -60,7 +64,7 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
                         <section class="calculator-section" aria-labelledby="start-method-title">
                             <p class="eyebrow">Step 2</p>
                             <h2 id="start-method-title">Choose how to begin</h2>
-                            <p>Pick the starting point that feels easiest. The guided worksheet is recommended if you do not already know your household spending.</p>
+                            <p>Pick the starting point that feels easiest. The guided worksheet is recommended if you do not already know your household living expenses.</p>
                             <div class="method-grid" role="radiogroup" aria-labelledby="start-method-title">
                                 <label class="method-card">
                                     <input type="radio" name="startingMethod" value="guided_categories" checked>
@@ -72,14 +76,14 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
                                 <label class="method-card">
                                     <input type="radio" name="startingMethod" value="monthly_estimate">
                                     <span>
-                                        <strong>I know my monthly spending</strong>
+                                        <strong>I know my monthly living expenses</strong>
                                         <small>Enter one monthly estimate.</small>
                                     </span>
                                 </label>
                                 <label class="method-card">
                                     <input type="radio" name="startingMethod" value="annual_estimate">
                                     <span>
-                                        <strong>I know my annual spending</strong>
+                                        <strong>I know my annual living expenses</strong>
                                         <small>Enter one annual estimate.</small>
                                     </span>
                                 </label>
@@ -88,8 +92,8 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
 
                         <section class="calculator-section" data-method-section="guided_categories" aria-labelledby="categories-title">
                             <p class="eyebrow">Step 3</p>
-                            <h2 id="categories-title">Estimate current household spending</h2>
-                            <p>Use monthly estimates. Leave a category at zero if it does not apply or you are not sure yet.</p>
+                            <h2 id="categories-title">Estimate current household living expenses</h2>
+                            <p>Use monthly estimates for lifestyle costs. Leave a category at zero if it does not apply or you are not sure yet.</p>
                             <div class="journey-form-grid">
                                 <div class="field-group">
                                     <label for="housing">Housing</label>
@@ -122,19 +126,19 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
                                     <small>Restaurants, entertainment, travel, hobbies, gifts, charity, and family support.</small>
                                 </div>
                                 <div class="field-group">
-                                    <label for="otherSpending">Other spending</label>
+                                    <label for="otherSpending">Other living expenses</label>
                                     <div class="money-input"><span aria-hidden="true">$</span><input id="otherSpending" name="otherSpending" type="number" min="0" step="1" inputmode="decimal"></div>
-                                    <small>Any regular spending that does not fit the categories above.</small>
+                                    <small>Any regular living expenses that do not fit the categories above.</small>
                                 </div>
                             </div>
                         </section>
 
                         <section class="calculator-section" data-method-section="monthly_estimate" hidden aria-labelledby="monthly-title">
                             <p class="eyebrow">Step 3</p>
-                            <h2 id="monthly-title">Enter your current monthly household spending</h2>
+                            <h2 id="monthly-title">Enter your current monthly household living expenses</h2>
                             <div class="field-group field-group-wide">
                                 <div class="money-input"><span aria-hidden="true">$</span><input id="currentMonthlySpending" name="currentMonthlySpending" type="number" min="0" step="1" inputmode="decimal" aria-labelledby="monthly-title"></div>
-                                <small>Use your best estimate of what your household spends in a typical month. The number does not need to be perfect.</small>
+                                <small>Use your best estimate of household living expenses in a typical month. The number does not need to be perfect.</small>
                             </div>
                         </section>
 
@@ -142,20 +146,20 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
                             <p class="eyebrow">Step 3</p>
                             <h2 id="annual-title">Enter your annual estimate</h2>
                             <div class="field-group field-group-wide">
-                                <label for="currentAnnualSpending">Current annual household spending</label>
+                                <label for="currentAnnualSpending">Current annual household living expenses</label>
                                 <div class="money-input"><span aria-hidden="true">$</span><input id="currentAnnualSpending" name="currentAnnualSpending" type="number" min="0" step="1" inputmode="decimal"></div>
-                                <small>Use your best estimate of what your household spends in a typical year.</small>
+                                <small>Use your best estimate of household living expenses in a typical year.</small>
                             </div>
                         </section>
 
                         <section class="calculator-section" aria-labelledby="adjustments-title">
                             <p class="eyebrow">Step 4</p>
-                            <h2 id="adjustments-title" data-retirement-copy="title">Expected monthly household spending in retirement</h2>
-                            <p data-retirement-copy="help">Enter your best estimate of what your household will spend in a typical month after you retire. Consider expenses that may end, decrease, increase, or begin—but you do not need to calculate each change separately.</p>
+                            <h2 id="adjustments-title" data-retirement-copy="title">Expected monthly household living expenses in retirement</h2>
+                            <p data-retirement-copy="help">Enter your best estimate of monthly household living expenses after you retire. Consider costs that may end, decrease, increase, or begin—but you do not need to calculate each change separately.</p>
                             <div class="field-group field-group-wide">
-                                <label for="expectedMonthlyRetirementSpending" data-retirement-copy="label">Expected monthly household spending in retirement</label>
+                                <label for="expectedMonthlyRetirementSpending" data-retirement-copy="label">Expected monthly household living expenses in retirement</label>
                                 <div class="money-input"><span aria-hidden="true">$</span><input id="expectedMonthlyRetirementSpending" name="expectedMonthlyRetirementSpending" type="number" min="0" step="1" inputmode="decimal"></div>
-                                <small data-retirement-copy="field-note">This becomes your monthly retirement spending target.</small>
+                                <small data-retirement-copy="field-note">This becomes your monthly retirement living-expense target.</small>
                             </div>
                             <details class="calculator-help">
                                 <summary>Need help estimating this?</summary>
@@ -184,10 +188,10 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
                         <section class="calculator-section calculator-results" id="spendingPlanResults" aria-labelledby="results-title" aria-live="polite" hidden>
                             <p class="eyebrow">Your result</p>
                             <h2 id="results-title">Your retirement spending plan</h2>
-                            <p>Review these numbers before saving.</p>
+                            <p>Review these living-expense numbers before saving.</p>
                             <dl class="plan-review-lines">
                                 <div>
-                                    <dt data-retirement-copy="result-monthly">Expected monthly retirement spending:</dt>
+                                    <dt data-retirement-copy="result-monthly">Expected monthly retirement living expenses:</dt>
                                     <dd data-result="monthlyTarget">$0</dd>
                                 </div>
                                 <div>
@@ -199,18 +203,18 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
                                     <dd data-result="remainingMonthly">$0</dd>
                                 </div>
                                 <div>
-                                    <dt>Annual retirement spending target:</dt>
+                                    <dt>Annual retirement living-expense target:</dt>
                                     <dd data-result="annualTarget">$0</dd>
                                 </div>
                             </dl>
-                            <p class="plan-review-handoff">This is the amount your Social Security benefits and investment withdrawals will need to support in later phases of your Journey.</p>
+                            <p class="plan-review-handoff">This is the amount of living expenses your Social Security benefits and investment withdrawals will need to support in later phases of your Journey.</p>
                             <div class="assumption-statement">
                                 <p data-result="assumptions"></p>
                             </div>
                         </section>
 
                         <div class="calculator-actions">
-                            <button type="button" class="secondary-action button-action" id="calculateSpendingPlan">Calculate My Spending Target</button>
+                            <button type="button" class="secondary-action button-action" id="calculateSpendingPlan">Calculate My Living-Expense Target</button>
                             <button type="submit" class="primary-action button-action">Save and Continue Phase 1</button>
                         </div>
                         <p class="save-status" id="spendingPlanSaveStatus" aria-live="polite">Draft inputs are saved in this browser for the prototype.</p>
@@ -223,13 +227,13 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
                     <div class="next-step-card">
                         <p class="eyebrow">Phase context</p>
                         <h2>What this saves</h2>
-                        <p>This calculator saves one active retirement spending plan for Phase 1. You can update it later as your assumptions become clearer.</p>
+                        <p>This planner saves one active retirement living-expense plan for Phase 1. You can update it later as your assumptions become clearer.</p>
                         <a class="secondary-action" href="/phases/spending-goals.php">Return to Spending &amp; Goals</a>
                     </div>
                 </aside>
             </div>
         </section>
     </main>
-    <script src="/assets/js/retirement-spending-plan.js?v=20260728-retirement-status-2" defer></script>
+    <script src="/assets/js/retirement-spending-plan.js?v=20260728-phase1-copy" defer></script>
 </body>
 </html>

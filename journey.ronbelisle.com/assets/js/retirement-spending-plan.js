@@ -23,13 +23,13 @@
 
     var copyByStatus = {
         planning: {
-            title: 'Expected monthly household spending in retirement',
-            help: 'Enter your best estimate of what your household will spend in a typical month after you retire. Consider expenses that may end, decrease, increase, or begin—but you do not need to calculate each change separately.',
-            label: 'Expected monthly household spending in retirement',
-            fieldNote: 'This becomes your monthly retirement spending target.',
-            resultMonthly: 'Expected monthly retirement spending:',
-            assumptionsPhrase: 'expected monthly retirement spending',
-            validationMissing: 'Enter expected monthly household spending in retirement.',
+            title: 'Expected monthly household living expenses in retirement',
+            help: 'Enter your best estimate of monthly household living expenses after you retire. Consider costs that may end, decrease, increase, or begin—but you do not need to calculate each change separately.',
+            label: 'Expected monthly household living expenses in retirement',
+            fieldNote: 'This becomes your monthly retirement living-expense target.',
+            resultMonthly: 'Expected monthly retirement living expenses:',
+            assumptionsPhrase: 'expected monthly retirement living expenses',
+            validationMissing: 'Enter expected monthly household living expenses in retirement.',
             tipsHtml:
                 '<li>Commuting or payroll contributions may end.</li>' +
                 '<li>Debt payments may end or decrease.</li>' +
@@ -37,13 +37,13 @@
                 '<li>Travel, hobbies, family support, or home maintenance may change.</li>'
         },
         retired: {
-            title: 'Current monthly household spending in retirement',
-            help: 'Enter your best estimate of what your household spends in a typical month during retirement. The number does not need to be perfect.',
-            label: 'Current monthly household spending in retirement',
-            fieldNote: 'This becomes your monthly retirement spending target.',
-            resultMonthly: 'Current monthly retirement spending:',
-            assumptionsPhrase: 'current monthly retirement spending',
-            validationMissing: 'Enter current monthly household spending in retirement.',
+            title: 'Current monthly household living expenses in retirement',
+            help: 'Enter your best estimate of monthly household living expenses during retirement. The number does not need to be perfect.',
+            label: 'Current monthly household living expenses in retirement',
+            fieldNote: 'This becomes your monthly retirement living-expense target.',
+            resultMonthly: 'Current monthly retirement living expenses:',
+            assumptionsPhrase: 'current monthly retirement living expenses',
+            validationMissing: 'Enter current monthly household living expenses in retirement.',
             tipsHtml:
                 '<li>Debt payments may end or decrease.</li>' +
                 '<li>Healthcare or insurance may change.</li>' +
@@ -234,18 +234,18 @@
 
         if (method === 'guided_categories') {
             if (totalValues(inputs.categories, categoryFields) <= 0) {
-                errors.push('Enter at least one spending category, even if it is an estimate.');
+                errors.push('Enter at least one living-expense category, even if it is an estimate.');
             }
         } else if (method === 'monthly_estimate') {
             if (!inputs.currentMonthlySpending || inputs.currentMonthlySpending <= 0) {
-                errors.push('Enter current monthly household spending.');
+                errors.push('Enter current monthly household living expenses.');
             }
         } else if (method === 'annual_estimate') {
             if (!inputs.currentAnnualSpending || inputs.currentAnnualSpending <= 0) {
-                errors.push('Enter current annual household spending.');
+                errors.push('Enter current annual household living expenses.');
             }
         } else {
-            errors.push('Choose how you would like to estimate spending.');
+            errors.push('Choose how you would like to estimate living expenses.');
         }
         if (!inputs.expectedMonthlyRetirementSpending || inputs.expectedMonthlyRetirementSpending <= 0) {
             errors.push(copy.validationMissing);
@@ -257,7 +257,7 @@
     function validateForSave(inputs, outputs) {
         var errors = validateForCalculation(inputs);
         if (!outputs || outputs.monthlyRetirementSpendingTarget <= 0) {
-            errors.push('Calculate a retirement spending target before saving.');
+            errors.push('Calculate a retirement living-expense target before saving.');
         }
         return errors;
     }
@@ -338,7 +338,7 @@
             monthly_estimate: 'known monthly estimate',
             annual_estimate: 'known annual estimate'
         };
-        return labels[method] || 'spending estimate';
+        return labels[method] || 'living-expense estimate';
     }
 
     function renderResults(inputs, outputs) {
@@ -379,7 +379,7 @@
             outputs: outputs || {},
             journeyResult: outputs ? {
                 keySummaryResult: {
-                    label: 'Monthly retirement spending target',
+                    label: 'Monthly retirement living-expense target',
                     value: outputs.monthlyRetirementSpendingTarget,
                     unit: 'usd_per_month'
                 },
