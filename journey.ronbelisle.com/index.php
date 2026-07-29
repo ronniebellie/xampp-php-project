@@ -9,7 +9,7 @@ $page_title = 'Your Retirement Planning Journey';
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260722-phase-badges">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260729-approaching-retirement">
 </head>
 <body>
     <header class="site-header">
@@ -28,7 +28,9 @@ $page_title = 'Your Retirement Planning Journey';
                     <div class="intro-copy">
                         <p>Retirement planning is a series of connected decisions about spending, Social Security, investments, taxes, and protecting your family.</p>
                         <p>This guided <strong>six-phase Journey</strong> helps you build your initial retirement plan one decision at a time.</p>
+                        <p>This guided Journey is designed for people approaching retirement who are preparing to make decisions about spending, Social Security, retirement income, taxes, and protecting their household.</p>
                     </div>
+                    <p class="audience-aside">Already retired? Many of the individual planning tools may still be useful, but this six-phase Journey is currently built around preparing for retirement.</p>
                     <a class="primary-action" href="/phases/spending-goals.php" data-journey-home-cta>Begin Your Journey</a>
                 </div>
 

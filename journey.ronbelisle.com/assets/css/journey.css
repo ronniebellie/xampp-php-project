@@ -148,6 +148,22 @@ h1 {
     font-size: 18px;
 }
 
+.audience-aside {
+    margin: 10px 0 0;
+    max-width: 640px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.phase-audience-note {
+    margin: 10px 0 0;
+    max-width: 720px;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.45;
+}
+
 .primary-action,
 .secondary-action,
 .phase-card a {

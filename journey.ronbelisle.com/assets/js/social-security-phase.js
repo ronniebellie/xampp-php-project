@@ -2,7 +2,6 @@
     'use strict';
 
     var storageKey = 'rbJourneyProgressV1';
-    var calculatorKey = 'rbJourneyCalculator:retirementSpendingPlan:v1';
     var recordKey = 'social-security';
     var form = document.getElementById('phase2RecordForm');
     var recordTools = window.rbJourneyRecords;
@@ -16,51 +15,6 @@
             return {};
         }
     }
-
-    function readPhase1RetirementStatus() {
-        try {
-            var calc = JSON.parse(localStorage.getItem(calculatorKey) || '{}');
-            var status = calc && calc.inputs && calc.inputs.retirementStatus;
-            if (status === 'retired' || status === 'planning') return status;
-            var later = calc && calc.journeyResult && calc.journeyResult.dataForLaterPhases &&
-                calc.journeyResult.dataForLaterPhases.retirementStatus;
-            if (later === 'retired' || later === 'planning') return later;
-        } catch (error) {
-            // fall through
-        }
-        try {
-            var progress = readProgress();
-            var record = progress.records && progress.records['spending-goals'];
-            var data = record && record.result && record.result.dataForLaterPhases;
-            if (data && (data.retirementStatus === 'retired' || data.retirementStatus === 'planning')) {
-                return data.retirementStatus;
-            }
-        } catch (error) {
-            // fall through
-        }
-        return 'planning';
-    }
-
-    function applyRetirementCopy() {
-        var retired = readPhase1RetirementStatus() === 'retired';
-        var copy = retired ? {
-            'retire-timing-title': 'Work stop date and claiming',
-            'retire-timing-help': 'Your work-stop date and Social Security claiming date do not have to be the same. Use the timing that fits your household.',
-            'early-exit-legend': 'Did you stop working before you began claiming Social Security—or do you plan to?',
-            'early-exit-help': 'If you stopped working earlier than Full Retirement Age, the benefit estimate on your Social Security statement may be higher than the amount you eventually receive. We can help you estimate that difference.'
-        } : {
-            'retire-timing-title': 'When you expect to retire',
-            'retire-timing-help': 'Think about when you expect to stop working. Your retirement date and Social Security claiming date do not have to be the same.',
-            'early-exit-legend': 'Do you expect to retire before you begin claiming Social Security?',
-            'early-exit-help': 'If yes, the benefit estimate on your Social Security statement may be higher than the amount you eventually receive. We can help you estimate that difference.'
-        };
-        document.querySelectorAll('[data-retirement-copy]').forEach(function (element) {
-            var key = element.getAttribute('data-retirement-copy');
-            if (copy[key]) element.textContent = copy[key];
-        });
-    }
-
-    applyRetirementCopy();
 
     function writeProgress(progress) {
         localStorage.setItem(storageKey, JSON.stringify(progress));

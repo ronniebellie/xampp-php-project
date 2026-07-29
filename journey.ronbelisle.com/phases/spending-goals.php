@@ -9,7 +9,7 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260729-approaching-retirement">
 </head>
 <body>
     <header class="site-header">
@@ -26,7 +26,8 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                     <div class="phase-intro">
                         <p class="eyebrow">Phase 1</p>
                         <h1 id="phase-title">Spending &amp; Goals</h1>
-                        <p class="page-lede" data-retirement-copy="phase1-lede">Use this phase to shape your retirement spending plan. You’ll estimate your household spending, think through your retirement lifestyle goals, and gather what you need for a realistic plan.</p>
+                        <p class="page-lede">Use this phase to shape the spending plan you expect to need in retirement. You’ll estimate your current household spending, think through your retirement lifestyle goals, and create a monthly spending target for your initial retirement plan.</p>
+                        <p class="phase-audience-note">This Journey is designed for people approaching retirement.</p>
                     </div>
 
                     <section class="current-record-overview" aria-labelledby="spending-plan-summary-title" data-spending-plan-summary hidden>
@@ -38,7 +39,7 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                             <h2 id="spending-plan-summary-title">Phase 1 complete</h2>
                             <span class="record-status-badge is-current">Complete</span>
                         </div>
-                        <p class="phase-complete-lede" data-retirement-copy="phase1-complete-lede">You’ve created the monthly spending target that the rest of your retirement plan will build on.</p>
+                        <p class="phase-complete-lede">You’ve created the monthly spending target that the rest of your retirement plan will build on.</p>
                         <div class="result-metrics compact-results">
                             <div class="result-metric is-primary">
                                 <span>Monthly target</span>
@@ -113,6 +114,6 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
             </div>
         </section>
     </main>
-    <script src="/assets/js/spending-goals-phase.js?v=20260728-spending-term" defer></script>
+    <script src="/assets/js/spending-goals-phase.js?v=20260729-approaching-retirement" defer></script>
 </body>
 </html>

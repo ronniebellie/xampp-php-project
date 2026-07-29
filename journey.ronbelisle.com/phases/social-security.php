@@ -26,7 +26,7 @@ $page_title = 'Social Security | Retirement Planning Journey';
                     <div class="phase-intro">
                         <p class="eyebrow">Phase 2</p>
                         <h1 id="phase-title">Social Security</h1>
-                        <p class="page-lede">You have estimated what retirement may cost. Now you’ll compare Social Security claiming ages and choose an age to test in your retirement plan.</p>
+                        <p class="page-lede">You have estimated what your retirement lifestyle may cost. Now you’ll consider when to claim Social Security and choose an age to test in your retirement plan.</p>
                         <p class="phase-reassurance">This phase will help you use the Social Security Claiming Analyzer, understand the results, and decide what to verify before you rely on them. You can revisit your choice as your circumstances or priorities change.</p>
                         <div class="phase-status-note" role="status">
                             <p><strong>Your Phase 1 spending plan stays in this browser.</strong> The full guided Social Security planner is still being built. This page is the current Phase 2 workspace: coaching, claiming comparison guidance, and a place to record the assumption you want to test next.</p>
@@ -96,8 +96,8 @@ $page_title = 'Social Security | Retirement Planning Journey';
                                     <p>Keep the monthly or annual spending estimate from Phase 1 nearby. The Claiming Analyzer will not ask for it, but it will help you judge how much of your spending the benefit could cover.</p>
                                 </div>
                                 <div>
-                                    <h3 data-retirement-copy="retire-timing-title">When you expect to retire</h3>
-                                    <p data-retirement-copy="retire-timing-help">Think about when you expect to stop working. Your retirement date and Social Security claiming date do not have to be the same.</p>
+                                    <h3>When you expect to retire</h3>
+                                    <p>Think about when you expect to stop working. Your retirement date and Social Security claiming date do not have to be the same.</p>
                                 </div>
                                 <div>
                                     <h3>Your spouse’s information, if applicable</h3>
@@ -251,8 +251,8 @@ $page_title = 'Social Security | Retirement Planning Journey';
                             <p>Answer these three questions. We’ll point you to no more than one additional calculator.</p>
 
                             <fieldset class="journey-fieldset">
-                                <legend data-retirement-copy="early-exit-legend">Do you expect to retire before you begin claiming Social Security?</legend>
-                                <p class="fieldset-help" data-retirement-copy="early-exit-help">If yes, the benefit estimate on your Social Security statement may be higher than the amount you eventually receive. We can help you estimate that difference.</p>
+                                <legend>Do you expect to retire before you begin claiming Social Security?</legend>
+                                <p class="fieldset-help">If yes, the benefit estimate on your Social Security statement may be higher than the amount you eventually receive. We can help you estimate that difference.</p>
                                 <div class="inline-choices">
                                     <label class="choice-row"><input type="radio" name="earlyExitAnswer" value="yes"> <span>Yes</span></label>
                                     <label class="choice-row"><input type="radio" name="earlyExitAnswer" value="no"> <span>No</span></label>
@@ -349,6 +349,6 @@ $page_title = 'Social Security | Retirement Planning Journey';
         </section>
     </main>
 
-    <script src="/assets/js/social-security-phase.js?v=20260728-retirement-status" defer></script>
+    <script src="/assets/js/social-security-phase.js?v=20260729-approaching-retirement" defer></script>
 </body>
 </html>
