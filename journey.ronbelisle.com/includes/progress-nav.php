@@ -68,5 +68,5 @@ $active_phase = $active_phase ?? '';
         <?php endforeach; ?>
     </ol>
 </nav>
-<script src="/assets/js/journey-records.js" defer></script>
+<script src="/assets/js/journey-records.js?v=20260729-claiming-age-only" defer></script>
 <script src="/assets/js/journey-progress.js?v=20260728-journey-reset" defer></script>

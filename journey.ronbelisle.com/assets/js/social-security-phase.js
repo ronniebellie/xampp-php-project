@@ -95,7 +95,6 @@
         var selectedBenefit = numberOrNull(document.getElementById('selectedMonthlyBenefit').value);
         var usesFraAmount = status === 'provisional' && isClaimingAtFra(birthYear, claimAge);
         var estimatedMonthlyBenefit = null;
-        var currentMonthlyBenefit = null;
 
         if (status === 'provisional') {
             // Canonical monthly planning amount for Phase 3.
@@ -103,8 +102,6 @@
             if (usesFraAmount && benefitAtFra !== null && benefitAtFra > 0) {
                 document.getElementById('selectedMonthlyBenefit').value = String(benefitAtFra);
             }
-        } else if (status === 'already-receiving') {
-            currentMonthlyBenefit = selectedBenefit;
         }
 
         return {
@@ -114,7 +111,6 @@
             claimAge: claimAge,
             benefitAtFra: benefitAtFra,
             estimatedMonthlyBenefit: estimatedMonthlyBenefit,
-            currentMonthlyBenefit: currentMonthlyBenefit,
             decisionNotes: notesValue(),
             // Legacy justification fields are no longer collected. Keep empty on save so older
             // values do not keep the record stuck in "needs verification."
@@ -140,7 +136,6 @@
             claimAge: record.claimAge === undefined ? null : record.claimAge,
             benefitAtFra: record.benefitAtFra === undefined ? null : record.benefitAtFra,
             estimatedMonthlyBenefit: record.estimatedMonthlyBenefit === undefined ? null : record.estimatedMonthlyBenefit,
-            currentMonthlyBenefit: record.currentMonthlyBenefit === undefined ? null : record.currentMonthlyBenefit,
             decisionNotes: record.decisionNotes || ''
         };
     }
@@ -152,7 +147,6 @@
             record.birthYear !== null ||
             (record.benefitAtFra !== null && record.benefitAtFra !== undefined) ||
             (record.estimatedMonthlyBenefit !== null && record.estimatedMonthlyBenefit !== undefined) ||
-            (record.currentMonthlyBenefit !== null && record.currentMonthlyBenefit !== undefined) ||
             record.decisionNotes
         );
     }
@@ -226,19 +220,32 @@
         setRadio('survivorAnswer', record.companionAnswers && record.companionAnswers.survivor);
         setRadio('spendingGapAnswer', record.companionAnswers && record.companionAnswers.spendingGap);
 
+        if (record.decisionStatus === 'already-receiving') {
+            // Obsolete path: show the normal claiming-age interface and require a new choice.
+            // Keep the old currentMonthlyBenefit on the stored record until the user saves again,
+            // but do not load it into the claiming-age benefit field.
+            document.getElementById('decisionStatus').value = '';
+            document.getElementById('claimAge').value = '';
+            document.getElementById('selectedMonthlyBenefit').value = '';
+            if (record.birthYear !== null && record.birthYear !== undefined) {
+                document.getElementById('birthYear').value = record.birthYear;
+            }
+            if (record.decisionNotes) document.getElementById('decisionNotes').value = record.decisionNotes;
+            return;
+        }
+
         if (record.decisionStatus) document.getElementById('decisionStatus').value = record.decisionStatus;
         if (record.birthYear !== null && record.birthYear !== undefined) document.getElementById('birthYear').value = record.birthYear;
         if (record.claimAge !== null && record.claimAge !== undefined) {
             document.getElementById('claimAge').value = String(record.claimAge);
             setRadio('interest', String(record.claimAge));
-        } else if (record.decisionStatus === 'already-receiving') {
-            setRadio('interest', 'receiving');
         } else if (record.decisionStatus === 'need-more-information') {
             setRadio('interest', 'not-ready');
         }
         if (record.benefitAtFra !== null && record.benefitAtFra !== undefined) document.getElementById('benefitAtFra').value = record.benefitAtFra;
-        var benefit = record.decisionStatus === 'already-receiving' ? record.currentMonthlyBenefit : record.estimatedMonthlyBenefit;
-        if (benefit !== null && benefit !== undefined) document.getElementById('selectedMonthlyBenefit').value = benefit;
+        if (record.estimatedMonthlyBenefit !== null && record.estimatedMonthlyBenefit !== undefined) {
+            document.getElementById('selectedMonthlyBenefit').value = record.estimatedMonthlyBenefit;
+        }
         if (record.decisionNotes) document.getElementById('decisionNotes').value = record.decisionNotes;
     }
 
@@ -249,8 +256,6 @@
         if (/^\d+$/.test(interest)) {
             claimAge.value = interest;
             status.value = 'provisional';
-        } else if (interest === 'receiving') {
-            status.value = 'already-receiving';
         } else if (interest === 'not-ready') {
             status.value = 'need-more-information';
         }
@@ -282,19 +287,10 @@
         var usesFraAmount = planningBenefitUsesFraAmount();
         var benefitAtFra = numberOrNull(document.getElementById('benefitAtFra').value);
 
-        claimAgeGroup.hidden = status === 'already-receiving' || status === 'need-more-information';
-        fraGroup.hidden = status === 'already-receiving' || status === 'need-more-information';
+        claimAgeGroup.hidden = status === 'need-more-information';
+        fraGroup.hidden = status === 'need-more-information';
 
-        if (status === 'already-receiving') {
-            selectedGroup.hidden = false;
-            if (selectedInputWrap) selectedInputWrap.hidden = false;
-            label.hidden = false;
-            help.hidden = false;
-            fraConfirmation.hidden = true;
-            fraConfirmation.innerHTML = '';
-            label.textContent = 'Current gross monthly Social Security benefit';
-            help.textContent = 'Enter the gross amount before Medicare is deducted.';
-        } else if (status === 'need-more-information') {
+        if (status === 'need-more-information') {
             selectedGroup.hidden = true;
             fraConfirmation.hidden = true;
             fraConfirmation.innerHTML = '';
@@ -428,10 +424,6 @@
             }
         }
 
-        if (record.decisionStatus === 'already-receiving') {
-            if (!(record.currentMonthlyBenefit > 0)) errors.push('Enter your current gross monthly Social Security benefit.');
-        }
-
         return errors;
     }
 
@@ -526,12 +518,15 @@
                 '<p>I am not ready to select a claiming age yet.</p>' +
                 (summaryRecord.decisionNotes ? '<p>Notes: ' + escapeHtml(summaryRecord.decisionNotes) + '</p>' : '') +
                 '<p>I should return after I have a clearer estimate. This remains a planning assumption, not a filing action.</p>';
+        } else if (summaryRecord.decisionStatus === 'already-receiving') {
+            summary =
+                '<p><strong>My current Social Security position</strong></p>' +
+                '<p>This record needs review. Choose a Social Security claiming age to test, or select “I am not ready to select an age,” then save again.</p>' +
+                (summaryRecord.decisionNotes ? '<p>Notes: ' + escapeHtml(summaryRecord.decisionNotes) + '</p>' : '');
         } else {
             summary =
                 '<p><strong>My current Social Security position</strong></p>' +
-                '<p>I am already receiving approximately <strong>' + currency(summaryRecord.currentMonthlyBenefit) + ' per month</strong> in gross Social Security benefits.</p>' +
-                (summaryRecord.decisionNotes ? '<p>Notes: ' + escapeHtml(summaryRecord.decisionNotes) + '</p>' : '') +
-                '<p>My plan can use this current benefit as the working assumption. This is a planning assumption, not a filing action.</p>';
+                '<p>Choose a Social Security claiming age to test in your retirement plan, or select “I am not ready to select an age.”</p>';
         }
         statements.forEach(function (statement) { statement.innerHTML = summary; });
         reviseButtons.forEach(function (revise) { revise.hidden = false; });
@@ -632,8 +627,6 @@
         var message = document.getElementById('phase2CompletionMessage');
         if (record.decisionStatus === 'need-more-information') {
             message.innerHTML = '<strong>Phase 2 progress saved. Status: Needs information.</strong><span>Return when you have enough information to choose a claiming age to test.</span>';
-        } else if (record.decisionStatus === 'already-receiving') {
-            message.innerHTML = '<strong>Phase 2 progress saved. Status: Already receiving benefits.</strong><span>Your current benefit is recorded as the working assumption.</span>';
         } else {
             message.innerHTML = '<strong>Phase 2 progress saved.</strong><span>Your claiming-age assumption is ready for Phase 3: Build Your Plan.</span>';
         }
@@ -652,7 +645,6 @@
                 document.getElementById('decisionStatus').value = 'provisional';
             } else if (event.target.id === 'decisionStatus') {
                 var statusValue = event.target.value;
-                if (statusValue === 'already-receiving') setRadio('interest', 'receiving');
                 if (statusValue === 'need-more-information') setRadio('interest', 'not-ready');
                 if (statusValue === 'provisional' && document.getElementById('claimAge').value) {
                     setRadio('interest', document.getElementById('claimAge').value);
@@ -705,6 +697,20 @@
     var progressAtLoad = readProgress();
     var rawRecordAtLoad = progressAtLoad.records && progressAtLoad.records[recordKey];
     var record = existingRecord(progressAtLoad);
+    var legacyAlreadyReceiving = record.decisionStatus === 'already-receiving';
+    if (legacyAlreadyReceiving) {
+        // Obsolete Journey path: require a supported choice before treating Phase 2 as complete.
+        record.hasUnsavedChanges = true;
+        record.planningRecordStatus = 'needs-review';
+        if (progressAtLoad[recordKey] === true) {
+            progressAtLoad[recordKey] = false;
+        }
+        progressAtLoad.records = progressAtLoad.records && typeof progressAtLoad.records === 'object'
+            ? progressAtLoad.records
+            : {};
+        progressAtLoad.records[recordKey] = record;
+        writeProgress(progressAtLoad);
+    }
     if (record.saved === true && rawRecordAtLoad && rawRecordAtLoad.schemaVersion !== recordTools.schemaVersion) {
         progressAtLoad.records[recordKey] = record;
         writeProgress(progressAtLoad);

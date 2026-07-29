@@ -285,13 +285,13 @@ h1 {
     font-weight: 750;
 }
 
-.step-record-status.is-current,
-.step-record-status.is-already-receiving {
+.step-record-status.is-current {
     color: #166534;
 }
 
 .step-record-status.is-needs-information,
-.step-record-status.is-needs-verification {
+.step-record-status.is-needs-verification,
+.step-record-status.is-needs-review {
     color: #92400e;
 }
 
@@ -609,14 +609,14 @@ h1 {
     white-space: nowrap;
 }
 
-.record-status-badge.is-current,
-.record-status-badge.is-already-receiving {
+.record-status-badge.is-current {
     background: #dcfce7;
     color: #166534;
 }
 
 .record-status-badge.is-needs-information,
-.record-status-badge.is-needs-verification {
+.record-status-badge.is-needs-verification,
+.record-status-badge.is-needs-review {
     background: #fef3c7;
     color: #92400e;
 }

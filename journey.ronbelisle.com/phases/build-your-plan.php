@@ -186,6 +186,6 @@ $page_title = 'Build Your Plan | Retirement Planning Journey';
         </section>
     </main>
 
-    <script src="/assets/js/build-your-plan-phase.js?v=20260727-ss-handoff" defer></script>
+    <script src="/assets/js/build-your-plan-phase.js?v=20260729-claiming-age-only" defer></script>
 </body>
 </html>

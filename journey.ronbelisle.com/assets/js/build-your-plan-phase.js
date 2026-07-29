@@ -124,9 +124,18 @@
             };
         }
 
+        // Obsolete Journey path: do not reuse a legacy current-benefit amount as a claiming-age benefit.
         if (status === 'already-receiving') {
-            monthly = Number(source.currentMonthlyBenefit);
-        } else if (status === 'provisional') {
+            return {
+                usable: false,
+                monthly: null,
+                decisionStatus: status,
+                claimAge: null,
+                reason: 'needs-review'
+            };
+        }
+
+        if (status === 'provisional') {
             monthly = Number(source.estimatedMonthlyBenefit);
             // FRA-only safety net for older records: never use FRA amount for a different claim age.
             if (
@@ -159,6 +168,9 @@
     function temporarySsExplanation(reason) {
         if (reason === 'not-ready') {
             return 'In Phase 2 you indicated you are not ready to select a claiming age. Return to Phase 2 when you are ready, or enter a temporary estimate so you can preview this income plan.';
+        }
+        if (reason === 'needs-review') {
+            return 'Your Phase 2 Social Security record needs an update. Return to Phase 2 to choose a claiming age to test, or enter a temporary estimate so you can preview this income plan.';
         }
         if (reason === 'not-saved' || reason === 'unsaved-changes' || reason === 'missing') {
             return 'Phase 2 has not been completed and saved yet. Return to Phase 2 to save your claiming choice, or enter a temporary estimate so you can preview this income plan.';

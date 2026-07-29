@@ -6,7 +6,7 @@
         current: 'Current',
         'needs-information': 'Needs information',
         'needs-verification': 'Needs verification',
-        'already-receiving': 'Already receiving benefits',
+        'needs-review': 'Needs review',
         workable: 'Looks workable',
         close: 'Looks close',
         difficult: 'Looks difficult'
@@ -17,8 +17,9 @@
     }
 
     function socialSecurityStatus(record) {
+        // Obsolete Journey path: already-receiving is no longer supported.
+        if (record.decisionStatus === 'already-receiving') return 'needs-review';
         if (record.decisionStatus === 'need-more-information') return 'needs-information';
-        if (record.decisionStatus === 'already-receiving') return 'already-receiving';
         if (record.decisionStatus !== 'provisional') return '';
 
         var outstanding = Array.isArray(record.verificationNeeded) ? record.verificationNeeded : [];
@@ -35,7 +36,6 @@
             claimAge: record.claimAge === undefined ? null : record.claimAge,
             benefitAtFra: record.benefitAtFra === undefined ? null : record.benefitAtFra,
             estimatedMonthlyBenefit: record.estimatedMonthlyBenefit === undefined ? null : record.estimatedMonthlyBenefit,
-            currentMonthlyBenefit: record.currentMonthlyBenefit === undefined ? null : record.currentMonthlyBenefit,
             decisionNotes: record.decisionNotes || '',
             rationale: record.rationale || '',
             mainTradeoff: record.mainTradeoff || '',
@@ -79,7 +79,7 @@
             createdAt: firstCreated,
             updatedAt: saved ? timestamp : (oldRecord.updatedAt || ''),
             lastReviewedAt: reviewedAt,
-            downstreamReady: status === 'current' || status === 'needs-verification' || status === 'already-receiving',
+            downstreamReady: status === 'current' || status === 'needs-verification',
             reviewReasons: [
                 'Planned retirement date changes',
                 'A different claiming age is considered',
@@ -95,8 +95,7 @@
                 fields: {
                     claimAge: 'socialSecurity.claimAge',
                     benefitAtFra: 'socialSecurity.benefitAtFra',
-                    monthlyBenefit: 'socialSecurity.monthlyBenefit',
-                    alreadyReceiving: 'socialSecurity.alreadyReceiving'
+                    monthlyBenefit: 'socialSecurity.monthlyBenefit'
                 }
             }
         });

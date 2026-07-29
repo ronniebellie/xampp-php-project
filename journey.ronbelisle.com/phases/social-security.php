@@ -9,7 +9,7 @@ $page_title = 'Social Security | Retirement Planning Journey';
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260727-ss-handoff">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260729-claiming-age-only">
 </head>
 <body>
     <header class="site-header">
@@ -144,7 +144,7 @@ $page_title = 'Social Security | Retirement Planning Journey';
                                 <li><strong>The cost of claiming sooner.</strong> How much smaller is the monthly benefit at the earliest age?</li>
                                 <li><strong>The cost of waiting.</strong> How many years must you cover your spending before the later benefit begins? Phase 3 will show whether your savings can cover that time.</li>
                                 <li><strong>Break-even age.</strong> At about what age do total benefits from waiting catch up with the earlier option? Treat this as one clue, not a lifespan prediction.</li>
-                                <li><strong>The result you want to test in Phase 3.</strong> Which claiming age do you want to test in your retirement plan?</li>
+                                <li><strong>The result you want to test in Phase 3.</strong> Which Social Security claiming age would you like to test in your retirement plan?</li>
                             </ol>
                             <p class="supporting-note">Write down the claiming age you want to test and its estimated monthly benefit. You will record both when you return.</p>
                         </section>
@@ -152,10 +152,10 @@ $page_title = 'Social Security | Retirement Planning Journey';
                         <section class="phase-content-section return-section" id="return-from-analyzer" aria-labelledby="return-title">
                             <p class="eyebrow">After the analyzer</p>
                             <h2 id="return-title">Welcome back. Choose the claiming age to test.</h2>
-                            <p>Choose one starting path for your plan. Selecting an age is your decision; the other two options are alternative paths if you are not selecting an age.</p>
+                            <p>Choose the Social Security claiming age you want to test in your retirement plan. If you are not ready to choose an age yet, select the alternative option below.</p>
 
                             <fieldset class="journey-fieldset" data-field-group="interest" id="interestFieldset">
-                                <legend>Which claiming age do you want to test in your plan?</legend>
+                                <legend>Which Social Security claiming age would you like to test in your retirement plan?</legend>
                                 <div class="compact-choice-grid interest-age-choices" id="interestAgeChoices">
                                     <?php for ($age = 62; $age <= 70; $age++): ?>
                                         <label class="choice-row"><input type="radio" name="interest" value="<?php echo $age; ?>"> <span>Age <?php echo $age; ?></span></label>
@@ -163,7 +163,6 @@ $page_title = 'Social Security | Retirement Planning Journey';
                                 </div>
                                 <div class="interest-alt-choices" id="interestAltChoices">
                                     <p class="interest-alt-label" id="interestAltLabel">Or choose an alternative path</p>
-                                    <label class="choice-row"><input type="radio" name="interest" value="receiving"> <span>I am already receiving benefits.</span></label>
                                     <label class="choice-row"><input type="radio" name="interest" value="not-ready"> <span>I am not ready to select an age.</span></label>
                                 </div>
                             </fieldset>
@@ -197,7 +196,6 @@ $page_title = 'Social Security | Retirement Planning Journey';
                                             <option value="">Choose a status</option>
                                             <option value="provisional">Claiming age to test</option>
                                             <option value="need-more-information">I am not ready to select an age</option>
-                                            <option value="already-receiving">Already receiving benefits</option>
                                         </select>
                                         <small id="decisionStatusHelp">This describes your decision status—not the claiming age itself. Most people who just chose an age to test should leave this as “Claiming age to test.”</small>
                                     </div>
@@ -302,7 +300,7 @@ $page_title = 'Social Security | Retirement Planning Journey';
                             <h2 id="before-continue-title">Before you continue</h2>
                             <p>Make sure you can answer these questions:</p>
                             <ul class="coach-list">
-                                <li>Which claiming age or current benefit should your plan use?</li>
+                                <li>Which Social Security claiming age should your plan use?</li>
                                 <li>What monthly benefit should your plan assume?</li>
                                 <li>Do you understand this is a working assumption you can change later?</li>
                             </ul>
@@ -349,6 +347,6 @@ $page_title = 'Social Security | Retirement Planning Journey';
         </section>
     </main>
 
-    <script src="/assets/js/social-security-phase.js?v=20260729-approaching-retirement" defer></script>
+    <script src="/assets/js/social-security-phase.js?v=20260729-claiming-age-only" defer></script>
 </body>
 </html>
