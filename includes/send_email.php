@@ -1,8 +1,7 @@
 <?php
 /**
- * Send email via SendGrid HTTP API (port 443) or SMTP.
+ * Send email via SendGrid HTTP API (port 443).
  * Requires includes/email_config.php with smtp_pass (API key), from_email, from_name.
- * Uses HTTP API by default (avoids SMTP port 587 which may be blocked by firewalls).
  *
  * @param string $to      Recipient email
  * @param string $subject Subject line
@@ -10,20 +9,24 @@
  * @return bool True on success, false on failure
  */
 function send_email_smtp($to, $subject, $body) {
+    $GLOBALS['rb_send_email_last_error'] = null;
+
     $configPath = __DIR__ . '/email_config.php';
     if (!file_exists($configPath)) {
+        $GLOBALS['rb_send_email_last_error'] = 'config_missing';
         error_log('send_email: email_config.php not found');
         return false;
     }
     $config = require $configPath;
     if (empty($config['smtp_pass'])) {
+        $GLOBALS['rb_send_email_last_error'] = 'config_incomplete';
         error_log('send_email: email_config.php incomplete (smtp_pass required)');
         return false;
     }
 
     $apiKey = $config['smtp_pass'];
-    $fromEmail = $config['from_email'] ?? 'noreply@calcforadvisors.com';
-    $fromName = $config['from_name'] ?? 'calcforadvisors.com';
+    $fromEmail = $config['from_email'] ?? 'noreply@ronbelisle.com';
+    $fromName = $config['from_name'] ?? 'Ron Belisle';
 
     $payload = [
         'personalizations' => [['to' => [['email' => $to]]]],
@@ -42,7 +45,7 @@ function send_email_smtp($to, $subject, $body) {
             CURLOPT_POSTFIELDS => $json,
             CURLOPT_HTTPHEADER => [
                 'Authorization: Bearer ' . $apiKey,
-                'Content-Type: application/json',
+                'Content-Type: ' . 'application/json',
             ],
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => 15,
@@ -52,10 +55,19 @@ function send_email_smtp($to, $subject, $body) {
         $err = curl_error($ch);
         curl_close($ch);
         if ($code < 200 || $code >= 300) {
-            error_log('send_email: SendGrid API returned ' . $code . ' - ' . substr($result, 0, 200));
+            $snippet = is_string($result) ? substr($result, 0, 300) : '';
+            error_log('send_email: SendGrid API returned ' . $code . ' - ' . $snippet);
+            if ($code === 401 && (stripos($snippet, 'Maximum credits exceeded') !== false || stripos($snippet, 'credits') !== false)) {
+                $GLOBALS['rb_send_email_last_error'] = 'credits_exceeded';
+            } elseif ($code === 401 || $code === 403) {
+                $GLOBALS['rb_send_email_last_error'] = 'auth_failed';
+            } else {
+                $GLOBALS['rb_send_email_last_error'] = 'provider_http_' . $code;
+            }
             return false;
         }
         if ($result === false && $err) {
+            $GLOBALS['rb_send_email_last_error'] = 'curl_failed';
             error_log('send_email: cURL failed - ' . $err);
             return false;
         }
@@ -76,8 +88,15 @@ function send_email_smtp($to, $subject, $body) {
         $code = (int) $m[1];
     }
     if ($result === false || $code < 200 || $code >= 300) {
+        $GLOBALS['rb_send_email_last_error'] = 'provider_http_' . $code;
         error_log('send_email: SendGrid API failed - code=' . $code);
         return false;
     }
     return true;
+}
+
+function rb_send_email_last_error(): ?string
+{
+    $err = $GLOBALS['rb_send_email_last_error'] ?? null;
+    return is_string($err) && $err !== '' ? $err : null;
 }

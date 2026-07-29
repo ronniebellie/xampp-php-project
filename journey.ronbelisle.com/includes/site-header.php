@@ -20,4 +20,4 @@
     </div>
 </header>
 <script src="/assets/js/journey-sync.js?v=20260729-m5-p3" defer></script>
-<script src="/assets/js/journey-auth-chrome.js?v=20260729-m5-p3" defer></script>
+<script src="/assets/js/journey-auth-chrome.js?v=20260729-account-fix" defer></script>

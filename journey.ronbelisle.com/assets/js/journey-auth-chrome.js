@@ -214,7 +214,7 @@
                     escapeHtml(checkoutUrl) +
                     '?return=' +
                     encodeURIComponent(DEFAULT_HOME) +
-                    '">Journey Premium</a>'
+                    '">Start Journey Premium trial</a>'
             );
         }
 

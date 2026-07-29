@@ -39,7 +39,13 @@ if (!rb_password_reset_configured()) {
             if (send_email_smtp($user['email'], $subject, $body)) {
                 $message = 'If that email is in our system, we sent a reset link. Check your inbox and spam folder.';
             } else {
-                $error = 'We could not send the email. Please try again later or contact support.';
+                $mailError = function_exists('rb_send_email_last_error') ? rb_send_email_last_error() : null;
+                if ($mailError === 'credits_exceeded' || $mailError === 'auth_failed' || $mailError === 'config_incomplete' || $mailError === 'config_missing') {
+                    $error = 'Password reset email cannot be sent right now because email delivery is unavailable. Please contact support at ronbelisle@gmail.com and we will help you reset your password.';
+                } else {
+                    $error = 'We could not send the email. Please try again later or contact support at ronbelisle@gmail.com.';
+                }
+                error_log('forgot-password: send failed for user_id=' . (int) $user['id'] . ' err=' . ($mailError ?? 'unknown'));
             }
         } else {
             $stmt->close();

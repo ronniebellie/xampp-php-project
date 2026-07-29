@@ -1,25 +1,70 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
 rb_session_start();
-require_once 'includes/db_config.php';
+require_once __DIR__ . '/includes/db_config.php';
+require_once __DIR__ . '/includes/csrf.php';
+require_once __DIR__ . '/includes/account_helpers.php';
 
-// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     header('Location: auth/login.php');
     exit;
 }
 
-// Get user info
-$user_id = $_SESSION['user_id'];
-$stmt = $conn->prepare("SELECT email, subscription_status, created_at, stripe_subscription_id FROM users WHERE id = ?");
-$stmt->bind_param("i", $user_id);
+$user_id = (int) $_SESSION['user_id'];
+$password_message = '';
+$password_error = '';
+
+// Handle change-password before loading display fields.
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'change_password') {
+    if (!rb_csrf_validate($_POST['csrf_token'] ?? null)) {
+        $password_error = 'Your session expired. Please try again.';
+    } else {
+        $stmt = $conn->prepare('SELECT password_hash FROM users WHERE id = ? LIMIT 1');
+        $stmt->bind_param('i', $user_id);
+        $stmt->execute();
+        $hashRow = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        $currentHash = is_array($hashRow) ? (string) ($hashRow['password_hash'] ?? '') : '';
+
+        $validated = rb_account_validate_password_change(
+            (string) ($_POST['current_password'] ?? ''),
+            (string) ($_POST['new_password'] ?? ''),
+            (string) ($_POST['confirm_password'] ?? ''),
+            $currentHash
+        );
+
+        if (empty($validated['ok'])) {
+            $password_error = (string) ($validated['error'] ?? 'Could not update password.');
+        } else {
+            $newHash = password_hash((string) $_POST['new_password'], PASSWORD_DEFAULT);
+            $upd = $conn->prepare('UPDATE users SET password_hash = ? WHERE id = ?');
+            $upd->bind_param('si', $newHash, $user_id);
+            if ($upd->execute() && $upd->affected_rows >= 0) {
+                $password_message = 'Your password has been updated.';
+            } else {
+                $password_error = 'Could not update password. Please try again.';
+            }
+            $upd->close();
+        }
+    }
+}
+
+$stmt = $conn->prepare('SELECT email, subscription_status, created_at, stripe_subscription_id FROM users WHERE id = ?');
+$stmt->bind_param('i', $user_id);
 $stmt->execute();
 $sub = null;
 $email = null;
 $created_at = null;
 $stripe_sub_id = null;
 $stmt->bind_result($email, $sub, $created_at, $stripe_sub_id);
-$user = $stmt->fetch() ? ['email' => $email, 'subscription_status' => $sub, 'created_at' => $created_at, 'stripe_subscription_id' => $stripe_sub_id] : null;
+$user = $stmt->fetch()
+    ? [
+        'email' => $email,
+        'subscription_status' => $sub,
+        'created_at' => $created_at,
+        'stripe_subscription_id' => $stripe_sub_id,
+    ]
+    : null;
 $stmt->close();
 
 if (!$user) {
@@ -27,9 +72,16 @@ if (!$user) {
     exit;
 }
 
-$is_premium = ($user['subscription_status'] === 'premium');
-$isPremium = $is_premium;  // banner include expects $isPremium
-$isLoggedIn = true;       // banner include may check this
+// Calculator Premium (legacy site-wide premium) — users.subscription_status.
+$is_calculator_premium = ($user['subscription_status'] === 'premium');
+// Journey Premium — authoritative product entitlement (same as Journey chrome).
+$journeyStatus = rb_account_journey_status($conn, $user_id);
+$is_journey_premium = !empty($journeyStatus['hasAccess']);
+
+// Banner helpers used by shared includes.
+$is_premium = $is_calculator_premium;
+$isPremium = $is_calculator_premium;
+$isLoggedIn = true;
 $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
 ?>
 <!DOCTYPE html>
@@ -72,6 +124,7 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
         .info-row {
             display: flex;
             justify-content: space-between;
+            gap: 16px;
             padding: 15px 0;
             border-bottom: 1px solid #f1f5f9;
         }
@@ -81,6 +134,7 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
         }
         .info-value {
             color: #1e293b;
+            text-align: right;
         }
         .premium-badge {
             display: inline-block;
@@ -91,6 +145,15 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
             font-weight: 700;
             font-size: 14px;
         }
+        .status-muted {
+            color: #64748b;
+        }
+        .status-detail {
+            margin: 12px 0 0;
+            color: #475569;
+            font-size: 14px;
+            line-height: 1.5;
+        }
         .btn {
             display: inline-block;
             padding: 12px 24px;
@@ -100,6 +163,9 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
             border-radius: 8px;
             font-weight: 600;
             margin-top: 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
         }
         .btn:hover {
             background: #1e40af;
@@ -110,18 +176,66 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
         .btn-secondary:hover {
             background: #475569;
         }
+        .form-group {
+            margin-bottom: 14px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        .form-group input[type="password"] {
+            width: 100%;
+            max-width: 420px;
+            padding: 11px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        .message-ok {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+        .message-error {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+        .password-hint {
+            margin: 0 0 14px;
+            color: #64748b;
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
-    <?php if ($is_premium): ?>
+    <?php if ($is_calculator_premium): ?>
     <div class="premium-banner premium-active" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; padding: 20px; text-align: center; margin-bottom: 30px; border-radius: 8px;">
-        <h3 style="margin: 0 0 10px 0; font-size: 24px;">✓ Premium Active</h3>
-        <p style="margin: 0; opacity: 0.95;">You have full access to all Premium features across the site.</p>
+        <h3 style="margin: 0 0 10px 0; font-size: 24px;">✓ Calculator Premium Active</h3>
+        <p style="margin: 0; opacity: 0.95;">You have full access to premium calculator features across the site.</p>
+    </div>
+    <?php elseif ($is_journey_premium): ?>
+    <div class="premium-banner premium-active" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 20px; text-align: center; margin-bottom: 30px; border-radius: 8px;">
+        <h3 style="margin: 0 0 10px 0; font-size: 24px;">✓ Journey Premium Active</h3>
+        <p style="margin: 0; opacity: 0.95;">Your Retirement Planning Journey Premium access is active.</p>
     </div>
     <?php else: ?>
     <?php include('includes/premium-banner-include.php'); ?>
     <?php endif; ?>
-    
+
     <div class="wrap">
         <div class="account-container">
             <div class="account-header">
@@ -155,19 +269,44 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
             </div>
 
             <div class="account-section">
-                <h2>Subscription Status</h2>
+                <h2>Journey Premium</h2>
                 <div class="info-row">
                     <span class="info-label">Status:</span>
                     <span class="info-value">
-                        <?php if ($is_premium): ?>
-                            <span class="premium-badge">✨ Premium Member</span>
+                        <?php if ($is_journey_premium): ?>
+                            <span class="premium-badge"><?php echo htmlspecialchars($journeyStatus['label']); ?></span>
                         <?php else: ?>
-                            <span style="color: #64748b;">Free Account</span>
+                            <span class="status-muted"><?php echo htmlspecialchars($journeyStatus['label']); ?></span>
                         <?php endif; ?>
                     </span>
                 </div>
-                <?php if ($is_premium): ?>
-                    <p style="color: #334155; margin-top: 15px;"><strong>You have full access to all premium features:</strong></p>
+                <p class="status-detail"><?php echo htmlspecialchars($journeyStatus['detail']); ?></p>
+                <?php if ($is_journey_premium): ?>
+                    <p style="margin-top: 15px;">
+                        <a href="https://journey.ronbelisle.com/" class="btn" style="background: #059669;">Open Retirement Planning Journey</a>
+                    </p>
+                <?php else: ?>
+                    <p style="margin-top: 15px;">
+                        <a href="premium/journey.php" class="btn">Start Journey Premium trial</a>
+                        <a href="https://journey.ronbelisle.com/" class="btn btn-secondary" style="margin-left: 10px;">Open free Journey</a>
+                    </p>
+                <?php endif; ?>
+            </div>
+
+            <div class="account-section">
+                <h2>Calculator Premium</h2>
+                <div class="info-row">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value">
+                        <?php if ($is_calculator_premium): ?>
+                            <span class="premium-badge">Premium Member</span>
+                        <?php else: ?>
+                            <span class="status-muted">Free Account</span>
+                        <?php endif; ?>
+                    </span>
+                </div>
+                <?php if ($is_calculator_premium): ?>
+                    <p style="color: #334155; margin-top: 15px;"><strong>You have full access to premium calculator features:</strong></p>
                     <ul style="color: #475569; line-height: 1.8; margin: 10px 0 20px 0;">
                         <li><strong>Save and compare unlimited scenarios</strong> — Store your calculator inputs and results, recall them later, and compare two scenarios side by side.</li>
                         <li><strong>Export PDF and CSV reports</strong> — Download professional PDF summaries or spreadsheet data for your records or advisors.</li>
@@ -186,11 +325,39 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
                     </p>
                     <?php endif; ?>
                 <?php else: ?>
-                    <p style="color: #64748b; margin-top: 15px;">
-                        Upgrade to Premium to unlock scenario saving, PDF exports, AI-generated plain-language explanations of your specific results, and advanced projections.
+                    <p class="status-detail">
+                        Calculator Premium unlocks scenario saving, PDF exports, AI explanations, and advanced projections on the calculator tools. It is separate from Journey Premium.
                     </p>
-                    <a href="premium.html" class="btn">Upgrade to Premium</a>
+                    <a href="premium.html" class="btn">Upgrade Calculator Premium</a>
                 <?php endif; ?>
+            </div>
+
+            <div class="account-section" id="change-password">
+                <h2>Change Password</h2>
+                <?php if ($password_message): ?>
+                    <div class="message-ok"><?php echo htmlspecialchars($password_message); ?></div>
+                <?php endif; ?>
+                <?php if ($password_error): ?>
+                    <div class="message-error"><?php echo htmlspecialchars($password_error); ?></div>
+                <?php endif; ?>
+                <p class="password-hint">Use at least 8 characters. You’ll stay signed in after updating.</p>
+                <form method="POST" action="account.php#change-password" autocomplete="off">
+                    <input type="hidden" name="action" value="change_password">
+                    <?php echo rb_csrf_field(); ?>
+                    <div class="form-group">
+                        <label for="current_password">Current password</label>
+                        <input type="password" id="current_password" name="current_password" required autocomplete="current-password">
+                    </div>
+                    <div class="form-group">
+                        <label for="new_password">New password</label>
+                        <input type="password" id="new_password" name="new_password" required minlength="8" autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm new password</label>
+                        <input type="password" id="confirm_password" name="confirm_password" required minlength="8" autocomplete="new-password">
+                    </div>
+                    <button type="submit" class="btn">Update Password</button>
+                </form>
             </div>
 
             <div class="account-section">
