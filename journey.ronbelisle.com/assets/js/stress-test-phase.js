@@ -48,6 +48,9 @@
 
     function writeProgress(progress) {
         localStorage.setItem(storageKey, JSON.stringify(progress));
+        if (window.rbJourneySync && typeof window.rbJourneySync.scheduleSave === 'function') {
+            window.rbJourneySync.scheduleSave('phase');
+        }
     }
 
     function money(n) {
@@ -448,9 +451,17 @@
         }
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
+    function startPhase() {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    }
+
+    if (window.rbJourneySync && typeof window.rbJourneySync.afterReady === 'function') {
+        window.rbJourneySync.afterReady(startPhase);
     } else {
-        init();
+        startPhase();
     }
 }());

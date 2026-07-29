@@ -8,7 +8,7 @@ $page_title = 'Survivor Planning | Retirement Planning Journey';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260729-m5-p2">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260729-m5-p3">
 </head>
 <body>
     <?php include __DIR__ . '/../includes/site-header.php'; ?>
@@ -251,6 +251,6 @@ $page_title = 'Survivor Planning | Retirement Planning Journey';
 
     <script src="/assets/js/phase6-survivor-engine.js?v=20260725-phase6-open" defer></script>
     <script src="/assets/js/phase6-priorities.js?v=20260725-phase6-open" defer></script>
-    <script src="/assets/js/survivor-planning-phase.js?v=20260727-premium-transition" defer></script>
+    <script src="/assets/js/survivor-planning-phase.js?v=20260729-m5-p3" defer></script>
 </body>
 </html>

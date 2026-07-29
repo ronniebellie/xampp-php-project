@@ -93,5 +93,13 @@
         if (showFreshSave) clearFreshSaveFlag();
     }
 
-    render();
+    function bootSpendingGoals() {
+        render();
+    }
+
+    if (window.rbJourneySync && typeof window.rbJourneySync.afterReady === 'function') {
+        window.rbJourneySync.afterReady(bootSpendingGoals);
+    } else {
+        bootSpendingGoals();
+    }
 })();

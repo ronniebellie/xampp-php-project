@@ -1,6 +1,6 @@
 /**
  * Journey account chrome — fetches ronbelisle.com status with credentials.
- * Presentation only (Milestone 5 / R1 — P2). Does not hydrate or autosave plans.
+ * Save-state lines are driven by journey-sync.js when present (M5 P3).
  */
 (function () {
     'use strict';
@@ -11,6 +11,8 @@
     var DEFAULT_LOGOUT = 'https://ronbelisle.com/auth/logout.php';
     var DEFAULT_CHECKOUT = 'https://ronbelisle.com/premium/journey.php';
     var DEFAULT_ACCOUNT = 'https://ronbelisle.com/account.php';
+
+    var latestStatus = null;
 
     function escapeHtml(value) {
         return String(value == null ? '' : value)
@@ -71,6 +73,38 @@
         });
     }
 
+    function updateSaveLines(detail) {
+        var savedEl = document.querySelector('[data-journey-last-saved]');
+        var stateEl = document.querySelector('[data-journey-save-state]');
+        if (!savedEl && !stateEl) return;
+
+        var planSavedAt = detail && detail.planSavedAt;
+        var savedLabel = formatSavedAt(planSavedAt);
+        if (savedEl) {
+            if (savedLabel) {
+                savedEl.hidden = false;
+                savedEl.textContent = 'Last saved ' + savedLabel;
+            } else if (!savedEl.textContent) {
+                savedEl.hidden = true;
+            }
+        }
+
+        if (stateEl) {
+            var message = (detail && detail.saveMessage) || '';
+            var code = detail && detail.saveState;
+            if (!message && code === 'readonly') {
+                message = 'Reviewing saved account plan';
+            }
+            if (message) {
+                stateEl.hidden = false;
+                stateEl.textContent = message;
+            } else {
+                stateEl.textContent = '';
+                stateEl.hidden = true;
+            }
+        }
+    }
+
     function renderAnonymous(root, status) {
         var loginUrl = (status && status.loginUrl) || withReturn(DEFAULT_LOGIN, currentReturnUrl());
         root.innerHTML =
@@ -100,7 +134,6 @@
         var mode = status.accessMode || (status.hasAccess ? 'premium' : 'free');
         var lines = [];
         var actions = [];
-        var note = '';
 
         lines.push(
             '<p class="journey-account-welcome">Welcome, ' + escapeHtml(firstName) + '</p>'
@@ -113,13 +146,16 @@
                     '<p class="journey-account-meta">Signed in as ' + escapeHtml(email) + '</p>'
                 );
             }
-            if (savedLabel) {
-                lines.push(
-                    '<p class="journey-account-saved">Last saved ' + escapeHtml(savedLabel) + '</p>'
-                );
-            }
-            note =
-                'You are signed in to Journey Premium. Cloud plan saving will be connected in the next implementation step; your current planning records still remain in this browser for now.';
+            lines.push(
+                '<p class="journey-account-saved" data-journey-last-saved' +
+                    (savedLabel ? '' : ' hidden') +
+                    '>' +
+                    (savedLabel ? 'Last saved ' + escapeHtml(savedLabel) : '') +
+                    '</p>'
+            );
+            lines.push(
+                '<p class="journey-account-save-state" data-journey-save-state hidden></p>'
+            );
             actions.push(
                 '<a class="journey-account-link" href="' +
                     escapeHtml(workspaceUrl) +
@@ -137,11 +173,16 @@
             lines.push(
                 '<p class="journey-account-hint">Read-only · cloud updates require active Journey Premium access</p>'
             );
-            if (savedLabel) {
-                lines.push(
-                    '<p class="journey-account-saved">Last saved ' + escapeHtml(savedLabel) + '</p>'
-                );
-            }
+            lines.push(
+                '<p class="journey-account-saved" data-journey-last-saved' +
+                    (savedLabel ? '' : ' hidden') +
+                    '>' +
+                    (savedLabel ? 'Last saved ' + escapeHtml(savedLabel) : '') +
+                    '</p>'
+            );
+            lines.push(
+                '<p class="journey-account-save-state" data-journey-save-state>Reviewing saved account plan</p>'
+            );
             actions.push(
                 '<a class="journey-account-link" href="' +
                     escapeHtml(accountUrl) +
@@ -188,9 +229,6 @@
             escapeHtml(mode) +
             '">' +
             lines.join('') +
-            (note
-                ? '<p class="journey-account-note">' + escapeHtml(note) + '</p>'
-                : '') +
             '<p class="journey-account-actions">' +
             actions.join('<span class="journey-account-sep" aria-hidden="true"> · </span>') +
             '</p>' +
@@ -198,6 +236,7 @@
     }
 
     function render(root, status) {
+        latestStatus = status;
         root.removeAttribute('aria-busy');
         if (!status || typeof status !== 'object') {
             renderUnavailable(root);
@@ -210,17 +249,61 @@
             renderAuthenticated(root, status);
         }
         applyAuthAwareSections(status);
+
+        if (window.rbJourneySync && typeof window.rbJourneySync.getState === 'function') {
+            updateSaveLines(window.rbJourneySync.getState());
+        }
     }
 
     function init() {
         var root = document.querySelector('[data-journey-account-chrome]');
         if (!root) return;
 
+        window.addEventListener('rb-journey-sync-state', function (event) {
+            updateSaveLines(event.detail || {});
+        });
+
+        window.addEventListener('rb-journey-status', function (event) {
+            if (!event.detail || latestStatus) return;
+            render(root, event.detail);
+        });
+
+        // Prefer sync-provided status when available; otherwise fetch.
+        var syncStatus = window.rbJourneySync && window.rbJourneySync.getStatus
+            ? window.rbJourneySync.getStatus()
+            : null;
+        if (syncStatus) {
+            render(root, syncStatus);
+            return;
+        }
+
+        if (window.rbJourneySync && typeof window.rbJourneySync.whenReady === 'function') {
+            window.rbJourneySync.whenReady().then(function () {
+                var readyStatus = window.rbJourneySync.getStatus();
+                if (readyStatus) {
+                    render(root, readyStatus);
+                    return;
+                }
+                fetchStatus(root);
+            }).catch(function () {
+                fetchStatus(root);
+            });
+            // Timeout fallback if sync hangs.
+            window.setTimeout(function () {
+                if (!latestStatus) fetchStatus(root);
+            }, 4000);
+            return;
+        }
+
+        fetchStatus(root);
+    }
+
+    function fetchStatus(root) {
+        if (latestStatus) return;
         if (typeof fetch !== 'function') {
             renderUnavailable(root);
             return;
         }
-
         fetch(STATUS_URL, {
             method: 'GET',
             credentials: 'include',
@@ -232,10 +315,10 @@
                 return response.json();
             })
             .then(function (data) {
-                render(root, data);
+                if (!latestStatus) render(root, data);
             })
             .catch(function () {
-                renderUnavailable(root);
+                if (!latestStatus) renderUnavailable(root);
             });
     }
 

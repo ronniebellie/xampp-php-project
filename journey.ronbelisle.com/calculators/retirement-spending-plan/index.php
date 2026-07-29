@@ -9,7 +9,7 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260729-m5-p2">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260729-m5-p3">
 </head>
 <body>
     <?php include __DIR__ . '/../../includes/site-header.php'; ?>
@@ -208,6 +208,6 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
             </div>
         </section>
     </main>
-    <script src="/assets/js/retirement-spending-plan.js?v=20260729-approaching-retirement" defer></script>
+    <script src="/assets/js/retirement-spending-plan.js?v=20260729-m5-p3" defer></script>
 </body>
 </html>

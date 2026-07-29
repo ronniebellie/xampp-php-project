@@ -9,7 +9,7 @@ $page_title = 'Your Retirement Planning Journey';
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260729-m5-p2">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260729-m5-p3">
 </head>
 <body>
     <?php include __DIR__ . '/includes/site-header.php'; ?>

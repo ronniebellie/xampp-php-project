@@ -67,6 +67,9 @@
 
     function writeProgress(progress) {
         localStorage.setItem(storageKey, JSON.stringify(progress));
+        if (window.rbJourneySync && typeof window.rbJourneySync.scheduleSave === 'function') {
+            window.rbJourneySync.scheduleSave('progress');
+        }
     }
 
     function completedPhases(progress) {
@@ -350,5 +353,13 @@
         }
     });
 
-    render(readProgress());
+    function bootJourneyProgress() {
+        render(readProgress());
+    }
+
+    if (window.rbJourneySync && typeof window.rbJourneySync.afterReady === 'function') {
+        window.rbJourneySync.afterReady(bootJourneyProgress);
+    } else {
+        bootJourneyProgress();
+    }
 })();

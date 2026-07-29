@@ -117,8 +117,14 @@ select:focus-visible {
 .journey-account-readonly,
 .journey-account-hint,
 .journey-account-note,
+.journey-account-save-state,
 .journey-account-actions {
     margin: 3px 0 0;
+}
+
+.journey-account-save-state {
+    color: #334155;
+    font-weight: 600;
 }
 
 .journey-account-readonly {

@@ -8,7 +8,7 @@ $page_title = 'Stress Test | Retirement Planning Journey';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260729-m5-p2">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260729-m5-p3">
 </head>
 <body>
     <?php include __DIR__ . '/../includes/site-header.php'; ?>
@@ -163,6 +163,6 @@ $page_title = 'Stress Test | Retirement Planning Journey';
     <script src="/assets/js/phase4-config.js?v=20260725-phase4-open" defer></script>
     <script src="/assets/js/phase4-stress-engine.js?v=20260725-phase4-open" defer></script>
     <script src="/assets/js/phase4-adjustments.js?v=20260725-phase4-open" defer></script>
-    <script src="/assets/js/stress-test-phase.js?v=20260725-phase4-open" defer></script>
+    <script src="/assets/js/stress-test-phase.js?v=20260729-m5-p3" defer></script>
 </body>
 </html>

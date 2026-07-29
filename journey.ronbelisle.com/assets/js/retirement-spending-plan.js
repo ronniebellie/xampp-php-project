@@ -70,6 +70,9 @@
 
     function writeProgress(progress) {
         localStorage.setItem(progressKey, JSON.stringify(progress));
+        if (window.rbJourneySync && typeof window.rbJourneySync.scheduleSave === 'function') {
+            window.rbJourneySync.scheduleSave('progress');
+        }
     }
 
     function readCalculatorRecord() {
@@ -83,6 +86,9 @@
 
     function writeCalculatorRecord(record) {
         localStorage.setItem(calculatorKey, JSON.stringify(record));
+        if (window.rbJourneySync && typeof window.rbJourneySync.scheduleSave === 'function') {
+            window.rbJourneySync.scheduleSave('calculator');
+        }
     }
 
     function positiveNumber(value) {
@@ -486,6 +492,14 @@
         if (event.target.name === 'startingMethod') syncMethodSections();
     });
 
-    restoreRecord(readCalculatorRecord());
-    syncMethodSections();
+    function bootSpendingPlanner() {
+        restoreRecord(readCalculatorRecord());
+        syncMethodSections();
+    }
+
+    if (window.rbJourneySync && typeof window.rbJourneySync.afterReady === 'function') {
+        window.rbJourneySync.afterReady(bootSpendingPlanner);
+    } else {
+        bootSpendingPlanner();
+    }
 })();

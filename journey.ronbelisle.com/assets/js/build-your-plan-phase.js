@@ -31,6 +31,9 @@
 
     function writeProgress(progress) {
         localStorage.setItem(storageKey, JSON.stringify(progress));
+        if (window.rbJourneySync && typeof window.rbJourneySync.scheduleSave === 'function') {
+            window.rbJourneySync.scheduleSave('phase');
+        }
     }
 
     function numberOrNull(value) {
@@ -645,26 +648,34 @@
         });
     });
 
-    var phase1 = readPhase1();
-    state.phase1Usable = phase1.usable;
-    state.monthlySpending = phase1.monthlySpending;
-    state.monthlyOther = phase1.monthlyOther;
+    function bootPhase3() {
+        var phase1 = readPhase1();
+        state.phase1Usable = phase1.usable;
+        state.monthlySpending = phase1.monthlySpending;
+        state.monthlyOther = phase1.monthlyOther;
 
-    var phase2 = readPhase2SocialSecurity();
-    state.phase2SsUsable = phase2.usable;
-    state.phase2SsMonthly = phase2.monthly;
-    state.phase2SsReason = phase2.reason || 'missing';
+        var phase2 = readPhase2SocialSecurity();
+        state.phase2SsUsable = phase2.usable;
+        state.phase2SsMonthly = phase2.monthly;
+        state.phase2SsReason = phase2.reason || 'missing';
 
-    var progressAtLoad = readProgress();
-    var record = existingRecord(progressAtLoad);
-    if (record.saved === true) {
-        document.querySelector('[data-returning-record]').hidden = false;
-        restoreRecord(record);
-        if (progressAtLoad[recordKey] === true && record.hasUnsavedChanges !== true) {
-            document.getElementById('completePhase3Button').textContent = 'Phase 3 Complete';
+        var progressAtLoad = readProgress();
+        var record = existingRecord(progressAtLoad);
+        if (record.saved === true) {
+            document.querySelector('[data-returning-record]').hidden = false;
+            restoreRecord(record);
+            if (progressAtLoad[recordKey] === true && record.hasUnsavedChanges !== true) {
+                document.getElementById('completePhase3Button').textContent = 'Phase 3 Complete';
+            }
         }
+
+        renderAll();
+        renderSavedSummary(record);
     }
 
-    renderAll();
-    renderSavedSummary(record);
+    if (window.rbJourneySync && typeof window.rbJourneySync.afterReady === 'function') {
+        window.rbJourneySync.afterReady(bootPhase3);
+    } else {
+        bootPhase3();
+    }
 })();

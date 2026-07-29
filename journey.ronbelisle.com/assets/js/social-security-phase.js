@@ -18,6 +18,9 @@
 
     function writeProgress(progress) {
         localStorage.setItem(storageKey, JSON.stringify(progress));
+        if (window.rbJourneySync && typeof window.rbJourneySync.scheduleSave === 'function') {
+            window.rbJourneySync.scheduleSave('phase');
+        }
     }
 
     function existingRecord(progress) {
@@ -694,52 +697,60 @@
         });
     });
 
-    var progressAtLoad = readProgress();
-    var rawRecordAtLoad = progressAtLoad.records && progressAtLoad.records[recordKey];
-    var record = existingRecord(progressAtLoad);
-    var legacyAlreadyReceiving = record.decisionStatus === 'already-receiving';
-    if (legacyAlreadyReceiving) {
-        // Obsolete Journey path: require a supported choice before treating Phase 2 as complete.
-        record.hasUnsavedChanges = true;
-        record.planningRecordStatus = 'needs-review';
-        if (progressAtLoad[recordKey] === true) {
-            progressAtLoad[recordKey] = false;
+    function bootPhase2() {
+        var progressAtLoad = readProgress();
+        var rawRecordAtLoad = progressAtLoad.records && progressAtLoad.records[recordKey];
+        var record = existingRecord(progressAtLoad);
+        var legacyAlreadyReceiving = record.decisionStatus === 'already-receiving';
+        if (legacyAlreadyReceiving) {
+            // Obsolete Journey path: require a supported choice before treating Phase 2 as complete.
+            record.hasUnsavedChanges = true;
+            record.planningRecordStatus = 'needs-review';
+            if (progressAtLoad[recordKey] === true) {
+                progressAtLoad[recordKey] = false;
+            }
+            progressAtLoad.records = progressAtLoad.records && typeof progressAtLoad.records === 'object'
+                ? progressAtLoad.records
+                : {};
+            progressAtLoad.records[recordKey] = record;
+            writeProgress(progressAtLoad);
         }
-        progressAtLoad.records = progressAtLoad.records && typeof progressAtLoad.records === 'object'
-            ? progressAtLoad.records
-            : {};
-        progressAtLoad.records[recordKey] = record;
-        writeProgress(progressAtLoad);
+        if (record.saved === true && rawRecordAtLoad && rawRecordAtLoad.schemaVersion !== recordTools.schemaVersion) {
+            progressAtLoad.records[recordKey] = record;
+            writeProgress(progressAtLoad);
+        }
+        // Backfill a last-saved planning snapshot for older browser records.
+        if (
+            record.saved === true &&
+            record.hasUnsavedChanges !== true &&
+            (!record.lastSavedPlanning || typeof record.lastSavedPlanning !== 'object')
+        ) {
+            record.lastSavedPlanning = snapshotLastSavedPlanning(record);
+            progressAtLoad.records = progressAtLoad.records && typeof progressAtLoad.records === 'object'
+                ? progressAtLoad.records
+                : {};
+            progressAtLoad.records[recordKey] = record;
+            writeProgress(progressAtLoad);
+        }
+        var returningMember = record.saved === true;
+        if (returningMember) {
+            document.querySelector('[data-returning-record]').hidden = false;
+            document.querySelector('[data-first-visit-summary]').hidden = true;
+        }
+        if (progressAtLoad[recordKey] === true && record.saved === true && record.hasUnsavedChanges !== true) {
+            document.getElementById('completePhase2Button').textContent = 'Phase 2 Complete';
+        }
+        restoreRecord(record);
+        updateEstimateResponse();
+        updateStatusFields();
+        updateCompanionResult();
+        renderAssumption(record);
+        updateUnsavedNotice(record);
     }
-    if (record.saved === true && rawRecordAtLoad && rawRecordAtLoad.schemaVersion !== recordTools.schemaVersion) {
-        progressAtLoad.records[recordKey] = record;
-        writeProgress(progressAtLoad);
+
+    if (window.rbJourneySync && typeof window.rbJourneySync.afterReady === 'function') {
+        window.rbJourneySync.afterReady(bootPhase2);
+    } else {
+        bootPhase2();
     }
-    // Backfill a last-saved planning snapshot for older browser records.
-    if (
-        record.saved === true &&
-        record.hasUnsavedChanges !== true &&
-        (!record.lastSavedPlanning || typeof record.lastSavedPlanning !== 'object')
-    ) {
-        record.lastSavedPlanning = snapshotLastSavedPlanning(record);
-        progressAtLoad.records = progressAtLoad.records && typeof progressAtLoad.records === 'object'
-            ? progressAtLoad.records
-            : {};
-        progressAtLoad.records[recordKey] = record;
-        writeProgress(progressAtLoad);
-    }
-    var returningMember = record.saved === true;
-    if (returningMember) {
-        document.querySelector('[data-returning-record]').hidden = false;
-        document.querySelector('[data-first-visit-summary]').hidden = true;
-    }
-    if (progressAtLoad[recordKey] === true && record.saved === true && record.hasUnsavedChanges !== true) {
-        document.getElementById('completePhase2Button').textContent = 'Phase 2 Complete';
-    }
-    restoreRecord(record);
-    updateEstimateResponse();
-    updateStatusFields();
-    updateCompanionResult();
-    renderAssumption(record);
-    updateUnsavedNotice(record);
 })();
