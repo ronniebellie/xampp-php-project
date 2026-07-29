@@ -53,14 +53,120 @@ select:focus-visible {
     padding: 18px 0 0;
 }
 
+.site-header-inner {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px 24px;
+    width: min(1120px, calc(100% - 40px));
+    margin: 0 auto;
+}
+
 .site-brand {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    margin-left: max(20px, calc((100vw - 1120px) / 2));
     color: #263241;
     font-weight: 800;
     text-decoration: none;
+    flex: 0 1 auto;
+}
+
+.journey-account-chrome {
+    flex: 0 1 320px;
+    max-width: 340px;
+    text-align: right;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.journey-account-loading {
+    margin: 0;
+    color: #7b8796;
+    font-size: 12px;
+}
+
+.journey-account-stack {
+    margin: 0;
+}
+
+.journey-account-welcome {
+    margin: 0;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.journey-account-badge {
+    display: inline-block;
+    margin: 4px 0 0;
+    padding: 1px 7px;
+    border: 1px solid rgba(4, 120, 87, 0.22);
+    border-radius: 999px;
+    background: #ecfdf5;
+    color: var(--success);
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: 0.02em;
+}
+
+.journey-account-line,
+.journey-account-meta,
+.journey-account-saved,
+.journey-account-readonly,
+.journey-account-hint,
+.journey-account-note,
+.journey-account-actions {
+    margin: 3px 0 0;
+}
+
+.journey-account-readonly {
+    color: #334155;
+    font-weight: 650;
+}
+
+.journey-account-hint {
+    color: #64748b;
+}
+
+.journey-account-note {
+    margin-top: 6px;
+    color: #64748b;
+    font-size: 11px;
+    max-width: 320px;
+    margin-left: auto;
+}
+
+.journey-account-actions {
+    margin-top: 6px;
+}
+
+.journey-account-link {
+    color: var(--accent);
+    font-weight: 650;
+    text-decoration: none;
+}
+
+.journey-account-link:hover {
+    text-decoration: underline;
+}
+
+.journey-account-link.is-signout {
+    color: #475569;
+}
+
+.journey-account-sep {
+    color: #94a3b8;
+}
+
+.journey-account-stack.is-anonymous .journey-account-line {
+    color: #7b8796;
+    font-weight: 500;
+}
+
+.journey-account-stack.is-unavailable .journey-account-line {
+    color: #94a3b8;
 }
 
 .brand-mark {
@@ -1620,9 +1726,26 @@ h1 {
         padding-top: 14px;
     }
 
+    .site-header-inner {
+        width: min(100% - 28px, 1120px);
+        gap: 10px 16px;
+    }
+
     .site-brand {
-        margin-left: 14px;
         font-size: 14px;
+    }
+
+    .journey-account-chrome {
+        max-width: 58%;
+        font-size: 11px;
+    }
+
+    .journey-account-welcome {
+        font-size: 12px;
+    }
+
+    .journey-account-note {
+        display: none;
     }
 
     .brand-mark {

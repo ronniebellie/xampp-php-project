@@ -8,15 +8,10 @@ $page_title = 'Tax Strategy | Retirement Planning Journey';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260725-phase6-open">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260729-m5-p2">
 </head>
 <body>
-    <header class="site-header">
-        <a class="site-brand" href="/" aria-label="Retirement Planning Journey home">
-            <span class="brand-mark" aria-hidden="true">RB</span>
-            <span>Retirement Planning Journey</span>
-        </a>
-    </header>
+    <?php include __DIR__ . '/../includes/site-header.php'; ?>
 
     <main>
         <section class="page-hero" aria-labelledby="phase-title">
