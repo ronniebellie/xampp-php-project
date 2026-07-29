@@ -37,5 +37,17 @@ Mutating methods require session CSRF token (`csrf_token` in JSON body or `X-CSR
 
 ## Production
 
-Backup before apply, then run the up migration against `ronbelisle_premium`.
-Record backup path and migration time in the P1 deployment report.
+**Status: applied** on production database `ronbelisle_premium` at **2026-07-29** (Milestone 5 / R1 P1).
+
+Pre-migration backup (server):
+
+`/var/backups/ronbelisle-mysql/ronbelisle_premium_pre_journey_m5_p1_20260729T154546Z.sql.gz`
+
+Verified after apply:
+
+- Tables `journey_plans` and `journey_plan_versions` exist
+- `schema_migrations` contains `20260729_001_journey_plans_m5_p1`
+- `php dev/journey-premium/test-milestone5-p1.php` → 19 passed, 0 failed
+- Unauthenticated API smoke: load/save/import return HTTP 401 `not_authenticated`
+
+Code commit: `faa38af` — *Add Journey cloud plan schema and save/load APIs (M5 P1)*
