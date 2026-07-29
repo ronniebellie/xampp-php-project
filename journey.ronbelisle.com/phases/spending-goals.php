@@ -9,7 +9,7 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260729-m5-p3">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260729-phase1-cta">
 </head>
 <body>
     <?php include __DIR__ . '/../includes/site-header.php'; ?>
@@ -55,7 +55,7 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                         </div>
                         <div class="record-overview-actions">
                             <a class="primary-action" href="/phases/continue-to-phase-2.php">Continue to Phase 2: Social Security</a>
-                            <a class="secondary-action" href="/calculators/retirement-spending-plan/">Update Spending Plan</a>
+                            <a class="secondary-action" href="/calculators/retirement-spending-plan/">Review or Update Spending Plan</a>
                         </div>
                     </section>
 
@@ -100,10 +100,18 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                     <?php include __DIR__ . '/../includes/progress-nav.php'; ?>
 
                     <div class="next-step-card" aria-labelledby="next-step-title">
-                        <p class="eyebrow">Recommended Tool</p>
+                        <p class="eyebrow" data-spending-plan-empty>Recommended Tool</p>
+                        <p class="eyebrow" data-spending-plan-summary hidden>Spending plan saved</p>
                         <h2 id="next-step-title">Your Retirement Spending Plan</h2>
-                        <p>Estimate the monthly spending your retirement lifestyle will require, then save that target for the rest of your Journey.</p>
-                        <a class="primary-action" href="/calculators/retirement-spending-plan/">Launch Retirement Spending Planner</a>
+                        <div data-spending-plan-empty>
+                            <p>Estimate the monthly spending your retirement lifestyle will require, then save that target for the rest of your Journey.</p>
+                            <a class="primary-action" href="/calculators/retirement-spending-plan/">Launch Retirement Spending Planner</a>
+                        </div>
+                        <div data-spending-plan-summary hidden>
+                            <p>Your monthly spending target is ready for the rest of the Journey.</p>
+                            <p class="action-note">Need to make changes to your spending plan? Reopen the planner below.</p>
+                            <a class="secondary-action" href="/calculators/retirement-spending-plan/">Review or Update Spending Plan</a>
+                        </div>
                     </div>
                 </aside>
             </div>
