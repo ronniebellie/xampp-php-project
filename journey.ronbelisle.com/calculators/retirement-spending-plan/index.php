@@ -151,9 +151,11 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
 
                         <section class="calculator-section" aria-labelledby="income-title">
                             <p class="eyebrow">Step 4</p>
-                            <h2 id="income-title">Enter only retirement income from pensions, annuities, or rental income. Exclude Social Security, IRA, 401(k), and other investment withdrawals for now.</h2>
+                            <h2 id="income-title">Enter your total monthly retirement income from pensions, annuities, or rental income.</h2>
+                            <p>Enter the total amount you expect to receive each month from pensions, annuities, rental income, or other regular retirement income sources. Do not include Social Security, IRA, 401(k), or other investment withdrawals yet.</p>
                             <div class="field-group field-group-wide">
-                                <div class="money-input"><span aria-hidden="true">$</span><input id="monthlyOtherRegularRetirementIncome" name="monthlyOtherRegularRetirementIncome" type="number" min="0" step="1" inputmode="decimal" aria-labelledby="income-title"></div>
+                                <label for="monthlyOtherRegularRetirementIncome">Total monthly retirement income</label>
+                                <div class="money-input"><span aria-hidden="true">$</span><input id="monthlyOtherRegularRetirementIncome" name="monthlyOtherRegularRetirementIncome" type="number" min="0" step="1" inputmode="decimal"></div>
                             </div>
                             <div class="field-group field-group-wide">
                                 <label for="spendingNotes">Notes about your estimate <span class="optional-label">(optional)</span></label>
