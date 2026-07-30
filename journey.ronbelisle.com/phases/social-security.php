@@ -263,7 +263,7 @@ $page_title = 'Social Security | Retirement Planning Journey';
                             </fieldset>
 
                             <fieldset class="journey-fieldset">
-                                <legend>Would you like help estimating how much of your retirement spending will need to come from your retirement savings?</legend>
+                                <legend>Would you like help estimating how much of your retirement income will need to come from your investments?</legend>
                                 <div class="inline-choices">
                                     <label class="choice-row"><input type="radio" name="spendingGapAnswer" value="yes"> <span>Yes</span></label>
                                     <label class="choice-row"><input type="radio" name="spendingGapAnswer" value="no"> <span>No</span></label>
