@@ -507,39 +507,30 @@ class JourneySummaryPdfDocument extends TCPDF
             ? $this->journeyGeneratedLabel
             : date('F j, Y');
         $pageWidth = $this->getPageWidth();
-        $this->SetY(-24);
+        $this->SetY(-18);
         $this->SetDrawColor(216, 224, 234);
         $this->Line(14, $this->GetY(), $pageWidth - 14, $this->GetY());
-        // Small QR in footer (does not dominate the page).
-        $style = [
-            'border' => 0,
-            'padding' => 0,
-            'fgcolor' => [55, 65, 81],
-            'bgcolor' => false,
-        ];
-        $this->write2DBarcode(
-            JOURNEY_SUMMARY_PDF_SITE_URL,
-            'QRCODE,L',
-            $pageWidth - 26,
-            $this->GetY() + 2.2,
-            11,
-            11,
-            $style,
-            'N'
-        );
-        $this->Ln(1.6);
-        $this->SetFont('helvetica', 'B', 7.5);
+        $this->Ln(2.2);
+        $this->SetFont('helvetica', 'B', 8);
         $this->SetTextColor(29, 78, 216);
-        $this->Cell(70, 3.4, 'Retirement Planning Journey', 0, 0, 'L', false, JOURNEY_SUMMARY_PDF_SITE_URL);
-        $this->SetFont('helvetica', '', 7.5);
+        $brand = 'Retirement Planning Journey';
+        $brandW = $this->GetStringWidth($brand) + 1;
+        $this->Cell($brandW, 4, $brand, 0, 0, 'L', false, JOURNEY_SUMMARY_PDF_SITE_URL);
+        $this->SetFont('helvetica', '', 8);
         $this->SetTextColor(82, 96, 113);
-        $this->Cell(70, 3.4, JOURNEY_SUMMARY_PDF_SITE, 0, 0, 'C', false, JOURNEY_SUMMARY_PDF_SITE_URL);
-        $this->Cell(0, 3.4, 'Page ' . $this->getAliasNumPage() . ' of ' . $this->getAliasNbPages(), 0, 1, 'R');
-        $this->SetFont('helvetica', '', 7);
-        $this->Cell(120, 3.2, 'Generated ' . $generated . '  ·  Journey Report Version ' . JOURNEY_SUMMARY_PDF_VERSION, 0, 0, 'L');
-        $this->Cell(0, 3.2, 'For educational planning purposes only.', 0, 1, 'R');
+        $this->Cell(0, 4, ' (' . JOURNEY_SUMMARY_PDF_SITE . ')', 0, 1, 'L', false, JOURNEY_SUMMARY_PDF_SITE_URL);
+        $this->SetFont('helvetica', '', 7.5);
+        $this->Cell(
+            130,
+            3.6,
+            'Generated ' . $generated . '  •  Journey Report Version ' . JOURNEY_SUMMARY_PDF_VERSION,
+            0,
+            0,
+            'L'
+        );
+        $this->Cell(0, 3.6, 'Page ' . $this->getAliasNumPage() . ' of ' . $this->getAliasNbPages(), 0, 1, 'R');
         $this->SetTextColor(120, 130, 142);
-        $this->Cell(0, 3.0, 'This is not financial, tax, or legal advice. Scan QR to return to ' . JOURNEY_SUMMARY_PDF_SITE . '.', 0, 1, 'L');
+        $this->Cell(0, 3.4, 'For educational planning purposes only. This is not financial, tax, or legal advice.', 0, 1, 'L');
     }
 }
 
@@ -676,8 +667,8 @@ function journey_summary_pdf_build(array $progress, ?string $displayName = null)
     $pdf->setPrintFooter(true);
     $pdf->SetMargins(14, 20, 14);
     $pdf->SetHeaderMargin(0);
-    $pdf->SetFooterMargin(26);
-    $pdf->SetAutoPageBreak(true, 30);
+    $pdf->SetFooterMargin(20);
+    $pdf->SetAutoPageBreak(true, 24);
     $pdf->AddPage();
 
     $pageW = $pdf->getPageWidth();
@@ -1026,7 +1017,7 @@ function journey_summary_pdf_build(array $progress, ?string $displayName = null)
         $phase6Note
     );
 
-    // Closing note on the last content page (QR also appears in the footer).
+    // Closing note on the last content page.
     $margins = journey_summary_pdf_margins($pdf);
     $left = $margins['left'];
     $limit = $pdf->getPageHeight() - $pdf->getBreakMargin() - 2;
@@ -1046,7 +1037,7 @@ function journey_summary_pdf_build(array $progress, ?string $displayName = null)
         $pdf->Cell(
             0,
             3.8,
-            'Scan the footer QR code or visit ' . JOURNEY_SUMMARY_PDF_SITE . ' to reopen your saved Journey.',
+            'Visit ' . JOURNEY_SUMMARY_PDF_SITE . ' to reopen your saved Journey.',
             0,
             1,
             'L',

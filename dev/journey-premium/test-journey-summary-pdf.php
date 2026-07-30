@@ -83,7 +83,7 @@ expectPdf('helper includes visual summaries', strpos($helper, 'Visual Summaries'
 expectPdf('helper includes funding breakdown chart', strpos($helper, 'funding breakdown') !== false);
 expectPdf('helper includes income comparison chart', strpos($helper, 'Monthly income comparison') !== false);
 expectPdf('helper includes withdrawal-rate visual', strpos($helper, 'withdrawal-rate visual') !== false);
-expectPdf('helper includes QR code', strpos($helper, 'write2DBarcode') !== false && strpos($helper, 'QRCODE') !== false);
+expectPdf('helper has no QR code', strpos($helper, 'write2DBarcode') === false && strpos($helper, 'QRCODE') === false);
 expectPdf('helper includes all six phases', strpos($helper, 'Phase 1') !== false && strpos($helper, 'Phase 6') !== false);
 expectPdf('helper includes educational footer', strpos($helper, 'not financial, tax, or legal advice') !== false);
 expectPdf('helper sets PDF metadata title', strpos($helper, 'Retirement Planning Journey Summary') !== false);
@@ -196,7 +196,15 @@ expectPdf('text has phase 6', stripos($text, 'Phase 6') !== false);
 expectPdf('text has spending goal value', strpos($text, '9,000') !== false || strpos($text, '$9000') !== false || stripos($text, '9000') !== false);
 expectPdf('text has visual summary section', stripos($text, 'Visual Summar') !== false || stripos($text, 'funding breakdown') !== false);
 expectPdf('text has withdrawal measure disclaimer', stripos($text, 'not a guarantee') !== false);
-expectPdf('text has QR return label', stripos($text, 'Return to your Retirement Planning Journey') !== false);
+expectPdf('text has return label', stripos($text, 'Return to your Retirement Planning Journey') !== false);
+expectPdf(
+    'text has no QR prompt',
+    stripos($text, 'QR code') === false
+        && stripos($text, 'Scan QR') === false
+        && stripos($text, 'footer QR') === false
+        && stripos($helper, 'QRCODE') === false
+        && stripos($helper, 'write2DBarcode') === false
+);
 expectPdf('text has report version', stripos($text, 'Version 1.0') !== false || stripos($text, 'Journey Report Version') !== false);
 expectPdf('no visible TCPDF branding text', stripos($text, 'Powered by TCPDF') === false);
 
