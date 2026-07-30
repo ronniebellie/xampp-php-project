@@ -20,4 +20,4 @@
     </div>
 </header>
 <script src="/assets/js/journey-sync.js?v=20260730-account-cleanup" defer></script>
-<script src="/assets/js/journey-auth-chrome.js?v=20260730-account-cleanup" defer></script>
+<script src="/assets/js/journey-auth-chrome.js?v=20260730-free-header" defer></script>
