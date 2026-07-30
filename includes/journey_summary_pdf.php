@@ -191,7 +191,8 @@ function journey_summary_pdf_build(array $progress, ?string $displayName = null)
     $pdf->setPrintHeader(false);
     $pdf->setPrintFooter(false);
     $pdf->SetMargins(15, 16, 15);
-    $pdf->SetAutoPageBreak(true, 22);
+    $pdf->SetAutoPageBreak(true, 28);
+    $pdf->SetFooterMargin(0);
     $pdf->AddPage();
 
     // Header band
@@ -304,8 +305,13 @@ function journey_summary_pdf_build(array $progress, ?string $displayName = null)
         $pdf->SetTextColor(17, 24, 39);
     }
 
-    // Footer on last page
-    $pdf->SetY(-18);
+    // Footer near bottom of current page (avoid creating an extra TCPDF page)
+    $pdf->Ln(6);
+    $y = $pdf->GetY();
+    if ($y > 250) {
+        $pdf->AddPage();
+    }
+    $pdf->SetY(max($pdf->GetY(), 255));
     $pdf->SetDrawColor(216, 224, 234);
     $pdf->Line(15, $pdf->GetY(), 195, $pdf->GetY());
     $pdf->Ln(2);
