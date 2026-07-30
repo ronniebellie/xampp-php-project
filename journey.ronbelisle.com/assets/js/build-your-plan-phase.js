@@ -51,6 +51,30 @@
     }
 
     function readPhase1() {
+        if (window.rbJourneyPhase1 && typeof window.rbJourneyPhase1.reconcileLocal === 'function') {
+            window.rbJourneyPhase1.reconcileLocal();
+        }
+        if (window.rbJourneySync && typeof window.rbJourneySync.getPhase1Handoff === 'function') {
+            var synced = window.rbJourneySync.getPhase1Handoff();
+            if (synced && synced.usable) {
+                return {
+                    usable: true,
+                    monthlySpending: synced.monthlySpending,
+                    monthlyOther: Math.max(0, Number(synced.monthlyOther) || 0)
+                };
+            }
+        }
+        if (window.rbJourneyPhase1 && typeof window.rbJourneyPhase1.getHandoff === 'function') {
+            var handoff = window.rbJourneyPhase1.getHandoff();
+            if (handoff && handoff.usable) {
+                return {
+                    usable: true,
+                    monthlySpending: handoff.monthlySpending,
+                    monthlyOther: Math.max(0, Number(handoff.monthlyOther) || 0)
+                };
+            }
+        }
+
         try {
             var calc = JSON.parse(localStorage.getItem(calculatorKey) || '{}');
             if (calc && calc.completionStatus === 'completed' && calc.outputs) {

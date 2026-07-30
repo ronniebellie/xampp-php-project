@@ -175,7 +175,15 @@
         return false;
     }
 
+    function reconcilePhase1Local() {
+        if (!window.rbJourneyPhase1 || typeof window.rbJourneyPhase1.reconcileLocal !== 'function') {
+            return { changed: false };
+        }
+        return window.rbJourneyPhase1.reconcileLocal();
+    }
+
     function buildPayloadFromLocal() {
+        reconcilePhase1Local();
         var progress = readJson(PROGRESS_KEY) || {};
         var calculators = {};
         var calc = readJson(CALCULATOR_KEY);
@@ -191,19 +199,52 @@
 
     function applyPayloadToLocal(payload) {
         if (!payload || typeof payload !== 'object') return false;
-        var progress = payload.progress && typeof payload.progress === 'object'
+
+        var cloudProgress = payload.progress && typeof payload.progress === 'object'
             ? payload.progress
             : {};
-        writeJson(PROGRESS_KEY, progress);
-
         var calculators = payload.calculators && typeof payload.calculators === 'object'
             ? payload.calculators
             : {};
-        if (calculators.retirementSpendingPlan &&
-            typeof calculators.retirementSpendingPlan === 'object') {
-            writeJson(CALCULATOR_KEY, calculators.retirementSpendingPlan);
+        var cloudCalc = calculators.retirementSpendingPlan &&
+            typeof calculators.retirementSpendingPlan === 'object'
+            ? calculators.retirementSpendingPlan
+            : null;
+
+        var localProgress = readJson(PROGRESS_KEY) || {};
+        var localCalc = readJson(CALCULATOR_KEY);
+        var chosen = cloudProgress;
+        var chosenCalc = cloudCalc;
+
+        if (window.rbJourneyPhase1 && typeof window.rbJourneyPhase1.preferUsablePhase1 === 'function') {
+            var preferred = window.rbJourneyPhase1.preferUsablePhase1(
+                cloudProgress,
+                cloudCalc,
+                localProgress,
+                localCalc
+            );
+            chosen = preferred.progress || cloudProgress;
+            chosenCalc = preferred.calc;
+            if (preferred.keptLocal && state.canWrite) {
+                // Local Phase 1 was richer than cloud — persist after hydrate settles.
+                window.setTimeout(function () {
+                    scheduleSave('phase1-reconcile');
+                }, 0);
+            }
+        }
+
+        writeJson(PROGRESS_KEY, chosen || {});
+        if (chosenCalc && typeof chosenCalc === 'object') {
+            writeJson(CALCULATOR_KEY, chosenCalc);
         } else {
             localStorage.removeItem(CALCULATOR_KEY);
+        }
+
+        var reconciled = reconcilePhase1Local();
+        if (reconciled.changed && state.canWrite) {
+            window.setTimeout(function () {
+                scheduleSave('phase1-reconcile');
+            }, 0);
         }
         return true;
     }
@@ -597,12 +638,22 @@
         scheduleSave: scheduleSave,
         saveNow: function (reason) {
             window.clearTimeout(saveTimer);
+            if (state.needsImport) {
+                return performFirstImport(reason || 'import');
+            }
             return performSave(reason || 'manual', false);
         },
         getState: getPublicState,
         getStatus: function () { return state.status; },
         buildPayloadFromLocal: buildPayloadFromLocal,
         localHasMeaningfulData: localHasMeaningfulData,
+        reconcilePhase1: reconcilePhase1Local,
+        getPhase1Handoff: function () {
+            reconcilePhase1Local();
+            return window.rbJourneyPhase1 && typeof window.rbJourneyPhase1.getHandoff === 'function'
+                ? window.rbJourneyPhase1.getHandoff()
+                : { usable: false, monthlySpending: 0, monthlyOther: 0 };
+        },
         keys: {
             progress: PROGRESS_KEY,
             calculator: CALCULATOR_KEY

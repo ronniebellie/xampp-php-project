@@ -435,8 +435,21 @@
         var record = buildRecord(calculated.inputs, calculated.outputs, 'completed');
         writeCalculatorRecord(record);
         markPhaseComplete(record);
+        if (window.rbJourneyPhase1 && typeof window.rbJourneyPhase1.reconcileLocal === 'function') {
+            window.rbJourneyPhase1.reconcileLocal();
+        }
         if (saveStatus) saveStatus.textContent = 'Saved. Returning to Phase 1...';
-        window.location.href = '/phases/spending-goals.php?spendingPlan=saved';
+
+        function returnToPhase1() {
+            window.location.href = '/phases/spending-goals.php?spendingPlan=saved';
+        }
+
+        // Persist to cloud before navigation so hydrate cannot overwrite a completed Phase 1.
+        if (window.rbJourneySync && typeof window.rbJourneySync.saveNow === 'function') {
+            window.rbJourneySync.saveNow('calculator').then(returnToPhase1).catch(returnToPhase1);
+            return;
+        }
+        returnToPhase1();
     }
 
     function restoreRecord(record) {

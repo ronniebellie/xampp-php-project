@@ -1,17 +1,6 @@
 (function () {
     'use strict';
 
-    var calculatorKey = 'rbJourneyCalculator:retirementSpendingPlan:v1';
-
-    function readRecord() {
-        try {
-            var parsed = JSON.parse(localStorage.getItem(calculatorKey) || '{}');
-            return parsed && typeof parsed === 'object' ? parsed : {};
-        } catch (error) {
-            return {};
-        }
-    }
-
     function money(value) {
         if (!Number.isFinite(value)) return '$0';
         return value.toLocaleString(undefined, {
@@ -73,11 +62,31 @@
         });
     }
 
+    function readSummaryRecord() {
+        if (window.rbJourneyPhase1 && typeof window.rbJourneyPhase1.getSummaryRecord === 'function') {
+            return window.rbJourneyPhase1.getSummaryRecord();
+        }
+        if (window.rbJourneySync && typeof window.rbJourneySync.getPhase1Handoff === 'function') {
+            var handoff = window.rbJourneySync.getPhase1Handoff();
+            if (!handoff || !handoff.usable) return null;
+            return {
+                completionStatus: 'completed',
+                lastUpdated: handoff.lastUpdated,
+                outputs: {
+                    monthlyRetirementSpendingTarget: handoff.monthlySpending,
+                    annualRetirementSpendingTarget: handoff.annualSpending || handoff.monthlySpending * 12,
+                    monthlyOtherRegularRetirementIncome: handoff.monthlyOther || 0
+                }
+            };
+        }
+        return null;
+    }
+
     function render() {
-        var record = readRecord();
-        var hasSavedPlan = record.completionStatus === 'completed' &&
+        var record = readSummaryRecord();
+        var hasSavedPlan = !!(record &&
             record.outputs &&
-            Number(record.outputs.monthlyRetirementSpendingTarget) > 0;
+            Number(record.outputs.monthlyRetirementSpendingTarget) > 0);
         var showFreshSave = hasSavedPlan && freshSaveFlag();
 
         document.querySelectorAll('[data-spending-plan-summary]').forEach(function (element) {

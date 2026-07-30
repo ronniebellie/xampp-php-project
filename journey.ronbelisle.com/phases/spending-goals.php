@@ -117,6 +117,6 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
             </div>
         </section>
     </main>
-    <script src="/assets/js/spending-goals-phase.js?v=20260729-m5-p3" defer></script>
+    <script src="/assets/js/spending-goals-phase.js?v=20260730-phase1-handoff" defer></script>
 </body>
 </html>

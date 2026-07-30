@@ -208,6 +208,6 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
             </div>
         </section>
     </main>
-    <script src="/assets/js/retirement-spending-plan.js?v=20260729-m5-p3" defer></script>
+    <script src="/assets/js/retirement-spending-plan.js?v=20260730-phase1-handoff" defer></script>
 </body>
 </html>
