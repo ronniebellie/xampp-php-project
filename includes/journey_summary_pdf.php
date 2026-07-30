@@ -253,10 +253,82 @@ function journey_summary_pdf_extract(array $progress): array
 }
 
 /**
+ * Resolve a TrueType font for chart labels (FreeType / imagettftext).
+ */
+function journey_summary_pdf_chart_font(bool $bold = false): ?string
+{
+    static $cache = [];
+    $key = $bold ? 'bold' : 'regular';
+    if (array_key_exists($key, $cache)) {
+        return $cache[$key];
+    }
+
+    $candidates = $bold
+        ? [
+            '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
+            '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf',
+            '/usr/share/fonts/truetype/freefont/FreeSansBold.ttf',
+            '/System/Library/Fonts/Supplemental/Arial Bold.ttf',
+            '/Library/Fonts/Arial Bold.ttf',
+        ]
+        : [
+            '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+            '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
+            '/usr/share/fonts/truetype/freefont/FreeSans.ttf',
+            '/System/Library/Fonts/Supplemental/Arial.ttf',
+            '/Library/Fonts/Arial.ttf',
+        ];
+
+    foreach ($candidates as $path) {
+        if (is_string($path) && is_readable($path)) {
+            $cache[$key] = $path;
+            return $path;
+        }
+    }
+
+    $cache[$key] = null;
+    return null;
+}
+
+/**
+ * Draw anti-aliased chart text with TrueType when available.
+ *
+ * @param \GdImage|resource $img
+ */
+function journey_summary_pdf_chart_text($img, float $sizePt, int $x, int $y, string $text, int $color, bool $bold = false): void
+{
+    $font = journey_summary_pdf_chart_font($bold);
+    if ($font !== null && function_exists('imagettftext')) {
+        // imagettftext uses the baseline; $y is the top of the text box.
+        $baseline = $y + (int) round($sizePt * 0.92);
+        imagettftext($img, $sizePt, 0, $x, $baseline, $color, $font, $text);
+        return;
+    }
+
+    $builtIn = $sizePt >= 16 ? 5 : ($sizePt >= 13 ? 4 : 3);
+    imagestring($img, $builtIn, $x, $y, $text, $color);
+}
+
+/**
+ * Approximate text width for layout when TrueType is available.
+ */
+function journey_summary_pdf_chart_text_width(string $text, float $sizePt, bool $bold = false): int
+{
+    $font = journey_summary_pdf_chart_font($bold);
+    if ($font !== null && function_exists('imagettfbbox')) {
+        $box = imagettfbbox($sizePt, 0, $font, $text);
+        if (is_array($box)) {
+            return (int) abs($box[2] - $box[0]);
+        }
+    }
+    return (int) (strlen($text) * max(6, (int) ($sizePt * 0.55)));
+}
+
+/**
  * @param array<int, array{0:int,1:int,2:int}> $palette
  * @param list<array{0:string,1:float}> $slices label => value
  */
-function journey_summary_pdf_chart_donut(array $slices, int $size = 520): ?string
+function journey_summary_pdf_chart_donut(array $slices, int $size = 640): ?string
 {
     if (!extension_loaded('gd') || $slices === []) {
         return null;
@@ -327,7 +399,7 @@ function journey_summary_pdf_chart_donut(array $slices, int $size = 520): ?strin
 /**
  * @param list<array{0:string,1:float,2?:array{0:int,1:int,2:int}}> $bars
  */
-function journey_summary_pdf_chart_bars(array $bars, int $width = 900, int $height = 420): ?string
+function journey_summary_pdf_chart_bars(array $bars, int $width = 1400, int $height = 520): ?string
 {
     if (!extension_loaded('gd') || $bars === []) {
         return null;
@@ -344,6 +416,9 @@ function journey_summary_pdf_chart_bars(array $bars, int $width = 900, int $heig
     if ($img === false) {
         return null;
     }
+    if (function_exists('imageantialias')) {
+        @imageantialias($img, true);
+    }
     $white = imagecolorallocate($img, 255, 255, 255);
     $grid = imagecolorallocate($img, 226, 232, 240);
     $labelColor = imagecolorallocate($img, 82, 96, 113);
@@ -354,15 +429,16 @@ function journey_summary_pdf_chart_bars(array $bars, int $width = 900, int $heig
     }
     imagefill($img, 0, 0, $white);
 
-    $left = 220;
-    $right = $width - 40;
-    $top = 36;
-    $bottom = $height - 36;
+    $left = 340;
+    $right = $width - 56;
+    $top = 48;
+    $bottom = $height - 48;
     $rowH = (int) (($bottom - $top) / max(1, count($bars)));
+    $barThickness = 36;
 
     for ($g = 0; $g <= 4; $g++) {
         $x = (int) ($left + (($right - $left) * $g / 4));
-        imageline($img, $x, $top - 8, $x, $bottom + 8, $grid);
+        imageline($img, $x, $top - 10, $x, $bottom + 10, $grid);
     }
 
     foreach ($bars as $idx => $bar) {
@@ -373,11 +449,25 @@ function journey_summary_pdf_chart_bars(array $bars, int $width = 900, int $heig
         if ($fill === false) {
             continue;
         }
-        $y = $top + (int) ($idx * $rowH) + 18;
+        $y = $top + (int) ($idx * $rowH) + (int) (($rowH - $barThickness) / 2);
         $barW = (int) round(($right - $left) * ($value / $max));
-        imagefilledrectangle($img, $left, $y, $left + max(4, $barW), $y + 28, $fill);
-        imagestring($img, 3, 12, $y + 8, substr($label, 0, 28), $labelColor);
-        imagestring($img, 3, $left + max(4, $barW) + 8, $y + 8, journey_summary_pdf_money($value), $valueColor);
+        imagefilledrectangle($img, $left, $y, $left + max(6, $barW), $y + $barThickness, $fill);
+
+        $labelText = function_exists('mb_substr') ? mb_substr($label, 0, 34) : substr($label, 0, 34);
+        journey_summary_pdf_chart_text($img, 18, 24, $y + 8, $labelText, $labelColor, false);
+        $valueText = journey_summary_pdf_money($value);
+        $valueX = $left + max(6, $barW) + 14;
+        // Keep value label inside the canvas when a bar is nearly full-width.
+        $valueW = journey_summary_pdf_chart_text_width($valueText, 18, true);
+        if ($valueX + $valueW > $width - 16) {
+            $valueX = max($left + 12, $left + max(6, $barW) - $valueW - 12);
+            $onBar = imagecolorallocate($img, 255, 255, 255);
+            if ($onBar !== false) {
+                journey_summary_pdf_chart_text($img, 18, $valueX, $y + 8, $valueText, $onBar, true);
+                continue;
+            }
+        }
+        journey_summary_pdf_chart_text($img, 18, $valueX, $y + 8, $valueText, $valueColor, true);
     }
 
     $path = tempnam(sys_get_temp_dir(), 'jpdf_bars_');
@@ -387,7 +477,7 @@ function journey_summary_pdf_chart_bars(array $bars, int $width = 900, int $heig
     }
     $png = $path . '.png';
     @unlink($path);
-    imagepng($img, $png);
+    imagepng($img, $png, 6);
     imagedestroy($img);
     return $png;
 }
@@ -395,7 +485,7 @@ function journey_summary_pdf_chart_bars(array $bars, int $width = 900, int $heig
 /**
  * Restrained withdrawal-rate scale (not a safe/unsafe guarantee).
  */
-function journey_summary_pdf_chart_rate(?float $rate, string $assessmentLabel, int $width = 900, int $height = 220): ?string
+function journey_summary_pdf_chart_rate(?float $rate, string $assessmentLabel, int $width = 1400, int $height = 320): ?string
 {
     if (!extension_loaded('gd') || $rate === null) {
         return null;
@@ -405,6 +495,9 @@ function journey_summary_pdf_chart_rate(?float $rate, string $assessmentLabel, i
     $img = imagecreatetruecolor($width, $height);
     if ($img === false) {
         return null;
+    }
+    if (function_exists('imageantialias')) {
+        @imageantialias($img, true);
     }
     $white = imagecolorallocate($img, 255, 255, 255);
     $track = imagecolorallocate($img, 226, 232, 240);
@@ -417,22 +510,52 @@ function journey_summary_pdf_chart_rate(?float $rate, string $assessmentLabel, i
     }
     imagefill($img, 0, 0, $white);
 
-    $left = 50;
-    $right = $width - 50;
-    $y = 110;
-    imagefilledrectangle($img, $left, $y, $right, $y + 18, $track);
+    $left = 64;
+    $right = $width - 64;
+    $y = 150;
+    $trackH = 24;
+    imagefilledrectangle($img, $left, $y, $right, $y + $trackH, $track);
     $fillW = (int) round(($right - $left) * ($pct / 12.0));
-    imagefilledrectangle($img, $left, $y, $left + max(2, $fillW), $y + 18, $accent);
+    imagefilledrectangle($img, $left, $y, $left + max(3, $fillW), $y + $trackH, $accent);
 
     $markerX = $left + $fillW;
-    imagefilledellipse($img, $markerX, $y + 9, 22, 22, $accent);
+    imagefilledellipse($img, $markerX, $y + (int) ($trackH / 2), 30, 30, $accent);
 
-    imagestring($img, 5, $left, 36, journey_summary_pdf_pct_from_decimal($rate) . ' initial withdrawal rate', $ink);
-    imagestring($img, 3, $left, 62, substr('Phase 3 assessment: ' . $assessmentLabel, 0, 70), $muted);
-    imagestring($img, 2, $left, $y + 36, '0%', $muted);
-    imagestring($img, 2, (int) (($left + $right) / 2) - 10, $y + 36, '6%', $muted);
-    imagestring($img, 2, $right - 28, $y + 36, '12%', $muted);
-    imagestring($img, 2, $left, $y + 58, 'Scale shown for context only - not a guarantee of sustainability.', $muted);
+    $title = journey_summary_pdf_pct_from_decimal($rate) . ' initial withdrawal rate';
+    journey_summary_pdf_chart_text($img, 24, $left, 42, $title, $ink, true);
+    $assessment = 'Phase 3 assessment: ' . $assessmentLabel;
+    if (function_exists('mb_substr')) {
+        $assessment = mb_substr($assessment, 0, 78);
+    } else {
+        $assessment = substr($assessment, 0, 78);
+    }
+    journey_summary_pdf_chart_text($img, 16, $left, 82, $assessment, $muted, false);
+
+    $scaleY = $y + $trackH + 28;
+    journey_summary_pdf_chart_text($img, 14, $left, $scaleY, '0%', $muted, false);
+    $mid = '6%';
+    $midW = journey_summary_pdf_chart_text_width($mid, 14, false);
+    journey_summary_pdf_chart_text(
+        $img,
+        14,
+        (int) ((($left + $right) / 2) - ($midW / 2)),
+        $scaleY,
+        $mid,
+        $muted,
+        false
+    );
+    $end = '12%';
+    $endW = journey_summary_pdf_chart_text_width($end, 14, false);
+    journey_summary_pdf_chart_text($img, 14, $right - $endW, $scaleY, $end, $muted, false);
+    journey_summary_pdf_chart_text(
+        $img,
+        13,
+        $left,
+        $scaleY + 34,
+        'Scale shown for context only - not a guarantee of sustainability.',
+        $muted,
+        false
+    );
 
     $path = tempnam(sys_get_temp_dir(), 'jpdf_rate_');
     if ($path === false) {
@@ -441,7 +564,7 @@ function journey_summary_pdf_chart_rate(?float $rate, string $assessmentLabel, i
     }
     $png = $path . '.png';
     @unlink($path);
-    imagepng($img, $png);
+    imagepng($img, $png, 6);
     imagedestroy($img);
     return $png;
 }
@@ -457,6 +580,98 @@ function journey_summary_pdf_cleanup_temps(array &$tempFiles): void
         }
     }
     $tempFiles = [];
+}
+
+/**
+ * Draw the monthly income comparison with vector Helvetica labels.
+ *
+ * @param JourneySummaryPdfDocument $pdf
+ * @param list<array{0:string,1:float,2?:array{0:int,1:int,2:int}}> $bars
+ */
+function journey_summary_pdf_draw_bar_comparison(JourneySummaryPdfDocument $pdf, array $bars): void
+{
+    $max = 0.0;
+    foreach ($bars as $bar) {
+        $max = max($max, (float) $bar[1]);
+    }
+    if ($max <= 0) {
+        $max = 1.0;
+    }
+
+    $html = '<table border="0" cellpadding="4" cellspacing="0" width="100%">';
+    foreach ($bars as $bar) {
+        $label = journey_summary_pdf_h((string) $bar[0]);
+        $value = max(0.0, (float) $bar[1]);
+        $rgb = $bar[2] ?? [29, 78, 216];
+        $pct = max(4.0, min(100.0, round(($value / $max) * 100, 1)));
+        $color = sprintf('#%02x%02x%02x', $rgb[0], $rgb[1], $rgb[2]);
+        $money = journey_summary_pdf_h(journey_summary_pdf_money($value));
+        $html .= '<tr>'
+            . '<td width="32%" style="color:#526071;font-size:9.5pt;">' . $label . '</td>'
+            . '<td width="52%" style="background-color:#f1f5f9;">'
+            . '<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>'
+            . '<td width="' . $pct . '%" bgcolor="' . $color . '" style="font-size:7pt;line-height:10pt;">&nbsp;</td>'
+            . '<td width="' . (100.0 - $pct) . '%" style="font-size:7pt;line-height:10pt;">&nbsp;</td>'
+            . '</tr></table>'
+            . '</td>'
+            . '<td width="16%" align="right" style="color:#111827;font-size:9.5pt;"><b>' . $money . '</b></td>'
+            . '</tr>';
+    }
+    $html .= '</table>';
+
+    $pdf->SetTextColor(17, 24, 39);
+    $pdf->writeHTML($html, true, false, true, false, '');
+    $pdf->Ln(1);
+}
+
+/**
+ * Draw the withdrawal-rate gauge with vector Helvetica labels.
+ *
+ * @param JourneySummaryPdfDocument $pdf
+ */
+function journey_summary_pdf_draw_rate_gauge(
+    JourneySummaryPdfDocument $pdf,
+    float $rate,
+    string $assessmentLabel
+): void {
+    $pct = max(0.0, min(12.0, $rate * 100.0));
+    $margins = journey_summary_pdf_margins($pdf);
+    $left = $margins['left'];
+    $contentW = $pdf->getPageWidth() - $left - $margins['right'];
+
+    $pdf->SetFont('helvetica', 'B', 12);
+    $pdf->SetTextColor(17, 24, 39);
+    $pdf->Cell(0, 6, journey_summary_pdf_pct_from_decimal($rate) . ' initial withdrawal rate', 0, 1, 'L');
+    $pdf->SetFont('helvetica', '', 9);
+    $pdf->SetTextColor(82, 96, 113);
+    $pdf->MultiCell(0, 4.5, 'Phase 3 assessment: ' . $assessmentLabel, 0, 'L');
+    $pdf->Ln(1.5);
+
+    $trackY = $pdf->GetY();
+    $trackH = 5.5;
+    $pdf->SetFillColor(226, 232, 240);
+    $pdf->Rect($left, $trackY, $contentW, $trackH, 'F');
+    $fillW = max(2.0, $contentW * ($pct / 12.0));
+    $pdf->SetFillColor(29, 78, 216);
+    $pdf->Rect($left, $trackY, $fillW, $trackH, 'F');
+    $markerR = 2.8;
+    $pdf->Ellipse($left + $fillW, $trackY + ($trackH / 2), $markerR, $markerR, 0, 0, 360, 'F');
+
+    $pdf->SetY($trackY + $trackH + 2.5);
+    $pdf->SetFont('helvetica', '', 8);
+    $pdf->SetTextColor(82, 96, 113);
+    $pdf->Cell($contentW / 3, 4, '0%', 0, 0, 'L');
+    $pdf->Cell($contentW / 3, 4, '6%', 0, 0, 'C');
+    $pdf->Cell($contentW / 3, 4, '12%', 0, 1, 'R');
+    $pdf->SetFont('helvetica', '', 7.5);
+    $pdf->MultiCell(
+        0,
+        3.8,
+        'Scale shown for context only - not a guarantee of sustainability.',
+        0,
+        'L'
+    );
+    $pdf->Ln(1);
 }
 
 /**
@@ -772,6 +987,8 @@ function journey_summary_pdf_build(array $progress, ?string $displayName = null)
     $hasFunding = ($ss + $other + $fromInv) > 0 && $spend !== null;
 
     if ($hasFunding || $rate !== null) {
+        // Visual summaries always begin on page 2, directly above the charts.
+        $pdf->AddPage();
         journey_summary_pdf_section_heading($pdf, 'Visual Summaries');
         $pdf->SetFont('helvetica', '', 8.5);
         $pdf->SetTextColor(82, 96, 113);
@@ -782,11 +999,10 @@ function journey_summary_pdf_build(array $progress, ?string $displayName = null)
             0,
             'L'
         );
-        $pdf->Ln(1);
+        $pdf->Ln(2);
     }
 
     if ($hasFunding) {
-        journey_summary_pdf_ensure_space($pdf, 78);
         $pdf->SetFont('helvetica', 'B', 10.5);
         $pdf->SetTextColor(17, 24, 39);
         $pdf->Cell(0, 6, '1. Monthly retirement-income funding breakdown', 0, 1, 'L');
@@ -839,7 +1055,7 @@ function journey_summary_pdf_build(array $progress, ?string $displayName = null)
         }
         $pdf->Ln(2);
 
-        journey_summary_pdf_ensure_space($pdf, 70);
+        journey_summary_pdf_ensure_space($pdf, 55);
         $pdf->SetFont('helvetica', 'B', 10.5);
         $pdf->SetTextColor(17, 24, 39);
         $pdf->Cell(0, 6, '2. Monthly income comparison', 0, 1, 'L');
@@ -849,19 +1065,9 @@ function journey_summary_pdf_build(array $progress, ?string $displayName = null)
             ['Dependable monthly income', $dependable, [14, 165, 233]],
             ['Needed from investments', $fromInv, [5, 150, 105]],
         ];
-        $barPng = journey_summary_pdf_chart_bars($bars);
-        if ($barPng !== null) {
-            $tempFiles[] = $barPng;
-            $pdf->Image($barPng, journey_summary_pdf_margins($pdf)['left'], $pdf->GetY(), 180, 48, 'PNG');
-            $pdf->Ln(50);
-        } else {
-            journey_summary_pdf_kv_rows($pdf, [
-                ['Monthly spending goal', journey_summary_pdf_money($spend) . ' / month'],
-                ['Dependable monthly income', journey_summary_pdf_money($dependable) . ' / month'],
-                ['Needed from investments', journey_summary_pdf_money($fromInv) . ' / month'],
-            ]);
-        }
-        // Text labels for accessibility / grayscale
+        // Vector labels + TCPDF-drawn bars (matches report typography).
+        journey_summary_pdf_draw_bar_comparison($pdf, $bars);
+        $pdf->SetX(journey_summary_pdf_margins($pdf)['left']);
         $pdf->SetFont('helvetica', '', 8);
         $pdf->SetTextColor(82, 96, 113);
         $pdf->MultiCell(
@@ -880,21 +1086,12 @@ function journey_summary_pdf_build(array $progress, ?string $displayName = null)
     }
 
     if ($rate !== null) {
-        journey_summary_pdf_ensure_space($pdf, 55);
+        journey_summary_pdf_ensure_space($pdf, 42);
         $pdf->SetFont('helvetica', 'B', 10.5);
         $pdf->SetTextColor(17, 24, 39);
         $pdf->Cell(0, 6, '3. Initial withdrawal-rate visual', 0, 1, 'L');
-        $ratePng = journey_summary_pdf_chart_rate($rate, (string) $ov['incomePlan']);
-        if ($ratePng !== null) {
-            $tempFiles[] = $ratePng;
-            $pdf->Image($ratePng, journey_summary_pdf_margins($pdf)['left'], $pdf->GetY(), 180, 36, 'PNG');
-            $pdf->Ln(38);
-        } else {
-            journey_summary_pdf_kv_rows($pdf, [
-                ['Initial withdrawal rate', journey_summary_pdf_pct_from_decimal($rate)],
-                ['Base-case assessment', (string) $ov['incomePlan']],
-            ]);
-        }
+        // Vector labels + TCPDF-drawn gauge (matches report typography).
+        journey_summary_pdf_draw_rate_gauge($pdf, $rate, (string) $ov['incomePlan']);
         $pdf->SetFont('helvetica', 'I', 8);
         $pdf->SetTextColor(82, 96, 113);
         $pdf->MultiCell(
