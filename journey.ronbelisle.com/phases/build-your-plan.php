@@ -149,7 +149,7 @@ $page_title = 'Build Your Plan | Retirement Planning Journey';
                                 <p class="decision-statement"><strong>This is the retirement income plan I want to carry forward.</strong></p>
                                 <button type="submit" class="primary-action journey-button" id="savePhase3Button">Save My Retirement Income Plan</button>
                                 <div class="save-confirmation" id="phase3SaveConfirmation" role="status" tabindex="-1" hidden>
-                                    <strong>Your retirement income plan has been saved in this browser.</strong>
+                                    <strong>Your retirement income plan has been saved.</strong>
                                     <span>This is a working base-case plan you can revisit and change later.</span>
                                 </div>
                             </section>
@@ -162,7 +162,7 @@ $page_title = 'Build Your Plan | Retirement Planning Journey';
                             <a class="secondary-action" href="/phases/stress-test.php" id="continueToPhase4Link">Continue to Phase 4</a>
                             <a class="secondary-action" href="/">Return to My Journey</a>
                             <div class="completion-message" id="phase3CompletionMessage" role="status" tabindex="-1" hidden></div>
-                            <p class="trust-note">Completing Phase 3 records your base-case income plan in this browser. It does not run a stress test.</p>
+                            <p class="trust-note">Completing Phase 3 records your base-case income plan. It does not run a stress test.</p>
                         </section>
                     </article>
                 </div>
@@ -181,6 +181,6 @@ $page_title = 'Build Your Plan | Retirement Planning Journey';
         </section>
     </main>
 
-    <script src="/assets/js/build-your-plan-phase.js?v=20260730-phase1-handoff" defer></script>
+    <script src="/assets/js/build-your-plan-phase.js?v=20260730-phase3-cloud" defer></script>
 </body>
 </html>

@@ -36,6 +36,56 @@
         }
     }
 
+    function canCloudWrite() {
+        var sync = window.rbJourneySync;
+        if (!sync) return false;
+        var status = typeof sync.getStatus === 'function' ? sync.getStatus() : null;
+        var syncState = typeof sync.getState === 'function' ? sync.getState() : null;
+        if (syncState && syncState.canWrite === true && syncState.readOnly !== true) {
+            return true;
+        }
+        return !!(status && status.hasAccess && status.canCloudWrite !== false);
+    }
+
+    function persistCloudNow(reason) {
+        if (!canCloudWrite() || !window.rbJourneySync || typeof window.rbJourneySync.saveNow !== 'function') {
+            return Promise.resolve({ localOnly: true });
+        }
+        return window.rbJourneySync.saveNow(reason || 'phase').then(function (result) {
+            return result && typeof result === 'object' ? result : {};
+        }).catch(function () {
+            return { error: true };
+        });
+    }
+
+    function setSaveConfirmationMessage(cloudResult) {
+        var confirmation = document.getElementById('phase3SaveConfirmation');
+        if (!confirmation) return;
+        var strong = confirmation.querySelector('strong');
+        var span = confirmation.querySelector('span');
+        var cloudOk = canCloudWrite() &&
+            cloudResult &&
+            !cloudResult.localOnly &&
+            !cloudResult.error &&
+            !cloudResult.skipped &&
+            !cloudResult.offline;
+
+        if (strong) {
+            strong.textContent = cloudOk
+                ? 'Your retirement income plan has been saved to your Journey account.'
+                : 'Your retirement income plan has been saved in this browser.';
+        }
+        if (span) {
+            if (cloudOk) {
+                span.textContent = 'You can return on this browser or another device and continue from where you left off.';
+            } else if (canCloudWrite() && cloudResult && (cloudResult.offline || cloudResult.error)) {
+                span.textContent = 'Cloud save will retry when your connection is available.';
+            } else {
+                span.textContent = 'This is a working base-case plan you can revisit and change later.';
+            }
+        }
+    }
+
     function numberOrNull(value) {
         if (value === '' || value === null || value === undefined) return null;
         var number = Number(value);
@@ -579,11 +629,23 @@
         renderSavedSummary(record);
         document.querySelector('[data-returning-record]').hidden = false;
         var confirmation = document.getElementById('phase3SaveConfirmation');
-        confirmation.hidden = false;
-        confirmation.focus();
-        if (readProgress()[recordKey] === true) {
-            document.getElementById('completePhase3Button').textContent = 'Phase 3 Complete';
+        var saveButton = document.getElementById('savePhase3Button');
+        if (saveButton) {
+            saveButton.disabled = true;
+            saveButton.textContent = canCloudWrite() ? 'Saving…' : 'Save My Retirement Income Plan';
         }
+        persistCloudNow('phase').then(function (cloudResult) {
+            setSaveConfirmationMessage(cloudResult);
+            confirmation.hidden = false;
+            confirmation.focus();
+            if (saveButton) {
+                saveButton.disabled = false;
+                saveButton.textContent = 'Save My Retirement Income Plan';
+            }
+            if (readProgress()[recordKey] === true) {
+                document.getElementById('completePhase3Button').textContent = 'Phase 3 Complete';
+            }
+        });
     }
 
     function completePhase() {
@@ -615,17 +677,35 @@
         });
 
         var message = document.getElementById('phase3CompletionMessage');
-        message.innerHTML =
-            '<strong>Phase 3 progress saved.</strong>' +
-            '<span>You now have a working retirement income plan. When you are ready, continue to Phase 4 to stress-test it.</span>';
-        message.hidden = false;
-        message.focus();
-        document.getElementById('completePhase3Button').textContent = 'Phase 3 Complete';
-        var continueLink = document.getElementById('continueToPhase4Link');
-        if (continueLink) {
-            continueLink.classList.add('primary-action');
-            continueLink.classList.remove('secondary-action');
+        var completeButton = document.getElementById('completePhase3Button');
+        if (completeButton) {
+            completeButton.disabled = true;
+            completeButton.textContent = canCloudWrite() ? 'Saving…' : 'Save Phase 3 Progress';
         }
+        persistCloudNow('phase').then(function (cloudResult) {
+            var cloudOk = canCloudWrite() &&
+                cloudResult &&
+                !cloudResult.localOnly &&
+                !cloudResult.error &&
+                !cloudResult.skipped &&
+                !cloudResult.offline;
+            message.innerHTML = cloudOk
+                ? '<strong>Phase 3 progress saved to your Journey account.</strong>' +
+                  '<span>You now have a working retirement income plan. When you are ready, continue to Phase 4 to stress-test it.</span>'
+                : '<strong>Phase 3 progress saved.</strong>' +
+                  '<span>You now have a working retirement income plan. When you are ready, continue to Phase 4 to stress-test it.</span>';
+            message.hidden = false;
+            message.focus();
+            if (completeButton) {
+                completeButton.disabled = false;
+                completeButton.textContent = 'Phase 3 Complete';
+            }
+            var continueLink = document.getElementById('continueToPhase4Link');
+            if (continueLink) {
+                continueLink.classList.add('primary-action');
+                continueLink.classList.remove('secondary-action');
+            }
+        });
     }
 
     document.getElementById('useTemporarySsButton').addEventListener('click', function () {
