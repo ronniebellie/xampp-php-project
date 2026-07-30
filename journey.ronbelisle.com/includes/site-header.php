@@ -19,5 +19,5 @@
         </div>
     </div>
 </header>
-<script src="/assets/js/journey-sync.js?v=20260730-header-copy" defer></script>
-<script src="/assets/js/journey-auth-chrome.js?v=20260730-header-copy" defer></script>
+<script src="/assets/js/journey-sync.js?v=20260730-premium-header" defer></script>
+<script src="/assets/js/journey-auth-chrome.js?v=20260730-premium-header" defer></script>

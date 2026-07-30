@@ -288,7 +288,7 @@
                     setSaveState('readonly', 'Reviewing saved account plan');
                 } else {
                     // Hydration is not a new save — keep wording accurate.
-                    setSaveState('loaded', 'Journey Premium is active.');
+                    setSaveState('loaded', 'Your Journey progress will now be saved automatically to your account.');
                 }
             } else {
                 state.cloudExists = false;
@@ -296,7 +296,7 @@
                     state.needsImport = true;
                     setSaveState(
                         'needs_import',
-                        'Your progress is now being saved to your Journey account.'
+                        'Your Journey progress will now be saved automatically to your account.'
                     );
                 } else if (state.canWrite) {
                     setSaveState('idle', '');
@@ -311,7 +311,7 @@
             if (state.needsImport) {
                 setSaveState(
                     'needs_import',
-                    'Your progress is now being saved to your Journey account.'
+                    'Your Journey progress will now be saved automatically to your account.'
                 );
             } else if (state.readOnly) {
                 setSaveState(
@@ -423,7 +423,7 @@
             if (state.needsImport) {
                 setSaveState(
                     'needs_import',
-                    'Your progress is now being saved to your Journey account.'
+                    'Your Journey progress will now be saved automatically to your account.'
                 );
             }
             return;

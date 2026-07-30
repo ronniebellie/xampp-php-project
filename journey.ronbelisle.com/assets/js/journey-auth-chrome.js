@@ -98,7 +98,7 @@
             } else if (!message && code === 'readonly') {
                 message = 'Reviewing saved account plan';
             } else if (!message && code === 'loaded') {
-                message = 'Journey Premium is active.';
+                message = 'Your Journey progress will now be saved automatically to your account.';
             }
             if (message) {
                 stateEl.hidden = false;
@@ -146,14 +146,13 @@
         );
 
         if (mode === 'premium' || status.hasAccess) {
-            var badgeText = subStatus === 'trialing' ? 'Journey Premium trial' : 'Journey Premium';
+            var badgeText = subStatus === 'trialing' ? 'Premium Trial' : 'Journey Premium';
             lines.push('<p class="journey-account-badge">' + escapeHtml(badgeText) + '</p>');
             if (email) {
                 lines.push(
                     '<p class="journey-account-meta">Signed in as ' + escapeHtml(email) + '</p>'
                 );
             }
-            lines.push('<p class="journey-account-hint">Journey Premium is active.</p>');
             lines.push(
                 '<p class="journey-account-saved" data-journey-last-saved' +
                     (savedLabel ? '' : ' hidden') +
