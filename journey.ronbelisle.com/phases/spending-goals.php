@@ -54,7 +54,8 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                             </div>
                         </div>
                         <div class="record-overview-actions">
-                            <a class="primary-action" href="/phases/continue-to-phase-2.php">Continue to Phase 2: Social Security</a>
+                            <a class="primary-action" href="/phases/social-security.php" data-journey-premium-only hidden>Continue to Phase 2: Social Security</a>
+                            <a class="primary-action" href="/phases/continue-to-phase-2.php" data-journey-non-premium-only>Continue to Phase 2: Social Security</a>
                             <a class="secondary-action" href="/calculators/retirement-spending-plan/">Review or Update Spending Plan</a>
                         </div>
                     </section>
@@ -91,7 +92,8 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                         </div>
                         <div class="completion-message phase-completion-panel" data-spending-plan-summary hidden>
                             <p><strong>Phase 1 is complete.</strong> Continue to Phase 2: Social Security when you are ready.</p>
-                            <a class="primary-action" href="/phases/continue-to-phase-2.php">Continue to Phase 2: Social Security</a>
+                            <a class="primary-action" href="/phases/social-security.php" data-journey-premium-only hidden>Continue to Phase 2: Social Security</a>
+                            <a class="primary-action" href="/phases/continue-to-phase-2.php" data-journey-non-premium-only>Continue to Phase 2: Social Security</a>
                         </div>
                     </article>
                 </div>
@@ -117,6 +119,6 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
             </div>
         </section>
     </main>
-    <script src="/assets/js/spending-goals-phase.js?v=20260730-phase1-handoff" defer></script>
+    <script src="/assets/js/spending-goals-phase.js?v=20260730-phase2-bypass" defer></script>
 </body>
 </html>

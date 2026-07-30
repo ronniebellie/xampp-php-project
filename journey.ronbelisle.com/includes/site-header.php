@@ -21,4 +21,4 @@
 </header>
 <script src="/assets/js/journey-phase1-handoff.js?v=20260730-phase1-handoff" defer></script>
 <script src="/assets/js/journey-sync.js?v=20260730-phase1-handoff" defer></script>
-<script src="/assets/js/journey-auth-chrome.js?v=20260730-premium-header" defer></script>
+<script src="/assets/js/journey-auth-chrome.js?v=20260730-phase2-bypass" defer></script>

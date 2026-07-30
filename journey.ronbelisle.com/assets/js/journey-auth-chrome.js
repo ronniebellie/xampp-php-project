@@ -71,6 +71,10 @@
         document.querySelectorAll('[data-journey-free-auth-only]').forEach(function (el) {
             el.hidden = !(authenticated && !premium);
         });
+        // Anonymous + signed-in free users (not Journey Premium).
+        document.querySelectorAll('[data-journey-non-premium-only]').forEach(function (el) {
+            el.hidden = premium;
+        });
     }
 
     function updateSaveLines(detail) {

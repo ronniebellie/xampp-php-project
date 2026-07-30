@@ -35,10 +35,10 @@ $loginUrl = 'https://ronbelisle.com/auth/login.php?return=' . rawurlencode($jour
                         </div>
                     </div>
 
-                    <div data-journey-auth-only hidden>
-                        <p class="page-lede">You’re signed in. Your Journey planning records still live in this browser for now. Continue to Phase 2 in this same browser to keep your spending target with you.</p>
+                    <div data-journey-free-auth-only hidden>
+                        <p class="page-lede">You’re signed in. Your Journey planning records are saved in this browser. Continue to Phase 2 in this same browser to keep your spending target with you.</p>
                         <div class="transition-honesty" role="note">
-                            <p><strong>Note:</strong> Signing in does not yet copy this browser’s Journey into your account. Cloud Journey saving for Journey Premium is coming in the next implementation step.</p>
+                            <p><strong>Note:</strong> Free Journey phases stay in this browser. Journey Premium adds cloud saving so you can continue your plan across browsers and devices.</p>
                         </div>
                         <p><a class="primary-action" href="<?php echo htmlspecialchars($phase2Url); ?>">Continue to Phase 2</a></p>
                     </div>
@@ -80,10 +80,10 @@ $loginUrl = 'https://ronbelisle.com/auth/login.php?return=' . rawurlencode($jour
                         <a class="secondary-action" href="<?php echo htmlspecialchars($loginUrl); ?>">Log in and continue your Journey</a>
                     </section>
 
-                    <div data-journey-auth-only hidden>
+                    <div data-journey-free-auth-only hidden>
                         <section class="transition-option" aria-labelledby="premium-later-auth-title">
                             <h2 id="premium-later-auth-title">Journey Premium is optional</h2>
-                            <p>All six Journey phases remain free. Journey Premium is available later if you want an ongoing planning workspace after your initial plan is complete.</p>
+                            <p>All six Journey phases remain free. Start Journey Premium when you want cloud saving and an ongoing planning workspace.</p>
                         </section>
                     </div>
 
@@ -92,5 +92,26 @@ $loginUrl = 'https://ronbelisle.com/auth/login.php?return=' . rawurlencode($jour
             </div>
         </section>
     </main>
+    <script>
+    (function () {
+        var phase2Url = <?php echo json_encode($phase2Url, JSON_UNESCAPED_SLASHES); ?>;
+        function redirectIfPremium(status) {
+            if (status && status.hasAccess) {
+                window.location.replace(phase2Url);
+            }
+        }
+        window.addEventListener('rb-journey-status', function (event) {
+            redirectIfPremium(event.detail);
+        });
+        if (window.rbJourneySync && typeof window.rbJourneySync.getStatus === 'function') {
+            redirectIfPremium(window.rbJourneySync.getStatus());
+        }
+        if (window.rbJourneySync && typeof window.rbJourneySync.afterReady === 'function') {
+            window.rbJourneySync.afterReady(function () {
+                redirectIfPremium(window.rbJourneySync.getStatus());
+            });
+        }
+    })();
+    </script>
 </body>
 </html>
