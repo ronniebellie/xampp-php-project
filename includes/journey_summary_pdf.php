@@ -176,6 +176,40 @@ function journey_summary_pdf_kv_rows($pdf, array $rows): void
 }
 
 /**
+ * TCPDF subclass so the stock "Powered by TCPDF" footer is never drawn.
+ */
+class JourneySummaryPdfDocument extends TCPDF
+{
+    /** @var string */
+    public $journeyGeneratedLabel = '';
+
+    public function Header(): void
+    {
+        // Intentionally empty — header band is drawn in journey_summary_pdf_build().
+    }
+
+    public function Footer(): void
+    {
+        $generated = $this->journeyGeneratedLabel !== ''
+            ? $this->journeyGeneratedLabel
+            : date('F j, Y');
+        $this->SetY(-20);
+        $this->SetDrawColor(216, 224, 234);
+        $this->Line(15, $this->GetY(), 195, $this->GetY());
+        $this->Ln(1.5);
+        $this->SetFont('helvetica', '', 8);
+        $this->SetTextColor(82, 96, 113);
+        $this->MultiCell(
+            0,
+            3.8,
+            "Retirement Planning Journey\nGenerated {$generated}\nFor educational planning purposes only. This is not financial, tax, or legal advice.",
+            0,
+            'C'
+        );
+    }
+}
+
+/**
  * @param array<string,mixed> $progress
  */
 function journey_summary_pdf_build(array $progress, ?string $displayName = null): TCPDF
@@ -183,16 +217,17 @@ function journey_summary_pdf_build(array $progress, ?string $displayName = null)
     $data = journey_summary_pdf_extract($progress);
     $generated = date('F j, Y');
 
-    $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+    $pdf = new JourneySummaryPdfDocument(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+    $pdf->journeyGeneratedLabel = $generated;
     $pdf->SetCreator('Retirement Planning Journey');
     $pdf->SetAuthor('Retirement Planning Journey');
     $pdf->SetTitle('Retirement Planning Journey Summary');
     $pdf->SetSubject('Completed Journey summary');
     $pdf->setPrintHeader(false);
-    $pdf->setPrintFooter(false);
+    $pdf->setPrintFooter(true);
     $pdf->SetMargins(15, 16, 15);
-    $pdf->SetAutoPageBreak(true, 28);
-    $pdf->SetFooterMargin(0);
+    $pdf->SetAutoPageBreak(true, 26);
+    $pdf->SetFooterMargin(22);
     $pdf->AddPage();
 
     // Header band
@@ -304,26 +339,6 @@ function journey_summary_pdf_build(array $progress, ?string $displayName = null)
         }
         $pdf->SetTextColor(17, 24, 39);
     }
-
-    // Footer near bottom of current page (avoid creating an extra TCPDF page)
-    $pdf->Ln(6);
-    $y = $pdf->GetY();
-    if ($y > 250) {
-        $pdf->AddPage();
-    }
-    $pdf->SetY(max($pdf->GetY(), 255));
-    $pdf->SetDrawColor(216, 224, 234);
-    $pdf->Line(15, $pdf->GetY(), 195, $pdf->GetY());
-    $pdf->Ln(2);
-    $pdf->SetFont('helvetica', '', 8);
-    $pdf->SetTextColor(82, 96, 113);
-    $pdf->MultiCell(
-        0,
-        4,
-        "Retirement Planning Journey\nGenerated {$generated}\nFor educational planning purposes only. This is not financial, tax, or legal advice.",
-        0,
-        'C'
-    );
 
     return $pdf;
 }
