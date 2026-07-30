@@ -53,8 +53,11 @@ if ($del) {
 
 $free = rb_account_journey_status($conn, $ghostId);
 expectA('ghost has no journey access', $free['hasAccess'] === false);
-expectA('ghost label not enrolled', $free['label'] === 'Not enrolled');
-expectA('ghost CTA start trial', $free['actionLabel'] === 'Start Journey Premium trial');
+expectA('ghost label free journey', $free['label'] === 'Free Journey');
+expectA('ghost primary continue free', $free['actionLabel'] === 'Continue Free Journey');
+expectA('ghost primary goes to journey home', $free['actionUrl'] === 'https://journey.ronbelisle.com/');
+expectA('ghost secondary start trial', $free['secondaryActionLabel'] === 'Start Journey Premium Trial');
+expectA('ghost secondary goes to journey checkout', $free['secondaryActionUrl'] === '/premium/journey.php');
 
 $product = JOURNEY_PRODUCT_KEY;
 $ins = $conn->prepare(

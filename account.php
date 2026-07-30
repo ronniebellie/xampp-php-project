@@ -273,7 +273,7 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
 
             <div class="account-section">
                 <h2>Journey Premium</h2>
-                <p class="status-detail" style="margin-top:0;">Retirement Planning Journey cloud saving and ongoing workspace. Separate from Calculator Premium.</p>
+                <p class="status-detail" style="margin-top:0;">Optional cloud saving and ongoing workspace for the Retirement Planning Journey.</p>
                 <div class="info-row">
                     <span class="info-label">Status:</span>
                     <span class="info-value">

@@ -61,43 +61,38 @@ function rb_account_journey_status(mysqli $conn, int $userId): array
         $entitlementStatus = 'none';
     }
 
-    $actionLabel = 'Start Journey Premium trial';
-    $actionUrl = '/premium/journey.php';
-    $secondaryActionLabel = 'Open free Journey';
-    $secondaryActionUrl = 'https://journey.ronbelisle.com/';
+    $actionLabel = 'Continue Free Journey';
+    $actionUrl = 'https://journey.ronbelisle.com/';
+    $secondaryActionLabel = 'Start Journey Premium Trial';
+    $secondaryActionUrl = '/premium/journey.php';
 
     if ($hasAccess) {
         if ($entitlementStatus === 'trialing') {
             $label = '30-day trial active';
-            $detail = 'Your Journey Premium trial is active. Cloud Journey saving and cross-device continuity are available while the trial remains active.';
+            $detail = 'Your Journey Premium trial is active. Your plan can save to your account so you can continue across browsers, devices, and over time.';
         } elseif ($entitlementStatus === 'canceled_grace') {
             $label = 'Active through period end';
-            $detail = 'Your Journey Premium access remains active through the end of the current billing period.';
+            $detail = 'Your Journey Premium access remains active through the end of the current billing period, including cloud saving.';
         } else {
             $label = 'Active';
-            $detail = 'Your Journey Premium access is active.';
+            $detail = 'Your Journey Premium access is active. Your plan can save to your account so you can continue across browsers, devices, and over time.';
         }
         $actionLabel = 'Open Journey Premium';
         $actionUrl = 'https://journey.ronbelisle.com/';
         $secondaryActionLabel = null;
         $secondaryActionUrl = null;
     } elseif ($hadSubscription || $cloudPlanExists) {
-        $label = $cloudPlanExists ? 'Read-only / access ended' : 'Access ended';
+        $label = $cloudPlanExists ? 'Saved Journey available' : 'Journey Premium inactive';
         $detail = $cloudPlanExists
-            ? 'Your saved Journey remains available to review. Cloud updates require restoring Journey Premium access.'
-            : 'A prior Journey Premium subscription exists, but access is not currently active.';
-        $actionLabel = 'Restore access';
-        $actionUrl = '/premium/journey.php';
-        if ($cloudPlanExists) {
-            $secondaryActionLabel = 'Review saved Journey';
-            $secondaryActionUrl = 'https://journey.ronbelisle.com/';
-        } else {
-            $secondaryActionLabel = 'Open free Journey';
-            $secondaryActionUrl = 'https://journey.ronbelisle.com/';
-        }
+            ? 'Your saved Journey is still available to review. Restore Journey Premium when you are ready to update it in the cloud again.'
+            : 'You can continue the free Journey anytime. Restore Journey Premium when you want cloud saving again.';
+        $actionLabel = 'Continue Free Journey';
+        $actionUrl = 'https://journey.ronbelisle.com/';
+        $secondaryActionLabel = 'Restore Journey Premium';
+        $secondaryActionUrl = '/premium/journey.php';
     } else {
-        $label = 'Not enrolled';
-        $detail = 'Journey Premium is a separate product from Calculator Premium. The six free Journey phases remain available; cloud Journey saving requires Journey Premium.';
+        $label = 'Free Journey';
+        $detail = 'All six Journey phases are free to use. Journey Premium adds cloud saving so you can continue your plan across browsers, devices, and over time.';
     }
 
     return [
