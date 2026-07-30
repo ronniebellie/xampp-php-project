@@ -42,6 +42,8 @@
     var premiumAuthRegisterUrl =
         'https://ronbelisle.com/auth/register.php?intent=journey_trial&return=' +
         encodeURIComponent(premiumReturnUrl);
+    var journeyPdfUrl = 'https://ronbelisle.com/api/generate_journey_summary_pdf.php';
+    var latestPremiumStatus = null;
 
     function $(id) {
         return document.getElementById(id);
@@ -421,10 +423,28 @@
         updatePremiumContinuityCta();
     }
 
+    function setPdfExportVisibility(isPremium) {
+        var btn = $('downloadJourneyPdfBtn');
+        var note = $('downloadJourneyPdfNote');
+        if (btn) btn.hidden = !isPremium;
+        if (note) note.hidden = !isPremium;
+        if (!isPremium) {
+            var status = $('downloadJourneyPdfStatus');
+            if (status) {
+                status.hidden = true;
+                status.textContent = '';
+            }
+        }
+    }
+
     function applyPremiumCtaState(status) {
         var cta = $('premiumPrimaryCta');
         var reassurance = $('premiumTrialReassurance');
         if (!cta) return;
+
+        latestPremiumStatus = status && typeof status === 'object' ? status : null;
+        var isPremium = !!(status && status.hasAccess);
+        setPdfExportVisibility(isPremium);
 
         var mode = status && status.cta ? status.cta : 'start_trial';
         var checkoutUrl = (status && status.checkoutUrl) || premiumCheckoutUrl;
@@ -461,6 +481,94 @@
         if (reassurance) {
             reassurance.textContent = 'No charge today. Cancel before the trial ends if you decide not to continue.';
         }
+    }
+
+    function downloadJourneyPdf() {
+        var btn = $('downloadJourneyPdfBtn');
+        var statusEl = $('downloadJourneyPdfStatus');
+        if (!latestPremiumStatus || !latestPremiumStatus.hasAccess) {
+            if (statusEl) {
+                statusEl.hidden = false;
+                statusEl.textContent = 'Journey Premium is required to download this PDF.';
+            }
+            return;
+        }
+        if (typeof fetch !== 'function') {
+            if (statusEl) {
+                statusEl.hidden = false;
+                statusEl.textContent = 'PDF download is not available in this browser.';
+            }
+            return;
+        }
+
+        var progress = readProgress();
+        var displayName = latestPremiumStatus.userName || latestPremiumStatus.firstName || '';
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Preparing PDF…';
+        }
+        if (statusEl) {
+            statusEl.hidden = false;
+            statusEl.textContent = 'Preparing your Journey summary…';
+        }
+
+        fetch(journeyPdfUrl, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                Accept: 'application/pdf, application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                progress: progress,
+                displayName: displayName
+            })
+        }).then(function (response) {
+            var contentType = (response.headers.get('Content-Type') || '').toLowerCase();
+            if (!response.ok) {
+                return response.json().catch(function () {
+                    return null;
+                }).then(function (body) {
+                    var message = body && body.message
+                        ? body.message
+                        : 'Could not download the PDF. Please try again.';
+                    throw new Error(message);
+                });
+            }
+            if (contentType.indexOf('application/pdf') === -1 && contentType.indexOf('json') !== -1) {
+                return response.json().then(function (body) {
+                    throw new Error((body && body.message) || 'Could not download the PDF.');
+                });
+            }
+            return response.blob();
+        }).then(function (blob) {
+            var url = URL.createObjectURL(blob);
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = 'Retirement-Planning-Journey-Summary.pdf';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.setTimeout(function () {
+                URL.revokeObjectURL(url);
+            }, 1000);
+            if (statusEl) {
+                statusEl.hidden = false;
+                statusEl.textContent = 'Your Journey summary PDF has been downloaded.';
+            }
+        }).catch(function (error) {
+            if (statusEl) {
+                statusEl.hidden = false;
+                statusEl.textContent = error && error.message
+                    ? error.message
+                    : 'Could not download the PDF. Please try again.';
+            }
+        }).then(function () {
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = 'Download My Retirement Plan (PDF)';
+            }
+        });
     }
 
     function updatePremiumContinuityCta() {
@@ -574,6 +682,10 @@
 
         $('reviewSurvivorPictureBtn').addEventListener('click', runReview);
         $('savePriorityBtn').addEventListener('click', savePriority);
+        var pdfBtn = $('downloadJourneyPdfBtn');
+        if (pdfBtn) {
+            pdfBtn.addEventListener('click', downloadJourneyPdf);
+        }
 
         document.querySelectorAll(
             'input[name="assetRecipientReview"], input[name="survivorIncomePreparedness"]'

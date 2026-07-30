@@ -2069,8 +2069,13 @@ h1 {
     margin-top: 16px;
 }
 
-.premium-continuity-actions .primary-action {
+.premium-continuity-actions .primary-action,
+.premium-continuity-actions .journey-button.primary-action {
     display: inline-block;
+}
+
+.premium-continuity-actions #downloadJourneyPdfBtn {
+    margin-top: 4px;
 }
 
 .premium-continuity-actions .action-note {

@@ -8,7 +8,7 @@ $page_title = 'Survivor Planning | Retirement Planning Journey';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260729-m5-p3">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260730-journey-pdf">
 </head>
 <body>
     <?php include __DIR__ . '/../includes/site-header.php'; ?>
@@ -212,6 +212,17 @@ $page_title = 'Survivor Planning | Retirement Planning Journey';
                                 <div class="premium-continuity-actions" id="premiumContinuityActions">
                                     <a class="primary-action" id="premiumPrimaryCta" href="https://ronbelisle.com/premium/journey.php">Start Your 30-Day Free Trial</a>
                                     <p class="action-note" id="premiumTrialReassurance">No charge today. Cancel before the trial ends if you decide not to continue.</p>
+                                    <button
+                                        type="button"
+                                        class="primary-action journey-button"
+                                        id="downloadJourneyPdfBtn"
+                                        data-journey-premium-only
+                                        hidden
+                                    >Download My Retirement Plan (PDF)</button>
+                                    <p class="action-note" id="downloadJourneyPdfNote" data-journey-premium-only hidden>
+                                        Download a printable summary of your completed Journey for your records or to share with a spouse or advisor.
+                                    </p>
+                                    <p class="supporting-note" id="downloadJourneyPdfStatus" role="status" hidden></p>
                                     <a class="secondary-action" href="/">Return to My Journey</a>
                                 </div>
                             </div>
@@ -251,6 +262,6 @@ $page_title = 'Survivor Planning | Retirement Planning Journey';
 
     <script src="/assets/js/phase6-survivor-engine.js?v=20260725-phase6-open" defer></script>
     <script src="/assets/js/phase6-priorities.js?v=20260725-phase6-open" defer></script>
-    <script src="/assets/js/survivor-planning-phase.js?v=20260729-m5-p3" defer></script>
+    <script src="/assets/js/survivor-planning-phase.js?v=20260730-journey-pdf" defer></script>
 </body>
 </html>
