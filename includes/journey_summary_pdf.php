@@ -900,7 +900,7 @@ function journey_summary_pdf_build(array $progress, ?string $displayName = null)
     $pdf->SetY(54);
     $pdf->SetTextColor(17, 24, 39);
     $pdf->SetFont('helvetica', 'B', 16);
-    $pdf->MultiCell(0, 8, 'Your Initial Retirement Planning Summary', 0, 'L');
+    $pdf->MultiCell(0, 8, 'Your Initial Retirement Plan', 0, 'L');
     $pdf->SetFont('helvetica', '', 10);
     $pdf->SetTextColor(82, 96, 113);
     $pdf->MultiCell(
@@ -1214,12 +1214,40 @@ function journey_summary_pdf_build(array $progress, ?string $displayName = null)
         $phase6Note
     );
 
-    // Closing note on the last content page.
+    // Recommended next steps — helpful closing guidance (not a warning).
+    journey_summary_pdf_ensure_space($pdf, 48);
+    journey_summary_pdf_section_heading($pdf, 'Recommended Next Steps');
     $margins = journey_summary_pdf_margins($pdf);
     $left = $margins['left'];
+    $contentW = $pageW - $left - $margins['right'];
+    $steps = [
+        'Review this plan at least once each year.',
+        'Update your Journey whenever your spending, income, investments, taxes, or family situation changes.',
+        'Complete any Journey phases that are still marked for review or need attention.',
+        'Remember that this report is a planning snapshot that should evolve as your retirement plans evolve.',
+    ];
+    $boxTop = $pdf->GetY();
+    $pdf->SetFillColor(239, 246, 255);
+    $pdf->SetDrawColor(191, 219, 254);
+    // Approximate panel height for four short guidance lines.
+    $panelH = 42.0;
+    $pdf->RoundedRect($left, $boxTop, $contentW, $panelH, 1.8, '1111', 'DF');
+    $pdf->SetFillColor(29, 78, 216);
+    $pdf->Rect($left, $boxTop, 1.6, $panelH, 'F');
+    $pdf->SetXY($left + 5, $boxTop + 3.5);
+    $pdf->SetFont('helvetica', '', 9.5);
+    $pdf->SetTextColor(55, 65, 81);
+    foreach ($steps as $step) {
+        $pdf->SetX($left + 5);
+        $pdf->MultiCell($contentW - 10, 4.5, '•  ' . $step, 0, 'L');
+        $pdf->Ln(0.7);
+    }
+    $pdf->SetY($boxTop + $panelH + 2);
+
+    // Closing note on the last content page.
     $limit = $pdf->getPageHeight() - $pdf->getBreakMargin() - 2;
     if ($pdf->GetY() + 14 <= $limit) {
-        $pdf->Ln(1.5);
+        $pdf->Ln(1);
         $pdf->SetFillColor(248, 250, 252);
         $pdf->SetDrawColor(226, 232, 240);
         $boxY = $pdf->GetY();

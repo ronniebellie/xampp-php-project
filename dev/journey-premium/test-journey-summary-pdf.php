@@ -207,7 +207,8 @@ expectPdf('text has journey URL', stripos($text, 'journey.ronbelisle.com') !== f
 expectPdf('text has display name', stripos($text, 'Bob Smith') !== false || strpos($helper, 'Prepared for') !== false);
 expectPdf('text has generation date', stripos($text, $today) !== false || stripos($text, date('F')) !== false || strpos($helper, 'Generated') !== false);
 expectPdf('text has executive summary', stripos($text, 'Executive Summary') !== false || strpos($helper, 'Executive Summary') !== false);
-expectPdf('text has report title', stripos($text, 'Initial Retirement Planning Summary') !== false || strpos($helper, 'Initial Retirement Planning Summary') !== false);
+expectPdf('text has report title', stripos($text, 'Your Initial Retirement Plan') !== false || strpos($helper, 'Your Initial Retirement Plan') !== false);
+expectPdf('helper includes recommended next steps', strpos($helper, 'Recommended Next Steps') !== false);
 expectPdf('text has phase 1', stripos($text, 'Phase 1') !== false || strpos($helper, 'Phase 1 — Spending') !== false);
 expectPdf('text has phase 2', stripos($text, 'Phase 2') !== false || strpos($helper, 'Phase 2 — Social Security') !== false);
 expectPdf('text has phase 3', stripos($text, 'Phase 3') !== false || strpos($helper, 'Phase 3 — Build Your Plan') !== false);
