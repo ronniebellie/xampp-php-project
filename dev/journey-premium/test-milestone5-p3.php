@@ -43,6 +43,7 @@ expect3('defers import confirmation', strpos($sync, 'needsImport') !== false);
 expect3('offline pending queue', strpos($sync, 'rbJourneySyncPendingV1') !== false);
 expect3('saving message', strpos($sync, 'Saving to your Journey account') !== false);
 expect3('saved message', strpos($sync, 'Saved to your Journey account') !== false);
+expect3('loaded message does not claim save', strpos($sync, "setSaveState('loaded', 'Journey Premium is active.')") !== false);
 expect3('retry message', strpos($sync, 'Saved on this browser; cloud save will retry') !== false);
 expect3('readonly message', strpos($sync, 'Cloud updates require active Journey Premium access') !== false);
 expect3('does not call import API in P3', strpos($sync, 'journey_plan_import.php') === false);

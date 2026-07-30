@@ -183,11 +183,12 @@ function journey_build_checkout_session_params(
         ]],
         'subscription_data' => [
             'trial_period_days' => JOURNEY_CHECKOUT_TRIAL_DAYS,
+            'description' => 'Retirement Planning Journey Premium',
             'metadata' => $meta,
         ],
         'custom_text' => [
             'submit' => [
-                'message' => '30-day free trial: a payment method is required. You will not be charged today. Cancel before the trial ends to avoid being charged.',
+                'message' => 'Starting Retirement Planning Journey Premium: 30-day free trial. A payment method is required. You will not be charged today. Cancel before the trial ends to avoid being charged.',
             ],
         ],
         'success_url' => $successUrl,

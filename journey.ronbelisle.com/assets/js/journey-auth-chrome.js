@@ -92,8 +92,13 @@
         if (stateEl) {
             var message = (detail && detail.saveMessage) || '';
             var code = detail && detail.saveState;
-            if (!message && code === 'readonly') {
+            // Never imply a successful account save merely because a plan was loaded.
+            if (code === 'saved' && message.indexOf('Saved to your Journey account') === 0) {
+                // keep as-is (real save)
+            } else if (!message && code === 'readonly') {
                 message = 'Reviewing saved account plan';
+            } else if (!message && code === 'loaded') {
+                message = 'Journey Premium is active.';
             }
             if (message) {
                 stateEl.hidden = false;
@@ -132,6 +137,7 @@
         var checkoutUrl = status.checkoutUrl || DEFAULT_CHECKOUT;
         var savedLabel = formatSavedAt(status.planSavedAt);
         var mode = status.accessMode || (status.hasAccess ? 'premium' : 'free');
+        var subStatus = status.subscriptionStatus || status.entitlementStatus || '';
         var lines = [];
         var actions = [];
 
@@ -140,12 +146,14 @@
         );
 
         if (mode === 'premium' || status.hasAccess) {
-            lines.push('<p class="journey-account-badge">Journey Premium</p>');
+            var badgeText = subStatus === 'trialing' ? 'Journey Premium trial' : 'Journey Premium';
+            lines.push('<p class="journey-account-badge">' + escapeHtml(badgeText) + '</p>');
             if (email) {
                 lines.push(
                     '<p class="journey-account-meta">Signed in as ' + escapeHtml(email) + '</p>'
                 );
             }
+            lines.push('<p class="journey-account-hint">Journey Premium is active.</p>');
             lines.push(
                 '<p class="journey-account-saved" data-journey-last-saved' +
                     (savedLabel ? '' : ' hidden') +
@@ -159,7 +167,12 @@
             actions.push(
                 '<a class="journey-account-link" href="' +
                     escapeHtml(workspaceUrl) +
-                    '">Open Premium Workspace</a>'
+                    '">Open Journey Premium</a>'
+            );
+            actions.push(
+                '<a class="journey-account-link" href="' +
+                    escapeHtml(accountUrl) +
+                    '">Account</a>'
             );
         } else if (mode === 'readonly' || (status.canCloudRead && !status.canCloudWrite)) {
             if (email) {
@@ -193,7 +206,7 @@
                     escapeHtml(checkoutUrl) +
                     '?return=' +
                     encodeURIComponent(DEFAULT_HOME) +
-                    '">Restore Premium</a>'
+                    '">Restore access</a>'
             );
         } else {
             if (email) {
@@ -202,7 +215,7 @@
                 );
             }
             lines.push(
-                '<p class="journey-account-hint">Cloud Journey saving requires Journey Premium</p>'
+                '<p class="journey-account-hint">Start Journey Premium to save your Journey across browsers and computers.</p>'
             );
             actions.push(
                 '<a class="journey-account-link" href="' +
@@ -268,7 +281,6 @@
             render(root, event.detail);
         });
 
-        // Prefer sync-provided status when available; otherwise fetch.
         var syncStatus = window.rbJourneySync && window.rbJourneySync.getStatus
             ? window.rbJourneySync.getStatus()
             : null;
@@ -288,7 +300,6 @@
             }).catch(function () {
                 fetchStatus(root);
             });
-            // Timeout fallback if sync hangs.
             window.setTimeout(function () {
                 if (!latestStatus) fetchStatus(root);
             }, 4000);

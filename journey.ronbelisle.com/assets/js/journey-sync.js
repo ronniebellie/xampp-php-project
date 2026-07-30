@@ -287,7 +287,8 @@
                 if (state.readOnly) {
                     setSaveState('readonly', 'Reviewing saved account plan');
                 } else {
-                    setSaveState('saved', 'Saved to your Journey account');
+                    // Hydration is not a new save — keep wording accurate.
+                    setSaveState('loaded', 'Journey Premium is active.');
                 }
             } else {
                 state.cloudExists = false;

@@ -222,18 +222,21 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
     </style>
 </head>
 <body>
-    <?php if ($is_calculator_premium): ?>
-    <div class="premium-banner premium-active" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; padding: 20px; text-align: center; margin-bottom: 30px; border-radius: 8px;">
-        <h3 style="margin: 0 0 10px 0; font-size: 24px;">✓ Calculator Premium Active</h3>
-        <p style="margin: 0; opacity: 0.95;">You have full access to premium calculator features across the site.</p>
+    <?php if ($is_calculator_premium && $is_journey_premium): ?>
+    <div class="premium-banner premium-active" style="background: linear-gradient(135deg, #2563eb 0%, #059669 100%); color: white; padding: 20px; text-align: center; margin-bottom: 30px; border-radius: 8px;">
+        <h3 style="margin: 0 0 10px 0; font-size: 24px;">✓ Premium products active</h3>
+        <p style="margin: 0; opacity: 0.95;">Calculator Premium and Journey Premium are both active on this account.</p>
     </div>
     <?php elseif ($is_journey_premium): ?>
     <div class="premium-banner premium-active" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 20px; text-align: center; margin-bottom: 30px; border-radius: 8px;">
-        <h3 style="margin: 0 0 10px 0; font-size: 24px;">✓ Journey Premium Active</h3>
+        <h3 style="margin: 0 0 10px 0; font-size: 24px;">✓ Journey Premium active</h3>
         <p style="margin: 0; opacity: 0.95;">Your Retirement Planning Journey Premium access is active.</p>
     </div>
-    <?php else: ?>
-    <?php include('includes/premium-banner-include.php'); ?>
+    <?php elseif ($is_calculator_premium): ?>
+    <div class="premium-banner premium-active" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; padding: 20px; text-align: center; margin-bottom: 30px; border-radius: 8px;">
+        <h3 style="margin: 0 0 10px 0; font-size: 24px;">✓ Calculator Premium active</h3>
+        <p style="margin: 0; opacity: 0.95;">You have full access to premium calculator features. Journey Premium is a separate product.</p>
+    </div>
     <?php endif; ?>
 
     <div class="wrap">
@@ -270,6 +273,7 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
 
             <div class="account-section">
                 <h2>Journey Premium</h2>
+                <p class="status-detail" style="margin-top:0;">Retirement Planning Journey cloud saving and ongoing workspace. Separate from Calculator Premium.</p>
                 <div class="info-row">
                     <span class="info-label">Status:</span>
                     <span class="info-value">
@@ -281,27 +285,28 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
                     </span>
                 </div>
                 <p class="status-detail"><?php echo htmlspecialchars($journeyStatus['detail']); ?></p>
-                <?php if ($is_journey_premium): ?>
-                    <p style="margin-top: 15px;">
-                        <a href="https://journey.ronbelisle.com/" class="btn" style="background: #059669;">Open Retirement Planning Journey</a>
-                    </p>
-                <?php else: ?>
-                    <p style="margin-top: 15px;">
-                        <a href="premium/journey.php" class="btn">Start Journey Premium trial</a>
-                        <a href="https://journey.ronbelisle.com/" class="btn btn-secondary" style="margin-left: 10px;">Open free Journey</a>
-                    </p>
-                <?php endif; ?>
+                <p style="margin-top: 15px;">
+                    <a href="<?php echo htmlspecialchars($journeyStatus['actionUrl']); ?>" class="btn"<?php echo $is_journey_premium ? ' style="background:#059669;"' : ''; ?>>
+                        <?php echo htmlspecialchars($journeyStatus['actionLabel']); ?>
+                    </a>
+                    <?php if (!empty($journeyStatus['secondaryActionLabel']) && !empty($journeyStatus['secondaryActionUrl'])): ?>
+                        <a href="<?php echo htmlspecialchars($journeyStatus['secondaryActionUrl']); ?>" class="btn btn-secondary" style="margin-left: 10px;">
+                            <?php echo htmlspecialchars($journeyStatus['secondaryActionLabel']); ?>
+                        </a>
+                    <?php endif; ?>
+                </p>
             </div>
 
             <div class="account-section">
                 <h2>Calculator Premium</h2>
+                <p class="status-detail" style="margin-top:0;">Scenario saving, exports, and advanced calculator features on ronbelisle.com. Separate from Journey Premium.</p>
                 <div class="info-row">
                     <span class="info-label">Status:</span>
                     <span class="info-value">
                         <?php if ($is_calculator_premium): ?>
-                            <span class="premium-badge">Premium Member</span>
+                            <span class="premium-badge">Active</span>
                         <?php else: ?>
-                            <span class="status-muted">Free Account</span>
+                            <span class="status-muted">Not subscribed</span>
                         <?php endif; ?>
                     </span>
                 </div>
@@ -316,17 +321,17 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
                     </ul>
                     <?php if (!empty($user['stripe_subscription_id'])): ?>
                     <p style="margin-top: 15px;">
-                        <a href="billing_portal.php" class="btn" style="background: #059669;">Manage subscription</a>
+                        <a href="billing_portal.php" class="btn" style="background: #059669;">Manage Calculator Premium subscription</a>
                         <span style="font-size: 13px; color: #64748b; margin-left: 8px;">Cancel, update payment method, or view invoices</span>
                     </p>
                     <?php else: ?>
                     <p style="margin-top: 15px; padding: 14px; background: #f0fdf4; border-radius: 8px; border: 1px solid #bbf7d0;">
-                        <strong>Your subscription was set up manually.</strong> To cancel or make changes, please <a href="mailto:ronbelisle@gmail.com?subject=Subscription%20change%20request">contact support</a>.
+                        <strong>Your Calculator Premium subscription was set up manually.</strong> To cancel or make changes, please <a href="mailto:ronbelisle@gmail.com?subject=Subscription%20change%20request">contact support</a>.
                     </p>
                     <?php endif; ?>
                 <?php else: ?>
                     <p class="status-detail">
-                        Calculator Premium unlocks scenario saving, PDF exports, AI explanations, and advanced projections on the calculator tools. It is separate from Journey Premium.
+                        Calculator Premium unlocks scenario saving, PDF exports, AI explanations, and advanced projections on the calculator tools.
                     </p>
                     <a href="premium.html" class="btn">Upgrade Calculator Premium</a>
                 <?php endif; ?>

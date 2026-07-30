@@ -40,11 +40,8 @@ if (!rb_password_reset_configured()) {
                 $message = 'If that email is in our system, we sent a reset link. Check your inbox and spam folder.';
             } else {
                 $mailError = function_exists('rb_send_email_last_error') ? rb_send_email_last_error() : null;
-                if ($mailError === 'credits_exceeded' || $mailError === 'auth_failed' || $mailError === 'config_incomplete' || $mailError === 'config_missing') {
-                    $error = 'Password reset email cannot be sent right now because email delivery is unavailable. Please contact support at ronbelisle@gmail.com and we will help you reset your password.';
-                } else {
-                    $error = 'We could not send the email. Please try again later or contact support at ronbelisle@gmail.com.';
-                }
+                // Customer-facing copy stays vendor-neutral; logs retain the diagnostic code.
+                $error = 'We’re unable to send password-reset email right now. Please try again later or contact support.';
                 error_log('forgot-password: send failed for user_id=' . (int) $user['id'] . ' err=' . ($mailError ?? 'unknown'));
             }
         } else {

@@ -1,8 +1,12 @@
 # Email delivery for password reset (production)
 
-## Current failure (2026-07-29)
+## Current failure (observed 2026-07-29, still true until credits restored)
 
-Forgot Password fails with: “We could not send the email…”
+Forgot Password fails with a customer-facing message:
+
+> We’re unable to send password-reset email right now. Please try again later or contact support.
+
+Server logs retain the diagnostic code (for example `credits_exceeded`) and the SendGrid response snippet.
 
 **Root cause:** SendGrid HTTP API rejects the configured API key with:
 
@@ -16,7 +20,7 @@ Production probe of `GET https://api.sendgrid.com/v3/user/credits` returned:
 - `total`: 0
 - `is_hard_limit`: true
 
-The password-reset **application code path is working** (token creation + SendGrid call). Delivery fails because the SendGrid account has **no send credits**.
+Password-reset application code (token creation + SendGrid call) is working. Delivery fails until SendGrid has available credits / a working key.
 
 ## Required production configuration
 

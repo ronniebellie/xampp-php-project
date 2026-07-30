@@ -68,6 +68,14 @@ expect3('session metadata product_key', ($pm['metadata']['product_key'] ?? '') =
 expect3('session metadata user_id', ($pm['metadata']['user_id'] ?? '') === '42');
 expect3('session metadata plan monthly', ($pm['metadata']['plan'] ?? '') === 'monthly');
 expect3('subscription metadata plan monthly', ($pm['subscription_data']['metadata']['plan'] ?? '') === 'monthly');
+expect3(
+    'subscription description journey branded',
+    ($pm['subscription_data']['description'] ?? '') === 'Retirement Planning Journey Premium'
+);
+expect3(
+    'submit helper mentions Journey Premium',
+    strpos((string) ($pm['custom_text']['submit']['message'] ?? ''), 'Journey Premium') !== false
+);
 expect3('no promotion codes key', !array_key_exists('allow_promotion_codes', $pm));
 expect3('customer_email when no customer', ($pm['customer_email'] ?? '') === 'tester@example.com');
 expect3('no customer key when none', !isset($pm['customer']));

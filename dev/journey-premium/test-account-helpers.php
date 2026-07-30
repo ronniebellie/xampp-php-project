@@ -54,6 +54,7 @@ if ($del) {
 $free = rb_account_journey_status($conn, $ghostId);
 expectA('ghost has no journey access', $free['hasAccess'] === false);
 expectA('ghost label not enrolled', $free['label'] === 'Not enrolled');
+expectA('ghost CTA start trial', $free['actionLabel'] === 'Start Journey Premium trial');
 
 $product = JOURNEY_PRODUCT_KEY;
 $ins = $conn->prepare(
@@ -71,8 +72,9 @@ if ($ins) {
 
 $trial = rb_account_journey_status($conn, $ghostId);
 expectA('trial has access', $trial['hasAccess'] === true);
-expectA('trial label mentions Journey Premium', strpos($trial['label'], 'Journey Premium') !== false);
+expectA('trial label is 30-day trial active', $trial['label'] === '30-day trial active');
 expectA('trial entitlement status', $trial['entitlementStatus'] === 'trialing');
+expectA('trial CTA open journey', $trial['actionLabel'] === 'Open Journey Premium');
 
 $cleanup = $conn->prepare('DELETE FROM user_product_subscriptions WHERE user_id = ?');
 if ($cleanup) {

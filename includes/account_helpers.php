@@ -11,6 +11,7 @@ if (defined('RB_ACCOUNT_HELPERS_LOADED')) {
 define('RB_ACCOUNT_HELPERS_LOADED', 1);
 
 require_once __DIR__ . '/journey_checkout.php';
+require_once __DIR__ . '/journey_plan_store.php';
 
 /**
  * Journey Premium status for account UI — same authority as Journey chrome/status API.
@@ -20,7 +21,12 @@ require_once __DIR__ . '/journey_checkout.php';
  *   entitlementStatus:string,
  *   label:string,
  *   detail:string,
- *   hadSubscription:bool
+ *   hadSubscription:bool,
+ *   cloudPlanExists:bool,
+ *   actionLabel:string,
+ *   actionUrl:string,
+ *   secondaryActionLabel:?string,
+ *   secondaryActionUrl:?string
  * }
  */
 function rb_account_journey_status(mysqli $conn, int $userId): array
@@ -28,6 +34,7 @@ function rb_account_journey_status(mysqli $conn, int $userId): array
     $hasAccess = has_journey_premium_access($conn, $userId);
     $entitlementStatus = 'none';
     $hadSubscription = false;
+    $cloudPlanExists = journey_plan_has_cloud_row($conn, $userId);
 
     $sql = "SELECT entitlement_status, stripe_status
             FROM user_product_subscriptions
@@ -54,23 +61,43 @@ function rb_account_journey_status(mysqli $conn, int $userId): array
         $entitlementStatus = 'none';
     }
 
+    $actionLabel = 'Start Journey Premium trial';
+    $actionUrl = '/premium/journey.php';
+    $secondaryActionLabel = 'Open free Journey';
+    $secondaryActionUrl = 'https://journey.ronbelisle.com/';
+
     if ($hasAccess) {
         if ($entitlementStatus === 'trialing') {
-            $label = 'Journey Premium (trial)';
-            $detail = 'Your Journey Premium trial is active. Cloud Journey saving and cross-device continuity are available.';
+            $label = '30-day trial active';
+            $detail = 'Your Journey Premium trial is active. Cloud Journey saving and cross-device continuity are available while the trial remains active.';
         } elseif ($entitlementStatus === 'canceled_grace') {
-            $label = 'Journey Premium (access through period end)';
+            $label = 'Active through period end';
             $detail = 'Your Journey Premium access remains active through the end of the current billing period.';
         } else {
-            $label = 'Journey Premium';
+            $label = 'Active';
             $detail = 'Your Journey Premium access is active.';
         }
-    } elseif ($hadSubscription) {
-        $label = 'Journey Premium inactive';
-        $detail = 'A prior Journey Premium subscription exists, but access is not currently active. Cloud updates require restoring Journey Premium.';
+        $actionLabel = 'Open Journey Premium';
+        $actionUrl = 'https://journey.ronbelisle.com/';
+        $secondaryActionLabel = null;
+        $secondaryActionUrl = null;
+    } elseif ($hadSubscription || $cloudPlanExists) {
+        $label = $cloudPlanExists ? 'Read-only / access ended' : 'Access ended';
+        $detail = $cloudPlanExists
+            ? 'Your saved Journey remains available to review. Cloud updates require restoring Journey Premium access.'
+            : 'A prior Journey Premium subscription exists, but access is not currently active.';
+        $actionLabel = 'Restore access';
+        $actionUrl = '/premium/journey.php';
+        if ($cloudPlanExists) {
+            $secondaryActionLabel = 'Review saved Journey';
+            $secondaryActionUrl = 'https://journey.ronbelisle.com/';
+        } else {
+            $secondaryActionLabel = 'Open free Journey';
+            $secondaryActionUrl = 'https://journey.ronbelisle.com/';
+        }
     } else {
         $label = 'Not enrolled';
-        $detail = 'Journey Premium is optional. The six free Journey phases remain available; cloud Journey saving requires Journey Premium.';
+        $detail = 'Journey Premium is a separate product from Calculator Premium. The six free Journey phases remain available; cloud Journey saving requires Journey Premium.';
     }
 
     return [
@@ -79,6 +106,11 @@ function rb_account_journey_status(mysqli $conn, int $userId): array
         'label' => $label,
         'detail' => $detail,
         'hadSubscription' => $hadSubscription,
+        'cloudPlanExists' => $cloudPlanExists,
+        'actionLabel' => $actionLabel,
+        'actionUrl' => $actionUrl,
+        'secondaryActionLabel' => $secondaryActionLabel,
+        'secondaryActionUrl' => $secondaryActionUrl,
     ];
 }
 
