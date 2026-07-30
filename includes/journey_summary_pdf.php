@@ -12,7 +12,8 @@ if (defined('RB_JOURNEY_SUMMARY_PDF_LOADED')) {
 }
 define('RB_JOURNEY_SUMMARY_PDF_LOADED', 1);
 
-const JOURNEY_SUMMARY_PDF_VERSION = '1.0';
+/** Display version for the report cover/footer (increment when the report template changes). */
+const JOURNEY_SUMMARY_PDF_VERSION = '1';
 const JOURNEY_SUMMARY_PDF_SITE = 'journey.ronbelisle.com';
 const JOURNEY_SUMMARY_PDF_SITE_URL = 'https://journey.ronbelisle.com/';
 
@@ -738,7 +739,7 @@ class JourneySummaryPdfDocument extends TCPDF
         $this->Cell(
             130,
             3.6,
-            'Generated ' . $generated . '  •  Journey Report Version ' . JOURNEY_SUMMARY_PDF_VERSION,
+            'Generated ' . $generated . '  •  Version ' . JOURNEY_SUMMARY_PDF_VERSION,
             0,
             0,
             'L'
@@ -876,7 +877,7 @@ function journey_summary_pdf_build(array $progress, ?string $displayName = null)
     $pdf->SetCreator('Retirement Planning Journey');
     $pdf->SetAuthor('Retirement Planning Journey');
     $pdf->SetTitle('Retirement Planning Journey Summary');
-    $pdf->SetSubject('Initial retirement planning summary');
+    $pdf->SetSubject('Retirement plan summary');
     $pdf->SetKeywords('journey.ronbelisle.com, retirement planning, Journey Premium');
     $pdf->setPrintHeader(true);
     $pdf->setPrintFooter(true);
@@ -900,13 +901,16 @@ function journey_summary_pdf_build(array $progress, ?string $displayName = null)
     $pdf->SetY(54);
     $pdf->SetTextColor(17, 24, 39);
     $pdf->SetFont('helvetica', 'B', 16);
-    $pdf->MultiCell(0, 8, 'Your Initial Retirement Plan', 0, 'L');
+    $pdf->MultiCell(0, 8, 'Your Retirement Plan', 0, 'L');
     $pdf->SetFont('helvetica', '', 10);
     $pdf->SetTextColor(82, 96, 113);
+    $pdf->Cell(0, 5, 'Version ' . JOURNEY_SUMMARY_PDF_VERSION, 0, 1, 'L');
+    $pdf->Cell(0, 5, 'Generated ' . $generated, 0, 1, 'L');
+    $pdf->Ln(1);
     $pdf->MultiCell(
         0,
         5,
-        'A summary of the decisions and assumptions carried forward from your six-phase Journey',
+        'A current summary of the decisions and assumptions from your six-phase Journey. Return anytime to refine them as your plans evolve.',
         0,
         'L'
     );
@@ -916,9 +920,6 @@ function journey_summary_pdf_build(array $progress, ?string $displayName = null)
         $pdf->SetTextColor(17, 24, 39);
         $pdf->Cell(0, 5.5, 'Prepared for ' . trim($displayName), 0, 1, 'L');
     }
-    $pdf->SetFont('helvetica', '', 9.5);
-    $pdf->SetTextColor(82, 96, 113);
-    $pdf->Cell(0, 5, 'Generated ' . $generated, 0, 1, 'L');
     $pdf->Ln(3);
 
     // ----- Executive summary -----
@@ -995,7 +996,7 @@ function journey_summary_pdf_build(array $progress, ?string $displayName = null)
         $pdf->MultiCell(
             0,
             4.2,
-            'These charts restate figures already saved in your Journey. They are educational planning visuals, not projections or guarantees.',
+            'These charts restate figures currently saved in your Journey. They are educational planning visuals, not projections or guarantees.',
             0,
             'L'
         );
@@ -1224,7 +1225,7 @@ function journey_summary_pdf_build(array $progress, ?string $displayName = null)
         'Review this plan at least once each year.',
         'Update your Journey whenever your spending, income, investments, taxes, or family situation changes.',
         'Complete any Journey phases that are still marked for review or need attention.',
-        'Remember that this report is a planning snapshot that should evolve as your retirement plans evolve.',
+        'Treat each report as a current snapshot—generate a new one after you update your plan.',
     ];
     $boxTop = $pdf->GetY();
     $pdf->SetFillColor(239, 246, 255);
@@ -1244,6 +1245,20 @@ function journey_summary_pdf_build(array $progress, ?string $displayName = null)
     }
     $pdf->SetY($boxTop + $panelH + 2);
 
+    // Keep your plan current — ongoing planning emphasis (not promotional).
+    journey_summary_pdf_ensure_space($pdf, 36);
+    journey_summary_pdf_section_heading($pdf, 'Keep your plan current');
+    $pdf->SetFont('helvetica', '', 9.5);
+    $pdf->SetTextColor(55, 65, 81);
+    $pdf->MultiCell(
+        0,
+        4.8,
+        'Retirement planning isn\'t a one-time event. As markets, Social Security estimates, taxes, spending, investments, and family circumstances change, return to your Journey to update your plan, compare new scenarios, and generate an updated report that reflects your latest decisions.',
+        0,
+        'L'
+    );
+    $pdf->Ln(2);
+
     // Closing note on the last content page.
     $limit = $pdf->getPageHeight() - $pdf->getBreakMargin() - 2;
     if ($pdf->GetY() + 14 <= $limit) {
@@ -1262,7 +1277,7 @@ function journey_summary_pdf_build(array $progress, ?string $displayName = null)
         $pdf->Cell(
             0,
             3.8,
-            'Visit ' . JOURNEY_SUMMARY_PDF_SITE . ' to reopen your saved Journey.',
+            'Visit ' . JOURNEY_SUMMARY_PDF_SITE . ' to update your plan and generate a new report.',
             0,
             1,
             'L',
