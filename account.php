@@ -90,9 +90,9 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
     <?php include("includes/analytics.php"); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Manage your Ron Belisle account. View subscription, saved scenarios, and premium status.">
-    <title>Account Management - Ron Belisle</title>
-    <?php $og_title = 'Account Management - Ron Belisle'; $og_description = 'Manage your Ron Belisle account. View subscription, saved scenarios, and premium status.'; include(__DIR__ . '/includes/og-twitter-meta.php'); ?>
+    <meta name="description" content="Manage your Ron Belisle account, Journey Premium status, and password.">
+    <title>My Account - Ron Belisle</title>
+    <?php $og_title = 'My Account - Ron Belisle'; $og_description = 'Manage your Ron Belisle account, Journey Premium status, and password.'; include(__DIR__ . '/includes/og-twitter-meta.php'); ?>
     <link rel="stylesheet" href="css/styles.css">
     <style>
         .account-container {
@@ -120,6 +120,50 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
             font-size: 20px;
             color: #334155;
             margin-bottom: 15px;
+        }
+        .account-section-muted {
+            margin-top: 8px;
+            margin-bottom: 24px;
+            padding-top: 22px;
+            border-top: 1px solid #e2e8f0;
+        }
+        .account-section-muted h2 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #64748b;
+            margin: 0 0 12px;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+        .other-product {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 8px 16px;
+        }
+        .other-product-title {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 600;
+            color: #475569;
+        }
+        .other-product-detail {
+            margin: 4px 0 0;
+            font-size: 13px;
+            line-height: 1.45;
+            color: #64748b;
+            flex: 1 1 100%;
+        }
+        .other-product-link {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1d4ed8;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .other-product-link:hover {
+            text-decoration: underline;
         }
         .info-row {
             display: flex;
@@ -242,7 +286,7 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
     <div class="wrap">
         <div class="account-container">
             <div class="account-header">
-                <h1>Account Management</h1>
+                <h1>My Account</h1>
                 <p style="color: #64748b; margin: 0;">Welcome back, <?php echo htmlspecialchars($userName); ?>!</p>
                 <?php
                 $msg = $_GET['msg'] ?? '';
@@ -297,45 +341,36 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
                 </p>
             </div>
 
+            <?php if ($is_calculator_premium): ?>
             <div class="account-section">
                 <h2>Calculator Premium</h2>
                 <p class="status-detail" style="margin-top:0;">Scenario saving, exports, and advanced calculator features on ronbelisle.com. Separate from Journey Premium.</p>
                 <div class="info-row">
                     <span class="info-label">Status:</span>
                     <span class="info-value">
-                        <?php if ($is_calculator_premium): ?>
-                            <span class="premium-badge">Active</span>
-                        <?php else: ?>
-                            <span class="status-muted">Not subscribed</span>
-                        <?php endif; ?>
+                        <span class="premium-badge">Active</span>
                     </span>
                 </div>
-                <?php if ($is_calculator_premium): ?>
-                    <p style="color: #334155; margin-top: 15px;"><strong>You have full access to premium calculator features:</strong></p>
-                    <ul style="color: #475569; line-height: 1.8; margin: 10px 0 20px 0;">
-                        <li><strong>Save and compare unlimited scenarios</strong> — Store your calculator inputs and results, recall them later, and compare two scenarios side by side.</li>
-                        <li><strong>Export PDF and CSV reports</strong> — Download professional PDF summaries or spreadsheet data for your records or advisors.</li>
-                        <li><strong>AI-generated plain-language explanations</strong> — After running any comparison, click "Explain my results" for a clear, educational breakdown of your specific numbers.</li>
-                        <li><strong>Advanced projections</strong> — See full year-by-year projections (e.g., ages 73–100) instead of limited previews.</li>
-                        <li><strong>Ad-free experience</strong> — Use all tools without promotional interruptions.</li>
-                    </ul>
-                    <?php if (!empty($user['stripe_subscription_id'])): ?>
-                    <p style="margin-top: 15px;">
-                        <a href="billing_portal.php" class="btn" style="background: #059669;">Manage Calculator Premium subscription</a>
-                        <span style="font-size: 13px; color: #64748b; margin-left: 8px;">Cancel, update payment method, or view invoices</span>
-                    </p>
-                    <?php else: ?>
-                    <p style="margin-top: 15px; padding: 14px; background: #f0fdf4; border-radius: 8px; border: 1px solid #bbf7d0;">
-                        <strong>Your Calculator Premium subscription was set up manually.</strong> To cancel or make changes, please <a href="mailto:ronbelisle@gmail.com?subject=Subscription%20change%20request">contact support</a>.
-                    </p>
-                    <?php endif; ?>
+                <p style="color: #334155; margin-top: 15px;"><strong>You have full access to premium calculator features:</strong></p>
+                <ul style="color: #475569; line-height: 1.8; margin: 10px 0 20px 0;">
+                    <li><strong>Save and compare unlimited scenarios</strong> — Store your calculator inputs and results, recall them later, and compare two scenarios side by side.</li>
+                    <li><strong>Export PDF and CSV reports</strong> — Download professional PDF summaries or spreadsheet data for your records or advisors.</li>
+                    <li><strong>AI-generated plain-language explanations</strong> — After running any comparison, click "Explain my results" for a clear, educational breakdown of your specific numbers.</li>
+                    <li><strong>Advanced projections</strong> — See full year-by-year projections (e.g., ages 73–100) instead of limited previews.</li>
+                    <li><strong>Ad-free experience</strong> — Use all tools without promotional interruptions.</li>
+                </ul>
+                <?php if (!empty($user['stripe_subscription_id'])): ?>
+                <p style="margin-top: 15px;">
+                    <a href="billing_portal.php" class="btn" style="background: #059669;">Manage Calculator Premium subscription</a>
+                    <span style="font-size: 13px; color: #64748b; margin-left: 8px;">Cancel, update payment method, or view invoices</span>
+                </p>
                 <?php else: ?>
-                    <p class="status-detail">
-                        Calculator Premium unlocks scenario saving, PDF exports, AI explanations, and advanced projections on the calculator tools.
-                    </p>
-                    <a href="premium.html" class="btn">Upgrade Calculator Premium</a>
+                <p style="margin-top: 15px; padding: 14px; background: #f0fdf4; border-radius: 8px; border: 1px solid #bbf7d0;">
+                    <strong>Your Calculator Premium subscription was set up manually.</strong> To cancel or make changes, please <a href="mailto:ronbelisle@gmail.com?subject=Subscription%20change%20request">contact support</a>.
+                </p>
                 <?php endif; ?>
             </div>
+            <?php endif; ?>
 
             <div class="account-section" id="change-password">
                 <h2>Change Password</h2>
@@ -364,6 +399,17 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
                     <button type="submit" class="btn">Update Password</button>
                 </form>
             </div>
+
+            <?php if (!$is_calculator_premium): ?>
+            <div class="account-section account-section-muted">
+                <h2>Other Products</h2>
+                <div class="other-product">
+                    <p class="other-product-title">Calculator Premium</p>
+                    <a class="other-product-link" href="premium.html">Learn More</a>
+                    <p class="other-product-detail">Advanced planning features for the retirement calculators.</p>
+                </div>
+            </div>
+            <?php endif; ?>
 
             <div class="account-section">
                 <h2>Actions</h2>
