@@ -39,12 +39,11 @@ expect3('has afterReady', strpos($sync, 'afterReady') !== false);
 expect3('loads cloud plan API', strpos($sync, '/api/journey_plan_load.php') !== false);
 expect3('saves cloud plan API', strpos($sync, '/api/journey_plan_save.php') !== false);
 expect3('uses credentials include', strpos($sync, "credentials: 'include'") !== false);
-expect3('defers import confirmation', strpos($sync, 'needsImport') !== false);
+expect3('tracks needsImport for empty-cloud first write', strpos($sync, 'needsImport') !== false);
 expect3('offline pending queue', strpos($sync, 'rbJourneySyncPendingV1') !== false);
 expect3('saving message', strpos($sync, 'Saving to your Journey account') !== false);
 expect3('saved message', strpos($sync, 'Saved to your Journey account') !== false);
 expect3('loaded message does not claim save', strpos($sync, "setSaveState('loaded', 'Your Journey progress will now be saved automatically to your account.')") !== false);
-expect3('needs-import message is capability-focused', strpos($sync, 'Your Journey progress will now be saved automatically to your account.') !== false);
 expect3('needs-import message hides implementation detail', strpos($sync, 'confirmation next') === false && strpos($sync, 'Browser Journey ready') === false);
 expect3('loaded message is not redundant active claim', strpos($sync, "setSaveState('loaded', 'Journey Premium is active.')") === false);
 expect3('retry message', strpos($sync, 'Saved on this browser; cloud save will retry') !== false);
@@ -53,8 +52,12 @@ expect3('free-user chrome hint', strpos($chrome, 'Continue with the free Journey
 expect3('premium chrome uses compact trial badge', strpos($chrome, "badgeText = subStatus === 'trialing' ? 'Premium Trial' : 'Journey Premium'") !== false);
 expect3('premium chrome omits duplicate active hint', strpos($chrome, "journey-account-hint\">Journey Premium is active.") === false);
 expect3('saved confirmation wording retained', strpos($sync, 'Saved to your Journey account') !== false);
-expect3('does not call import API in P3', strpos($sync, 'journey_plan_import.php') === false);
+expect3('calls import API for first cloud write', strpos($sync, 'journey_plan_import.php') !== false);
+expect3('defines performFirstImport', strpos($sync, 'function performFirstImport') !== false);
+expect3('empty-cloud local data triggers import', strpos($sync, "performFirstImport('startup')") !== false);
+expect3('import refuses overwrite path handled', strpos($sync, "already_exists") !== false);
 expect3('header loads sync before chrome', strpos($header, 'journey-sync.js') !== false && strpos($header, 'journey-sync.js') < strpos($header, 'journey-auth-chrome.js'));
+expect3('header cache-bust includes cloud-import', strpos($header, 'journey-sync.js?v=20260730-cloud-import') !== false);
 expect3('chrome listens for sync state', strpos($chrome, 'rb-journey-sync-state') !== false);
 expect3('chrome removed temporary P2-only note', strpos($chrome, 'Cloud plan saving will be connected in the next implementation step') === false);
 

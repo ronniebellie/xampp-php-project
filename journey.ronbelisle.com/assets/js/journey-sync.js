@@ -1,9 +1,12 @@
 /**
- * Journey cloud sync (Milestone 5 / R1 — P3).
+ * Journey cloud sync (Milestone 5 / R1 — P3 + first-cloud import).
  * DB is authoritative for Premium users with a cloud plan.
  * localStorage remains the working cache and offline fallback.
  *
- * Does not implement first-import confirmation (P4) or clear-browser semantics (P5).
+ * When Premium write access is available, the cloud is empty, and this browser
+ * already has Journey data, the first cloud write uses /api/journey_plan_import.php
+ * (refuses overwrite). Ongoing updates use save. Conflict UI for divergent
+ * cloud+local plans remains a later hardening step. Clear-browser UX is P5.
  */
 (function () {
     'use strict';
@@ -11,6 +14,7 @@
     var STATUS_URL = 'https://ronbelisle.com/premium/journey-status.php';
     var LOAD_URL = 'https://ronbelisle.com/api/journey_plan_load.php';
     var SAVE_URL = 'https://ronbelisle.com/api/journey_plan_save.php';
+    var IMPORT_URL = 'https://ronbelisle.com/api/journey_plan_import.php';
     var PROGRESS_KEY = 'rbJourneyProgressV1';
     var CALCULATOR_KEY = 'rbJourneyCalculator:retirementSpendingPlan:v1';
     var PENDING_KEY = 'rbJourneySyncPendingV1';
@@ -37,6 +41,7 @@
     var saveTimer = null;
     var saveInFlight = false;
     var saveQueued = false;
+    var importInFlight = false;
     var readyResolved = false;
     var readyWaiters = [];
 
@@ -290,30 +295,127 @@
                     // Hydration is not a new save — keep wording accurate.
                     setSaveState('loaded', 'Your Journey progress will now be saved automatically to your account.');
                 }
-            } else {
-                state.cloudExists = false;
-                if (state.canWrite && localHasMeaningfulData()) {
-                    state.needsImport = true;
-                    setSaveState(
-                        'needs_import',
-                        'Your Journey progress will now be saved automatically to your account.'
-                    );
-                } else if (state.canWrite) {
-                    setSaveState('idle', '');
-                }
+                return body;
+            }
+
+            state.cloudExists = false;
+            if (state.canWrite && localHasMeaningfulData()) {
+                // Empty cloud + existing browser Journey: first write via import API.
+                state.needsImport = true;
+                return performFirstImport('startup').then(function () {
+                    return body;
+                });
+            }
+            if (state.canWrite) {
+                setSaveState('idle', '');
             }
             return body;
+        });
+    }
+
+    function markCloudPlanFromResponse(plan, clientUpdatedAt) {
+        state.cloudExists = true;
+        state.needsImport = false;
+        state.planSavedAt = plan.serverUpdatedAt || plan.updatedAt || clientUpdatedAt || state.planSavedAt;
+        state.clientUpdatedAt = plan.clientUpdatedAt || clientUpdatedAt || state.clientUpdatedAt;
+        if (state.status) {
+            state.status.cloudPlanExists = true;
+            state.status.planSavedAt = state.planSavedAt;
+            state.status.canCloudWrite = true;
+        }
+    }
+
+    function performFirstImport(reason) {
+        if (!state.canWrite || state.readOnly || state.cloudExists) {
+            state.needsImport = false;
+            return Promise.resolve({ skipped: true });
+        }
+        if (!localHasMeaningfulData()) {
+            state.needsImport = false;
+            return Promise.resolve({ skipped: true });
+        }
+        if (importInFlight) {
+            return Promise.resolve({ queued: true });
+        }
+        if (!navigator.onLine) {
+            var offlinePayload = buildPayloadFromLocal();
+            var offlineAt = nowIso();
+            state.clientUpdatedAt = offlineAt;
+            storePending(offlinePayload, offlineAt, reason || 'import');
+            setSaveState('pending', 'Saved on this browser; cloud save will retry');
+            return Promise.resolve({ offline: true });
+        }
+
+        importInFlight = true;
+        var payload = buildPayloadFromLocal();
+        var clientUpdatedAt = nowIso();
+        state.clientUpdatedAt = clientUpdatedAt;
+        storePending(payload, clientUpdatedAt, reason || 'import');
+        setSaveState('saving', 'Saving your Journey to your account…');
+
+        return fetchJson(IMPORT_URL, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': state.csrfToken || ''
+            },
+            body: JSON.stringify({
+                csrf_token: state.csrfToken,
+                payload: payload,
+                clientUpdatedAt: clientUpdatedAt
+            })
+        }).then(function (result) {
+            importInFlight = false;
+            var data = result.body || {};
+            if (data.csrfToken) {
+                state.csrfToken = data.csrfToken;
+            }
+
+            if (result.response.ok && data.success && data.plan) {
+                clearPending();
+                markCloudPlanFromResponse(data.plan, clientUpdatedAt);
+                setSaveState('saved', 'Saved to your Journey account');
+                if (saveQueued) {
+                    saveQueued = false;
+                    return performSave('autosave', false);
+                }
+                return data;
+            }
+
+            state.lastError = (data && data.error) || 'import_failed';
+            if (result.response.status === 409 && state.lastError === 'already_exists') {
+                // Another device created the cloud plan — load it instead of overwriting.
+                state.needsImport = false;
+                return loadCloudPlan();
+            }
+            if (result.response.status === 403 && state.lastError === 'premium_required') {
+                state.canWrite = false;
+                state.readOnly = true;
+                state.needsImport = false;
+                setSaveState(
+                    'readonly',
+                    'Cloud updates require active Journey Premium access'
+                );
+                return data;
+            }
+
+            setSaveState('pending', 'Saved on this browser; cloud save will retry');
+            return data;
+        }).catch(function () {
+            importInFlight = false;
+            setSaveState('pending', 'Saved on this browser; cloud save will retry');
+            return { error: 'network' };
         });
     }
 
     function performSave(reason, force) {
         if (!canAutosaveNow()) {
             if (state.needsImport) {
-                setSaveState(
-                    'needs_import',
-                    'Your Journey progress will now be saved automatically to your account.'
-                );
-            } else if (state.readOnly) {
+                return performFirstImport(reason || 'import');
+            }
+            if (state.readOnly) {
                 setSaveState(
                     'readonly',
                     'Cloud updates require active Journey Premium access'
@@ -369,15 +471,7 @@
 
             if (result.response.ok && data.success && data.plan) {
                 clearPending();
-                state.cloudExists = true;
-                state.needsImport = false;
-                state.planSavedAt = data.plan.serverUpdatedAt || data.plan.updatedAt || clientUpdatedAt;
-                state.clientUpdatedAt = data.plan.clientUpdatedAt || clientUpdatedAt;
-                if (state.status) {
-                    state.status.cloudPlanExists = true;
-                    state.status.planSavedAt = state.planSavedAt;
-                    state.status.canCloudWrite = true;
-                }
+                markCloudPlanFromResponse(data.plan, clientUpdatedAt);
                 setSaveState('saved', 'Saved to your Journey account');
                 if (saveQueued) {
                     saveQueued = false;
@@ -421,10 +515,7 @@
     function scheduleSave(reason) {
         if (!canAutosaveNow()) {
             if (state.needsImport) {
-                setSaveState(
-                    'needs_import',
-                    'Your Journey progress will now be saved automatically to your account.'
-                );
+                performFirstImport(reason || 'import');
             }
             return;
         }
@@ -436,7 +527,12 @@
 
     function flushPending() {
         var pending = readPending();
-        if (!pending || !canAutosaveNow()) return;
+        if (!pending) return;
+        if (state.needsImport) {
+            performFirstImport(pending.reason || 'import');
+            return;
+        }
+        if (!canAutosaveNow()) return;
         performSave(pending.reason || 'retry', false);
     }
 
