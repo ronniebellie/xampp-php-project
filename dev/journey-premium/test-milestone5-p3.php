@@ -44,8 +44,11 @@ expect3('offline pending queue', strpos($sync, 'rbJourneySyncPendingV1') !== fal
 expect3('saving message', strpos($sync, 'Saving to your Journey account') !== false);
 expect3('saved message', strpos($sync, 'Saved to your Journey account') !== false);
 expect3('loaded message does not claim save', strpos($sync, "setSaveState('loaded', 'Journey Premium is active.')") !== false);
+expect3('needs-import message is customer-facing', strpos($sync, 'Your progress is now being saved to your Journey account.') !== false);
+expect3('needs-import message hides implementation detail', strpos($sync, 'confirmation next') === false && strpos($sync, 'Browser Journey ready') === false);
 expect3('retry message', strpos($sync, 'Saved on this browser; cloud save will retry') !== false);
 expect3('readonly message', strpos($sync, 'Cloud updates require active Journey Premium access') !== false);
+expect3('free-user chrome hint', strpos($chrome, 'Continue with the free Journey, or start Journey Premium to save your progress across browsers and devices.') !== false);
 expect3('does not call import API in P3', strpos($sync, 'journey_plan_import.php') === false);
 expect3('header loads sync before chrome', strpos($header, 'journey-sync.js') !== false && strpos($header, 'journey-sync.js') < strpos($header, 'journey-auth-chrome.js'));
 expect3('chrome listens for sync state', strpos($chrome, 'rb-journey-sync-state') !== false);

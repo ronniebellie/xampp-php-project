@@ -296,7 +296,7 @@
                     state.needsImport = true;
                     setSaveState(
                         'needs_import',
-                        'Browser Journey ready to save to your account (confirmation next)'
+                        'Your progress is now being saved to your Journey account.'
                     );
                 } else if (state.canWrite) {
                     setSaveState('idle', '');
@@ -311,7 +311,7 @@
             if (state.needsImport) {
                 setSaveState(
                     'needs_import',
-                    'Browser Journey ready to save to your account (confirmation next)'
+                    'Your progress is now being saved to your Journey account.'
                 );
             } else if (state.readOnly) {
                 setSaveState(
@@ -423,7 +423,7 @@
             if (state.needsImport) {
                 setSaveState(
                     'needs_import',
-                    'Browser Journey ready to save to your account (confirmation next)'
+                    'Your progress is now being saved to your Journey account.'
                 );
             }
             return;

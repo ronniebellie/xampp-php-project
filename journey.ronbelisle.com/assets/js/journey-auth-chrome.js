@@ -215,7 +215,7 @@
                 );
             }
             lines.push(
-                '<p class="journey-account-hint">Continue free, or start Journey Premium to save your progress across browsers and devices.</p>'
+                '<p class="journey-account-hint">Continue with the free Journey, or start Journey Premium to save your progress across browsers and devices.</p>'
             );
             actions.push(
                 '<a class="journey-account-link" href="' +
