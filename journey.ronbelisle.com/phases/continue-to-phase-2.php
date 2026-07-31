@@ -14,7 +14,7 @@ $loginUrl = 'https://ronbelisle.com/auth/login.php?return=' . rawurlencode($jour
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260729-m5-p3">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260731-launch-polish">
 </head>
 <body>
     <?php include __DIR__ . '/../includes/site-header.php'; ?>
@@ -46,11 +46,11 @@ $loginUrl = 'https://ronbelisle.com/auth/login.php?return=' . rawurlencode($jour
                     <div class="transition-options" data-journey-anon-only>
                         <section class="transition-option is-primary" aria-labelledby="free-account-title">
                             <h2 id="free-account-title">Create a free account</h2>
-                            <p>Create a free account so you can continue through all six free Journey phases and sign in later to access your planning work.</p>
+                            <p>Create a free account so you can continue through all six free Journey phases and sign in later when you return.</p>
                             <ul class="coach-list">
                                 <li>Create your free Retirement Planning Journey account</li>
                                 <li>Continue through all six free Journey phases</li>
-                                <li>Sign in later to continue where you left off</li>
+                                <li>Sign in later when you return in this browser</li>
                             </ul>
                             <a class="primary-action" href="<?php echo htmlspecialchars($freeAccountUrl); ?>">Create Free Account and Continue</a>
                             <p class="action-note">Registration opens on ronbelisle.com, then returns you to Phase 2 in this same browser. Your Journey plan currently stays in this browser. Creating the account does not yet automatically sync that browser-stored Journey data across devices.</p>
@@ -67,10 +67,10 @@ $loginUrl = 'https://ronbelisle.com/auth/login.php?return=' . rawurlencode($jour
                             <p class="action-note">When your initial plan is complete, you can start a 30-day Journey Premium trial if you want that ongoing workspace. You do not need Premium to continue to Phase 2.</p>
                         </section>
 
-                        <section class="transition-option is-quiet" aria-labelledby="browser-continue-title">
-                            <h2 id="browser-continue-title">Continue using this browser</h2>
-                            <p>Your Phase 1 spending plan stays in this browser’s local storage. It may not be available on another device, and it can be lost if browser data is cleared.</p>
-                            <a class="text-action" href="<?php echo htmlspecialchars($phase2Url); ?>">Continue Using This Browser</a>
+                        <section class="transition-option" aria-labelledby="browser-continue-title">
+                            <h2 id="browser-continue-title">Continue in this browser</h2>
+                            <p>Your Phase 1 spending plan stays in this browser. It may not be available on another device, and it can be lost if browser data is cleared.</p>
+                            <a class="secondary-action" href="<?php echo htmlspecialchars($phase2Url); ?>">Continue in This Browser to Phase 2</a>
                         </section>
                     </div>
 

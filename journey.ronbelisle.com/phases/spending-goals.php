@@ -9,7 +9,7 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260729-phase1-cta">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260731-launch-polish">
 </head>
 <body>
     <?php include __DIR__ . '/../includes/site-header.php'; ?>
@@ -22,7 +22,6 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                         <p class="eyebrow">Phase 1</p>
                         <h1 id="phase-title">Spending &amp; Goals</h1>
                         <p class="page-lede">Use this phase to shape the spending plan you expect to need in retirement. You’ll estimate your current household spending, think through your retirement lifestyle goals, and create a monthly spending target for your initial retirement plan.</p>
-                        <p class="phase-audience-note">This Journey is designed for people approaching retirement.</p>
                     </div>
 
                     <section class="current-record-overview" aria-labelledby="spending-plan-summary-title" data-spending-plan-summary hidden>
@@ -67,29 +66,35 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
                         <h2>What you'll accomplish</h2>
                         <p>You will estimate a realistic monthly spending target for retirement and note the lifestyle goals you want your plan to support.</p>
 
-                        <h2>What to bring</h2>
-                        <div class="prompt-list" aria-label="What to bring before using the Retirement Spending Planner">
-                            <div>
-                                <h3>Current household spending</h3>
-                                <p>Don’t worry if you don’t know your exact monthly household spending. The Retirement Spending Planner will help you estimate it. Focus on lifestyle costs—not income taxes, retirement savings, or investment contributions.</p>
-                            </div>
-                            <div>
-                                <h3>Retirement lifestyle goals</h3>
-                                <p>Notes about travel, hobbies, family support, charitable giving, or other priorities you want your retirement plan to support.</p>
-                            </div>
-                            <div>
-                                <h3>Other retirement income</h3>
-                                <p>Any pension, annuity payment, or other regular income you expect before adding Social Security. Do not include planned withdrawals from IRAs, 401(k)s, or other investment accounts yet.</p>
-                            </div>
-                        </div>
-
-                        <h2>Before you continue</h2>
-                        <p>Open the Retirement Spending Planner, estimate your household spending, and save your monthly target. You will use that number in the next phase when thinking about Social Security.</p>
-
-                        <h2>Continue to the next phase</h2>
                         <div data-spending-plan-empty>
+                            <h2>What to bring</h2>
+                            <div class="prompt-list" aria-label="What to bring before using the Retirement Spending Planner">
+                                <div>
+                                    <h3>Current household spending</h3>
+                                    <p>Don’t worry if you don’t know your exact monthly household spending. The Retirement Spending Planner will help you estimate it. Focus on lifestyle costs—not income taxes, retirement savings, or investment contributions.</p>
+                                </div>
+                                <div>
+                                    <h3>Retirement lifestyle goals</h3>
+                                    <p>Notes about travel, hobbies, family support, charitable giving, or other priorities you want your retirement plan to support.</p>
+                                </div>
+                                <div>
+                                    <h3>Other retirement income</h3>
+                                    <p>Include pensions, annuities, rental income, or other regular income you expect in retirement. Leave out Social Security and planned withdrawals from IRAs, 401(k)s, or other investment accounts for now. This income reduces the portion of your spending target that Social Security and investment withdrawals will eventually need to cover.</p>
+                                </div>
+                            </div>
+
+                            <h2>How to move forward</h2>
+                            <p>Open the Retirement Spending Planner, enter and save your spending target, and then return here. Your saved summary and the option to continue to Phase 2 will appear on this page.</p>
+
+                            <h2>Continue to the next phase</h2>
                             <p>After saving your Retirement Spending Plan, return here to review your spending summary and continue to Phase 2: Social Security.</p>
                         </div>
+
+                        <div data-spending-plan-summary hidden>
+                            <h2>What’s next</h2>
+                            <p>Your spending target has been saved. You will use this number in the next phase to evaluate your Social Security options.</p>
+                        </div>
+
                         <div class="completion-message phase-completion-panel" data-spending-plan-summary hidden>
                             <p><strong>Phase 1 is complete.</strong> Continue to Phase 2: Social Security when you are ready.</p>
                             <a class="primary-action" href="/phases/social-security.php" data-journey-premium-only hidden>Continue to Phase 2: Social Security</a>
@@ -119,6 +124,6 @@ $page_title = 'Spending & Goals | Retirement Planning Journey';
             </div>
         </section>
     </main>
-    <script src="/assets/js/spending-goals-phase.js?v=20260730-phase2-bypass" defer></script>
+    <script src="/assets/js/spending-goals-phase.js?v=20260731-launch-polish" defer></script>
 </body>
 </html>

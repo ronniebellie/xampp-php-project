@@ -702,7 +702,8 @@ h1 {
 }
 
 @media (max-width: 640px) {
-    .transition-login-option .secondary-action {
+    .transition-login-option .secondary-action,
+    .transition-option .secondary-action {
         width: 100%;
         justify-content: center;
     }

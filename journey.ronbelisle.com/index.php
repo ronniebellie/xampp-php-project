@@ -22,8 +22,7 @@ $page_title = 'Your Retirement Planning Journey';
                     <h1 id="journey-title">Your Retirement Planning Journey</h1>
                     <div class="intro-copy">
                         <p>Retirement planning is a series of connected decisions about spending, Social Security, investments, taxes, and protecting your family.</p>
-                        <p>This guided <strong>six-phase Journey</strong> helps you build your initial retirement plan one decision at a time.</p>
-                        <p>This guided Journey is designed for people approaching retirement who are preparing to make decisions about spending, Social Security, retirement income, taxes, and protecting their household.</p>
+                        <p>This <strong>six-phase Journey</strong> helps you build your initial retirement plan one decision at a time. It is designed primarily for people approaching retirement who are preparing those decisions—spending, Social Security, retirement income, taxes, and protecting their household.</p>
                     </div>
                     <p class="audience-aside">Already retired? Many of the individual planning tools may still be useful, but this six-phase Journey is currently built around preparing for retirement.</p>
                     <a class="primary-action" href="/phases/spending-goals.php" data-journey-home-cta>Begin Your Journey</a>
@@ -112,14 +111,14 @@ $page_title = 'Your Retirement Planning Journey';
                     <article class="phase-card is-available" id="tax-strategy" data-journey-phase="tax-strategy">
                         <span class="phase-number">5</span>
                         <h3>Tax Strategy</h3>
-                        <p>See how taxes may affect the retirement income plan you already built, then carry forward one issue to revisit.</p>
+                        <p>See how taxes may affect the retirement income plan you already built, then identify one issue to revisit.</p>
                         <span class="phase-status" data-journey-phase-status hidden></span>
                     </article>
 
                     <article class="phase-card is-available" id="survivor-planning" data-journey-phase="survivor-planning">
                         <span class="phase-number">6</span>
                         <h3>Survivor Planning</h3>
-                        <p>See how the household income plan may change if one spouse dies, then carry forward one survivor-planning priority.</p>
+                        <p>See how the household income plan may change if one spouse dies, then identify one survivor-planning priority.</p>
                         <span class="phase-status" data-journey-phase-status hidden></span>
                     </article>
                 </div>

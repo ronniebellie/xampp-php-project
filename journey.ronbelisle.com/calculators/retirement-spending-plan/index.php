@@ -9,7 +9,7 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260729-m5-p3">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260731-launch-polish">
 </head>
 <body>
     <?php include __DIR__ . '/../../includes/site-header.php'; ?>
@@ -147,6 +147,7 @@ $page_title = 'Your Retirement Spending Plan | Retirement Planning Journey';
                         <section class="calculator-section" aria-labelledby="income-title">
                             <p class="eyebrow">Step 4</p>
                             <h2 id="income-title">Enter your total monthly retirement income from pensions, annuities, or rental income.</h2>
+                            <p>This income reduces the portion of your spending target that will need to be covered by Social Security and your investments.</p>
                             <p>Enter the total amount you expect to receive each month from pensions, annuities, rental income, or other regular retirement income sources. Do not include Social Security, IRA, 401(k), or other investment withdrawals yet.</p>
                             <div class="field-group field-group-wide">
                                 <label for="monthlyOtherRegularRetirementIncome">Total monthly retirement income</label>
