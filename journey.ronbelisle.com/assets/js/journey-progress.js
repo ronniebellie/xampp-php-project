@@ -97,10 +97,30 @@
         return available[available.length - 1] || phases[0];
     }
 
+    function progressStatus() {
+        if (window.rbJourneySync && typeof window.rbJourneySync.getStatus === 'function') {
+            return window.rbJourneySync.getStatus() || null;
+        }
+        return null;
+    }
+
+    /**
+     * True when progress is stored only in this browser (signed out, or signed in
+     * without Journey Premium cloud sync). False when cloud-backed Premium sync applies.
+     */
+    function isBrowserOnlyProgress() {
+        var status = progressStatus();
+        if (!status || status.authenticated !== true) {
+            return true;
+        }
+        return status.canCloudRead !== true;
+    }
+
     function homepageCtaTarget(progress) {
         var started = hasJourneyData(progress);
         var recommended = recommendedAvailablePhase(progress);
         var journeyComplete = completedPhases(progress).length === phases.length;
+        var browserOnly = isBrowserOnlyProgress();
         if (!started) {
             return {
                 href: phases[0].href,
@@ -110,7 +130,7 @@
         if (journeyComplete) {
             return {
                 href: '/phases/build-your-plan.php',
-                label: 'Review Your Plan'
+                label: browserOnly ? 'Review Plan in This Browser' : 'Review Your Plan'
             };
         }
         if (recommended) {
@@ -165,13 +185,29 @@
         var recordSummary = summary.querySelector('[data-journey-record-summary]');
         var recordList = summary.querySelector('[data-journey-record-list]');
         var context = summary.querySelector('[data-journey-progress-context]');
+        var eyebrow = summary.querySelector('[data-journey-progress-eyebrow]');
+        var heading = summary.querySelector('[data-journey-progress-heading]');
         var actions = summary.querySelector('[data-journey-progress-actions]');
         var reset = summary.querySelector('[data-journey-reset]');
         var started = hasJourneyData(progress);
         var journeyComplete = completed.length === phases.length;
+        var browserOnly = isBrowserOnlyProgress();
+
+        if (eyebrow) {
+            eyebrow.textContent = browserOnly
+                ? (started ? 'Progress saved in this browser' : 'Your progress')
+                : 'Your progress';
+        }
+        if (heading) {
+            heading.textContent = browserOnly
+                ? (started ? 'Your Browser Progress' : 'Your Progress')
+                : 'Your Progress';
+        }
 
         if (count) {
-            count.textContent = completed.length + ' of ' + phases.length + ' phases completed';
+            count.textContent = browserOnly && started
+                ? completed.length + ' of ' + phases.length + ' phases completed in this browser'
+                : completed.length + ' of ' + phases.length + ' phases completed';
         }
 
         if (progressBar) {
@@ -198,9 +234,13 @@
         }
 
         if (recommendedLabel) {
-            recommendedLabel.textContent = journeyComplete
-                ? 'Review your plan anytime'
-                : (recommended ? recommended.title : 'Review Social Security');
+            if (journeyComplete) {
+                recommendedLabel.textContent = browserOnly
+                    ? 'Review your plan in this browser'
+                    : 'Review your plan anytime';
+            } else {
+                recommendedLabel.textContent = recommended ? recommended.title : 'Review Social Security';
+            }
         }
 
         if (recommendedLink) {
@@ -210,9 +250,15 @@
         }
 
         if (context) {
-            context.textContent = journeyComplete
-                ? 'Your initial Journey is complete. Return anytime to review your retirement plan and keep it current.'
-                : 'You’re building your retirement plan one decision at a time.';
+            if (journeyComplete && browserOnly) {
+                context.textContent = 'Your Journey is complete in this browser. Return anytime on this device to review your plan and keep it current.';
+            } else if (journeyComplete) {
+                context.textContent = 'Your Journey is complete. Return anytime to review your retirement plan and keep it current.';
+            } else if (started && browserOnly) {
+                context.textContent = 'You’re building your retirement plan one decision at a time. Progress is saved in this browser.';
+            } else {
+                context.textContent = 'You’re building your retirement plan one decision at a time.';
+            }
         }
 
         if (actions) {

@@ -69,4 +69,4 @@ $active_phase = $active_phase ?? '';
     </ol>
 </nav>
 <script src="/assets/js/journey-records.js?v=20260729-m5-p3" defer></script>
-<script src="/assets/js/journey-progress.js?v=20260729-m5-p3" defer></script>
+<script src="/assets/js/journey-progress.js?v=20260731-browser-progress" defer></script>

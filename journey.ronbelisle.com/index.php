@@ -40,8 +40,8 @@ $page_title = 'Your Retirement Planning Journey';
             <div class="container">
                 <div class="journey-progress-summary" data-journey-progress-summary>
                     <div class="progress-card-header">
-                        <p class="eyebrow">Your progress</p>
-                        <h2 id="progress-title">Your Progress</h2>
+                        <p class="eyebrow" data-journey-progress-eyebrow>Your progress</p>
+                        <h2 id="progress-title" data-journey-progress-heading>Your Progress</h2>
                     </div>
 
                     <div class="progress-card-status">
