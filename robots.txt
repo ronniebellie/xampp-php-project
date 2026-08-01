@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /admin/
 
 # Use sitemap.php directly (sitemap.xml may 404 if Apache ignores .htaccess rewrites)
 Sitemap: https://ronbelisle.com/sitemap.php

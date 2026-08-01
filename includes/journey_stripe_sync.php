@@ -297,11 +297,11 @@ function journey_sync_subscription_row(
 }
 
 /**
- * After entitlement commit: attempt admin trial email without affecting webhook result.
+ * After entitlement commit: record confirmed trial for admin dashboard (no email).
  *
  * @param object|array|null $subscription
  * @param array|null $syncResult
- * @param array $options process options (may include send_email / recipient)
+ * @param array $options process options
  * @return array{attempted:bool,result:string,detail:string}|null
  */
 function journey_notify_admin_trial_after_sync(

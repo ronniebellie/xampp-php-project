@@ -16,6 +16,6 @@ return [
     'from_email'  => 'noreply@calcforadvisors.com',
     'from_name'   => 'calcforadvisors.com',
     'smtp_secure' => 'tls',  // tls or ssl
-    // Admin-only: Journey Premium trial webhook notification recipient (not exposed to browsers).
-    'journey_trial_notification_email' => 'you@example.com',
+    // Optional administrator allowlist email for /admin/ (also accepts admin.emails in root config).
+    'admin_email' => 'you@example.com',
 ];
