@@ -9,8 +9,8 @@ if (defined('JOURNEY_FEEDBACK_LOADED')) {
 define('JOURNEY_FEEDBACK_LOADED', 1);
 
 require_once __DIR__ . '/csrf.php';
-require_once __DIR__ . '/has_premium_access.php';
 require_once __DIR__ . '/journey_entitlement.php';
+require_once __DIR__ . '/journey_checkout.php';
 
 const JOURNEY_FEEDBACK_MAX_TEXT = 5000;
 const JOURNEY_FEEDBACK_MAX_URL = 1024;
