@@ -330,5 +330,8 @@ if (isset($_GET['error'])) {
     sync();
 })();
 </script>
+<p style="text-align:center;margin:28px 0 20px;font-size:0.86rem;">
+    <a href="https://journey.ronbelisle.com/feedback.php?from=<?php echo rawurlencode('https://ronbelisle.com/premium/journey.php'); ?>&amp;phase=premium-plan" style="color:#64748b;text-decoration:none;font-weight:500;">Need help or found a problem?</a>
+</p>
 </body>
 </html>

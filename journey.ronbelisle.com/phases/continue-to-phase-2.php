@@ -14,7 +14,7 @@ $loginUrl = 'https://ronbelisle.com/auth/login.php?return=' . rawurlencode($jour
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260801-account-actions">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260801-feedback">
 </head>
 <body>
     <?php include __DIR__ . '/../includes/site-header.php'; ?>
@@ -113,5 +113,6 @@ $loginUrl = 'https://ronbelisle.com/auth/login.php?return=' . rawurlencode($jour
         }
     })();
     </script>
+    <?php include __DIR__ . '/../includes/site-footer.php'; ?>
 </body>
 </html>

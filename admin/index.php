@@ -8,10 +8,12 @@ rb_session_start();
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/db_config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/admin_auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/journey_admin_trials.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/journey_feedback.php';
 
 rb_require_admin($conn);
 
 $newCount = journey_admin_count_unviewed_trials($conn);
+$feedbackNew = journey_feedback_count_new($conn);
 $pageTitle = 'Administrator';
 ?>
 <!DOCTYPE html>
@@ -61,6 +63,14 @@ $pageTitle = 'Administrator';
                     Recent Journey Premium Trials
                     <?php if ($newCount > 0): ?>
                         <span class="admin-badge"><?php echo (int) $newCount; ?> new</span>
+                    <?php endif; ?>
+                </a>
+            </li>
+            <li>
+                <a href="/admin/journey-feedback.php">
+                    Journey Feedback
+                    <?php if ($feedbackNew > 0): ?>
+                        <span class="admin-badge"><?php echo (int) $feedbackNew; ?> new</span>
                     <?php endif; ?>
                 </a>
             </li>

@@ -2135,3 +2135,125 @@ h1 {
         text-align: center;
     }
 }
+
+/* Site footer + feedback */
+.site-footer {
+    margin-top: 48px;
+    padding: 28px 0 36px;
+    border-top: 1px solid var(--line, #e2e8f0);
+    background: transparent;
+}
+
+.site-footer-inner {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+}
+
+.site-footer-feedback {
+    color: #64748b;
+    font-size: 0.86rem;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.site-footer-feedback:hover {
+    color: #334155;
+    text-decoration: underline;
+}
+
+.feedback-wrap {
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.feedback-card {
+    background: #fff;
+    border: 1px solid var(--line, #e2e8f0);
+    border-radius: 16px;
+    padding: 28px 28px 32px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.feedback-form {
+    margin-top: 20px;
+}
+
+.feedback-label {
+    display: block;
+    margin: 16px 0 6px;
+    font-size: 0.92rem;
+    font-weight: 650;
+    color: #0f172a;
+}
+
+.feedback-optional {
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.feedback-input,
+.feedback-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font: inherit;
+    color: #0f172a;
+    background: #fff;
+}
+
+.feedback-textarea {
+    resize: vertical;
+    min-height: 96px;
+}
+
+.feedback-input:focus,
+.feedback-textarea:focus {
+    outline: 2px solid rgba(29, 78, 216, 0.25);
+    border-color: #93c5fd;
+}
+
+.feedback-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 18px;
+    margin-top: 22px;
+}
+
+.feedback-back {
+    color: #64748b;
+    font-size: 0.92rem;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.feedback-back:hover {
+    text-decoration: underline;
+}
+
+.feedback-status {
+    margin: 14px 0 0;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #ecfdf5;
+    color: #065f46;
+    font-size: 0.92rem;
+}
+
+.feedback-status.is-error {
+    background: #fef2f2;
+    color: #991b1b;
+}
+
+.feedback-thanks {
+    margin-top: 18px;
+}
+
+.feedback-thanks p {
+    margin: 0 0 18px;
+    color: #334155;
+    line-height: 1.5;
+}

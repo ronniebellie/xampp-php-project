@@ -146,5 +146,8 @@ $refreshUrl = '/premium/journey-success.php?session_id=' . rawurlencode($session
         <a class="btn btn-secondary" href="/premium/journey.php">Return to plan selection</a>
     <?php endif; ?>
 </div>
+<p style="text-align:center;margin:28px 0 20px;font-size:0.86rem;">
+    <a href="https://journey.ronbelisle.com/feedback.php?from=<?php echo rawurlencode('https://ronbelisle.com/premium/journey-success.php'); ?>&amp;phase=premium-success" style="color:#64748b;text-decoration:none;font-weight:500;">Need help or found a problem?</a>
+</p>
 </body>
 </html>

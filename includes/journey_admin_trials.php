@@ -293,11 +293,22 @@ function journey_admin_trial_summary(mysqli $conn): array
  */
 function journey_admin_nav_html(mysqli $conn, string $active = ''): string
 {
+    if (!function_exists('journey_feedback_count_new')) {
+        require_once __DIR__ . '/journey_feedback.php';
+    }
+
     $newCount = journey_admin_count_unviewed_trials($conn);
     $trialsLabel = 'Journey Premium Trials';
     if ($newCount > 0) {
         $trialsLabel .= ' — ' . (int) $newCount . ' new';
     }
+
+    $feedbackNew = journey_feedback_count_new($conn);
+    $feedbackLabel = 'Journey Feedback';
+    if ($feedbackNew > 0) {
+        $feedbackLabel .= ' — ' . (int) $feedbackNew . ' new';
+    }
+
     $link = static function (string $href, string $label, string $key) use ($active): string {
         $class = $key === $active ? ' class="is-active"' : '';
         return '<a href="' . htmlspecialchars($href, ENT_QUOTES, 'UTF-8') . '"' . $class . '>'
@@ -307,6 +318,7 @@ function journey_admin_nav_html(mysqli $conn, string $active = ''): string
     return '<nav class="admin-nav" aria-label="Administrator">'
         . $link('/admin/', 'Admin home', 'home')
         . $link('/admin/journey-premium-trials.php', $trialsLabel, 'trials')
+        . $link('/admin/journey-feedback.php', $feedbackLabel, 'feedback')
         . $link('/account.php', 'My account', 'account')
         . '</nav>';
 }
