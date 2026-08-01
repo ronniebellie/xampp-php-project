@@ -8,7 +8,7 @@
         'needs-verification': 'Needs verification',
         'needs-review': 'Needs review',
         workable: 'Looks workable',
-        close: 'Looks close',
+        close: 'May need adjustment',
         difficult: 'Looks difficult'
     };
 
@@ -239,7 +239,7 @@
             journeyCompletionStatus: complete ? 'completed' : 'incomplete',
             planningRecordStatus: record.overallResilienceCode || oldRecord.planningRecordStatus || '',
             decisionStatement: record.decisionStatement ||
-                'I’ve reviewed how sensitive my Phase 3 plan is, and I’m carrying this resilience review forward.',
+                'I’ve reviewed how sensitive my Phase 3 plan is, and I’m keeping this resilience review for the rest of my Journey.',
             educationalNonGuarantee: record.educationalNonGuarantee !== false,
             disclaimer: record.disclaimer ||
                 'These tests are educational. They do not predict markets or guarantee outcomes.',
@@ -301,9 +301,9 @@
             journeyCompletionStatus: complete ? 'completed' : 'incomplete',
             planningRecordStatus: primaryIssue || oldRecord.planningRecordStatus || '',
             decisionStatement: record.decisionStatement ||
-                'This is the tax-planning priority I want to carry forward before I rely on my withdrawal plan.',
+                'This is the tax-planning priority I want to keep in mind before I rely on my withdrawal plan.',
             companionExplanation: record.companionExplanation ||
-                'I’ve reviewed how taxes may affect my Phase 3 plan. I’m carrying forward one priority to revisit, not a finished tax strategy.',
+                'I’ve reviewed how taxes may affect my Phase 3 plan. I’m keeping one priority to revisit—not a finished tax strategy.',
             educationalNonAdvice: record.educationalNonAdvice !== false,
             notAFinishedTaxStrategy: record.notAFinishedTaxStrategy !== false,
             source: {
@@ -362,9 +362,9 @@
             journeyCompletionStatus: complete ? 'completed' : 'incomplete',
             planningRecordStatus: primaryIssue || oldRecord.planningRecordStatus || '',
             decisionStatement: record.decisionStatement ||
-                'This is the survivor-planning priority I want to carry forward for our household plan.',
+                'This is the survivor-planning priority I want to keep in mind for our household plan.',
             companionExplanation: record.companionExplanation ||
-                'I’ve reviewed how our retirement income plan may change if one of us dies. I’m carrying forward one priority to revisit—not a finished estate plan.',
+                'I’ve reviewed how our retirement income plan may change if one of us dies. I’m keeping one priority to revisit—not a finished estate plan.',
             educationalNonAdvice: record.educationalNonAdvice !== false,
             notAnEstatePlan: record.notAnEstatePlan !== false,
             source: {

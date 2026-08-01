@@ -8,7 +8,7 @@ $page_title = 'Stress Test | Retirement Planning Journey';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260729-m5-p3">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260801-logged-in-polish">
 </head>
 <body>
     <?php include __DIR__ . '/../includes/site-header.php'; ?>
@@ -119,7 +119,7 @@ $page_title = 'Stress Test | Retirement Planning Journey';
 
                             <section class="phase-content-section" aria-labelledby="save-title">
                                 <h3 id="save-title">Your Phase 4 decision</h3>
-                                <p id="decisionStatement">I’ve reviewed how sensitive my Phase 3 plan is, and I’m carrying this resilience review forward.</p>
+                                <p id="decisionStatement">I’ve reviewed how sensitive my Phase 3 plan is, and I’m keeping this resilience review for the rest of my Journey.</p>
                                 <div class="phase-actions">
                                     <button type="button" class="primary-action journey-button" id="saveReviewBtn">Save My Resilience Review</button>
                                 </div>
@@ -163,6 +163,6 @@ $page_title = 'Stress Test | Retirement Planning Journey';
     <script src="/assets/js/phase4-config.js?v=20260725-phase4-open" defer></script>
     <script src="/assets/js/phase4-stress-engine.js?v=20260725-phase4-open" defer></script>
     <script src="/assets/js/phase4-adjustments.js?v=20260725-phase4-open" defer></script>
-    <script src="/assets/js/stress-test-phase.js?v=20260729-m5-p3" defer></script>
+    <script src="/assets/js/stress-test-phase.js?v=20260801-logged-in-polish" defer></script>
 </body>
 </html>

@@ -237,7 +237,7 @@
             if (journeyComplete) {
                 recommendedLabel.textContent = browserOnly
                     ? 'Review your plan in this browser'
-                    : 'Review your plan anytime';
+                    : 'Review your plan';
             } else {
                 recommendedLabel.textContent = recommended ? recommended.title : 'Review Social Security';
             }
@@ -251,13 +251,45 @@
 
         if (context) {
             if (journeyComplete && browserOnly) {
-                context.textContent = 'Your Journey is complete in this browser. Return anytime on this device to review your plan and keep it current.';
+                context.textContent = 'Your retirement plan is ready in this browser. Review your decisions, update your assumptions, and keep your plan current as your life changes.';
             } else if (journeyComplete) {
-                context.textContent = 'Your Journey is complete. Return anytime to review your retirement plan and keep it current.';
+                context.textContent = 'Your retirement plan is ready. Use this dashboard to review your decisions, update your assumptions, and keep your plan current as your life changes.';
             } else if (started && browserOnly) {
                 context.textContent = 'You’re building your retirement plan one decision at a time. Progress is saved in this browser.';
             } else {
                 context.textContent = 'You’re building your retirement plan one decision at a time.';
+            }
+        }
+
+        var introLead = document.querySelector('[data-journey-home-intro-lead]');
+        var introBody = document.querySelector('[data-journey-home-intro-body]');
+        var phasesEyebrow = document.querySelector('[data-journey-phases-eyebrow]');
+        var phasesHeading = document.querySelector('[data-journey-phases-heading]');
+        if (journeyComplete) {
+            if (introLead) {
+                introLead.textContent = 'Your retirement plan is ready.';
+            }
+            if (introBody) {
+                introBody.textContent = 'Use this dashboard to review your decisions, update your assumptions, and keep your plan current as your life changes.';
+            }
+            if (phasesEyebrow) {
+                phasesEyebrow.textContent = 'Keep your plan current';
+            }
+            if (phasesHeading) {
+                phasesHeading.textContent = 'Review any phase to revisit a decision or update an assumption.';
+            }
+        } else {
+            if (introLead) {
+                introLead.textContent = 'Retirement planning is a series of connected decisions about spending, Social Security, investments, taxes, and protecting your family.';
+            }
+            if (introBody) {
+                introBody.innerHTML = 'This <strong>six-phase Journey</strong> helps you build your initial retirement plan one decision at a time. It is designed primarily for people approaching retirement who are preparing those decisions—spending, Social Security, retirement income, taxes, and protecting their household.';
+            }
+            if (phasesEyebrow) {
+                phasesEyebrow.textContent = 'Your planning process';
+            }
+            if (phasesHeading) {
+                phasesHeading.textContent = 'Build your initial retirement plan in six guided phases.';
             }
         }
 

@@ -372,8 +372,8 @@
 
         return {
             saved: true,
-            decisionStatement: 'This is the survivor-planning priority I want to carry forward for our household plan.',
-            companionExplanation: 'I’ve reviewed how our retirement income plan may change if one of us dies. I’m carrying forward one priority to revisit—not a finished estate plan.',
+            decisionStatement: 'This is the survivor-planning priority I want to keep in mind for our household plan.',
+            companionExplanation: 'I’ve reviewed how our retirement income plan may change if one of us dies. I’m keeping one priority to revisit—not a finished estate plan.',
             phase3Snapshot: snapshotPhase3(phase3),
             phase4Context: state.phase4Context,
             phase5Context: state.phase5Context,
@@ -630,11 +630,10 @@
             html += '<p class="supporting-note">' + (explanations[index] || '') + '</p>';
         });
         html += '<p>' + (record.decisionStatement || '') + '</p>';
-        html += '<p class="supporting-note">' + (record.companionExplanation || '');
+        html += '<p class="supporting-note">' + (record.companionExplanation || '') + '</p>';
         if (record.nextPriorityLabel) {
-            html += ' Priority carried forward: ' + record.nextPriorityLabel + '.';
+            html += '<p><strong>Priority to revisit:</strong> ' + record.nextPriorityLabel + '</p>';
         }
-        html += '</p>';
         el.innerHTML = html;
     }
 

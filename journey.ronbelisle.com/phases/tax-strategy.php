@@ -8,7 +8,7 @@ $page_title = 'Tax Strategy | Retirement Planning Journey';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260729-m5-p3">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260801-logged-in-polish">
 </head>
 <body>
     <?php include __DIR__ . '/../includes/site-header.php'; ?>
@@ -20,7 +20,7 @@ $page_title = 'Tax Strategy | Retirement Planning Journey';
                     <div class="phase-intro">
                         <p class="eyebrow">Phase 5</p>
                         <h1 id="phase-title">Tax Strategy</h1>
-                        <p class="page-lede">How do taxes affect the retirement plan you have built, and what should you consider next?</p>
+                        <p class="page-lede" id="phase5PageLede">How do taxes affect the retirement plan you have built, and what should you consider next?</p>
                         <p class="phase-reassurance">This is an educational tax-planning review. It is not a tax return, not tax advice, and not a finished tax strategy.</p>
                     </div>
 
@@ -178,7 +178,7 @@ $page_title = 'Tax Strategy | Retirement Planning Journey';
                             <p id="rothSignal" class="supporting-note" hidden></p>
 
                             <section class="phase-content-section" aria-labelledby="priority-title" id="prioritySection">
-                                <h3 id="priority-title">Choose one priority to carry forward</h3>
+                                <h3 id="priority-title">Choose one priority to revisit</h3>
                                 <p>Select one direction. This does not change your Phase 1–4 records, and it is not presented as the best option.</p>
                                 <fieldset class="stress-adjustment-fieldset" id="priorityFieldset">
                                     <legend class="visually-hidden">Tax-planning priority</legend>
@@ -188,8 +188,8 @@ $page_title = 'Tax Strategy | Retirement Planning Journey';
 
                             <section class="phase-content-section" aria-labelledby="save-title">
                                 <h3 id="save-title">Your Phase 5 decision</h3>
-                                <p id="decisionStatement"><strong>This is the tax-planning priority I want to carry forward before I rely on my withdrawal plan.</strong></p>
-                                <p class="supporting-note">I’ve reviewed how taxes may affect my Phase 3 plan. I’m carrying forward one priority to revisit, not a finished tax strategy.</p>
+                                <p id="decisionStatement"><strong>This is the tax-planning priority I want to keep in mind before I rely on my withdrawal plan.</strong></p>
+                                <p class="supporting-note">I’ve reviewed how taxes may affect my Phase 3 plan. I’m keeping one priority to revisit—not a finished tax strategy.</p>
                                 <div class="phase-actions">
                                     <button type="button" class="primary-action journey-button" id="savePriorityBtn" disabled>Save My Tax-Planning Priority</button>
                                 </div>
@@ -200,7 +200,7 @@ $page_title = 'Tax Strategy | Retirement Planning Journey';
 
                             <section class="phase-content-section" aria-labelledby="next-title" id="phase6Handoff" hidden>
                                 <h3 id="next-title">What’s next</h3>
-                                <p>You have identified the tax-planning issue most important to your current retirement income plan. Phase 6 examines how that plan may change if one spouse dies and what survivor-planning priority to carry forward.</p>
+                                <p>You have identified the tax-planning issue most important to your current retirement income plan. Phase 6 examines how that plan may change if one spouse dies and what survivor-planning priority to keep in mind.</p>
                                 <div class="phase-actions">
                                     <a class="primary-action" href="/phases/survivor-planning.php">Continue to Phase 6</a>
                                     <a class="secondary-action" href="/">Return to My Journey</a>
@@ -225,7 +225,7 @@ $page_title = 'Tax Strategy | Retirement Planning Journey';
                     <div class="next-step-card" aria-labelledby="phase5-side-title">
                         <p class="eyebrow">This phase</p>
                         <h2 id="phase5-side-title">Identify one tax priority</h2>
-                        <p>See how taxes may affect the retirement income plan you already built, then carry forward one issue to revisit.</p>
+                        <p>See how taxes may affect the retirement income plan you already built, then identify one issue to revisit.</p>
                     </div>
                 </aside>
             </div>
@@ -234,6 +234,6 @@ $page_title = 'Tax Strategy | Retirement Planning Journey';
 
     <script src="/assets/js/phase5-tax-engine.js?v=20260725-phase6-open" defer></script>
     <script src="/assets/js/phase5-priorities.js?v=20260725-phase6-open" defer></script>
-    <script src="/assets/js/tax-strategy-phase.js?v=20260729-m5-p3" defer></script>
+    <script src="/assets/js/tax-strategy-phase.js?v=20260801-logged-in-polish" defer></script>
 </body>
 </html>

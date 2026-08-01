@@ -8,7 +8,7 @@ $page_title = 'Survivor Planning | Retirement Planning Journey';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260730-journey-pdf">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260801-logged-in-polish">
 </head>
 <body>
     <?php include __DIR__ . '/../includes/site-header.php'; ?>
@@ -171,7 +171,7 @@ $page_title = 'Survivor Planning | Retirement Planning Journey';
                             <p id="guidanceText" class="supporting-note" hidden></p>
 
                             <section class="phase-content-section" aria-labelledby="priority-title">
-                                <h3 id="priority-title">Choose one priority to carry forward</h3>
+                                <h3 id="priority-title">Choose one priority to revisit</h3>
                                 <p>Select one direction. This does not change your Phase 1–5 records, and it is not presented as the best option.</p>
                                 <fieldset class="stress-adjustment-fieldset">
                                     <legend class="visually-hidden">Survivor-planning priority</legend>
@@ -181,8 +181,8 @@ $page_title = 'Survivor Planning | Retirement Planning Journey';
 
                             <section class="phase-content-section" aria-labelledby="save-title">
                                 <h3 id="save-title">Your Phase 6 decision</h3>
-                                <p><strong>This is the survivor-planning priority I want to carry forward for our household plan.</strong></p>
-                                <p class="supporting-note">I’ve reviewed how our retirement income plan may change if one of us dies. I’m carrying forward one priority to revisit—not a finished estate plan.</p>
+                                <p><strong>This is the survivor-planning priority I want to keep in mind for our household plan.</strong></p>
+                                <p class="supporting-note">I’ve reviewed how our retirement income plan may change if one of us dies. I’m keeping one priority to revisit—not a finished estate plan.</p>
                                 <div class="phase-actions">
                                     <button type="button" class="primary-action journey-button" id="savePriorityBtn" disabled>Save My Survivor-Planning Priority</button>
                                 </div>
@@ -253,7 +253,7 @@ $page_title = 'Survivor Planning | Retirement Planning Journey';
                     <div class="next-step-card" aria-labelledby="phase6-side-title">
                         <p class="eyebrow">This phase</p>
                         <h2 id="phase6-side-title">Close the Journey with continuity</h2>
-                        <p>See how the household income plan may change if one spouse dies, then carry forward one survivor-planning priority.</p>
+                        <p>See how the household income plan may change if one spouse dies, then identify one survivor-planning priority.</p>
                     </div>
                 </aside>
             </div>
@@ -262,6 +262,6 @@ $page_title = 'Survivor Planning | Retirement Planning Journey';
 
     <script src="/assets/js/phase6-survivor-engine.js?v=20260725-phase6-open" defer></script>
     <script src="/assets/js/phase6-priorities.js?v=20260725-phase6-open" defer></script>
-    <script src="/assets/js/survivor-planning-phase.js?v=20260730-journey-pdf" defer></script>
+    <script src="/assets/js/survivor-planning-phase.js?v=20260801-logged-in-polish" defer></script>
 </body>
 </html>

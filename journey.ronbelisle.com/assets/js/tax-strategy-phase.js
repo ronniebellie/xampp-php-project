@@ -389,8 +389,8 @@
 
         return {
             saved: true,
-            decisionStatement: 'This is the tax-planning priority I want to carry forward before I rely on my withdrawal plan.',
-            companionExplanation: 'I’ve reviewed how taxes may affect my Phase 3 plan. I’m carrying forward one priority to revisit, not a finished tax strategy.',
+            decisionStatement: 'This is the tax-planning priority I want to keep in mind before I rely on my withdrawal plan.',
+            companionExplanation: 'I’ve reviewed how taxes may affect my Phase 3 plan. I’m keeping one priority to revisit—not a finished tax strategy.',
             phase3Snapshot: snapshotPhase3(phase3),
             phase4Context: state.phase4Context,
             assumptions: {
@@ -436,9 +436,8 @@
         writeProgress(progress);
         state.savedRecord = record;
         $('saveConfirm').hidden = false;
-        $('phase6Handoff').hidden = false;
-        $('savedReviewSection').hidden = false;
         renderSavedSummary(record);
+        setSavedTaxUi(true);
         $('saveConfirm').focus();
     }
 
@@ -462,11 +461,29 @@
                 '<p>' + (result.whatThisMeans || noneItem.body) + '</p>';
         }
         var priority = record.nextPriorityLabel
-            ? (' Priority carried forward: ' + record.nextPriorityLabel + '.')
+            ? ('<p><strong>Priority to revisit:</strong> ' + record.nextPriorityLabel + '</p>')
             : '';
         el.innerHTML = issueHtml +
             '<p>' + (record.decisionStatement || '') + '</p>' +
-            '<p class="supporting-note">' + (record.companionExplanation || '') + priority + '</p>';
+            '<p class="supporting-note">' + (record.companionExplanation || '') + '</p>' +
+            priority;
+    }
+
+    function setSavedTaxUi(hasSaved) {
+        var reviewBtn = $('reviewTaxPictureBtn');
+        var lede = $('phase5PageLede');
+        if (reviewBtn) {
+            reviewBtn.hidden = !!hasSaved;
+        }
+        if (lede) {
+            lede.textContent = hasSaved
+                ? 'Review your saved tax picture, update it if your plan changed, or continue to Phase 6 when you are ready.'
+                : 'How do taxes affect the retirement plan you have built, and what should you consider next?';
+        }
+        if (hasSaved) {
+            $('savedReviewSection').hidden = false;
+            $('phase6Handoff').hidden = false;
+        }
     }
 
     function init() {
@@ -511,8 +528,7 @@
                 setRadio('rmdTiming', state.savedRecord.assumptions.rmdTiming);
             }
             renderSavedSummary(state.savedRecord);
-            $('savedReviewSection').hidden = false;
-            $('phase6Handoff').hidden = false;
+            setSavedTaxUi(true);
         }
 
         $('reviewTaxPictureBtn').addEventListener('click', runReview);
@@ -526,6 +542,8 @@
         if (revisit) {
             revisit.addEventListener('click', function () {
                 $('savedReviewSection').hidden = true;
+                var reviewBtn = $('reviewTaxPictureBtn');
+                if (reviewBtn) reviewBtn.hidden = true;
                 $('questionsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
                 runReview();
             });

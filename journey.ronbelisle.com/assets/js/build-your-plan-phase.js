@@ -315,8 +315,8 @@
             detail = 'Based on your spending goal, dependable income, and retirement savings, the initial withdrawal demand looks workable as an educational base-case check.';
         } else if (ratePct <= 5) {
             code = 'close';
-            label = 'Looks close and may need adjustment';
-            detail = 'Based on your spending goal, dependable income, and retirement savings, the initial withdrawal demand looks close and may need adjustment.';
+            label = 'May need adjustment';
+            detail = 'Based on your spending goal, dependable income, and retirement savings, the initial withdrawal demand may need adjustment.';
         } else {
             code = 'difficult';
             label = 'Looks difficult on these assumptions';
@@ -572,7 +572,7 @@
 
         var assessmentLabels = {
             workable: 'Looks workable on these assumptions',
-            close: 'Looks close and may need adjustment',
+            close: 'May need adjustment',
             difficult: 'Looks difficult on these assumptions'
         };
         var rateText = record.impliedInitialWithdrawalRate === null || record.impliedInitialWithdrawalRate === undefined
@@ -598,6 +598,31 @@
 
         statements.forEach(function (statement) { statement.innerHTML = html; });
         reviseButtons.forEach(function (button) { button.hidden = false; });
+    }
+
+    function setPhase3CompletionUi(isComplete) {
+        var completeButton = document.getElementById('completePhase3Button');
+        var indicator = document.getElementById('phase3CompleteIndicator');
+        var continueLink = document.getElementById('continueToPhase4Link');
+        if (completeButton) {
+            completeButton.hidden = !!isComplete;
+            if (!isComplete) {
+                completeButton.disabled = false;
+                completeButton.textContent = 'Save Phase 3 Progress';
+            }
+        }
+        if (indicator) {
+            indicator.hidden = !isComplete;
+        }
+        if (continueLink) {
+            if (isComplete) {
+                continueLink.classList.add('primary-action');
+                continueLink.classList.remove('secondary-action');
+            } else {
+                continueLink.classList.add('secondary-action');
+                continueLink.classList.remove('primary-action');
+            }
+        }
     }
 
     function restoreRecord(record) {
@@ -642,9 +667,7 @@
                 saveButton.disabled = false;
                 saveButton.textContent = 'Save My Retirement Income Plan';
             }
-            if (readProgress()[recordKey] === true) {
-                document.getElementById('completePhase3Button').textContent = 'Phase 3 Complete';
-            }
+            setPhase3CompletionUi(readProgress()[recordKey] === true);
         });
     }
 
@@ -696,15 +719,7 @@
                   '<span>You now have a working retirement income plan. When you are ready, continue to Phase 4 to stress-test it.</span>';
             message.hidden = false;
             message.focus();
-            if (completeButton) {
-                completeButton.disabled = false;
-                completeButton.textContent = 'Phase 3 Complete';
-            }
-            var continueLink = document.getElementById('continueToPhase4Link');
-            if (continueLink) {
-                continueLink.classList.add('primary-action');
-                continueLink.classList.remove('secondary-action');
-            }
+            setPhase3CompletionUi(true);
         });
     }
 
@@ -768,10 +783,12 @@
         if (record.saved === true) {
             document.querySelector('[data-returning-record]').hidden = false;
             restoreRecord(record);
-            if (progressAtLoad[recordKey] === true && record.hasUnsavedChanges !== true) {
-                document.getElementById('completePhase3Button').textContent = 'Phase 3 Complete';
-            }
         }
+        setPhase3CompletionUi(
+            progressAtLoad[recordKey] === true &&
+            record.saved === true &&
+            record.hasUnsavedChanges !== true
+        );
 
         renderAll();
         renderSavedSummary(record);

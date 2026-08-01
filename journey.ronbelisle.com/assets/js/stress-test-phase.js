@@ -330,7 +330,7 @@
 
         return {
             saved: true,
-            decisionStatement: 'I’ve reviewed how sensitive my Phase 3 plan is, and I’m carrying this resilience review forward.',
+            decisionStatement: 'I’ve reviewed how sensitive my Phase 3 plan is, and I’m keeping this resilience review for the rest of my Journey.',
             phase3Snapshot: snapshotPhase3(phase3),
             configId: config.configId,
             configVersion: config.configVersion,
@@ -391,20 +391,31 @@
             }
         });
         $('saveConfirm').hidden = false;
-        $('phase5Handoff').hidden = false;
-        $('savedReviewSection').hidden = false;
         renderSavedSummary(record);
+        setSavedReviewUi(true);
         $('saveConfirm').focus();
     }
 
     function renderSavedSummary(record) {
         var el = $('savedReviewSummary');
         var adj = record.nextAdjustmentLabel
-            ? (' Next direction: ' + record.nextAdjustmentLabel + '.')
+            ? ('<p><strong>Your selected strategy:</strong> ' + record.nextAdjustmentLabel + '</p>')
             : '';
         el.innerHTML = '<p><strong>' + (record.overallResilienceLabel || '') + '</strong></p>' +
             '<p>' + (record.pressureSentence || record.dominantStressLabel || '') + '</p>' +
-            '<p>' + (record.decisionStatement || '') + adj + '</p>';
+            '<p>' + (record.decisionStatement || '') + '</p>' +
+            adj;
+    }
+
+    function setSavedReviewUi(hasSaved) {
+        var testBtn = $('testMyPlanBtn');
+        if (testBtn) {
+            testBtn.hidden = !!hasSaved;
+        }
+        if (hasSaved) {
+            $('savedReviewSection').hidden = false;
+            $('phase5Handoff').hidden = false;
+        }
     }
 
     function init() {
@@ -435,8 +446,7 @@
                 $('phase3ChangedBanner').hidden = false;
             }
             renderSavedSummary(state.savedRecord);
-            $('savedReviewSection').hidden = false;
-            $('phase5Handoff').hidden = false;
+            setSavedReviewUi(true);
         }
 
         $('testMyPlanBtn').addEventListener('click', runTest);
@@ -445,6 +455,8 @@
         if (retest) {
             retest.addEventListener('click', function () {
                 $('savedReviewSection').hidden = true;
+                var testBtn = $('testMyPlanBtn');
+                if (testBtn) testBtn.hidden = true;
                 runTest();
                 $('testsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
             });

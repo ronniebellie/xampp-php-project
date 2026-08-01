@@ -156,7 +156,7 @@ function journey_summary_pdf_extract(array $progress): array
 
     $assessmentLabels = [
         'workable' => 'Looks workable on these assumptions',
-        'close' => 'Looks close and may need adjustment',
+        'close' => 'May need adjustment',
         'difficult' => 'Looks difficult on these assumptions',
     ];
     $assessmentCode = (string) ($phase3['baseCaseAssessment'] ?? '');

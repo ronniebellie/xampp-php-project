@@ -9,7 +9,7 @@ $page_title = 'Social Security | Retirement Planning Journey';
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260729-m5-p3">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260801-logged-in-polish">
 </head>
 <body>
     <?php include __DIR__ . '/../includes/site-header.php'; ?>
@@ -21,12 +21,12 @@ $page_title = 'Social Security | Retirement Planning Journey';
                     <div class="phase-intro">
                         <p class="eyebrow">Phase 2</p>
                         <h1 id="phase-title">Social Security</h1>
-                        <p class="page-lede">You have estimated what your retirement lifestyle may cost. Now you’ll consider when to claim Social Security and choose an age to test in your retirement plan.</p>
-                        <p class="phase-reassurance">This phase will help you use the Social Security Claiming Analyzer, understand the results, and decide what to verify before you rely on them. You can revisit your choice as your circumstances or priorities change.</p>
-                        <div class="phase-status-note" role="status">
-                            <p><strong>Your Phase 1 spending plan stays in this browser.</strong> The full guided Social Security planner is still being built. This page is the current Phase 2 workspace: coaching, claiming comparison guidance, and a place to record the assumption you want to test next.</p>
+                        <p class="page-lede" id="phase2PageLede">You have estimated what your retirement lifestyle may cost. Now you’ll consider when to claim Social Security and choose an age to test in your retirement plan.</p>
+                        <p class="phase-reassurance" data-phase2-first-visit>This phase will help you use the Social Security Claiming Analyzer, understand the results, and decide what to verify before you rely on them. You can revisit your choice as your circumstances or priorities change.</p>
+                        <div class="phase-status-note" role="status" data-phase2-first-visit>
+                            <p><strong>Your Phase 1 spending plan stays in this browser.</strong> Use this page for coaching, claiming comparison guidance, and a place to record the assumption you want to test next.</p>
                         </div>
-                        <p class="phase-time">Allow about 15 minutes, including time in the Claiming Analyzer.</p>
+                        <p class="phase-time" data-phase2-first-visit>Allow about 15 minutes, including time in the Claiming Analyzer.</p>
                     </div>
 
                     <section class="current-record-overview" id="current-record-overview" aria-labelledby="current-record-title" data-returning-record hidden>
@@ -69,12 +69,12 @@ $page_title = 'Social Security | Retirement Planning Journey';
                                 <li>See how claiming age changes your estimated monthly benefit.</li>
                                 <li>Understand what the break-even age and lifetime totals mean—and what they don’t.</li>
                                 <li>Record the claiming age you want to test in your retirement plan.</li>
-                                <li>Carry your Social Security choice forward as a working assumption.</li>
+                                <li>Keep your Social Security choice as a working assumption for later phases.</li>
                             </ul>
                             <p class="supporting-note">This is a starting point. You may revise it when your work, health, household, or retirement plan changes.</p>
                         </section>
 
-                        <section class="phase-content-section" aria-labelledby="bring-title">
+                        <section class="phase-content-section" aria-labelledby="bring-title" data-phase2-first-visit>
                             <h2 id="bring-title">What to bring</h2>
                             <p>Gather the following before opening the Claiming Analyzer. You can explore with estimates, but verify official information before you act.</p>
                             <div class="prompt-list">
@@ -291,7 +291,7 @@ $page_title = 'Social Security | Retirement Planning Journey';
                             <button type="button" class="secondary-action journey-button" data-revise-assumption hidden>Revise My Record</button>
                         </section>
 
-                        <section class="phase-content-section" aria-labelledby="before-continue-title">
+                        <section class="phase-content-section" aria-labelledby="before-continue-title" data-phase2-first-visit>
                             <h2 id="before-continue-title">Before you continue</h2>
                             <p>Make sure you can answer these questions:</p>
                             <ul class="coach-list">
@@ -302,10 +302,16 @@ $page_title = 'Social Security | Retirement Planning Journey';
                             <p class="trust-note">Completing Phase 2 does not file for Social Security or make your choice permanent. Verify official benefit information and current rules before acting.</p>
                         </section>
 
+                        <section class="phase-content-section" aria-labelledby="phase2-whats-next-title" data-phase2-returning hidden>
+                            <h2 id="phase2-whats-next-title">What’s next</h2>
+                            <p>Your Social Security planning assumption is saved. Review or update it below, or continue to Phase 3 to build your retirement income plan.</p>
+                        </section>
+
                         <section class="phase-content-section phase-completion" aria-labelledby="continue-title">
                             <h2 id="continue-title">Save your Phase 2 progress</h2>
-                            <p>When your claiming assumption is saved, continue to Phase 3: Build Your Plan.</p>
+                            <p id="phase2ContinueCopy">When your claiming assumption is saved, continue to Phase 3: Build Your Plan.</p>
                             <button type="button" class="primary-action journey-button" id="completePhase2Button">Save Phase 2 Progress</button>
+                            <p class="phase-complete-indicator" id="phase2CompleteIndicator" hidden role="status">Phase 2 complete</p>
                             <a class="secondary-action" href="/phases/build-your-plan.php" id="continueToPhase3Link">Continue to Phase 3: Build Your Plan</a>
                             <p class="unsaved-changes-notice" id="phase2ContinueUnsavedNotice" role="status" hidden>Your changes have not yet been saved for the next phase.</p>
                             <a class="secondary-action" href="/">Return to My Journey</a>
@@ -342,6 +348,6 @@ $page_title = 'Social Security | Retirement Planning Journey';
         </section>
     </main>
 
-    <script src="/assets/js/social-security-phase.js?v=20260729-m5-p3" defer></script>
+    <script src="/assets/js/social-security-phase.js?v=20260801-logged-in-polish" defer></script>
 </body>
 </html>

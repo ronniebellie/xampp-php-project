@@ -9,7 +9,7 @@ $page_title = 'Build Your Plan | Retirement Planning Journey';
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260729-m5-p3">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260801-logged-in-polish">
 </head>
 <body>
     <?php include __DIR__ . '/../includes/site-header.php'; ?>
@@ -66,7 +66,7 @@ $page_title = 'Build Your Plan | Retirement Planning Journey';
                                     <strong id="knownSavingsNeed">$0</strong>
                                 </div>
                             </div>
-                            <p class="supporting-note" id="ssAssumptionNote" hidden>Phase 3 uses your current saved Social Security planning assumption before taxes or other deductions, unless you entered a different amount in Phase 2.</p>
+                            <p class="supporting-note" id="ssAssumptionNote" hidden>Your Social Security estimate reflects your Phase 2 entries and is shown before taxes or deductions.</p>
                         </section>
 
                         <section class="phase-content-section" id="temporarySsSection" aria-labelledby="temporary-ss-title" hidden>
@@ -146,7 +146,7 @@ $page_title = 'Build Your Plan | Retirement Planning Journey';
                                     <p id="assessmentBlockedDetail">Enter the missing information above before Phase 3 can show a base-case assessment.</p>
                                 </div>
 
-                                <p class="decision-statement"><strong>This is the retirement income plan I want to carry forward.</strong></p>
+                                <p class="decision-statement"><strong>This is the retirement income plan I want to use for the rest of my Journey.</strong></p>
                                 <button type="submit" class="primary-action journey-button" id="savePhase3Button">Save My Retirement Income Plan</button>
                                 <div class="save-confirmation" id="phase3SaveConfirmation" role="status" tabindex="-1" hidden>
                                     <strong>Your retirement income plan has been saved.</strong>
@@ -157,8 +157,9 @@ $page_title = 'Build Your Plan | Retirement Planning Journey';
 
                         <section class="phase-content-section phase-completion" aria-labelledby="continue-title">
                             <h2 id="continue-title">What’s next</h2>
-                            <p>You now have a working retirement income plan. Phase 4 tests how it may hold up if markets grow more slowly, decline early, or retirement lasts longer than expected.</p>
+                            <p id="phase3NextCopy">You now have a working retirement income plan. Phase 4 tests how it may hold up if markets grow more slowly, decline early, or retirement lasts longer than expected.</p>
                             <button type="button" class="primary-action journey-button" id="completePhase3Button">Save Phase 3 Progress</button>
+                            <p class="phase-complete-indicator" id="phase3CompleteIndicator" hidden role="status">Phase 3 complete</p>
                             <a class="secondary-action" href="/phases/stress-test.php" id="continueToPhase4Link">Continue to Phase 4</a>
                             <a class="secondary-action" href="/">Return to My Journey</a>
                             <div class="completion-message" id="phase3CompletionMessage" role="status" tabindex="-1" hidden></div>
@@ -181,6 +182,6 @@ $page_title = 'Build Your Plan | Retirement Planning Journey';
         </section>
     </main>
 
-    <script src="/assets/js/build-your-plan-phase.js?v=20260730-phase3-cloud" defer></script>
+    <script src="/assets/js/build-your-plan-phase.js?v=20260801-logged-in-polish" defer></script>
 </body>
 </html>

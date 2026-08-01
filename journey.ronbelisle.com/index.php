@@ -9,7 +9,7 @@ $page_title = 'Your Retirement Planning Journey';
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260729-m5-p3">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260801-logged-in-polish">
 </head>
 <body>
     <?php include __DIR__ . '/includes/site-header.php'; ?>
@@ -20,9 +20,9 @@ $page_title = 'Your Retirement Planning Journey';
                 <div class="hero-copy">
                     <p class="eyebrow">Guided retirement planning</p>
                     <h1 id="journey-title">Your Retirement Planning Journey</h1>
-                    <div class="intro-copy">
-                        <p>Retirement planning is a series of connected decisions about spending, Social Security, investments, taxes, and protecting your family.</p>
-                        <p>This <strong>six-phase Journey</strong> helps you build your initial retirement plan one decision at a time. It is designed primarily for people approaching retirement who are preparing those decisions—spending, Social Security, retirement income, taxes, and protecting their household.</p>
+                    <div class="intro-copy" data-journey-home-intro>
+                        <p data-journey-home-intro-lead>Retirement planning is a series of connected decisions about spending, Social Security, investments, taxes, and protecting your family.</p>
+                        <p data-journey-home-intro-body>This <strong>six-phase Journey</strong> helps you build your initial retirement plan one decision at a time. It is designed primarily for people approaching retirement who are preparing those decisions—spending, Social Security, retirement income, taxes, and protecting their household.</p>
                     </div>
                     <p class="audience-aside">Already retired? Many of the individual planning tools may still be useful, but this six-phase Journey is currently built around preparing for retirement.</p>
                     <a class="primary-action" href="/phases/spending-goals.php" data-journey-home-cta>Begin Your Journey</a>
@@ -75,8 +75,8 @@ $page_title = 'Your Retirement Planning Journey';
         <section class="phase-section" aria-labelledby="phases-title">
             <div class="container">
                 <div class="section-heading">
-                    <p class="eyebrow">Your planning process</p>
-                    <h2 id="phases-title">Build your initial retirement plan in six guided phases.</h2>
+                    <p class="eyebrow" data-journey-phases-eyebrow>Your planning process</p>
+                    <h2 id="phases-title" data-journey-phases-heading>Build your initial retirement plan in six guided phases.</h2>
                 </div>
 
                 <div class="phase-grid">

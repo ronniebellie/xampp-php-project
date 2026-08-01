@@ -1228,6 +1228,19 @@ h1 {
     margin-right: 8px;
 }
 
+.phase-complete-indicator {
+    display: inline-flex;
+    align-items: center;
+    margin: 0 8px 12px 0;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: #eef8f1;
+    border: 1px solid rgba(4, 120, 87, 0.28);
+    color: #065f46;
+    font-size: 14px;
+    font-weight: 700;
+}
+
 [hidden] {
     display: none !important;
 }

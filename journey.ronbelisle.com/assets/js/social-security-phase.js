@@ -393,7 +393,7 @@
         if (recommendation === 'none') {
             result.innerHTML =
                 '<h3>No additional calculator is needed right now</h3>' +
-                '<p>Based on your answers, you do not need another planning tool for this step. Continue with Phase 2 and carry your Social Security planning assumption into the rest of your Journey.</p>';
+                '<p>Based on your answers, you do not need another planning tool for this step. Continue with Phase 2 and use your Social Security planning assumption in the rest of your Journey.</p>';
             return;
         }
 
@@ -443,13 +443,66 @@
         if (errors.length) summary.focus();
     }
 
+    function setPhase2VisitUi(hasSaved) {
+        document.querySelectorAll('[data-phase2-first-visit]').forEach(function (element) {
+            element.hidden = !!hasSaved;
+        });
+        document.querySelectorAll('[data-phase2-returning]').forEach(function (element) {
+            element.hidden = !hasSaved;
+        });
+        var lede = document.getElementById('phase2PageLede');
+        if (lede) {
+            lede.textContent = hasSaved
+                ? 'Your Social Security planning assumption is saved. Review or update it, then continue to Phase 3 when you are ready.'
+                : 'You have estimated what your retirement lifestyle may cost. Now you’ll consider when to claim Social Security and choose an age to test in your retirement plan.';
+        }
+        var continueCopy = document.getElementById('phase2ContinueCopy');
+        if (continueCopy) {
+            continueCopy.textContent = hasSaved
+                ? 'Your claiming assumption is ready. Continue to Phase 3 when you are ready, or update your record first.'
+                : 'When your claiming assumption is saved, continue to Phase 3: Build Your Plan.';
+        }
+    }
+
+    function setPhase2CompletionUi(isComplete) {
+        var completeButton = document.getElementById('completePhase2Button');
+        var indicator = document.getElementById('phase2CompleteIndicator');
+        var continueLink = document.getElementById('continueToPhase3Link');
+        if (completeButton) {
+            completeButton.hidden = !!isComplete;
+            if (!isComplete) {
+                completeButton.disabled = false;
+                completeButton.textContent = 'Save Phase 2 Progress';
+            }
+        }
+        if (indicator) {
+            indicator.hidden = !isComplete;
+        }
+        if (continueLink) {
+            if (isComplete) {
+                continueLink.classList.add('primary-action');
+                continueLink.classList.remove('secondary-action');
+            } else {
+                continueLink.classList.add('secondary-action');
+                continueLink.classList.remove('primary-action');
+            }
+        }
+    }
+
     function showIncompleteState() {
         document.getElementById('phase2SaveConfirmation').hidden = true;
         document.getElementById('phase2CompletionMessage').hidden = true;
         var complete = readProgress()[recordKey] === true;
-        document.getElementById('completePhase2Button').textContent = complete
-            ? 'Save Updates'
-            : 'Save Phase 2 Progress';
+        var completeButton = document.getElementById('completePhase2Button');
+        if (completeButton && !complete) {
+            completeButton.hidden = false;
+            completeButton.textContent = 'Save Phase 2 Progress';
+        } else if (completeButton && complete) {
+            completeButton.hidden = false;
+            completeButton.textContent = 'Save Updates';
+            var indicator = document.getElementById('phase2CompleteIndicator');
+            if (indicator) indicator.hidden = true;
+        }
         updateUnsavedNotice(existingRecord(readProgress()));
     }
 
@@ -558,9 +611,8 @@
 
         record = persistDraft(true);
         renderAssumption(record);
-        if (readProgress()[recordKey] === true) {
-            document.getElementById('completePhase2Button').textContent = 'Phase 2 Complete';
-        }
+        setPhase2VisitUi(true);
+        setPhase2CompletionUi(readProgress()[recordKey] === true);
         var confirmation = document.getElementById('phase2SaveConfirmation');
         confirmation.hidden = false;
         confirmation.focus();
@@ -635,7 +687,7 @@
         }
         message.hidden = false;
         message.focus();
-        document.getElementById('completePhase2Button').textContent = 'Phase 2 Complete';
+        setPhase2CompletionUi(true);
         updateUnsavedNotice(record);
     }
 
@@ -737,9 +789,12 @@
             document.querySelector('[data-returning-record]').hidden = false;
             document.querySelector('[data-first-visit-summary]').hidden = true;
         }
-        if (progressAtLoad[recordKey] === true && record.saved === true && record.hasUnsavedChanges !== true) {
-            document.getElementById('completePhase2Button').textContent = 'Phase 2 Complete';
-        }
+        setPhase2VisitUi(returningMember);
+        setPhase2CompletionUi(
+            progressAtLoad[recordKey] === true &&
+            record.saved === true &&
+            record.hasUnsavedChanges !== true
+        );
         restoreRecord(record);
         updateEstimateResponse();
         updateStatusFields();
