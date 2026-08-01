@@ -8,6 +8,7 @@
     var STATUS_URL = 'https://ronbelisle.com/premium/journey-status.php';
     var DEFAULT_HOME = 'https://journey.ronbelisle.com/';
     var DEFAULT_LOGIN = 'https://ronbelisle.com/auth/login.php';
+    var DEFAULT_REGISTER = 'https://ronbelisle.com/auth/register.php';
     var DEFAULT_LOGOUT = 'https://ronbelisle.com/auth/logout.php';
     var DEFAULT_CHECKOUT = 'https://ronbelisle.com/premium/journey.php';
     var DEFAULT_ACCOUNT = 'https://ronbelisle.com/account.php';
@@ -115,12 +116,18 @@
     }
 
     function renderAnonymous(root, status) {
-        var loginUrl = (status && status.loginUrl) || withReturn(DEFAULT_LOGIN, currentReturnUrl());
+        var returnUrl = currentReturnUrl();
+        var loginUrl = (status && status.loginUrl) || withReturn(DEFAULT_LOGIN, returnUrl);
+        var registerUrl = withReturn(DEFAULT_REGISTER, returnUrl);
         root.innerHTML =
             '<div class="journey-account-stack is-anonymous">' +
-            '<p class="journey-account-line">Not signed in</p>' +
             '<p class="journey-account-actions">' +
             '<a class="journey-account-link" href="' + escapeHtml(loginUrl) + '">Sign in</a>' +
+            '</p>' +
+            '<p class="journey-account-actions">' +
+            '<a class="journey-account-link is-secondary" href="' +
+            escapeHtml(registerUrl) +
+            '">Create free account</a>' +
             '</p>' +
             '</div>';
     }

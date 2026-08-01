@@ -158,17 +158,22 @@ select:focus-visible {
     text-decoration: underline;
 }
 
-.journey-account-link.is-signout {
+.journey-account-link.is-signout,
+.journey-account-link.is-secondary {
     color: #475569;
+    font-weight: 500;
 }
 
 .journey-account-sep {
     color: #94a3b8;
 }
 
-.journey-account-stack.is-anonymous .journey-account-line {
-    color: #7b8796;
-    font-weight: 500;
+.journey-account-stack.is-anonymous .journey-account-actions {
+    margin-top: 2px;
+}
+
+.journey-account-stack.is-anonymous .journey-account-actions:first-child {
+    margin-top: 0;
 }
 
 .journey-account-stack.is-unavailable .journey-account-line {
