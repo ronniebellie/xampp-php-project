@@ -1,2 +1,5 @@
+# Allow social crawlers to fetch the share preview image.
+# Site pages remain noindex via meta robots on HTML documents.
 User-agent: *
+Allow: /assets/images/journey-social-preview.jpg
 Disallow: /
