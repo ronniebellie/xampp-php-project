@@ -13,4 +13,10 @@ return [
     // Optional: used for sender identity.
     'from_email' => $email['from_email'] ?? rb_env('RB_EMAIL_FROM'),
     'from_name' => $email['from_name'] ?? rb_env('RB_EMAIL_FROM_NAME'),
+
+    // Administrator recipient for Journey Premium trial activation notices (server-side only).
+    'journey_trial_notification_email' => $email['journey_trial_notification_email']
+        ?? rb_env('RB_JOURNEY_TRIAL_NOTIFICATION_EMAIL')
+        ?? ($email['admin_email'] ?? null)
+        ?? rb_env('RB_ADMIN_EMAIL'),
 ];

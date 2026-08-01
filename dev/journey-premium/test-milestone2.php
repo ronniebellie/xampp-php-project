@@ -124,8 +124,18 @@ try {
     require_once $root . '/includes/db_config.php';
     if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
         $dbRan = true;
-        $up = file_get_contents($root . '/sql/migrations/20260725_001_journey_premium_m1_up.sql');
-        if (is_string($up)) {
+        // Never send real admin emails during automated Milestone 2 runs.
+        $GLOBALS['rb_send_email_handler'] = static function (): bool {
+            return true;
+        };
+        foreach ([
+            $root . '/sql/migrations/20260725_001_journey_premium_m1_up.sql',
+            $root . '/sql/migrations/20260801_001_journey_admin_trial_notifications_up.sql',
+        ] as $sqlFile) {
+            $up = file_get_contents($sqlFile);
+            if (!is_string($up)) {
+                continue;
+            }
             if ($conn->multi_query($up)) {
                 do {
                     if ($r = $conn->store_result()) {
@@ -425,6 +435,11 @@ try {
         // Cleanup all m2 fixtures
         $conn->query("DELETE FROM user_product_subscriptions WHERE user_id = {$uid} OR stripe_subscription_id LIKE 'sub_m2_%'");
         $conn->query("DELETE FROM stripe_webhook_events WHERE stripe_event_id LIKE 'evt_m2_%'");
+        try {
+            $conn->query("DELETE FROM journey_admin_trial_notifications WHERE user_id = {$uid} OR stripe_subscription_id LIKE 'sub_m2_%'");
+        } catch (Throwable $e) {
+            // Table may not exist yet on older local DBs.
+        }
         $left = (int) $conn->query("SELECT COUNT(*) c FROM user_product_subscriptions WHERE user_id={$uid} OR stripe_subscription_id LIKE 'sub_m2_%'")->fetch_assoc()['c']
             + (int) $conn->query("SELECT COUNT(*) c FROM stripe_webhook_events WHERE stripe_event_id LIKE 'evt_m2_%'")->fetch_assoc()['c'];
         expect2('temp records removed', $left === 0);
@@ -441,6 +456,7 @@ if (!$dbRan) {
     fwrite(STDERR, "NOTE: Milestone 2 DB tests skipped (no local mysqli).\n");
 }
 
+unset($GLOBALS['rb_send_email_handler']);
 journey_price_id_overrides_set(null);
 
 echo json_encode([

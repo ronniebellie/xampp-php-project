@@ -32,8 +32,14 @@ Secrets live in `/etc/ronbelisle/config.php` (not git), under the `email` key.
     'smtp_pass'  => 'SG.xxxx',                 // SendGrid API key with Mail Send permission
     'from_email' => 'noreply@ronbelisle.com',  // must be a verified sender/domain in SendGrid
     'from_name'  => 'Ron Belisle',
+    // Admin-only Journey Premium trial notices (server-side; not shown to customers):
+    'journey_trial_notification_email' => 'you@example.com',
 ],
 ```
+
+Journey Premium trial admin notifications also use `send_email_smtp()`. If SendGrid returns
+`Maximum credits exceeded`, trial entitlement still activates; only the admin email fails
+(logged as `credits_exceeded`). Restore credits/key before expecting inbox delivery.
 
 Also ensure password-reset HMAC secret is set (used by `includes/password_reset.php`):
 

@@ -11,6 +11,16 @@
 function send_email_smtp($to, $subject, $body) {
     $GLOBALS['rb_send_email_last_error'] = null;
 
+    // Test / local override — never used in production unless explicitly set.
+    if (isset($GLOBALS['rb_send_email_handler']) && is_callable($GLOBALS['rb_send_email_handler'])) {
+        try {
+            return (bool) $GLOBALS['rb_send_email_handler']($to, $subject, $body);
+        } catch (Throwable $e) {
+            $GLOBALS['rb_send_email_last_error'] = 'handler_exception';
+            return false;
+        }
+    }
+
     $configPath = __DIR__ . '/email_config.php';
     if (!file_exists($configPath)) {
         $GLOBALS['rb_send_email_last_error'] = 'config_missing';

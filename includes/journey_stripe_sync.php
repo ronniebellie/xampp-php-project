@@ -12,6 +12,7 @@ if (defined('JOURNEY_STRIPE_SYNC_LOADED')) {
 define('JOURNEY_STRIPE_SYNC_LOADED', 1);
 
 require_once __DIR__ . '/journey_entitlement.php';
+require_once __DIR__ . '/journey_trial_admin_notify.php';
 
 /**
  * Classify a Price ID into a product bucket for routing.
@@ -289,7 +290,42 @@ function journey_sync_subscription_row(
         'entitlement_status' => $entitlementStatus,
         'access_allowed' => $accessAllowed,
         'product' => 'journey',
+        'user_id' => $userId,
+        'stripe_subscription_id' => $subId,
+        'stripe_customer_id' => $customerId,
     ];
+}
+
+/**
+ * After entitlement commit: attempt admin trial email without affecting webhook result.
+ *
+ * @param object|array|null $subscription
+ * @param array|null $syncResult
+ * @param array $options process options (may include send_email / recipient)
+ * @return array{attempted:bool,result:string,detail:string}|null
+ */
+function journey_notify_admin_trial_after_sync(
+    mysqli $conn,
+    $subscription,
+    ?array $syncResult,
+    ?string $stripeEventId,
+    array $options = []
+): ?array {
+    if ($subscription === null || !is_array($syncResult)) {
+        return null;
+    }
+    try {
+        return journey_maybe_notify_admin_of_trial(
+            $conn,
+            $subscription,
+            $syncResult,
+            $stripeEventId,
+            $options
+        );
+    } catch (Throwable $e) {
+        error_log('journey_notify_admin_trial_after_sync: swallowed unexpected failure');
+        return ['attempted' => false, 'result' => 'error', 'detail' => 'unexpected_exception'];
+    }
 }
 
 /**
@@ -299,9 +335,11 @@ function journey_sync_subscription_row(
  * @param array{
  *   retrieve_subscription?: callable(string): (object|array|null),
  *   retrieve_checkout_session?: callable(string): (object|array|null),
- *   now?: int
+ *   now?: int,
+ *   send_email?: callable(string,string,string):bool,
+ *   recipient?: string
  * } $options
- * @return array{http_status:int,result:string,detail:string}
+ * @return array{http_status:int,result:string,detail:string,admin_trial_notify?:array}
  */
 function journey_process_verified_stripe_event(mysqli $conn, $event, array $options = []): array
 {
@@ -396,10 +434,18 @@ function journey_process_verified_stripe_event(mysqli $conn, $event, array $opti
                     journey_webhook_event_mark($conn, $eventId, 'failed', 'tx_exception');
                     return ['http_status' => 500, 'result' => 'failed', 'detail' => 'tx_exception'];
                 }
+                $adminNotify = journey_notify_admin_trial_after_sync(
+                    $conn,
+                    $subscription,
+                    $syncResult,
+                    $eventId,
+                    $options
+                );
                 return [
                     'http_status' => 200,
                     'result' => 'processed',
                     'detail' => (string) ($syncResult['reason'] ?? 'synced'),
+                    'admin_trial_notify' => $adminNotify,
                 ];
 
             case 'customer.subscription.created':
@@ -447,10 +493,18 @@ function journey_process_verified_stripe_event(mysqli $conn, $event, array $opti
                     journey_webhook_event_mark($conn, $eventId, 'failed', 'tx_exception');
                     return ['http_status' => 500, 'result' => 'failed', 'detail' => 'tx_exception'];
                 }
+                $adminNotify = journey_notify_admin_trial_after_sync(
+                    $conn,
+                    $subscription,
+                    $syncResult,
+                    $eventId,
+                    $options
+                );
                 return [
                     'http_status' => 200,
                     'result' => 'processed',
                     'detail' => (string) ($syncResult['reason'] ?? 'synced'),
+                    'admin_trial_notify' => $adminNotify,
                 ];
 
             case 'invoice.paid':
