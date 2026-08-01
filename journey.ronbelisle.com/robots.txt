@@ -1,5 +1,25 @@
-# Allow social crawlers to fetch the share preview image.
-# Site pages remain noindex via meta robots on HTML documents.
+# Social share crawlers need the homepage HTML (Open Graph / Twitter Card tags)
+# and the preview image. General crawlers stay disallowed.
+# HTML pages also use <meta name="robots" content="noindex,nofollow">.
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Facebot
+Allow: /
+
+User-agent: meta-externalagent
+Allow: /
+
+User-agent: meta-externalfetcher
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
 User-agent: *
 Allow: /assets/images/journey-social-preview.jpg
 Disallow: /
