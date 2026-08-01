@@ -22,5 +22,5 @@ include __DIR__ . '/analytics.php';
 </header>
 <script src="/assets/js/journey-phase1-handoff.js?v=20260730-phase1-handoff" defer></script>
 <script src="/assets/js/journey-sync.js?v=20260730-phase1-handoff" defer></script>
-<script src="/assets/js/journey-auth-chrome.js?v=20260730-phase2-bypass" defer></script>
+<script src="/assets/js/journey-auth-chrome.js?v=20260801-account-actions" defer></script>
 <script src="/assets/js/journey-analytics.js?v=20260801-ga4" defer></script>
