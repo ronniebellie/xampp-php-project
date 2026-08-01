@@ -1,24 +1,25 @@
-# Social share crawlers need the homepage HTML (Open Graph / Twitter Card tags)
-# and the preview image. General crawlers stay disallowed.
-# HTML pages also use <meta name="robots" content="noindex,nofollow">.
+# Social share crawlers need homepage HTML (Open Graph / Twitter Card tags)
+# and the preview image. Search crawlers remain disallowed via User-agent: *.
+# Search noindex is also set per-bot in HTML (googlebot/bingbot), not a blanket
+# robots meta — Meta's crawler respects meta noindex and would refuse to scrape.
 
 User-agent: facebookexternalhit
-Allow: /
+Disallow:
 
 User-agent: Facebot
-Allow: /
+Disallow:
 
 User-agent: meta-externalagent
-Allow: /
+Disallow:
 
 User-agent: meta-externalfetcher
-Allow: /
+Disallow:
 
 User-agent: LinkedInBot
-Allow: /
+Disallow:
 
 User-agent: Twitterbot
-Allow: /
+Disallow:
 
 User-agent: *
 Allow: /assets/images/journey-social-preview.jpg

@@ -7,7 +7,10 @@ $page_title = 'Your Retirement Planning Journey';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="noindex,nofollow">
+    <!-- Keep search engines out; do not use a blanket robots noindex — Meta's
+         crawler respects it and Sharing Debugger reports a robots/403 block. -->
+    <meta name="googlebot" content="noindex,nofollow">
+    <meta name="bingbot" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
     <meta name="description" content="A free, guided six-phase process to help you build your initial retirement plan one decision at a time.">
     <link rel="canonical" href="https://journey.ronbelisle.com/">
