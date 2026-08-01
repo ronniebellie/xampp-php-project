@@ -720,6 +720,9 @@
             message.hidden = false;
             message.focus();
             setPhase3CompletionUi(true);
+            if (window.rbJourneyAnalytics && typeof window.rbJourneyAnalytics.trackPhaseComplete === 'function') {
+                window.rbJourneyAnalytics.trackPhaseComplete(3);
+            }
         });
     }
 

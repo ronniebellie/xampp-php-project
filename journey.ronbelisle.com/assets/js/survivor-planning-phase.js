@@ -556,6 +556,9 @@
                 statusEl.hidden = false;
                 statusEl.textContent = 'Your Journey summary PDF has been downloaded.';
             }
+            if (window.rbJourneyAnalytics && typeof window.rbJourneyAnalytics.trackPdfDownload === 'function') {
+                window.rbJourneyAnalytics.trackPdfDownload();
+            }
         }).catch(function (error) {
             if (statusEl) {
                 statusEl.hidden = false;
@@ -614,6 +617,9 @@
         renderSavedSummary(record);
         $('savedReviewSection').hidden = false;
         $('saveConfirm').focus();
+        if (window.rbJourneyAnalytics && typeof window.rbJourneyAnalytics.trackPhaseComplete === 'function') {
+            window.rbJourneyAnalytics.trackPhaseComplete(6);
+        }
     }
 
     function renderSavedSummary(record) {

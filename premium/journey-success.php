@@ -71,6 +71,7 @@ $refreshUrl = '/premium/journey-success.php?session_id=' . rawurlencode($session
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex,nofollow">
     <title>Journey Premium — Checkout confirmation</title>
+    <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/analytics.php'; ?>
     <?php if ($finishing): ?>
         <meta http-equiv="refresh" content="3;url=<?php echo htmlspecialchars($refreshUrl, ENT_QUOTES, 'UTF-8'); ?>">
     <?php endif; ?>
@@ -118,6 +119,23 @@ $refreshUrl = '/premium/journey-success.php?session_id=' . rawurlencode($session
         </ul>
         <a class="btn" href="https://journey.ronbelisle.com/">Continue to the Journey</a>
         <a class="btn btn-secondary" href="/premium/journey.php">Back to plan page</a>
+        <script>
+        (function () {
+            try {
+                var key = 'rbJourneyAnalyticsV1:journey_premium_trial_start';
+                if (window.sessionStorage && window.sessionStorage.getItem(key) === '1') return;
+                if (window.sessionStorage) window.sessionStorage.setItem(key, '1');
+                if (typeof window.rbTrack === 'function') {
+                    window.rbTrack('journey_premium_trial_start', {
+                        account_state: 'premium_trial',
+                        storage_mode: 'account',
+                        journey_status: 'started',
+                        source_page: '/premium/journey-success.php'
+                    });
+                }
+            } catch (e) {}
+        })();
+        </script>
     <?php else: ?>
         <h1 class="js-wait">Almost ready</h1>
         <p>Thanks — we’re finishing your Journey Premium setup. This usually takes only a few seconds.<?php echo $finishing ? ' Checking again…' : ''; ?></p>

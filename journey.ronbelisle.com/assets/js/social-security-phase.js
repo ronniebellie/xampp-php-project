@@ -689,6 +689,9 @@
         message.focus();
         setPhase2CompletionUi(true);
         updateUnsavedNotice(record);
+        if (window.rbJourneyAnalytics && typeof window.rbJourneyAnalytics.trackPhaseComplete === 'function') {
+            window.rbJourneyAnalytics.trackPhaseComplete(2);
+        }
     }
 
     function handleDraftChange(event) {

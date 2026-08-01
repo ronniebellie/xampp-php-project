@@ -438,6 +438,9 @@
         if (window.rbJourneyPhase1 && typeof window.rbJourneyPhase1.reconcileLocal === 'function') {
             window.rbJourneyPhase1.reconcileLocal();
         }
+        if (window.rbJourneyAnalytics && typeof window.rbJourneyAnalytics.trackPhaseComplete === 'function') {
+            window.rbJourneyAnalytics.trackPhaseComplete(1);
+        }
         if (saveStatus) saveStatus.textContent = 'Saved. Returning to Phase 1...';
 
         function returnToPhase1() {

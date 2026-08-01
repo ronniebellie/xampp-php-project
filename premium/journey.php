@@ -75,6 +75,7 @@ if (isset($_GET['error'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex,nofollow">
     <title>Journey Premium — Choose a plan</title>
+    <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/analytics.php'; ?>
     <link rel="stylesheet" href="/css/shared-styles.css">
     <style>
         .jp-wrap { max-width: 820px; margin: 40px auto; padding: 20px; }

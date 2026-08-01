@@ -439,6 +439,9 @@
         renderSavedSummary(record);
         setSavedTaxUi(true);
         $('saveConfirm').focus();
+        if (window.rbJourneyAnalytics && typeof window.rbJourneyAnalytics.trackPhaseComplete === 'function') {
+            window.rbJourneyAnalytics.trackPhaseComplete(5);
+        }
     }
 
     function renderSavedSummary(record) {

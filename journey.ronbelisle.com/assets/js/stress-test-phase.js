@@ -394,6 +394,9 @@
         renderSavedSummary(record);
         setSavedReviewUi(true);
         $('saveConfirm').focus();
+        if (window.rbJourneyAnalytics && typeof window.rbJourneyAnalytics.trackPhaseComplete === 'function') {
+            window.rbJourneyAnalytics.trackPhaseComplete(4);
+        }
     }
 
     function renderSavedSummary(record) {

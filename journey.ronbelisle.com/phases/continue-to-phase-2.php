@@ -52,7 +52,7 @@ $loginUrl = 'https://ronbelisle.com/auth/login.php?return=' . rawurlencode($jour
                                 <li>Continue through all six free Journey phases</li>
                                 <li>Sign in later when you return in this browser</li>
                             </ul>
-                            <a class="primary-action" href="<?php echo htmlspecialchars($freeAccountUrl); ?>">Create Free Account and Continue</a>
+                            <a class="primary-action" href="<?php echo htmlspecialchars($freeAccountUrl); ?>" data-journey-analytics-free-account-start>Create Free Account and Continue</a>
                             <p class="action-note">Registration opens on ronbelisle.com, then returns you to Phase 2 in this same browser. Your Journey plan currently stays in this browser. Creating the account does not yet automatically sync that browser-stored Journey data across devices.</p>
                         </section>
 

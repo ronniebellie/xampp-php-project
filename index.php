@@ -827,8 +827,8 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
           <p class="brand-tagline">Explore free retirement planning tools for Social Security, retirement income, Medicare, withdrawals, RMDs, Monte Carlo analysis, investing, debt payoff, and more.</p>
           <p class="brand-tagline">Every calculator on this site is completely free to use. If you find the tools valuable, <a href="/premium.html">Premium</a> adds convenient features such as saved scenarios, PDF and CSV exports, longer projections where supported, and AI-generated explanations tailored to your specific results.</p>
           <div class="hero-primary-actions">
-            <a href="retirement-plan/" class="hero-btn hero-btn-primary">Start Retirement Plan Builder</a>
-            <a href="#planning-tools" class="hero-btn hero-btn-secondary">Browse Planning Tools</a>
+            <a href="https://journey.ronbelisle.com/" class="hero-btn hero-btn-primary" data-rb-event="journey_promotion_click" data-rb-param-placement="homepage_hero">Start Retirement Planning Journey</a>
+            <a href="retirement-plan/" class="hero-btn hero-btn-secondary">Open Retirement Plan Builder</a>
           </div>
         </div>
         <div class="hero-actions">
@@ -862,6 +862,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
 
     <nav class="site-top-nav" aria-label="Site sections">
       <a href="/" class="active" aria-current="page">Calculators</a>
+      <a href="https://journey.ronbelisle.com/" data-rb-event="journey_promotion_click" data-rb-param-placement="navigation">Journey</a>
     </nav>
     <?php endif; ?>
 
