@@ -37,11 +37,15 @@ $p5 = (string) file_get_contents($root . '/journey.ronbelisle.com/assets/js/tax-
 $p6 = (string) file_get_contents($root . '/journey.ronbelisle.com/assets/js/survivor-planning-phase.js');
 $docs = (string) file_get_contents($root . '/journey.ronbelisle.com/docs/GA4_JOURNEY_ANALYTICS.md');
 
-expectA('shared measurement id', strpos($shared, 'G-3NB2DLYQFZ') !== false);
+expectA('shared measurement id remains main site', strpos($shared, 'G-3NB2DLYQFZ') !== false);
+expectA('shared does not use journey measurement id', strpos($shared, 'G-8PMXKZ60L4') === false);
 expectA('shared cookie domain parent', strpos($shared, "cookie_domain: 'ronbelisle.com'") !== false);
 expectA('shared config guard', strpos($shared, '__rbGtagConfigured') !== false);
 expectA('shared rbTrack helper', strpos($shared, 'window.rbTrack') !== false);
-expectA('journey analytics includes shared file', strpos($journeyAnalyticsPhp, 'includes/analytics.php') !== false);
+expectA('journey uses dedicated measurement id', strpos($journeyAnalyticsPhp, 'G-8PMXKZ60L4') !== false);
+expectA('journey removed old measurement id', strpos($journeyAnalyticsPhp, 'G-3NB2DLYQFZ') === false);
+expectA('journey does not include shared analytics file', strpos($journeyAnalyticsPhp, '$rbSharedAnalytics') === false);
+expectA('journey config guard', strpos($journeyAnalyticsPhp, '__journeyGtagConfigured') !== false);
 expectA('site header loads analytics php', strpos($header, "include __DIR__ . '/analytics.php'") !== false);
 expectA('site header loads journey-analytics.js', strpos($header, 'journey-analytics.js') !== false);
 
@@ -72,8 +76,9 @@ expectA('phase4 tracks complete', strpos($p4, 'trackPhaseComplete(4)') !== false
 expectA('phase5 tracks complete', strpos($p5, 'trackPhaseComplete(5)') !== false);
 expectA('phase6 tracks complete', strpos($p6, 'trackPhaseComplete(6)') !== false);
 expectA('pdf download tracked', strpos($p6, 'trackPdfDownload') !== false);
-expectA('docs mention measurement id', strpos($docs, 'G-3NB2DLYQFZ') !== false);
-expectA('docs mention hostname filter', strpos($docs, 'journey.ronbelisle.com') !== false);
+expectA('docs mention journey measurement id', strpos($docs, 'G-8PMXKZ60L4') !== false);
+expectA('docs do not claim shared journey id', strpos($docs, 'same GA4 property') === false);
+expectA('docs mention hostname', strpos($docs, 'journey.ronbelisle.com') !== false);
 
 echo "Journey GA4 analytics tests\n";
 echo 'Passed: ' . count($passed) . "\n";

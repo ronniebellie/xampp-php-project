@@ -1,19 +1,18 @@
 # Journey Google Analytics 4
 
-**Measurement ID:** `G-3NB2DLYQFZ`  
-**Property:** same GA4 property as [ronbelisle.com](https://ronbelisle.com)  
-**Hosts:** `ronbelisle.com` and `journey.ronbelisle.com`
+**Measurement ID:** `G-8PMXKZ60L4`  
+**Property:** Journey Retirement Planning (dedicated GA4 property)  
+**Host:** `journey.ronbelisle.com`
+
+The main calculators site (`ronbelisle.com`) continues to use `G-3NB2DLYQFZ` and is not mixed into this property.
 
 ## Where the tag is installed
 
 | Surface | Install location |
 |---------|------------------|
-| Main site calculators / account pages | `includes/analytics.php` (included in page `<head>` or top of body) |
-| Journey pages | `journey.ronbelisle.com/includes/analytics.php` → includes shared `includes/analytics.php`, loaded from `journey.ronbelisle.com/includes/site-header.php` |
-| Journey Premium plan / success | `premium/journey.php`, `premium/journey-success.php` |
-| Auth register | `auth/register.php` |
+| Journey pages | `journey.ronbelisle.com/includes/analytics.php`, loaded from `journey.ronbelisle.com/includes/site-header.php` |
 
-The tag configures `cookie_domain: 'ronbelisle.com'` so sessions can continue across the Journey subdomain. A page-level guard (`window.__rbGtagConfigured`) prevents duplicate `gtag('config')` calls.
+The Journey tag does **not** include the shared `includes/analytics.php` file. A page-level guard (`window.__journeyGtagConfigured`) prevents duplicate `gtag('config')` calls.
 
 Journey funnel helpers live in `journey.ronbelisle.com/assets/js/journey-analytics.js`.
 
@@ -47,17 +46,13 @@ Safe event parameters only:
 | `journey_pdf_download` | Successful Premium PDF download | At most once per minute |
 | `journey_sign_in` | Auth chrome reports authenticated | Once per session |
 | `journey_return_visit` | Returning visitor with prior Journey visit marker | Once per session |
-| `journey_promotion_click` | Click Journey promo on ronbelisle.com | Via `data-rb-event` (no extra dedupe) |
+| `journey_promotion_click` | Click Journey promo on ronbelisle.com | Via `data-rb-event` on main site (main-site property) |
 
-Automatic `page_view` events come from the shared gtag config (`send_page_view: true`).
+Automatic `page_view` events come from the Journey gtag config (`send_page_view: true`).
 
 ## Isolating Journey traffic in GA4
 
-1. Open **Explore** or any report.
-2. Add a filter or dimension: **Hostname** / **Page hostname**.
-3. Set **exactly matches** `journey.ronbelisle.com`.
-
-You can also build a comparison in Reports using hostname = `journey.ronbelisle.com`.
+This property is Journey-only. Use Realtime / standard reports on the **Journey Retirement Planning** property. Hostname should be `journey.ronbelisle.com`.
 
 ## Journey funnel exploration
 
@@ -74,11 +69,10 @@ Suggested funnel steps (Exploration → Funnel exploration):
 9. Optional branch: `journey_premium_trial_start`
 10. Optional: `journey_pdf_download`
 
-Filter the exploration to hostname `journey.ronbelisle.com` (except `journey_promotion_click` and `journey_premium_trial_start`, which may fire on `ronbelisle.com`).
-
 ## Verification checklist
 
-- [ ] Tag Assistant shows `G-3NB2DLYQFZ` once on a Journey page
+- [ ] Tag Assistant / page source shows `G-8PMXKZ60L4` once on a Journey page
+- [ ] Page source does **not** contain `G-3NB2DLYQFZ`
 - [ ] Realtime / DebugView shows `page_view` with hostname `journey.ronbelisle.com`
 - [ ] Completing a phase fires `phase_N_complete` once (refresh does not duplicate)
 - [ ] No event parameters contain financial amounts or emails
