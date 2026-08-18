@@ -1,10 +1,8 @@
 .DS_Store
 vendor/
-composer.lock
 includes/db_config.php.DS_Store
 xampp-php-project/
 vendor/
-composer.lock
 Do-not-upload-to-server/
 includes/db_config.php.DS_Store
 
@@ -19,3 +17,6 @@ tools/fidelity_cma_to_ynab.py
 
 # Phase 4 calibration — private Plan G Phase 3 values (never commit)
 journey.ronbelisle.com/dev/phase-4-calibration/plan-g.local.json
+
+# Local release archives and staging output.
+release-artifacts/

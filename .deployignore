@@ -1,0 +1,37 @@
+# rsync filter used by scripts/build-release.sh. The build starts from a Git
+# archive, so untracked files are already excluded; these rules remove tracked
+# material that must never be present in the public runtime artifact.
+/.gitignore
+/.deployignore
+/.cursor/
+/.pydeps/
+/Do-not-upload-to-server/
+/dev/
+dev/
+/docs/
+docs/
+/sql/
+sql/
+/tools/
+/release-artifacts/
+/server/
+
+# Local/configuration/deployment files.
+/db_config.php
+/deploy.sh
+/scripts/
+/add-banner-corrected.sh
+/composer.json
+/composer.lock
+
+# Documentation, database source, backups, and editor artifacts anywhere.
+*.md
+*.sql
+*.bak
+*.backup
+*.old
+*.orig
+*.save
+*.swp
+*.swo
+*~

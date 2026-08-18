@@ -1,6 +1,5 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
-rb_require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
 rb_session_start();
 ?>
 <!DOCTYPE html>
@@ -110,4 +109,3 @@ rb_session_start();
   </div>
 </body>
 </html>
-

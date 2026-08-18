@@ -1,61 +1,144 @@
 #!/usr/bin/env bash
-# Deploy to production: update the canonical Apache docroot (/var/www/html), then sync calcforadvisors.
-# Run from your Mac (e.g. in Cursor): ./deploy.sh   or   bash deploy.sh
 
-set -e
-SERVER="root@64.23.181.64"
+# Stage and atomically publish a clean ronbelisle.com release.
+#
+# Required environment:
+#   RONBELISLE_DEPLOY_TARGET=deploy-user@server
+#
+# The server must first be migrated to the release/symlink layout documented in
+# docs/SECURE_DEPLOYMENT.md. This script intentionally refuses to modify a
+# legacy in-place /var/www/html directory.
 
-ssh "$SERVER" 'set -euo pipefail
-# Canonical production web root for ronbelisle.com (Apache DocumentRoot)
-APP_DIR="/var/www/html"
+set -euo pipefail
 
-verify_url () {
-  local url="$1"
-  local must_contain="${2:-}"
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
 
-  # 60-second budget per deploy verification: 3 quick attempts.
-  for i in 1 2 3; do
-    if html="$(curl -fsSL --max-time 10 "$url")"; then
-      if [ -z "$must_contain" ] || echo "$html" | grep -q "$must_contain"; then
-        echo "OK: $url"
-        return 0
-      fi
-    fi
-    sleep 1
-  done
+deploy_target="${RONBELISLE_DEPLOY_TARGET:-}"
+if [ -z "$deploy_target" ]; then
+  echo "ERROR: set RONBELISLE_DEPLOY_TARGET (for example, deploy@server)" >&2
+  exit 2
+fi
 
-  echo "ERROR: verification failed for $url" >&2
-  if [ -n "$must_contain" ]; then
-    echo "ERROR: expected to find marker: $must_contain" >&2
-  fi
-  return 1
+if [ -n "$(git status --porcelain)" ]; then
+  echo "ERROR: the working tree must be clean; commit and review changes first" >&2
+  exit 1
+fi
+
+branch="$(git branch --show-current)"
+if [ "$branch" != "main" ] && [ "${ALLOW_NON_MAIN_DEPLOY:-0}" != "1" ]; then
+  echo "ERROR: deployments must run from main (current branch: $branch)" >&2
+  exit 1
+fi
+
+commit="$(git rev-parse HEAD)"
+release_id="$(date -u +%Y%m%dT%H%M%SZ)-${commit:0:12}"
+archive_name="ronbelisle-${release_id}.tar.gz"
+local_stage="$(mktemp -d "${TMPDIR:-/tmp}/ronbelisle-deploy.XXXXXX")"
+trap 'rm -rf "$local_stage"' EXIT
+archive="$local_stage/$archive_name"
+
+"$repo_root/scripts/build-release.sh" --ref "$commit" --output "$archive"
+
+remote_incoming="/var/www/ronbelisle/incoming/$archive_name"
+ssh "$deploy_target" 'test -L /var/www/html && test -L /var/www/calcforadvisors && test -L /var/www/ronbelisle/current && mkdir -p /var/www/ronbelisle/incoming /var/www/ronbelisle/releases'
+scp "$archive" "$deploy_target:$remote_incoming"
+scp "$archive.sha256" "$deploy_target:$remote_incoming.sha256"
+
+ssh "$deploy_target" bash -s -- "$release_id" "$archive_name" <<'REMOTE'
+set -euo pipefail
+
+release_id="$1"
+archive_name="$2"
+base="/var/www/ronbelisle"
+incoming="$base/incoming/$archive_name"
+release="$base/releases/$release_id"
+current="$base/current"
+
+if [ -e "$release" ]; then
+  echo "ERROR: release already exists: $release" >&2
+  exit 1
+fi
+
+cd "$base/incoming"
+if command -v sha256sum >/dev/null 2>&1; then
+  sha256sum -c "$archive_name.sha256"
+elif command -v shasum >/dev/null 2>&1; then
+  shasum -a 256 -c "$archive_name.sha256"
+else
+  echo "ERROR: no SHA-256 verification command is installed" >&2
+  exit 1
+fi
+mkdir "$release"
+tar -xzf "$incoming" -C "$release"
+rm "$incoming" "$incoming.sha256"
+
+if find "$release" -type d -name '.git' -print -quit | grep -q .; then
+  echo "ERROR: staged release contains Git metadata" >&2
+  exit 1
+fi
+
+find "$release" -type f -name '*.php' -exec php -l '{}' \; >/dev/null
+
+previous="$(readlink "$current")"
+next_link="$base/current.next"
+rm -f "$next_link"
+ln -s "$release" "$next_link"
+mv -Tf "$next_link" "$current"
+
+rollback() {
+  rollback_link="$base/current.rollback"
+  rm -f "$rollback_link"
+  ln -s "$previous" "$rollback_link"
+  mv -Tf "$rollback_link" "$current"
+  echo "Rolled back to $previous" >&2
 }
 
-cd "$APP_DIR"
-
-# Keep any local/untracked experiments out of the way during deploy
-if [ -d ronbelisle-com ]; then
-  ts="$(date -u +%Y%m%dT%H%M%SZ)"
-  mv ronbelisle-com "ronbelisle-com.predeploy.$ts" || true
+if ! curl -fsSL --max-time 15 "https://ronbelisle.com/?deploy=$release_id" | grep -q 'Social Security Claiming Analyzer'; then
+  rollback
+  exit 1
 fi
 
-git fetch origin
-# Fast-forward tracked files to match GitHub main (server-only secrets remain via .gitignore)
-git reset --hard origin/main
-git submodule update --init --recursive
-
-if [ -f composer.json ]; then
-  composer install --no-dev --no-interaction --prefer-dist
+if ! curl -fsSL --max-time 15 "https://calcforadvisors.com/?deploy=$release_id" | grep -qi 'calcforadvisors'; then
+  rollback
+  exit 1
 fi
 
-# White-label calcforadvisors bundle lives alongside the main repo in this project layout
-mkdir -p /var/www/calcforadvisors
-rsync -av --delete --exclude=.git --exclude="*.swp" "$APP_DIR/calcforadvisors/" /var/www/calcforadvisors/
+headers="$(curl -fsSI --max-time 15 "https://ronbelisle.com/?deploy=$release_id")"
+for required_header in \
+  'strict-transport-security:' \
+  'x-content-type-options:' \
+  'referrer-policy:'
+do
+  if ! printf '%s\n' "$headers" | grep -qi "^$required_header"; then
+    echo "ERROR: required response header is missing: $required_header" >&2
+    rollback
+    exit 1
+  fi
+done
 
-echo "--- 60-second deploy verification ---"
-verify_url "https://ronbelisle.com/" "tier-title"
-verify_url "https://ronbelisle.com/" "Social Security Claiming Analyzer"
-verify_url "https://ronbelisle.com/social-security-claiming-analyzer/" "Social Security Claiming Analyzer"
-verify_url "https://calcforadvisors.com/" "calcforadvisors"
-'
-echo "Deploy done. Check https://ronbelisle.com and https://calcforadvisors.com"
+for protected_url in \
+  'https://ronbelisle.com/.git/HEAD' \
+  'https://ronbelisle.com/dev/journey-premium/README.md' \
+  'https://ronbelisle.com/sql/create_scenarios_table.sql' \
+  'https://ronbelisle.com/docs/PROJECT_OVERVIEW.md' \
+  'https://ronbelisle.com/index.php.backup' \
+  'https://ronbelisle.com/.premium.html.swp'
+do
+  separator='?'
+  case "$protected_url" in
+    *\?*) separator='&' ;;
+  esac
+  status="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 12 "${protected_url}${separator}security_check=$release_id")"
+  if [ "$status" != "403" ] && [ "$status" != "404" ]; then
+    echo "ERROR: protected URL is exposed ($status): $protected_url" >&2
+    rollback
+    exit 1
+  fi
+done
+
+echo "Published release $release_id"
+echo "Previous release retained at $previous"
+REMOTE
+
+echo "Deploy complete: $release_id"

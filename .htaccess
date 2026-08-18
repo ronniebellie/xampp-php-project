@@ -3,6 +3,16 @@
 <IfModule mod_rewrite.c>
 RewriteEngine On
 
+# Security boundary: this directory is the public web root. Deny repository
+# metadata, development/support directories, and source artifacts even if one
+# is accidentally included in a release. Keep ACME challenges available.
+RewriteRule (^|/)\.(?!well-known(?:/|$)) - [F,L,NC]
+RewriteRule (^|/)(?:dev|docs|sql|Do-not-upload-to-server)(?:/|$) - [F,L,NC]
+RewriteRule (^|/)(?:includes|vendor)(?:/|$) - [F,L,NC]
+RewriteRule (^|/)[^/]+\.(?:bak|backup|old|orig|save|swp|swo|sql|md)$ - [F,L,NC]
+RewriteRule (^|/)[^/]+~$ - [F,L,NC]
+RewriteRule ^(?:composer\.(?:json|lock)|deploy\.sh|db_config\.php)$ - [F,L,NC]
+
 # Pretty sitemap URL for Search Console and crawlers
 RewriteRule ^sitemap\.xml$ sitemap.php [L]
 
@@ -35,4 +45,14 @@ RewriteRule ^index\.php$ / [R=301,L]
 # Send jp-business subdomain clean URLs to index.php so PHP can route to the right calculator
 RewriteCond %{HTTP_HOST} ^jp-business\.ronbelisle\.com$ [NC]
 RewriteRule ^(npv-irr|breakeven-profit)/?$ index.php [L]
+</IfModule>
+
+# Baseline response hardening. CSP is intentionally deferred until third-party
+# dependencies have been inventoried and tested in report-only mode.
+<IfModule mod_headers.c>
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "SAMEORIGIN"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+Header always set Strict-Transport-Security "max-age=31536000"
 </IfModule>
