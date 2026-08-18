@@ -165,6 +165,23 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
       line-height:1.62;
       max-width:760px;
     }
+    .hero-trust{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px 16px;
+      margin:16px 0 0;
+      padding:0;
+      list-style:none;
+      color:var(--ink-soft);
+      font-size:13px;
+      font-weight:700;
+    }
+    .hero-trust li::before{
+      content:"\2713";
+      margin-right:6px;
+      color:var(--success);
+      font-weight:900;
+    }
     .hero-primary-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
     .hero-actions{
       display:flex;
@@ -624,6 +641,11 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
         font-size:14.5px;
         line-height:1.42;
       }
+      .hero-trust{
+        gap:5px 12px;
+        margin-top:12px;
+        font-size:12.5px;
+      }
       .hero-primary-actions{
         margin-top:14px;
         gap:8px;
@@ -823,12 +845,16 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
       <div class="brand">
         <div class="brand-text">
           <a class="mark" href="/about-me.php" aria-label="About Ron Belisle">RB</a>
-          <h1 class="brand-title">Retirement Planning Tools &amp; AI Insights</h1>
-          <p class="brand-tagline">Explore free retirement planning tools for Social Security, retirement income, Medicare, withdrawals, RMDs, Monte Carlo analysis, investing, debt payoff, and more.</p>
-          <p class="brand-tagline">Every calculator on this site is completely free to use. If you find the tools valuable, <a href="/premium.html">Premium</a> adds convenient features such as saved scenarios, PDF and CSV exports, longer projections where supported, and AI-generated explanations tailored to your specific results.</p>
+          <h1 class="brand-title">See how your savings, Social Security, and spending fit together.</h1>
+          <p class="brand-tagline">Build a free retirement plan snapshot in about 10 minutes. Enter your numbers once to see your projected retirement income, portfolio withdrawals, RMDs, and estimated federal taxes year by year.</p>
+          <ul class="hero-trust" aria-label="Retirement plan builder benefits">
+            <li>Free to use</li>
+            <li>No account required</li>
+            <li>Your starting point for retirement decisions</li>
+          </ul>
           <div class="hero-primary-actions">
-            <a href="https://journey.ronbelisle.com/" class="hero-btn hero-btn-primary" data-rb-event="journey_promotion_click" data-rb-param-placement="homepage_hero">Start Retirement Planning Journey</a>
-            <a href="retirement-plan/" class="hero-btn hero-btn-secondary">Open Retirement Plan Builder</a>
+            <a href="retirement-plan/" class="hero-btn hero-btn-primary">Build My Free Retirement Plan</a>
+            <a href="#planning-tools" class="hero-btn hero-btn-secondary">Explore Individual Calculators</a>
           </div>
         </div>
         <div class="hero-actions">
@@ -900,8 +926,8 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
     <main class="planning-shell" id="planning-tools">
       <?php if (!$hide_site_header): ?>
         <p class="section-kicker">Planning workspace</p>
-        <h2 class="section-title">What would you like to work on today?</h2>
-        <p class="section-copy">Start with a complete retirement plan, or jump directly into a specific planning topic. Every tool is designed to help answer an important financial planning question.</p>
+        <h2 class="section-title">Explore individual planning decisions</h2>
+        <p class="section-copy">Already know the question you want to answer? Choose a focused calculator for Social Security, spending, taxes, RMDs, portfolio risk, debt, and other financial planning topics.</p>
       <?php endif; ?>
 
       <?php if (!$hide_site_header): ?>
