@@ -158,8 +158,8 @@ if ($isEmbed) {
     <div class="premium-banner premium-active">
         <div class="premium-banner-content">
             <div class="premium-banner-text">
-                <h3>✓ Premium Active</h3>
-                <p>You have full access to all Premium features across the site.</p>
+                <h3>✓ Calculator Premium Active</h3>
+                <p>You have full access to Calculator Premium features across the site.</p>
             </div>
             <a href="/account.php" class="premium-banner-cta">Manage Account</a>
         </div>
@@ -173,17 +173,17 @@ if ($isEmbed) {
     <div class="premium-banner coming-soon">
         <div class="premium-banner-content">
             <div class="premium-banner-text">
-                <h3>✨ Premium Features Available</h3>
+                <h3>✨ Calculator Premium Features Available</h3>
                 <p>Save and compare scenarios, export PDF and CSV reports, AI-generated plain-language explanations of your specific results, and advanced projections.</p>
                 <p class="premium-banner-pricing"><?php echo htmlspecialchars($premiumPricingBlurb); ?></p>
                 <p class="premium-banner-secondary">
-                    <a href="<?php echo htmlspecialchars($premiumUpsellUrl); ?>" data-rb-event="premium_upsell_click" data-rb-param-location="premium_banner" data-rb-param-cta="learn">Learn about Premium</a>
+                    <a href="<?php echo htmlspecialchars($premiumUpsellUrl); ?>" data-rb-event="premium_upsell_click" data-rb-param-location="premium_banner" data-rb-param-cta="learn">Learn about Calculator Premium</a>
                     ·
                     <a href="/premium.html#pricing" data-rb-event="premium_upsell_click" data-rb-param-location="premium_banner" data-rb-param-cta="pricing">Pricing</a>
                 </p>
                 <p class="premium-banner-reassurance">Free tools remain free forever.</p>
             </div>
-            <a href="/subscribe.php" class="premium-banner-cta" data-rb-event="premium_upsell_click" data-rb-param-location="premium_banner" data-rb-param-cta="trial">Try Premium for free for 7 days</a>
+            <a href="/subscribe.php" class="premium-banner-cta" data-rb-event="premium_upsell_click" data-rb-param-location="premium_banner" data-rb-param-cta="trial">Try Calculator Premium free for 7 days</a>
         </div>
     </div>
 </div>

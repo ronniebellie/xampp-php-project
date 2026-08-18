@@ -60,7 +60,7 @@ $hide_site_header = isset($_GET['embed'])
 // SEO: homepage
 require_once __DIR__ . '/includes/seo_public_url.php';
 $seo_title = "Retirement Plan Builder & Financial Calculators";
-$seo_description = "Build a year-by-year retirement plan with free calculators for Social Security, spending, RMDs, and taxes. Premium adds Monte Carlo stress testing, PDF reports, AI explanations of your specific results, and YNAB budget auditing.";
+$seo_description = "Build a year-by-year retirement plan with free calculators for Social Security, spending, RMDs, and taxes. Calculator Premium adds Monte Carlo stress testing, PDF reports, AI explanations of your specific results, and YNAB budget auditing.";
 $seo_url = rb_seo_public_url();
 $seo_site_name = "Ron Belisle Financial Calculators";
 $seo_og_image = rb_seo_site_base_url() . '/images/og-default.jpg';
@@ -864,21 +864,21 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
             <a href="auth/logout.php" class="hero-btn hero-btn-secondary">Log Out</a>
             <?php if (!$is_premium): ?>
               <div class="hero-premium-path">
-                <p class="hero-action-label">Premium</p>
+                <p class="hero-action-label">Calculator Premium</p>
                 <p class="hero-action-note">Learn about the subscription and start a 7-day free trial.</p>
-                <a href="premium.html" class="hero-btn hero-btn-premium" data-rb-event="premium_trial_click" data-rb-param-placement="homepage_member_hero">Try Premium Free for 7 Days</a>
+                <a href="premium.html" class="hero-btn hero-btn-premium" data-rb-event="premium_trial_click" data-rb-param-placement="homepage_member_hero">Try Calculator Premium Free for 7 Days</a>
               </div>
             <?php else: ?>
-              <span class="premium-badge">✨ Premium Member</span>
+              <span class="premium-badge">✨ Calculator Premium Member</span>
             <?php endif; ?>
           <?php else: ?>
             <div class="hero-premium-path">
-              <p class="hero-action-label">Premium</p>
-              <a href="premium.html" class="hero-btn hero-btn-premium" data-rb-event="premium_trial_click" data-rb-param-placement="homepage_hero">Try Premium Free for 7 Days</a>
+              <p class="hero-action-label">Calculator Premium</p>
+              <a href="premium.html" class="hero-btn hero-btn-premium" data-rb-event="premium_trial_click" data-rb-param-placement="homepage_hero">Try Calculator Premium Free for 7 Days</a>
               <p class="hero-action-note">No charge today • Cancel anytime</p>
             </div>
             <div class="hero-login-path">
-              <p class="hero-action-label">Already have a Premium account?</p>
+              <p class="hero-action-label">Already have a Calculator Premium account?</p>
               <a href="auth/login.php" class="hero-btn hero-btn-secondary">Log In</a>
             </div>
           <?php endif; ?>
@@ -888,7 +888,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
 
     <nav class="site-top-nav" aria-label="Site sections">
       <a href="/" class="active" aria-current="page">Calculators</a>
-      <a href="https://journey.ronbelisle.com/" data-rb-event="journey_promotion_click" data-rb-param-placement="navigation">Journey</a>
+      <a href="https://journey.ronbelisle.com/" aria-label="Journey retirement plan, separate product and pricing" data-rb-event="journey_promotion_click" data-rb-param-placement="navigation">Journey (separate plan)</a>
     </nav>
     <?php endif; ?>
 
@@ -897,8 +897,8 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
       <div class="premium-banner member">
         <div class="premium-banner-content">
           <div class="premium-banner-text">
-            <h2>✓ Premium Active</h2>
-            <p>You have full access to all Premium features across the site.</p>
+            <h2>✓ Calculator Premium Active</h2>
+            <p>You have full access to Calculator Premium features across the site.</p>
           </div>
           <a href="account.php" class="premium-banner-cta">Manage Account</a>
         </div>
@@ -908,7 +908,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
       <div class="premium-banner">
         <div class="premium-banner-content">
           <div class="premium-banner-text">
-            <h2>Unlock Premium Features</h2>
+            <h2>Unlock Calculator Premium</h2>
             <p>Save and compare scenarios, export PDF and CSV reports, AI-generated plain-language explanations of your specific results, and advanced projections.</p>
             <p class="premium-banner-pricing"><?php echo htmlspecialchars($premium_pricing_blurb); ?> <a href="premium.html#pricing">See pricing</a></p>
             <div class="premium-banner-features">
@@ -918,7 +918,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
               <div class="premium-feature-item">Advanced Projections</div>
             </div>
           </div>
-            <a href="premium.html" class="premium-banner-cta" data-rb-event="premium_trial_click" data-rb-param-placement="homepage_upgrade_banner">Try Premium Free for 7 Days</a>
+            <a href="premium.html" class="premium-banner-cta" data-rb-event="premium_trial_click" data-rb-param-placement="homepage_upgrade_banner">Try Calculator Premium Free for 7 Days</a>
         </div>
       </div>
     <?php endif; ?>
@@ -944,7 +944,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
         <section class="primary-tool" aria-label="Retirement app links">
           <div>
             <h3>Retirement Plan Builder</h3>
-            <p>Enter your numbers once and see how savings, Social Security, spending, RMDs, and estimated federal taxes fit together year by year. Premium adds a Monte Carlo stress test on the same plan, plus PDF export and AI explanations of your specific results.</p>
+            <p>Enter your numbers once and see how savings, Social Security, spending, RMDs, and estimated federal taxes fit together year by year. Calculator Premium adds a Monte Carlo stress test on the same plan, plus PDF export and AI explanations of your specific results.</p>
           </div>
           <a class="btn btn-primary" href="retirement-plan/">Open</a>
         </section>
@@ -1020,7 +1020,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
         <section class="primary-tool" aria-label="YNAB budgeting tools">
           <div>
             <h3>AI Budget Auditor &amp; Financial Assistant <span class="feature-badge">AI-Powered</span></h3>
-            <p>Connect your YNAB budget to generate instant, rule-based category snapshots completely free. Upgrade to Premium to unlock interactive GPT-4o budget audits, overspending anomaly alerts, and personalized live chat follow-ups.</p>
+            <p>Connect your YNAB budget to generate instant, rule-based category snapshots completely free. Upgrade to Calculator Premium to unlock interactive GPT-4o budget audits, overspending anomaly alerts, and personalized live chat follow-ups.</p>
           </div>
           <a class="btn btn-primary" href="tools/ai-budget-auditor/">Open</a>
         </section>
@@ -1124,8 +1124,8 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
       <div class="premium-banner" id="premium">
         <div class="premium-banner-content">
           <div class="premium-banner-text">
-            <h2>Professional Planning Tools, Now with Premium Features</h2>
-            <p>All calculators above are free to use. Upgrade to Premium for the following features:</p>
+            <h2>Calculator Premium Features</h2>
+            <p>All calculators above are free to use. Calculator Premium adds the following features:</p>
             <p class="premium-banner-pricing"><?php echo htmlspecialchars($premium_pricing_blurb); ?> <a href="premium.html#pricing">See pricing</a></p>
             <div class="premium-banner-features">
               <div class="premium-feature-item">Save and compare scenarios</div>
