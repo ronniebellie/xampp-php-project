@@ -1,10 +1,10 @@
 <?php
 /**
- * Shared Google Analytics 4 tag for ronbelisle.com and journey.ronbelisle.com.
+ * Shared Google Analytics 4 tag for ronbelisle.com (main calculators site).
  * Measurement ID: G-3NB2DLYQFZ
  *
- * Loads once per page. cookie_domain is set to the parent domain so sessions
- * can continue across the Journey subdomain without a second GA4 property.
+ * Journey (journey.ronbelisle.com) uses its own dedicated GA4 property via
+ * journey.ronbelisle.com/includes/analytics.php.
  */
 ?>
 <!-- Google tag (gtag.js) -->

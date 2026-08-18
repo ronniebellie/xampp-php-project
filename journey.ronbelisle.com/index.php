@@ -7,8 +7,33 @@ $page_title = 'Your Retirement Planning Journey';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="noindex,nofollow">
+    <!-- Keep search engines out; do not use a blanket robots noindex — Meta's
+         crawler respects it and Sharing Debugger reports a robots/403 block. -->
+    <meta name="googlebot" content="noindex,nofollow">
+    <meta name="bingbot" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
+    <meta name="description" content="A free, guided six-phase process to help you build your initial retirement plan one decision at a time.">
+    <link rel="canonical" href="https://journey.ronbelisle.com/">
+    <!-- Open Graph / Facebook / LinkedIn -->
+    <meta property="og:title" content="Your Retirement Planning Journey">
+    <meta property="og:description" content="A free, guided six-phase process to help you build your initial retirement plan one decision at a time.">
+    <meta property="og:image" content="https://journey.ronbelisle.com/assets/images/journey-social-preview.jpg">
+    <meta property="og:image:secure_url" content="https://journey.ronbelisle.com/assets/images/journey-social-preview.jpg">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="627">
+    <meta property="og:image:alt" content="Your Retirement Planning Journey — six connected planning phases">
+    <meta property="og:url" content="https://journey.ronbelisle.com/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Retirement Planning Journey">
+    <meta property="og:locale" content="en_US">
+    <!-- X / Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://journey.ronbelisle.com/">
+    <meta name="twitter:title" content="Your Retirement Planning Journey">
+    <meta name="twitter:description" content="A free, guided six-phase process to help you build your initial retirement plan one decision at a time.">
+    <meta name="twitter:image" content="https://journey.ronbelisle.com/assets/images/journey-social-preview.jpg">
+    <meta name="twitter:image:alt" content="Your Retirement Planning Journey — six connected planning phases">
     <link rel="stylesheet" href="/assets/css/journey.css?v=20260801-feedback">
 </head>
 <body>

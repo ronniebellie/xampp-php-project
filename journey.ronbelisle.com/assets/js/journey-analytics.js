@@ -1,5 +1,5 @@
 /**
- * Journey GA4 funnel helpers (shared property G-3NB2DLYQFZ).
+ * Journey GA4 funnel helpers (Journey property G-8PMXKZ60L4).
  * Safe params only — never send names, emails, IDs, or financial values.
  */
 (function () {
