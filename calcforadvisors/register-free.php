@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!empty($existing['password_hash'])) {
                 $error = 'An account with this email already exists. <a href="login.php">Log in</a> instead.';
             } else {
-                $error = 'This email is already registered. <a href="request-set-password.php">Request a password setup link</a> to get started.';
+                $error = 'This email is already registered without a password. Please contact support to get started.';
             }
         } else {
             $stmt->close();

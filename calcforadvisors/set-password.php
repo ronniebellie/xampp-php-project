@@ -123,7 +123,7 @@ $showForm = empty($error) || $_SERVER['REQUEST_METHOD'] === 'POST';
         </div>
         <?php if ($error && !$showForm): ?>
             <div class="error"><?php echo htmlspecialchars($error); ?></div>
-            <p style="text-align: center;"><a href="request-set-password.php">Request a new link</a></p>
+            <p style="text-align: center;">Password setup by email is unavailable. Please contact support.</p>
         <?php elseif ($showForm): ?>
             <?php if ($error): ?>
                 <div class="error"><?php echo htmlspecialchars($error); ?></div>

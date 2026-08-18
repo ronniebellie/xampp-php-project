@@ -16,7 +16,6 @@ $vendor = file_exists($root . '/vendor/autoload.php') ? $root . '/vendor' : $roo
 
 require_once $includes . '/stripe_config.php';
 require_once $includes . '/db_config.php';
-require_once $includes . '/send_email.php';
 require_once $vendor . '/autoload.php';
 
 \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
@@ -108,39 +107,9 @@ switch ($event->type) {
         $stmt->close();
         error_log('calcforadvisors webhook: inserted subscriber ' . $email);
 
-        // Send welcome/set-password email to subscriber
-        if (defined('CALCFORADVISORS_AUTH_SECRET') && CALCFORADVISORS_AUTH_SECRET !== 'replace-with-random-secret-32chars'
-            && defined('CALCFORADVISORS_BASE_URL')) {
-            $expiry = time() + (60 * 60 * 24); // 24 hours
-            $payload = base64_encode($email) . '.' . base64_encode((string)$expiry);
-            $sig = hash_hmac('sha256', $payload, CALCFORADVISORS_AUTH_SECRET);
-            $token = $payload . '.' . $sig;
-            $url = rtrim(CALCFORADVISORS_BASE_URL, '/') . '/set-password.php?token=' . urlencode($token);
-
-            $subject = 'Welcome to calcforadvisors.com – set up your account';
-            $body = "Hi,\n\nThank you for subscribing to calcforadvisors.com. Set your password to access your account, manage billing, and get your white-label calculators:\n\n$url\n\nThis link expires in 24 hours. If you didn't subscribe, you can ignore this email.\n\n— calcforadvisors.com";
-
-            if (send_email_smtp($email, $subject, $body)) {
-                error_log('calcforadvisors webhook: sent welcome email to ' . $email);
-            } else {
-                error_log('calcforadvisors webhook: failed to send welcome email to ' . $email);
-            }
-        }
-
-        // Notify site owner about new subscription
-        $adminEmail = 'ronbelisle@gmail.com';
-        $adminSubject = 'New calcforadvisors subscription (' . ucfirst($plan) . ')';
-        $adminBody = "A new calcforadvisors subscription was created.\n\n"
-            . "Subscriber email: {$email}\n"
-            . "Plan: {$plan}\n"
-            . "Stripe subscription ID: {$subscriptionId}\n"
-            . "Stripe customer ID: {$customerIdStr}\n"
-            . "Event type: {$event->type}\n"
-            . "Time (UTC): " . gmdate('Y-m-d H:i:s') . "\n";
-
-        if (!send_email_smtp($adminEmail, $adminSubject, $adminBody)) {
-            error_log('calcforadvisors webhook: failed to send admin notification for ' . $email);
-        }
+        // Transactional email is intentionally disabled. The subscriber record
+        // is still created so Stripe billing state remains synchronized.
+        error_log('calcforadvisors webhook: subscriber recorded; email notifications disabled');
 
         break;
 

@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user = $result->fetch_assoc();
 
             if (empty($user['password_hash'])) {
-                $error = 'Your account is not set up yet. <a href="request-set-password.php">Request a password setup link</a> to get started.';
+                $error = 'Your account is not set up yet. Please contact support to get started.';
             } elseif (password_verify($password, $user['password_hash'])) {
                 $_SESSION['calcforadvisors_subscriber_id'] = $user['id'];
                 $_SESSION['calcforadvisors_subscriber_email'] = $user['email'];
@@ -148,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button type="submit" class="btn">Log In</button>
         </form>
         <div class="footer-links">
-            First time? <a href="register-free.php">Try free for 30 days</a> · <a href="request-set-password.php">Set up password</a>
+                First time? <a href="register-free.php">Try free for 30 days</a>
         </div>
     </div>
 </body>

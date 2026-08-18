@@ -106,8 +106,7 @@ try {
                 You’re in a <strong>30-day free trial</strong>. Your payment method is on file; you won’t be charged until the trial ends. You can cancel anytime from the billing portal.
             </p>
             <?php endif; ?>
-            <p>Set up your account to access your subscriber dashboard, manage billing, and get your white-label calculators.</p>
-            <a href="request-set-password.php" class="cta">Set up your account</a>
+            <p>Please contact support to set up your account and access your subscriber dashboard.</p>
             <p style="margin-top: 16px; font-size: 14px;"><a href="index.html" style="color: #2c5282;">Return to calcforadvisors.com</a></p>
         <?php endif; ?>
     </div>

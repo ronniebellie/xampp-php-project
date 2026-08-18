@@ -1,56 +1,5 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
-rb_session_start();
-require_once __DIR__ . '/../includes/db_config.php';
-require_once __DIR__ . '/../includes/password_reset.php';
-require_once __DIR__ . '/../includes/send_email.php';
-
-$message = '';
-$error = '';
-
-if (!rb_password_reset_configured()) {
-    $error = 'Password reset is not configured. Please contact support.';
-} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = filter_var($_POST['email'] ?? '', FILTER_SANITIZE_EMAIL);
-
-    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = 'Please enter a valid email address.';
-    } else {
-        $stmt = $conn->prepare('SELECT id, email FROM users WHERE email = ?');
-        $stmt->bind_param('s', $email);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if ($result->num_rows === 1) {
-            $user = $result->fetch_assoc();
-            $stmt->close();
-
-            $token = rb_password_reset_create_token($user['email']);
-            $url = rb_auth_base_url() . '/auth/reset-password.php?token=' . urlencode($token);
-
-            $subject = 'Reset your Ron Belisle account password';
-            $body = "Hi,\n\n"
-                . "We received a request to reset the password for your ronbelisle.com account.\n\n"
-                . "Reset your password (link expires in 24 hours):\n\n"
-                . $url . "\n\n"
-                . "If you didn't request this, you can ignore this email. Your password won't change.\n\n"
-                . "— Ron Belisle Financial Calculators\n";
-
-            if (send_email_smtp($user['email'], $subject, $body)) {
-                $message = 'If that email is in our system, we sent a reset link. Check your inbox and spam folder.';
-            } else {
-                $mailError = function_exists('rb_send_email_last_error') ? rb_send_email_last_error() : null;
-                // Customer-facing copy stays vendor-neutral; logs retain the diagnostic code.
-                $error = 'We’re unable to send password-reset email right now. Please try again later or contact support.';
-                error_log('forgot-password: send failed for user_id=' . (int) $user['id'] . ' err=' . ($mailError ?? 'unknown'));
-            }
-        } else {
-            $stmt->close();
-            $message = 'If that email is in our system, we sent a reset link. Check your inbox and spam folder.';
-        }
-        $conn->close();
-    }
-}
+$error = 'Password reset by email is not available. Please contact support for assistance.';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -113,27 +62,11 @@ if (!rb_password_reset_configured()) {
         <a href="../" class="home-link">← Back to Home</a>
         <div class="logo">
             <h1>Forgot Password</h1>
-            <p>We'll email you a link to reset your password</p>
+            <p>Email password reset is unavailable</p>
         </div>
 
-        <?php if ($message): ?>
-            <div class="message"><?php echo htmlspecialchars($message); ?></div>
-            <div class="footer-links"><a href="login.php">Back to log in</a></div>
-        <?php else: ?>
-            <?php if ($error): ?>
-                <div class="error"><?php echo htmlspecialchars($error); ?></div>
-            <?php endif; ?>
-            <form method="POST" action="">
-                <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" id="email" name="email" required value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
-                </div>
-                <button type="submit" class="btn">Send Reset Link</button>
-            </form>
-            <div class="footer-links">
-                Remember your password? <a href="login.php">Log in</a>
-            </div>
-        <?php endif; ?>
+        <div class="error"><?php echo htmlspecialchars($error); ?></div>
+        <div class="footer-links"><a href="login.php">Back to log in</a></div>
     </div>
 </body>
 </html>

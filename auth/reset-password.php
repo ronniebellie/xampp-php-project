@@ -130,7 +130,7 @@ if (!rb_password_reset_configured()) {
             </form>
         <?php else: ?>
             <div class="footer-links">
-                <a href="forgot-password.php">Request a new reset link</a>
+                Password reset by email is unavailable. Please contact support.
             </div>
         <?php endif; ?>
     </div>

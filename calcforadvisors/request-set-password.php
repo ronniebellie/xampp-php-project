@@ -1,62 +1,10 @@
 <?php
 /**
- * Request a "set password" link for calcforadvisors subscribers.
- * Sends an email with a signed token link (no DB storage).
+ * Password setup by email is intentionally disabled because this site does not
+ * use a transactional email provider.
  */
 require_once __DIR__ . '/includes/init.php';
-require_once CALCFORADVISORS_INCLUDES . '/db_config.php';
-require_once CALCFORADVISORS_INCLUDES . '/stripe_config.php';
-require_once CALCFORADVISORS_INCLUDES . '/send_email.php';
-
-$message = '';
-$error = '';
-
-if (!defined('CALCFORADVISORS_AUTH_SECRET') || CALCFORADVISORS_AUTH_SECRET === 'replace-with-random-secret-32chars') {
-    $error = 'Password setup is not configured. Please contact support.';
-} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = filter_var($_POST['email'] ?? '', FILTER_SANITIZE_EMAIL);
-
-    if (empty($email)) {
-        $error = 'Please enter your email address.';
-    } else {
-        $stmt = $conn->prepare('SELECT id, email, status FROM calcforadvisors_subscribers WHERE email = ? AND status = ?');
-        $status = 'active';
-        $stmt->bind_param('ss', $email, $status);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if ($result->num_rows >= 1) {
-            $user = $result->fetch_assoc();
-            $stmt->close();
-
-            $expiry = time() + (60 * 60 * 24); // 24 hours
-            $payload = base64_encode($user['email']) . '.' . base64_encode((string)$expiry);
-            $sig = hash_hmac('sha256', $payload, CALCFORADVISORS_AUTH_SECRET);
-            $token = $payload . '.' . $sig;
-
-            $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-            $host = $_SERVER['HTTP_HOST'] ?? 'calcforadvisors.com';
-            $base = $scheme . '://' . $host . dirname($_SERVER['SCRIPT_NAME'] ?? '');
-            $base = rtrim($base, '/');
-            $url = $base . '/set-password.php?token=' . urlencode($token);
-
-            $subject = 'Set up your calcforadvisors.com account';
-            $body = "Hi,\n\nClick the link below to set your password and access your calcforadvisors account:\n\n$url\n\nThis link expires in 24 hours. If you didn't request this, you can ignore this email.\n\n— calcforadvisors.com";
-
-            $sendOk = send_email_smtp($user['email'], $subject, $body);
-            if ($sendOk) {
-                $message = 'If that email is in our system, we\'ve sent you a link to set your password. Check your inbox (and spam folder).';
-            } else {
-                $error = 'We couldn\'t send the email. Please contact support@calcforadvisors.com.';
-            }
-        } else {
-            $stmt->close();
-            // Don't reveal whether the email exists
-            $message = 'If that email is in our system, we\'ve sent you a link to set your password. Check your inbox (and spam folder).';
-        }
-        $conn->close();
-    }
-}
+$error = 'Password setup by email is not available. Please contact support for assistance.';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -119,33 +67,10 @@ if (!defined('CALCFORADVISORS_AUTH_SECRET') || CALCFORADVISORS_AUTH_SECRET === '
         <div class="logo">
             <h1>Set Up Your Password</h1>
         </div>
-        <?php if ($message): ?>
-            <div class="message"><?php echo htmlspecialchars($message); ?></div>
-            <div class="footer-links">
-                <a href="login.php">Back to login</a>
-            </div>
-        <?php elseif ($error): ?>
-            <div class="error"><?php echo htmlspecialchars($error); ?></div>
-            <form method="POST" action="">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" required value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
-                </div>
-                <button type="submit" class="btn">Send Setup Link</button>
-            </form>
-        <?php else: ?>
-            <p style="margin-bottom: 20px; color: #64748b; font-size: 14px;">Enter the email you used when subscribing. We'll send you a link to set your password.</p>
-            <form method="POST" action="">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" required value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
-                </div>
-                <button type="submit" class="btn">Send Setup Link</button>
-            </form>
-            <div class="footer-links" style="margin-top: 18px;">
-                Already have a password? <a href="login.php">Log in</a>
-            </div>
-        <?php endif; ?>
+        <div class="error"><?php echo htmlspecialchars($error); ?></div>
+        <div class="footer-links" style="margin-top: 18px;">
+            <a href="login.php">Back to login</a>
+        </div>
     </div>
 </body>
 </html>
