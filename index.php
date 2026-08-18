@@ -853,8 +853,8 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
             <li>Your starting point for retirement decisions</li>
           </ul>
           <div class="hero-primary-actions">
-            <a href="retirement-plan/" class="hero-btn hero-btn-primary">Build My Free Retirement Plan</a>
-            <a href="#planning-tools" class="hero-btn hero-btn-secondary">Explore Individual Calculators</a>
+            <a href="retirement-plan/" class="hero-btn hero-btn-primary" data-rb-event="retirement_plan_start" data-rb-param-placement="homepage_hero">Build My Free Retirement Plan</a>
+            <a href="#planning-tools" class="hero-btn hero-btn-secondary" data-rb-event="calculator_explore_click" data-rb-param-placement="homepage_hero">Explore Individual Calculators</a>
           </div>
         </div>
         <div class="hero-actions">
@@ -866,7 +866,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
               <div class="hero-premium-path">
                 <p class="hero-action-label">Premium</p>
                 <p class="hero-action-note">Learn about the subscription and start a 7-day free trial.</p>
-                <a href="premium.html" class="hero-btn hero-btn-premium">Start Free Trial</a>
+                <a href="premium.html" class="hero-btn hero-btn-premium" data-rb-event="premium_trial_click" data-rb-param-placement="homepage_member_hero">Try Premium Free for 7 Days</a>
               </div>
             <?php else: ?>
               <span class="premium-badge">✨ Premium Member</span>
@@ -874,7 +874,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
           <?php else: ?>
             <div class="hero-premium-path">
               <p class="hero-action-label">Premium</p>
-              <a href="premium.html" class="hero-btn hero-btn-premium">Start 7-Day Free Trial</a>
+              <a href="premium.html" class="hero-btn hero-btn-premium" data-rb-event="premium_trial_click" data-rb-param-placement="homepage_hero">Try Premium Free for 7 Days</a>
               <p class="hero-action-note">No charge today • Cancel anytime</p>
             </div>
             <div class="hero-login-path">
@@ -918,7 +918,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
               <div class="premium-feature-item">Advanced Projections</div>
             </div>
           </div>
-          <a href="premium.html" class="premium-banner-cta">Try Free for 7 Days</a>
+            <a href="premium.html" class="premium-banner-cta" data-rb-event="premium_trial_click" data-rb-param-placement="homepage_upgrade_banner">Try Premium Free for 7 Days</a>
         </div>
       </div>
     <?php endif; ?>
