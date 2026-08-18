@@ -94,12 +94,18 @@ rollback() {
   echo "Rolled back to $previous" >&2
 }
 
-if ! curl -fsSL --max-time 15 "https://ronbelisle.com/?deploy=$release_id" | grep -q 'Social Security Claiming Analyzer'; then
+homepage_body="$(mktemp)"
+calc_body="$(mktemp)"
+trap 'rm -f "$homepage_body" "$calc_body"' EXIT
+
+if ! curl -fsSL --max-time 15 "https://ronbelisle.com/?deploy=$release_id" -o "$homepage_body" \
+  || ! grep -q 'Social Security Claiming Analyzer' "$homepage_body"; then
   rollback
   exit 1
 fi
 
-if ! curl -fsSL --max-time 15 "https://calcforadvisors.com/?deploy=$release_id" | grep -qi 'calcforadvisors'; then
+if ! curl -fsSL --max-time 15 "https://calcforadvisors.com/?deploy=$release_id" -o "$calc_body" \
+  || ! grep -qi 'calcforadvisors' "$calc_body"; then
   rollback
   exit 1
 fi
