@@ -74,6 +74,11 @@ $pageTitle = 'Administrator';
                     <?php endif; ?>
                 </a>
             </li>
+            <li>
+                <a href="/admin/calcforadvisors-passwords.php">
+                    CalcForAdvisors Password Provisioning
+                </a>
+            </li>
         </ul>
     </div>
 </div>
