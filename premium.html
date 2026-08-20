@@ -362,6 +362,46 @@
                 margin-top: 10px;
             }
         }
+
+        /* Calculator product styling: keep the page focused on the outcome,
+           while retaining the detailed comparison and FAQ content below. */
+        :root {
+            --rb-ink: #0f172a;
+            --rb-muted: #526071;
+            --rb-border: #d9e1ec;
+            --rb-blue: #1d4ed8;
+            --rb-blue-dark: #173f8a;
+            --rb-green: #047857;
+            --rb-paper: #ffffff;
+        }
+
+        body { color: var(--rb-ink); background: linear-gradient(180deg, #f8fafc 0%, #f5f7fb 48%, #eef2f7 100%); }
+        .hero { max-width: 1120px; margin: 22px auto 28px; padding: 58px 34px; border: 1px solid var(--rb-border); border-radius: 18px; background: linear-gradient(135deg, #173f8a 0%, #1d4ed8 68%, #2563eb 100%); box-shadow: 0 14px 34px rgba(15, 23, 42, .14); }
+        .hero h1 { max-width: 780px; margin-left: auto; margin-right: auto; letter-spacing: -.02em; }
+        .hero p { max-width: 760px; margin-left: auto; margin-right: auto; }
+        .cta-button { background: #047857; border-radius: 10px; padding: 15px 24px; }
+        .cta-button:hover { background: #065f46; }
+        .cta-button.secondary { background: transparent; border-color: rgba(255,255,255,.7); }
+        .container { max-width: 1120px; }
+        .features-section, .pricing-section, .faq-section { border: 1px solid var(--rb-border); border-radius: 16px; box-shadow: 0 10px 26px rgba(15,23,42,.07); }
+        .features-section h2, .pricing-section h2, .faq-section h2, .feature-card h3, .pricing-card h3, .faq-item h3 { color: var(--rb-blue-dark); }
+        .feature-card { border-color: var(--rb-border); border-radius: 12px; }
+        .pricing-card { border-radius: 12px; }
+        .decision-preview { display: grid; grid-template-columns: 1.1fr .9fr; gap: 24px; align-items: stretch; margin: 0 0 40px; padding: 30px; border: 1px solid var(--rb-border); border-radius: 16px; background: #fff; box-shadow: 0 10px 26px rgba(15,23,42,.07); }
+        .decision-preview h2 { margin: 0 0 10px; color: var(--rb-blue-dark); font-size: 30px; }
+        .decision-preview p { color: var(--rb-muted); line-height: 1.65; }
+        .decision-steps { display: grid; gap: 12px; margin-top: 20px; }
+        .decision-step { display: flex; gap: 12px; align-items: flex-start; }
+        .decision-step strong { display: block; color: var(--rb-ink); }
+        .decision-step span { color: var(--rb-muted); font-size: 14px; }
+        .step-number { display: grid; place-items: center; flex: 0 0 28px; height: 28px; border-radius: 50%; background: #dbeafe; color: var(--rb-blue); font-weight: 800; }
+        .report-preview { padding: 20px; border-radius: 12px; background: #eff6ff; border: 1px solid #bfdbfe; }
+        .report-preview-label { margin: 0 0 12px; color: var(--rb-blue) !important; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+        .report-preview h3 { margin: 0 0 16px; color: var(--rb-ink); }
+        .report-row { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid rgba(59,130,246,.18); color: var(--rb-muted); font-size: 14px; }
+        .report-row strong { color: var(--rb-ink); }
+        .report-note { margin: 14px 0 0; color: var(--rb-green) !important; font-size: 13px; font-weight: 700; }
+        @media (max-width: 760px) { .hero { margin: 12px 12px 22px; padding: 42px 22px; } .decision-preview { grid-template-columns: 1fr; padding: 22px; } }
     </style>
 </head>
 <body>
@@ -378,6 +418,27 @@
     <div class="container">
         <div class="container">
         <p style="margin-bottom: 20px;"><a href="index.php" style="text-decoration: none; color: #3182ce;">← Return to home page</a></p>
+
+        <section class="decision-preview" aria-labelledby="decision-preview-title">
+            <div>
+                <h2 id="decision-preview-title">Make a decision you can explain</h2>
+                <p>Premium is for the point after a quick calculator answer—when you want to test a few paths, understand the trade-offs, and keep a record you can revisit.</p>
+                <div class="decision-steps">
+                    <div class="decision-step"><b class="step-number">1</b><div><strong>Run the free calculator</strong><span>Start with your actual numbers and see the first result.</span></div></div>
+                    <div class="decision-step"><b class="step-number">2</b><div><strong>Compare the choices</strong><span>Save alternate assumptions and see how the plan changes.</span></div></div>
+                    <div class="decision-step"><b class="step-number">3</b><div><strong>Take the result with you</strong><span>Export a report or ask for a plain-English explanation of your numbers.</span></div></div>
+                </div>
+            </div>
+            <div class="report-preview" aria-label="Sample Premium report preview">
+                <p class="report-preview-label">Illustrative Premium report</p>
+                <h3>Retirement income outlook</h3>
+                <div class="report-row"><span>Base plan reaches age 95</span><strong>On track</strong></div>
+                <div class="report-row"><span>Stress-tested success range</span><strong>78–91%</strong></div>
+                <div class="report-row"><span>Largest decision point</span><strong>Claiming age</strong></div>
+                <p class="report-note">✓ Example only—not a forecast. Save your own plan, compare another, and export the explanation.</p>
+            </div>
+        </section>
+
         <!-- Features Section -->
         <div class="features-section" id="features">
             <h2>What's Included in Calculator Premium?</h2>
