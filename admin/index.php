@@ -79,6 +79,11 @@ $pageTitle = 'Administrator';
                     CalcForAdvisors Password Provisioning
                 </a>
             </li>
+            <li>
+                <a href="/admin/user-passwords.php">
+                    Consumer Account Password Reset
+                </a>
+            </li>
         </ul>
     </div>
 </div>

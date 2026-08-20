@@ -1,5 +1,5 @@
 <?php
-$error = 'Password reset by email is not available. Please contact support for assistance.';
+$supportEmail = 'ronbelisle@gmail.com';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -62,10 +62,14 @@ $error = 'Password reset by email is not available. Please contact support for a
         <a href="../" class="home-link">← Back to Home</a>
         <div class="logo">
             <h1>Forgot Password</h1>
-            <p>Email password reset is unavailable</p>
+            <p>Get help signing back in</p>
         </div>
 
-        <div class="error"><?php echo htmlspecialchars($error); ?></div>
+        <div class="message">
+            Automatic email password reset is not currently available. Please email
+            <a href="mailto:<?php echo htmlspecialchars($supportEmail, ENT_QUOTES, 'UTF-8'); ?>?subject=Password%20reset%20request"><?php echo htmlspecialchars($supportEmail, ENT_QUOTES, 'UTF-8'); ?></a>
+            from the address on your account, and we will help you regain access.
+        </div>
         <div class="footer-links"><a href="login.php">Back to log in</a></div>
     </div>
 </body>

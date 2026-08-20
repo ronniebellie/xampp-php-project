@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 rb_auth_redirect_after_auth();
             } elseif ($trialIntent) {
-                $error = 'Incorrect password. Try again or use Forgot password below.';
+                $error = 'Incorrect email or password.';
             } else {
                 $error = 'Invalid email or password';
             }
@@ -308,6 +308,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-group">
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" required>
+                <div class="forgot-link"><a href="forgot-password.php">Forgot your password?</a></div>
             </div>
             
             <div class="remember-me">
