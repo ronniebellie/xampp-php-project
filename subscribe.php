@@ -33,6 +33,7 @@ if ($user['subscription_status'] === 'premium') {
     <meta name="description" content="Start a 7-day free trial of Premium. Save scenarios, export PDF/CSV, AI explanations, and more across all calculators.">
     <title>Subscribe to Premium - Ron Belisle Financial Planning</title>
     <?php $og_title = 'Subscribe to Premium - Ron Belisle Financial Planning'; $og_description = 'Start a 7-day free trial of Premium. Save scenarios, export PDF/CSV, AI explanations, and more across all calculators.'; include(__DIR__ . '/includes/og-twitter-meta.php'); ?>
+    <?php include(__DIR__ . '/includes/analytics.php'); ?>
     <link rel="stylesheet" href="css/shared-styles.css">
     <script src="https://js.stripe.com/v3/"></script>
     <style>
@@ -199,7 +200,7 @@ if ($user['subscription_status'] === 'premium') {
                     <li>Cancel anytime</li>
                 </ul>
                 
-                <button class="subscribe-btn" onclick="checkout('monthly')">
+                <button class="subscribe-btn" data-rb-event="premium_checkout_start" data-rb-param-plan="monthly" onclick="checkout('monthly')">
                     Start 7-day free trial
                 </button>
             </div>
@@ -221,7 +222,7 @@ if ($user['subscription_status'] === 'premium') {
                     <li>Cancel anytime</li>
                 </ul>
                 
-                <button class="subscribe-btn" onclick="checkout('annual')">
+                <button class="subscribe-btn" data-rb-event="premium_checkout_start" data-rb-param-plan="annual" onclick="checkout('annual')">
                     Start 7-day free trial
                 </button>
             </div>

@@ -127,6 +127,7 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to Premium! - Ron Belisle Financial Planning</title>
+    <?php include(__DIR__ . '/includes/analytics.php'); ?>
     <link rel="stylesheet" href="css/shared-styles.css">
     <style>
         .success-container {
@@ -244,5 +245,12 @@ try {
             <?php endif; ?>
         <?php endif; ?>
     </div>
+    <?php if (!isset($error_message)): ?>
+    <script>
+      window.rbTrack && window.rbTrack('premium_subscription_success', {
+        trial: <?php echo $trial_active ? 'true' : 'false'; ?>
+      });
+    </script>
+    <?php endif; ?>
 </body>
 </html>

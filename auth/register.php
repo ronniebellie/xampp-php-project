@@ -269,7 +269,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="success"><?php echo $success; ?></div>
         <?php endif; ?>
         
-        <form method="POST" action="">
+        <form method="POST" action="" data-rb-event="account_signup_submit" data-rb-param-intent="<?php echo ($trialIntent || $journeyTrialIntent) ? 'trial' : 'free'; ?>">
             <div class="form-group">
                 <label for="full_name">Full Name</label>
                 <input type="text" id="full_name" name="full_name" required>
