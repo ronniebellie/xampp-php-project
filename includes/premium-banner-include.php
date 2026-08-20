@@ -8,11 +8,12 @@
 }
 
 .premium-banner {
-    background: linear-gradient(135deg, #2c5282 0%, #3182ce 100%);
+    background: linear-gradient(135deg, #173f8a 0%, #1d4ed8 68%, #2563eb 100%);
     color: white;
     padding: 24px 32px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    border-radius: 8px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,.18);
 }
 
 .premium-banner-content {
@@ -44,6 +45,21 @@
     margin-top: 8px;
     font-size: 14px;
     font-weight: 600;
+}
+
+.premium-banner-value {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-top: 14px !important;
+    font-size: 13px !important;
+    font-weight: 700;
+}
+
+.premium-banner-value span::before {
+    content: "✓";
+    margin-right: 6px;
+    color: #86efac;
 }
 
 .premium-banner-secondary {
@@ -84,7 +100,7 @@
 }
 
 .premium-banner.coming-soon {
-    background: linear-gradient(135deg, #805ad5 0%, #9f7aea 100%);
+    background: linear-gradient(135deg, #173f8a 0%, #1d4ed8 68%, #2563eb 100%);
 }
 
 .premium-banner.coming-soon .premium-banner-cta {
@@ -174,8 +190,13 @@ if ($isEmbed) {
         <div class="premium-banner-content">
             <div class="premium-banner-text">
                 <h3>✨ Calculator Premium Features Available</h3>
-                <p>Save and compare scenarios, export PDF and CSV reports, AI-generated plain-language explanations of your specific results, and advanced projections.</p>
+                <p>Turn this result into a decision you can revisit: compare another path, understand the trade-offs, and take a clear report with you.</p>
                 <p class="premium-banner-pricing"><?php echo htmlspecialchars($premiumPricingBlurb); ?></p>
+                <p class="premium-banner-value" aria-label="Premium benefits">
+                    <span>Save &amp; compare</span>
+                    <span>Explain your results</span>
+                    <span>Export a report</span>
+                </p>
                 <p class="premium-banner-secondary">
                     <a href="<?php echo htmlspecialchars($premiumUpsellUrl); ?>" data-rb-event="premium_upsell_click" data-rb-param-location="premium_banner" data-rb-param-cta="learn">Learn about Calculator Premium</a>
                     ·
