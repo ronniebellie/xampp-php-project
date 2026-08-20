@@ -387,6 +387,11 @@ $defaultRetirementAge = 67;
         <p id="depletedNote" style="margin: 12px 0 0; font-size: 14px; color: #4b5563;"></p>
       </div>
 
+      <div id="planTakeaway" class="plan-takeaway" role="status" aria-live="polite">
+        <strong>Your planning takeaway</strong>
+        <span>Build your plan to see how savings, income, taxes, and withdrawals fit together.</span>
+      </div>
+
       <div class="chart-section">
         <h3>Portfolio balance over time</h3>
         <div class="chart-wrap">
@@ -505,6 +510,11 @@ $defaultRetirementAge = 67;
     ?>
     <?php endif; ?>
   </div>
+
+  <style>
+    .plan-takeaway { margin: 18px 0 26px; padding: 18px 20px; border-left: 5px solid #1d4ed8; border-radius: 10px; background: #eff6ff; color: #334155; line-height: 1.55; }
+    .plan-takeaway strong { display: block; margin-bottom: 4px; color: #173f8a; font-size: 1.05rem; }
+  </style>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="../js/lib/finance-core.js"></script>

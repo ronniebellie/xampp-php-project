@@ -295,6 +295,14 @@
     el('metricIncome').textContent = fmt(s.retirementAnnualIncome);
     el('metricLifetimeTax').textContent = fmt(s.lifetimeFederalTax);
 
+    var takeaway = el('planTakeaway');
+    if (takeaway) {
+      var endingText = s.depletedAge
+        ? ('may run out around age ' + s.depletedAge)
+        : ('ends around ' + fmt(s.endingBalance) + ' at age ' + lastInputs.planEndAge);
+      takeaway.innerHTML = '<strong>Your planning takeaway</strong><span>' + s.status.headline + ' Your modeled portfolio ' + endingText + '. The detailed timeline below shows which years are most affected by withdrawals, Social Security, RMDs, and estimated federal taxes.</span>';
+    }
+
     var rmdNote = el('rmdNote');
     if (s.firstRmdAmount > 0) {
       rmdNote.textContent = 'Estimated first RMD at age ' + s.rmdStartAge + ': ' + fmt(s.firstRmdAmount) +
