@@ -520,6 +520,14 @@ function displayResults(results, data) {
     `;
     document.getElementById('summaryCards').innerHTML = summaryHTML;
 
+    const takeaway = document.getElementById('resultTakeaway');
+    if (takeaway) {
+        const firstRmdAge = firstRMD.age || 73;
+        const firstRmdText = formatCurrency(firstRMD.rmdAmount);
+        const age80Text = formatCurrency(age80Data.rmdAmount);
+        takeaway.innerHTML = `<strong>Your planning takeaway</strong><span>Your projection shows a first required distribution of <strong>${firstRmdText}</strong> around age ${firstRmdAge}. By age 80, that estimate is ${age80Text}. The year-by-year table below helps you see when income and tax pressure may change.</span>`;
+    }
+
     document.getElementById('interpretation').innerHTML = generateInterpretation(results, data);
 
     const chartData = results.filter(r => r.age >= data.currentAge && r.age <= 100);
