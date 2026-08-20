@@ -874,8 +874,8 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
           <?php else: ?>
             <div class="hero-premium-path">
               <p class="hero-action-label">Calculator Premium</p>
-              <a href="premium.html" class="hero-btn hero-btn-premium" data-rb-event="premium_trial_click" data-rb-param-placement="homepage_hero">Try Calculator Premium Free for 7 Days</a>
-              <p class="hero-action-note">No charge today • Cancel anytime</p>
+              <p class="hero-action-note">Start with the free plan above, then add saved scenarios, reports, and advanced projections when you need them.</p>
+              <a href="premium.html" class="hero-btn hero-btn-secondary" data-rb-event="premium_details_click" data-rb-param-placement="homepage_hero">See Calculator Premium</a>
             </div>
             <div class="hero-login-path">
               <p class="hero-action-label">Already have a Calculator Premium account?</p>
