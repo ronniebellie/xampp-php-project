@@ -195,6 +195,13 @@ document.getElementById('ssForm').addEventListener('submit', function(e) {
         </div>
     `;
     document.getElementById('summaryCards').innerHTML = summaryHTML;
+
+    const takeaway = document.getElementById('resultTakeaway');
+    if (takeaway) {
+        const increaseText = formatCurrency(monthlyC - monthlyA);
+        const percentText = ((monthlyC / monthlyA - 1) * 100).toFixed(0);
+        takeaway.innerHTML = `<strong>Your claiming takeaway</strong><span>Using a life expectancy of ${lifeExpectancy}, the highest modeled lifetime total comes from claiming at age <strong>${bestScenario.age}</strong>. Waiting from age ${claimAgeA} to ${claimAgeC} increases the monthly estimate by <strong>${increaseText} (${percentText}%)</strong>; the break-even ages below show when that trade-off may pay off.</span>`;
+    }
     
     // Create interpretation
     let interpretationHTML = '<h3>Analysis & Recommendations</h3><ul>';

@@ -134,6 +134,11 @@ $isPremium = has_premium_access();
             
             <div class="summary-grid" id="summaryCards"></div>
 
+            <div id="resultTakeaway" class="result-takeaway" role="status" aria-live="polite">
+                <strong>Your claiming takeaway</strong>
+                <span>Compare the scenarios below to see how claiming age changes monthly income and lifetime benefits.</span>
+            </div>
+
             <div class="chart-section">
                 <h3>Cumulative Lifetime Benefits</h3>
                 <div class="chart-wrapper">
@@ -179,6 +184,11 @@ $isPremium = has_premium_access();
         ?>
         <?php endif; ?>
     </div>
+
+    <style>
+        .result-takeaway { margin: 18px 0 26px; padding: 18px 20px; border-left: 5px solid #1d4ed8; border-radius: 10px; background: #eff6ff; color: #334155; line-height: 1.55; }
+        .result-takeaway strong { display: block; margin-bottom: 4px; color: #173f8a; font-size: 1.05rem; }
+    </style>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="../js/share-results.js"></script>
