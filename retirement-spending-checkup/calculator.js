@@ -165,6 +165,12 @@ document.addEventListener('DOMContentLoaded', () => {
     onTrackStatus.textContent = statusText;
     onTrackDetail.textContent = detailText;
 
+    const takeaway = document.getElementById('spendingTakeaway');
+    if (takeaway) {
+      const targetText = requiredNestEgg > 0 ? fmtCurrency(requiredNestEgg) : 'not required';
+      takeaway.innerHTML = '<strong>Your spending takeaway</strong><span>' + statusText + '. Your target retirement budget is <strong>' + fmtCurrency(annualBudget) + ' per year</strong>, with ' + fmtCurrency(annualFromPortfolio) + ' needed from the portfolio. This rule-of-thumb check estimates a target nest egg of <strong>' + targetText + '</strong>; the detailed planning tools below can test taxes, longevity, and market risk.</span>';
+    }
+
     const explanation = [];
     explanation.push(
       'This checkup uses your current monthly spending, an adjustable retirement spending percentage, and a withdrawal rate (defaulting to 4%) to estimate a target portfolio size.'
@@ -244,5 +250,4 @@ function explainResults() {
     alert('Explain results: ' + err.message);
   });
 }
-
 

@@ -192,6 +192,11 @@ $isPremium = has_premium_access();
         </div>
       </div>
 
+      <div id="spendingTakeaway" class="result-takeaway" role="status" aria-live="polite">
+        <strong>Your spending takeaway</strong>
+        <span>Run the checkup to see whether your current savings support the retirement budget you entered.</span>
+      </div>
+
       <div class="info-box-blue" id="explanationBox" style="margin-top: 10px;">
         <h3 style="margin-top: 0;">How to read this</h3>
         <p id="explanationText">
@@ -223,6 +228,11 @@ $isPremium = has_premium_access();
     <?php endif; ?>
   </div>
 
+  <style>
+    .result-takeaway { margin: 18px 0 26px; padding: 18px 20px; border-left: 5px solid #1d4ed8; border-radius: 10px; background: #eff6ff; color: #334155; line-height: 1.55; }
+    .result-takeaway strong { display: block; margin-bottom: 4px; color: #173f8a; font-size: 1.05rem; }
+  </style>
+
   <script src="../js/lib/url-prefill.js"></script>
   <script src="../js/share-results.js"></script>
     <script src="../js/explain-results-modal.js"></script>
@@ -231,4 +241,3 @@ $isPremium = has_premium_access();
     <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/calculator-footer.php'; ?>
 </body>
 </html>
-
