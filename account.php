@@ -401,12 +401,15 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
             </div>
 
             <?php if (!$is_calculator_premium): ?>
-            <div class="account-section account-section-muted">
-                <h2>Other Products</h2>
+            <div class="account-section">
+                <h2>Calculator Premium</h2>
+                <p class="status-detail" style="margin-top:0;">Advanced planning features for the retirement calculators. This is separate from Journey Premium.</p>
+                <div class="info-row">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value"><span class="status-muted">Not active</span></span>
+                </div>
                 <div class="other-product">
-                    <p class="other-product-title">Calculator Premium</p>
-                    <a class="other-product-link" href="premium.html">Learn More</a>
-                    <p class="other-product-detail">Advanced planning features for the retirement calculators.</p>
+                    <a class="btn" href="premium.html">Learn about Calculator Premium</a>
                 </div>
             </div>
             <?php endif; ?>
