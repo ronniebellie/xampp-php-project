@@ -190,7 +190,7 @@ if ($isEmbed) {
         <div class="premium-banner-content">
             <div class="premium-banner-text">
                 <h3>✨ Calculator Premium Features Available</h3>
-                <p>Turn this result into a decision you can revisit: compare another path, understand the trade-offs, and take a clear report with you.</p>
+                <p>Start with a free calculator, then turn your results into a decision you can revisit: compare another path, understand the trade-offs, and take a clear report with you.</p>
                 <p class="premium-banner-pricing"><?php echo htmlspecialchars($premiumPricingBlurb); ?></p>
                 <p class="premium-banner-value" aria-label="Premium benefits">
                     <span>Save &amp; compare</span>
