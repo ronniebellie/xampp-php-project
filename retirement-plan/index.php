@@ -504,8 +504,8 @@ $defaultRetirementAge = 67;
 
     <?php if (!$isPremium): ?>
     <?php
-      $premium_upsell_headline = 'See Your Complete Retirement Timeline';
-      $premium_upsell_text = 'Upgrade to Premium for the full year-by-year table through your plan end age, Monte Carlo stress test, PDF report, save and compare scenarios, CSV export, and AI explanations of your plan.';
+      $premium_upsell_headline = 'See what Premium adds to this plan';
+      $premium_upsell_text = 'Turn this plan into a decision you can revisit: unlock the full timeline, Monte Carlo stress test, PDF report, save and compare scenarios, CSV export, and plain-English AI explanations.';
       include(__DIR__ . '/../includes/premium-upsell-banner.php');
     ?>
     <?php endif; ?>
