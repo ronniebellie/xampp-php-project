@@ -248,7 +248,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p>Create your free account, then start your 30-day Journey Premium trial.</p>
             <?php elseif ($trialIntent): ?>
             <h1>Start Your 7-Day Free Premium Trial</h1>
-            <p>Create your free account to continue. Next you'll pick a plan — your trial starts before any charge.</p>
+            <p>Create your free account to continue. Next you'll choose monthly ($3) or annual ($30); your 7-day trial starts before any charge.</p>
             <?php else: ?>
             <h1>Create Your Account</h1>
             <p>Sign up for premium features</p>
