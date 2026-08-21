@@ -670,15 +670,33 @@
           alert(data.error || 'No saved scenarios found.');
           return;
         }
-        var names = data.scenarios.map(function (s, i) {
-          return (i + 1) + '. ' + s.scenario_name;
-        }).join('\n');
-        var pick = prompt('Enter scenario number to load:\n\n' + names);
-        if (!pick) return;
-        var idx = parseInt(pick, 10) - 1;
-        if (isNaN(idx) || !data.scenarios[idx]) return;
-        applyFormData(data.scenarios[idx].data);
-        runPlan();
+        var status = el('saveStatus');
+        if (!status) return;
+        status.textContent = '';
+        var select = document.createElement('select');
+        select.id = 'scenarioLoadSelect';
+        select.setAttribute('aria-label', 'Saved scenario');
+        select.style.cssText = 'padding: 7px 9px; border: 1px solid #a0aec0; border-radius: 5px; margin-right: 6px;';
+        data.scenarios.forEach(function (scenario, i) {
+          var option = document.createElement('option');
+          option.value = String(i);
+          option.textContent = scenario.scenario_name || ('Scenario ' + (i + 1));
+          select.appendChild(option);
+        });
+        var confirm = document.createElement('button');
+        confirm.type = 'button';
+        confirm.textContent = 'Load';
+        confirm.style.cssText = 'padding: 7px 10px; border: 0; border-radius: 5px; background: #22543d; color: #fff; cursor: pointer;';
+        status.appendChild(select);
+        status.appendChild(confirm);
+        confirm.addEventListener('click', function () {
+          var scenario = data.scenarios[parseInt(select.value, 10)];
+          if (!scenario) return;
+          applyFormData(scenario.data);
+          status.textContent = 'Loaded!';
+          runPlan();
+          setTimeout(function () { status.textContent = ''; }, 3000);
+        });
       })
       .catch(function () { alert('Could not load scenarios'); });
   }
