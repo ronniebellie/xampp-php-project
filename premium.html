@@ -401,6 +401,11 @@
         .report-row { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid rgba(59,130,246,.18); color: var(--rb-muted); font-size: 14px; }
         .report-row strong { color: var(--rb-ink); }
         .report-note { margin: 14px 0 0; color: var(--rb-green) !important; font-size: 13px; font-weight: 700; }
+        .premium-outcome-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0 0 30px; padding: 18px; border: 1px solid #bfdbfe; border-radius: 14px; background: #eff6ff; }
+        .premium-outcome-strip div { padding: 4px 12px; border-left: 3px solid #1d4ed8; }
+        .premium-outcome-strip strong { display: block; color: #173f8a; font-size: 15px; }
+        .premium-outcome-strip span { display: block; margin-top: 3px; color: #526071; font-size: 13px; line-height: 1.45; }
+        @media (max-width: 760px) { .premium-outcome-strip { grid-template-columns: 1fr; } }
         @media (max-width: 760px) { .hero { margin: 12px 12px 22px; padding: 42px 22px; } .decision-preview { grid-template-columns: 1fr; padding: 22px; } }
     </style>
 </head>
@@ -414,6 +419,12 @@
             <p style="margin: 16px 0 0; font-size: 14px; opacity: .92;">Payment method required at checkout • No charge during the trial • Cancel anytime</p>
         </div>
     </div>
+
+    <section class="premium-outcome-strip" aria-label="What changes with Premium">
+        <div><strong>Free answer</strong><span>Run a focused calculator with your own numbers.</span></div>
+        <div><strong>Premium decision view</strong><span>Compare another path and see the trade-offs over time.</span></div>
+        <div><strong>Take it with you</strong><span>Save the scenario, export a report, and explain the result.</span></div>
+    </section>
 
     <div class="container">
         <div class="container">
