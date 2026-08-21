@@ -1,6 +1,21 @@
 <hr style="margin: 40px 0 20px 0; border: 0; border-top: 1px solid #e2e8f0;" />
 
 <footer style="max-width: 980px; margin: 0 auto; padding: 0 20px 20px;">
+
+  <nav class="site-footer-nav" aria-label="Site navigation">
+    <a href="/">Home</a>
+    <a href="/retirement-plan/">Build a free plan</a>
+    <a href="/#planning-tools">Individual calculators</a>
+    <a href="/premium.html">Calculator Premium</a>
+    <a href="https://journey.ronbelisle.com/">Journey (separate plan)</a>
+    <a href="/about.php">How it works</a>
+  </nav>
+
+  <style>
+    .site-footer-nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: 0 0 24px; padding: 16px 18px; border: 1px solid #d9e1ec; border-radius: 12px; background: #f8fafc; font-size: 14px; font-weight: 700; }
+    .site-footer-nav a { color: #1d4ed8; text-decoration: none; }
+    .site-footer-nav a:hover { text-decoration: underline; }
+  </style>
   
   <!-- Disclaimer Section -->
   <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin-bottom: 25px; border-radius: 4px;">
