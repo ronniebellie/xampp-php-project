@@ -230,13 +230,13 @@ $premiumUpsellUrl = get_premium_upsell_url($isLoggedIn);
 
     <header>
       <h1>AI Budget Auditor</h1>
-      <p class="sub">Connect YNAB for a free category snapshot with true overspending highlights (Available &lt; $0). Premium unlocks GPT-4o narrative analysis and follow-up questions — included in your $3/mo subscription.</p>
+      <p class="sub">Find where this month’s budget needs attention, then turn the snapshot into a practical action plan. The free view shows what happened; Premium explains what to do next.</p>
     </header>
 
     <div class="info-box-blue" style="margin-bottom: 30px;">
       <h2>How it works</h2>
-      <p><strong>Free:</strong> Paste your YNAB token, load your current-month categories, and review the snapshot table. Overspending is highlighted only when <strong>Available</strong> goes negative — credit card activity is handled with true YNAB logic.</p>
-      <p style="margin-top: 10px;"><strong>Premium:</strong> Add your OpenAI key and click <strong>Get AI Analysis</strong> for a plain-English audit plus follow-up questions. Your keys stay in this browser’s <code>localStorage</code>; YNAB is fetched directly and AI requests go through <code>/api/ynab_proxy.php</code>.</p>
+      <p><strong>Free snapshot:</strong> Paste your YNAB token, load your current-month categories, and see exactly which categories are overspent. Overspending is highlighted only when <strong>Available</strong> goes negative — credit card activity is handled with true YNAB logic.</p>
+      <p style="margin-top: 10px;"><strong>Premium audit:</strong> Add your OpenAI key and get a plain-English explanation, a short action plan, and follow-up questions about your budget. Your keys stay in this browser’s <code>localStorage</code>; YNAB is fetched directly and AI requests go through <code>/api/ynab_proxy.php</code>.</p>
     </div>
 
     <section aria-label="API configuration">
@@ -306,8 +306,8 @@ $premiumUpsellUrl = get_premium_upsell_url($isLoggedIn);
 
       <?php if (!$isPremium): ?>
       <div id="premiumUpsellBanner" class="premium-upsell-auditor" style="display: none;">
-        <h4>🔒 Unlock AI Budget Analysis</h4>
-        <p>Your snapshot is ready. Upgrade to Premium for GPT-4o narrative insights, a 3-bullet action plan, and follow-up questions — plus all retirement calculators, save/compare, and PDF export. 7-day free trial, then $3/mo.</p>
+        <h4>🔒 Turn this snapshot into a plan</h4>
+        <p>Your snapshot shows where to look. Upgrade to Premium for GPT-4o narrative insights, a 3-bullet action plan, and follow-up questions — plus all retirement calculators, save/compare, and PDF export. 7-day free trial, then $3/mo.</p>
         <a href="<?php echo htmlspecialchars($premiumUpsellUrl); ?>">Start 7-day free trial</a>
       </div>
       <?php else: ?>
