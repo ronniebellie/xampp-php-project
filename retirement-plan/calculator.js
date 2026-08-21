@@ -622,8 +622,21 @@
   }
 
   function saveScenario() {
-    var name = prompt('Name this scenario:');
-    if (!name) return;
+    var status = el('saveStatus');
+    if (!status) return;
+    if (el('scenarioNameInput')) {
+      el('scenarioNameInput').focus();
+      return;
+    }
+    status.innerHTML = '<input id="scenarioNameInput" type="text" placeholder="Scenario name" aria-label="Scenario name" style="padding: 7px 9px; border: 1px solid #a0aec0; border-radius: 5px; margin-right: 6px;" />' +
+      '<button type="button" id="confirmSaveScenario" style="padding: 7px 10px; border: 0; border-radius: 5px; background: #22543d; color: #fff; cursor: pointer;">Save</button>';
+    var input = el('scenarioNameInput');
+    var confirm = el('confirmSaveScenario');
+    input.focus();
+    function submit() {
+      var name = input.value.trim();
+      if (!name) { input.focus(); return; }
+      status.textContent = 'Saving…';
     fetch(API_BASE + 'api/save_scenario.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -635,15 +648,18 @@
     })
       .then(function (res) { return res.json(); })
       .then(function (data) {
-        var status = el('saveStatus');
         if (data.success) {
           status.textContent = 'Saved!';
           setTimeout(function () { status.textContent = ''; }, 3000);
         } else {
           alert(data.error || 'Could not save scenario');
+          status.textContent = '';
         }
       })
-      .catch(function () { alert('Could not save scenario'); });
+      .catch(function () { alert('Could not save scenario'); status.textContent = ''; });
+    }
+    confirm.addEventListener('click', submit);
+    input.addEventListener('keydown', function (event) { if (event.key === 'Enter') submit(); });
   }
 
   function loadScenario() {
