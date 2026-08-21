@@ -15,6 +15,10 @@
     .about-content strong { color: #2c5282; }
     .about-content .info-box-blue { margin-bottom: 25px; }
     .about-content .info-box-blue h2 { color: #2196F3; margin-top: 0; font-size: 22px; }
+    .trust-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 0 0 25px; }
+    .trust-card { padding: 18px; border: 1px solid #d9e1ec; border-radius: 12px; background: #fff; box-shadow: 0 6px 18px rgba(15,23,42,.05); }
+    .trust-card h3 { margin: 0 0 7px; color: #173f8a; font-size: 17px; }
+    .trust-card p { margin: 0; font-size: 14px; line-height: 1.6; }
     .back-link {
       display: inline-block;
       margin-top: 30px;
@@ -42,6 +46,28 @@
       <div class="info-box-blue">
         <h2>What This Site Is</h2>
         <p>Free and premium financial calculators are offered for retirement planning and for building a solid financial foundation. The tools are built to be transparent, educational, and useful for exploring your own scenarios. They are not a substitute for professional advice.</p>
+      </div>
+
+      <div class="trust-grid" aria-label="What to expect from the calculators">
+        <div class="trust-card">
+          <h3>See the assumptions</h3>
+          <p>Inputs, tax settings, growth rates, withdrawal rules, and time horizons are shown so you can understand what drives the result.</p>
+        </div>
+        <div class="trust-card">
+          <h3>Start with a useful answer</h3>
+          <p>Free tools are designed to answer one focused planning question before you decide whether deeper analysis is worthwhile.</p>
+        </div>
+        <div class="trust-card">
+          <h3>Use results as a conversation starter</h3>
+          <p>Save, compare, export, and discuss scenarios with a qualified professional when the decision has real financial consequences.</p>
+        </div>
+      </div>
+
+      <div class="info-box-blue">
+        <h2>How to Use the Site</h2>
+        <p><strong>Start free:</strong> Choose the question closest to your situation, enter your numbers, and read the result summary before exploring the detailed tables.</p>
+        <p><strong>Go deeper when it helps:</strong> Calculator Premium adds saved scenarios, comparisons, exports, extended projections, and plain-English explanations on supported tools. Journey is a separate guided retirement-planning product.</p>
+        <p><strong>Check the limits:</strong> A result is only as useful as its inputs and assumptions. Change the assumptions, compare another scenario, and treat the output as an estimate—not a promise.</p>
       </div>
 
       <div class="info-box-blue">
