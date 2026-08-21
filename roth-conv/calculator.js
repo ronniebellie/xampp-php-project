@@ -604,6 +604,10 @@ function displayResults(data) {
     ].filter(Boolean).join('<br>');
 
     resultsContent.innerHTML = `
+        <div class="result-takeaway" role="status" aria-live="polite">
+            <strong>Your conversion takeaway</strong>
+            <span>${isWorthIt ? 'This model shows a potential lifetime tax benefit' : 'This model does not show a lifetime tax benefit'}${data.breakEvenAge ? `, with a nominal break-even around age ${data.breakEvenAge}` : ''}. The analysis below shows the upfront tax cost, possible RMD reduction, and how the result changes when future dollars are discounted.</span>
+        </div>
         <div class="info-box ${isWorthIt ? 'info-box-blue' : ''}" style="margin-bottom: 25px;">
             <h3>💡 Recommendation</h3>
             <p style="font-size: 16px; margin-top: 10px;">${recommendation}</p>

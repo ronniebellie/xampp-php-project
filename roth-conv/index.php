@@ -240,6 +240,11 @@ $isPremium = has_premium_access();
         <?php endif; ?>
     </div>
 
+    <style>
+        .result-takeaway { margin: 18px 0 26px; padding: 18px 20px; border-left: 5px solid #1d4ed8; border-radius: 10px; background: #eff6ff; color: #334155; line-height: 1.55; }
+        .result-takeaway strong { display: block; margin-bottom: 4px; color: #173f8a; font-size: 1.05rem; }
+    </style>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="../js/share-results.js"></script>
     <script src="../js/lib/url-prefill.js"></script>
