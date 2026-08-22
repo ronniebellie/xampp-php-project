@@ -56,11 +56,14 @@ if ($isLoggedIn) {
 // Hide site header when embedded in calcforadvisors.com demos (white-label preview)
 $hide_site_header = isset($_GET['embed'])
     || (!empty($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'calcforadvisors.com') !== false);
+$is_calculator_directory = basename($_SERVER['SCRIPT_NAME'] ?? '') === 'calculators.php';
 
 // SEO: homepage
 require_once __DIR__ . '/includes/seo_public_url.php';
-$seo_title = "Retirement Plan Builder & Financial Calculators";
-$seo_description = "Build a year-by-year retirement plan with free calculators for Social Security, spending, RMDs, and taxes. Calculator Premium adds Monte Carlo stress testing, PDF reports, and AI explanations of your specific results.";
+$seo_title = $is_calculator_directory ? "Individual Retirement Planning Calculators" : "Retirement Plan Builder & Financial Calculators";
+$seo_description = $is_calculator_directory
+    ? "Explore focused retirement planning calculators for Social Security, spending, taxes, RMDs, debt, and portfolio decisions."
+    : "Build a year-by-year retirement plan with a free Retirement Plan Builder. Calculator Premium adds Monte Carlo stress testing, PDF reports, and AI explanations of your specific results.";
 $seo_url = rb_seo_public_url();
 $seo_site_name = "Ron Belisle Financial Calculators";
 $seo_og_image = rb_seo_site_base_url() . '/images/og-default.jpg';
@@ -854,7 +857,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
           </ul>
           <div class="hero-primary-actions">
             <a href="retirement-plan/" class="hero-btn hero-btn-primary" data-rb-event="retirement_plan_start" data-rb-param-placement="homepage_hero">Build My Free Retirement Plan</a>
-            <a href="#planning-tools" class="hero-btn hero-btn-secondary" data-rb-event="calculator_explore_click" data-rb-param-placement="homepage_hero">Explore Individual Calculators</a>
+            <a href="calculators.php" class="hero-btn hero-btn-secondary" data-rb-event="calculator_explore_click" data-rb-param-placement="homepage_hero">Explore Individual Calculators</a>
           </div>
         </div>
         <div class="hero-actions">
@@ -887,7 +890,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
     </div>
 
     <nav class="site-top-nav" aria-label="Site sections">
-      <a href="/" class="active" aria-current="page">Calculators</a>
+      <a href="<?php echo $is_calculator_directory ? '/calculators.php' : '/'; ?>" class="active" aria-current="page">Calculators</a>
       <a href="https://journey.ronbelisle.com/" aria-label="Journey retirement plan, separate product and pricing" data-rb-event="journey_promotion_click" data-rb-param-placement="navigation">Journey (separate plan)</a>
     </nav>
     <?php endif; ?>
@@ -923,6 +926,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
       </div>
     <?php endif; ?>
 
+    <?php if ($is_calculator_directory): ?>
     <main class="planning-shell" id="planning-tools">
       <?php if (!$hide_site_header): ?>
         <p class="section-kicker">Planning workspace</p>
@@ -1046,6 +1050,14 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
         </div>
       </div>
     </main>
+    <?php else: ?>
+    <section class="planning-shell" id="planning-tools" aria-labelledby="planning-tools-title">
+      <p class="section-kicker">Planning workspace</p>
+      <h2 class="section-title" id="planning-tools-title">Start with one clear retirement plan</h2>
+      <p class="section-copy">The Retirement Plan Builder brings your savings, Social Security, spending, RMDs, and estimated taxes into one year-by-year snapshot. If you already know the specific question you want to answer, browse the focused calculators.</p>
+      <a class="btn btn-primary" href="calculators.php">Browse Individual Calculators</a>
+    </section>
+    <?php endif; ?>
 
     <?php if (!$hide_site_header): ?>
     <section class="advisor-callout" aria-labelledby="advisor-callout-title">

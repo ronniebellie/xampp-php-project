@@ -5,7 +5,7 @@
   <nav class="site-footer-nav" aria-label="Site navigation">
     <a href="/">Home</a>
     <a href="/retirement-plan/">Build a free plan</a>
-    <a href="/#planning-tools">Individual calculators</a>
+    <a href="/calculators.php">Individual calculators</a>
     <a href="/premium.html">Calculator Premium</a>
     <a href="https://journey.ronbelisle.com/">Journey (separate plan)</a>
     <a href="/about.php">How it works</a>
