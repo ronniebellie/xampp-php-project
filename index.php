@@ -1128,18 +1128,6 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
       </div>
     <?php endif; ?>
 
-    <?php if (!$hide_site_header): ?>
-      <div class="integrated-note">
-        <p>New: Investing guidance site</p>
-        <p>
-          A small companion site with plain‑English explanations, advisor fee impact examples, and a guide to using these calculators to make better decisions.
-        </p>
-        <p>
-          <a href="https://ronbelisle.com/invest-guidance.ronbelisle.com/">Go to the investing guidance site</a>
-        </p>
-      </div>
-    <?php endif; ?>
-
     <?php if (!$hide_site_header) include __DIR__ . '/includes/footer.php'; ?>
 
   </div>
