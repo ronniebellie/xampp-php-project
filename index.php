@@ -930,8 +930,13 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
     <main class="planning-shell" id="planning-tools">
       <?php if (!$hide_site_header): ?>
         <p class="section-kicker">Planning workspace</p>
-        <h2 class="section-title">Explore individual planning decisions</h2>
-        <p class="section-copy">Already know the question you want to answer? Choose a focused calculator for Social Security, spending, taxes, RMDs, portfolio risk, debt, and other financial planning topics.</p>
+        <?php if ($is_calculator_directory): ?>
+          <h2 class="section-title">Choose a focused retirement question</h2>
+          <p class="section-copy">Start with the Retirement Plan Builder if you want one connected view of your retirement. Use these focused tools when you already know the specific decision you want to explore—Social Security, spending, taxes, RMDs, portfolio risk, debt, or estate planning.</p>
+        <?php else: ?>
+          <h2 class="section-title">Explore individual planning decisions</h2>
+          <p class="section-copy">Already know the question you want to answer? Choose a focused calculator for Social Security, spending, taxes, RMDs, portfolio risk, debt, and other financial planning topics.</p>
+        <?php endif; ?>
       <?php endif; ?>
 
       <?php if (!$hide_site_header): ?>
