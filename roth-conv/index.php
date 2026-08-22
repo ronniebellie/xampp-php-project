@@ -32,6 +32,11 @@ $isPremium = has_premium_access();
         </header>
 
         <div class="info-box-blue" style="margin-bottom: 30px;">
+            <h2>How this tool works</h2>
+            <p>Enter your account balances, income, tax assumptions, and conversion amount. The calculator compares the tax you pay today with modeled future taxes, RMDs, and Medicare IRMAA effects. Use the result to compare a few possible conversion paths—not as a tax filing or personal recommendation.</p>
+        </div>
+
+        <div class="info-box-blue" style="margin-bottom: 30px;">
             <h2>Understanding Roth Conversions</h2>
             <p>Converting traditional IRA funds to a Roth IRA means paying taxes now on the converted amount, but all future growth and withdrawals will be tax-free. This calculator helps you analyze whether converting makes sense by comparing the tax cost today versus the tax savings in retirement, while considering Required Minimum Distributions (RMDs), Medicare IRMAA surcharges (2-year lookback), the 3.8% Net Investment Income Tax (NIIT), and the opportunity cost of paying taxes early (discount rate).</p>
         </div>
