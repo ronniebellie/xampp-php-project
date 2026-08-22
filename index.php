@@ -891,7 +891,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
 
     <nav class="site-top-nav" aria-label="Site sections">
       <a href="<?php echo $is_calculator_directory ? '/calculators.php' : '/'; ?>" class="active" aria-current="page">Calculators</a>
-      <a href="https://journey.ronbelisle.com/" aria-label="Journey retirement plan, separate product and pricing" data-rb-event="journey_promotion_click" data-rb-param-placement="navigation">Journey (separate plan)</a>
+      <a href="https://journey.ronbelisle.com/" aria-label="Guided retirement planning, separate site and pricing" data-rb-event="journey_promotion_click" data-rb-param-placement="navigation">Guided Retirement Planning (separate site)</a>
     </nav>
     <?php endif; ?>
 
