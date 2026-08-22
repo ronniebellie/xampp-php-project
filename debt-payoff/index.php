@@ -144,6 +144,7 @@ $isPremium = has_premium_access();
           <div id="resultTotal" style="font-size: 24px; font-weight: 800; color: #1e3a8a;"></div>
         </div>
       </div>
+      <div id="debtTakeaway" style="background: #eff6ff; border: 1px solid #93c5fd; border-radius: 12px; padding: 16px 18px; margin: 20px 0; color: #1e3a8a; line-height: 1.5;"></div>
       <div id="strategyCompare" style="display: none; background: #faf5ff; border: 1px solid #d8b4fe; border-radius: 12px; padding: 16px 18px; margin: 20px 0;">
         <div style="font-weight: 700; color: #6b21a8; margin-bottom: 6px;">Avalanche vs. Snowball</div>
         <div id="strategyCompareText" style="color: #4a5568; font-size: 14px; line-height: 1.5;"></div>

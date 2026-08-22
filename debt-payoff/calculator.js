@@ -135,6 +135,16 @@ function displayResults(result) {
     document.getElementById('resultTotal').textContent = formatCurrency(result.totalPaid);
   }
 
+  const takeaway = document.getElementById('debtTakeaway');
+  if (takeaway) {
+    if (result.neverPaysOff) {
+      takeaway.innerHTML = '<strong>Your planning takeaway</strong><br>At these payment levels, the modeled debt does not reach zero. Increase the payment, reduce the balance, or review the interest assumptions before relying on this plan.';
+    } else {
+      const strategyLabel = document.getElementById('strategy').value === 'avalanche' ? 'avalanche' : 'snowball';
+      takeaway.innerHTML = '<strong>Your planning takeaway</strong><br>The modeled plan is debt-free in <strong>' + result.months + ' months</strong> using the ' + strategyLabel + ' strategy, with about <strong>' + formatCurrency(result.totalInterest) + '</strong> in interest. Use the comparison below to decide which trade-off fits you best.';
+    }
+  }
+
   const orderHtml = result.payoffOrder.map((name, i) => (i + 1) + '. ' + name).join('<br>');
   document.getElementById('payoffOrder').innerHTML = orderHtml;
 
