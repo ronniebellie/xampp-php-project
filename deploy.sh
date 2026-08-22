@@ -95,11 +95,18 @@ rollback() {
 }
 
 homepage_body="$(mktemp)"
+directory_body="$(mktemp)"
 calc_body="$(mktemp)"
-trap 'rm -f "$homepage_body" "$calc_body"' EXIT
+trap 'rm -f "$homepage_body" "$directory_body" "$calc_body"' EXIT
 
 if ! curl -fsSL --max-time 15 "https://ronbelisle.com/?deploy=$release_id" -o "$homepage_body" \
-  || ! grep -q 'Social Security Claiming Analyzer' "$homepage_body"; then
+  || ! grep -q 'Build My Free Retirement Plan' "$homepage_body"; then
+  rollback
+  exit 1
+fi
+
+if ! curl -fsSL --max-time 15 "https://ronbelisle.com/calculators.php?deploy=$release_id" -o "$directory_body" \
+  || ! grep -q 'Social Security Claiming Analyzer' "$directory_body"; then
   rollback
   exit 1
 fi
