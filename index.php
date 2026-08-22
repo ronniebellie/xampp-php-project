@@ -60,7 +60,7 @@ $hide_site_header = isset($_GET['embed'])
 // SEO: homepage
 require_once __DIR__ . '/includes/seo_public_url.php';
 $seo_title = "Retirement Plan Builder & Financial Calculators";
-$seo_description = "Build a year-by-year retirement plan with free calculators for Social Security, spending, RMDs, and taxes. Calculator Premium adds Monte Carlo stress testing, PDF reports, AI explanations of your specific results, and YNAB budget auditing.";
+$seo_description = "Build a year-by-year retirement plan with free calculators for Social Security, spending, RMDs, and taxes. Calculator Premium adds Monte Carlo stress testing, PDF reports, and AI explanations of your specific results.";
 $seo_url = rb_seo_public_url();
 $seo_site_name = "Ron Belisle Financial Calculators";
 $seo_og_image = rb_seo_site_base_url() . '/images/og-default.jpg';
@@ -526,7 +526,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
       background:#e0f2fe;
     }
     .card{display:block}
-    .section,.section-heading,.hint,.tier,.tier-title,.tier-hint,.grid,.grid.tight,.ynab-tool-grid{margin:0;padding:0}
+    .section,.section-heading,.hint,.tier,.tier-title,.tier-hint,.grid,.grid.tight{margin:0;padding:0}
     .card.coming-soon .btn{background:#e2e8f0;color:#64748b;border-color:#cbd5e1;cursor:not-allowed;pointer-events:none}
     .card.coming-soon .coming-badge{
       display:inline-block;
@@ -934,7 +934,6 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
       <div class="calculator-tab-shell">
         <div class="calculator-tab-bar" role="tablist" aria-label="Calculator categories">
           <button type="button" class="calculator-tab active" role="tab" id="tab-retirement" data-tab="retirement" aria-selected="true" aria-controls="tab-panel-retirement">In or Near Retirement (Boomers &amp; Gen X)</button>
-          <button type="button" class="calculator-tab" role="tab" id="tab-ynab" data-tab="ynab" aria-selected="false" aria-controls="tab-panel-ynab">Active Budgeters &amp; Cash Flow (YNAB Community)</button>
           <button type="button" class="calculator-tab" role="tab" id="tab-foundation" data-tab="foundation" aria-selected="false" aria-controls="tab-panel-foundation">Building or Strengthening Foundation (Millennials &amp; Gen Z)</button>
         </div>
       </div>
@@ -1016,16 +1015,6 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
         </div>
       </div>
 
-      <div id="tab-panel-ynab" class="tab-panel" data-tab="ynab" role="tabpanel" aria-labelledby="tab-ynab"<?php echo $hide_site_header ? '' : ' hidden'; ?>>
-        <section class="primary-tool" aria-label="YNAB budgeting tools">
-          <div>
-            <h3>AI Budget Auditor &amp; Financial Assistant <span class="feature-badge">AI-Powered</span></h3>
-            <p>Connect your YNAB budget to generate instant, rule-based category snapshots completely free. Upgrade to Calculator Premium to unlock interactive GPT-4o budget audits, overspending anomaly alerts, and personalized live chat follow-ups.</p>
-          </div>
-          <a class="btn btn-primary" href="tools/ai-budget-auditor/">Open</a>
-        </section>
-      </div>
-
       <div id="tab-panel-foundation" class="tab-panel" data-tab="foundation" role="tabpanel" aria-labelledby="tab-foundation"<?php echo $hide_site_header ? '' : ' hidden'; ?>>
         <div class="goal-grid">
           <section class="goal-section">
@@ -1079,7 +1068,6 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
 
       function tabFromHash() {
         var hash = (location.hash || '').toLowerCase();
-        if (hash === '#ynab' || hash === '#budget') return 'ynab';
         if (hash === '#foundation' || hash === '#early-career') return 'foundation';
         if (hash === '#retirement') return 'retirement';
         return 'retirement';

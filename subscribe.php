@@ -195,7 +195,6 @@ if ($user['subscription_status'] === 'premium') {
                     <li>All premium calculators</li>
                     <li>Unlimited calculations</li>
                     <li>Save your scenarios</li>
-                    <li>YNAB AI Budget Auditor</li>
                     <li>Priority support</li>
                     <li>Cancel anytime</li>
                 </ul>
@@ -217,7 +216,6 @@ if ($user['subscription_status'] === 'premium') {
                     <li>All premium calculators</li>
                     <li>Unlimited calculations</li>
                     <li>Save your scenarios</li>
-                    <li>YNAB AI Budget Auditor</li>
                     <li>Priority support</li>
                     <li>Cancel anytime</li>
                 </ul>
