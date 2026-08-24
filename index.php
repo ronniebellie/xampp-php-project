@@ -888,7 +888,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
 
     <nav class="site-top-nav" aria-label="Site sections">
       <a href="/" class="active" aria-current="page">Calculators</a>
-      <a href="https://journey.ronbelisle.com/" aria-label="Journey retirement plan, separate product and pricing" data-rb-event="journey_promotion_click" data-rb-param-placement="navigation">Journey (separate plan)</a>
+      <a href="https://journey.ronbelisle.com/" aria-label="Open the guided retirement plan" data-rb-event="journey_promotion_click" data-rb-param-placement="navigation">Guided Retirement Plan</a>
     </nav>
     <?php endif; ?>
 
