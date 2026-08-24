@@ -43,9 +43,14 @@ function writeScenarioRows($out, string $scenario, array $rows): void {
             $scenario,
             $r['age'],
             $r['year'],
+            $r['filingStatus'] ?? '',
             number_format($r['conversion'], 2),
             number_format($r['rmd'], 2),
+            number_format($r['socialSecurity'] ?? 0, 2),
+            number_format($r['taxableSocialSecurity'] ?? 0, 2),
             number_format($r['totalWithdrawal'] ?? 0, 2),
+            number_format($r['taxableWithdrawal'] ?? 0, 2),
+            number_format($r['realizedCapitalGain'] ?? 0, 2),
             number_format($r['income'], 2),
             number_format($r['magi'] ?? $r['income'], 2),
             number_format($r['taxableIncome'], 2),
@@ -57,7 +62,8 @@ function writeScenarioRows($out, string $scenario, array $rows): void {
             number_format($r['totalDiscountedTaxesPaid'] ?? $r['totalTaxesPaid'], 2),
             number_format($r['netCash'] ?? 0, 2),
             number_format($r['traditionalBalance'], 2),
-            number_format($r['rothBalance'], 2)
+            number_format($r['rothBalance'], 2),
+            number_format($r['taxableBalance'] ?? 0, 2)
         ]);
     }
 }
@@ -93,10 +99,10 @@ if ($includeNiit) {
 fputcsv($out, []);
 
 $header = [
-    'Scenario', 'Age', 'Year', 'Conversion', 'RMD', 'Portfolio Withdrawal',
+    'Scenario', 'Age', 'Year', 'Filing Status', 'Conversion', 'RMD', 'Social Security', 'Taxable Social Security', 'Portfolio Withdrawal', 'Taxable Brokerage Withdrawal', 'Realized Capital Gain',
     'Total Income', 'MAGI', 'Taxable Income', 'Federal Tax', 'IRMAA', 'NIIT',
     'All-In Tax', 'Cumulative All-In Tax', 'Cumulative All-In Tax (PV)',
-    'Net Cash', 'Traditional IRA', 'Roth IRA'
+    'After-Tax Spending', 'Traditional IRA', 'Roth IRA', 'Taxable Brokerage'
 ];
 fputcsv($out, $header);
 

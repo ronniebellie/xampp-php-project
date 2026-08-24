@@ -98,15 +98,25 @@ $isPremium = has_premium_access();
                     <small style="color: #666;">Current balance in Roth accounts</small>
                 </div>
                 <div>
-    <label for="currentIncome" id="currentIncomeLabel" style="display: block; margin-bottom: 5px; font-weight: 600;">Current Annual Gross Income ($)</label>
-    <input type="number" id="currentIncome" value="80000" min="0" step="any" required style="width: 100%;">
-    <small id="currentIncomeHelp" style="color: #666;">Wages, pensions, etc. (before standard deduction)</small>
+                    <label for="currentIncome" id="currentIncomeLabel" style="display: block; margin-bottom: 5px; font-weight: 600;">Legacy Current Income ($)</label>
+    <input type="number" id="currentIncome" value="0" min="0" step="any" style="width: 100%;">
+    <small id="currentIncomeHelp" style="color: #666;">Used only by older saved scenarios. Enter current income by source below.</small>
 </div>
                 <div>
-                    <label for="retirementIncome" id="retirementIncomeLabel" style="display: block; margin-bottom: 5px; font-weight: 600;">Expected Retirement Income ($)</label>
-                    <input type="number" id="retirementIncome" value="40000" min="0" step="any" required style="width: 100%;">
-                    <small id="retirementIncomeHelp" style="color: #666;">Annual income excluding RMDs</small>
+                    <label for="otherOrdinaryIncome" style="display: block; margin-bottom: 5px; font-weight: 600;">Other Annual Ordinary Income ($)</label>
+                    <input type="number" id="otherOrdinaryIncome" value="0" min="0" step="any" style="width: 100%;">
+                    <small style="color: #666;">Pensions, wages, or other taxable ordinary income. Exclude Social Security and retirement withdrawals.</small>
                 </div>
+            </div>
+
+            <h3 style="margin-top: 30px;">Social Security and Taxable Brokerage</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                <div><label for="socialSecuritySelf" style="display:block;margin-bottom:5px;font-weight:600;">Your Annual Social Security ($)</label><input type="number" id="socialSecuritySelf" value="0" min="0" step="any" style="width:100%;"><small style="color:#666;">Gross annual benefit before Medicare deductions.</small></div>
+                <div><label for="socialSecuritySpouse" style="display:block;margin-bottom:5px;font-weight:600;">Spouse Annual Social Security ($)</label><input type="number" id="socialSecuritySpouse" value="0" min="0" step="any" style="width:100%;"><small style="color:#666;">After a modeled death, the survivor receives the higher benefit, not both.</small></div>
+                <div><label for="taxableAccount" style="display:block;margin-bottom:5px;font-weight:600;">Taxable Brokerage Balance ($)</label><input type="number" id="taxableAccount" value="0" min="0" step="any" style="width:100%;"><small style="color:#666;">Non-retirement investments available for spending or conversion taxes.</small></div>
+                <div><label for="taxableCostBasis" style="display:block;margin-bottom:5px;font-weight:600;">Taxable Brokerage Cost Basis ($)</label><input type="number" id="taxableCostBasis" value="0" min="0" step="any" style="width:100%;"><small style="color:#666;">Used to estimate capital gains when brokerage assets are sold.</small></div>
+                <div><label for="annualOrdinaryInvestmentIncome" style="display:block;margin-bottom:5px;font-weight:600;">Annual Taxable Interest/Ordinary Dividends ($)</label><input type="number" id="annualOrdinaryInvestmentIncome" value="0" min="0" step="any" style="width:100%;"></div>
+                <div><label for="annualLongTermGains" style="display:block;margin-bottom:5px;font-weight:600;">Annual Qualified Dividends/Long-Term Gains ($)</label><input type="number" id="annualLongTermGains" value="0" min="0" step="any" style="width:100%;"></div>
             </div>
 
             <h3 style="margin-top: 18px;">Spending from your portfolio (optional)</h3>
@@ -119,8 +129,8 @@ $isPremium = has_premium_access();
                 <div>
                     <label for="withdrawalMode" style="display: block; margin-bottom: 5px; font-weight: 600;">Withdrawal Mode</label>
                     <select id="withdrawalMode" style="width: 100%;">
-                        <option value="rate" selected>Use a fixed withdrawal %</option>
-                        <option value="target_after_tax">Solve withdrawals for target after‑tax spending</option>
+                        <option value="target_after_tax" selected>Solve withdrawals for target after-tax spending</option>
+                        <option value="rate">Legacy fixed withdrawal %</option>
                     </select>
                     <small style="color: #666;">If you choose “target after‑tax,” the calculator will increase withdrawals as needed to cover conversion/RMD taxes while maintaining your spending target.</small>
                 </div>
@@ -132,11 +142,22 @@ $isPremium = has_premium_access();
                 <div>
                     <label for="withdrawalOrder" style="display: block; margin-bottom: 5px; font-weight: 600;">Withdrawal Order</label>
                     <select id="withdrawalOrder" style="width: 100%;">
-                        <option value="traditional_then_roth" selected>Traditional first, then Roth</option>
+                        <option value="traditional_to_bracket_then_roth" selected>Traditional to target bracket, then Roth</option>
+                        <option value="traditional_then_roth">Traditional first, then Roth</option>
                         <option value="roth_then_traditional">Roth first, then Traditional</option>
                     </select>
                     <small style="color: #666;">Traditional withdrawals are taxed as income; Roth withdrawals are tax‑free.</small>
                 </div>
+                <div><label for="targetMarginalRate" style="display:block;margin-bottom:5px;font-weight:600;">Target Ordinary Tax Bracket (%)</label><select id="targetMarginalRate" style="width:100%;"><option value="12" selected>12%</option><option value="22">22%</option><option value="24">24%</option></select><small style="color:#666;">For the bracket-aware withdrawal order.</small></div>
+                <div><label for="taxPaymentSource" style="display:block;margin-bottom:5px;font-weight:600;">Conversion and Income Tax Payment Source</label><select id="taxPaymentSource" style="width:100%;"><option value="taxable" selected>Taxable brokerage</option><option value="roth">Roth IRA</option><option value="traditional">Traditional IRA</option></select></div>
+            </div>
+
+            <h3 style="margin-top: 30px;">Survivor / Widow Scenario</h3>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px;margin-bottom:25px;">
+                <div><label for="deathAge" style="display:block;margin-bottom:5px;font-weight:600;">Assumed Your Death Age (0 = none)</label><input type="number" id="deathAge" value="0" min="0" max="120" style="width:100%;"><small style="color:#666;">The model files jointly in the year of death and switches the spouse to single the following year.</small></div>
+                <div><label for="survivorLifeExpectancy" style="display:block;margin-bottom:5px;font-weight:600;">Spouse Life Expectancy</label><input type="number" id="survivorLifeExpectancy" value="95" min="60" max="120" style="width:100%;"></div>
+                <div><label for="survivorSpendingPercent" style="display:block;margin-bottom:5px;font-weight:600;">Survivor Spending (% of Joint)</label><input type="number" id="survivorSpendingPercent" value="75" min="0" max="100" step="any" style="width:100%;"></div>
+                <div><label for="survivorIncomePercent" style="display:block;margin-bottom:5px;font-weight:600;">Other Income Continuing to Survivor (%)</label><input type="number" id="survivorIncomePercent" value="100" min="0" max="100" step="any" style="width:100%;"></div>
             </div>
 
             <h3 style="margin-top: 30px;">Conversion Strategy</h3>
@@ -183,16 +204,7 @@ $isPremium = has_premium_access();
                     </label>
                     <small style="color: #666; display: block; margin-top: 6px;">Applies when MAGI exceeds $200k (single/HOH), $250k (MFJ), or $125k (MFS). Tax is 3.8% on the lesser of net investment income or MAGI above the threshold.</small>
                 </div>
-                <div>
-                    <label for="investmentIncome" style="display: block; margin-bottom: 5px; font-weight: 600;">Annual Investment Income ($)</label>
-                    <input type="number" id="investmentIncome" value="15000" min="0" step="any" style="width: 100%;">
-                    <small style="color: #666;">Dividends, taxable interest, capital gains, and other net investment income (not wages, pensions, or RMDs).</small>
-                </div>
-                <div>
-                    <label for="retirementInvestmentIncome" style="display: block; margin-bottom: 5px; font-weight: 600;">Retirement Investment Income ($) — Optional</label>
-                    <input type="number" id="retirementInvestmentIncome" value="" min="0" step="any" placeholder="Same as above if blank" style="width: 100%;">
-                    <small style="color: #666;">Investment income after retirement if different from pre-retirement. Leave blank to use the same amount every year.</small>
-                </div>
+                <div><small style="color:#666;">NIIT uses the taxable interest, dividends, capital gains, and gains recognized on brokerage sales entered above.</small></div>
             </div>
 
             <h3 style="margin-top: 30px;">Assumptions</h3>
@@ -202,6 +214,7 @@ $isPremium = has_premium_access();
                     <input type="number" id="returnRate" value="7" min="0" max="20" step="any" required style="width: 100%;">
                     <small style="color: #666;">Expected portfolio growth rate</small>
                 </div>
+                <div><label for="taxableReturnRate" style="display:block;margin-bottom:5px;font-weight:600;">Taxable Brokerage Return (%)</label><input type="number" id="taxableReturnRate" value="5" min="0" max="20" step="any" style="width:100%;"></div>
                 <div>
                     <label for="inflationRate" style="display: block; margin-bottom: 5px; font-weight: 600;">Expected Annual Inflation Rate (%)</label>
                     <input type="number" id="inflationRate" value="2.5" min="0" max="10" step="any" required style="width: 100%;">
@@ -247,6 +260,7 @@ $isPremium = has_premium_access();
     <script>
     const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
     </script>
+    <script src="engine.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/engine.js')); ?>"></script>
     <script src="calculator.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/calculator.js')); ?>"></script>
     <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/calculator-footer.php'; ?>
 </body>
