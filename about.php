@@ -86,7 +86,7 @@
 
       <div class="info-box-blue">
         <h2>Influences and Transparency</h2>
-        <p>The work is inspired by the broader ecosystem of retirement planning—academic work, practitioner tools, and the many people who have contributed to how savings, Social Security, taxes, and spending in retirement are thought about. No one product’s code, interface, or proprietary methods are copied. If methods such as Monte Carlo simulation or lifetime tax projection are added in the future, published approaches and our own implementation will continue to be used.</p>
+        <p>The work is inspired by the broader ecosystem of retirement planning—academic work, practitioner tools, and the many people who have contributed to how savings, Social Security, taxes, and spending in retirement are thought about. No one product’s code, interface, or proprietary methods are copied. Monte Carlo simulation is currently implemented in the Retirement Plan Builder and Plan Success tools using published approaches and our own implementation.</p>
         <p>You are not required to take our word for it: the calculators are designed so you can see the inputs and outputs and use them to inform conversations with qualified professionals.</p>
       </div>
 
