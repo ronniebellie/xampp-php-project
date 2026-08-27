@@ -856,7 +856,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
             <li>Your starting point for retirement decisions</li>
           </ul>
           <div class="hero-primary-actions">
-            <a href="retirement-plan/" class="hero-btn hero-btn-primary" data-rb-event="retirement_plan_start" data-rb-param-placement="homepage_hero">Build My Free Retirement Plan</a>
+            <a href="https://journey.ronbelisle.com/" class="hero-btn hero-btn-primary" data-rb-event="retirement_plan_start" data-rb-param-placement="homepage_hero">Build My Free Retirement Plan</a>
             <a href="calculators.php" class="hero-btn hero-btn-secondary" data-rb-event="calculator_explore_click" data-rb-param-placement="homepage_hero">Explore Individual Calculators</a>
           </div>
         </div>
