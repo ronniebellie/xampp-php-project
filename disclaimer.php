@@ -230,7 +230,7 @@
             <p>This website may contain links to external websites. We are not responsible for the content, accuracy, or privacy practices of any linked sites. Links do not constitute endorsement of those sites or their content.</p>
 
             <h2>Data Privacy</h2>
-            <p>Calculator inputs you enter are processed locally in your browser when possible. For premium features, some data may be stored on our servers to provide save/load functionality. We do not sell your personal information to third parties. See our Privacy Policy for more details.</p>
+            <p>Calculator inputs you enter are processed locally in your browser when possible. For premium features, some data may be stored on our servers to provide save/load functionality. We do not sell your personal information to third parties.</p>
 
             <h2>Premium Features</h2>
             <p>Premium subscription features (scenario saving, PDF exports, advanced projections) are provided subject to this same disclaimer. Premium membership does not create a professional advisory relationship and does not constitute personalized advice.</p>
