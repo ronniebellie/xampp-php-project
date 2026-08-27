@@ -2,26 +2,29 @@
 error_reporting(0);
 ini_set('display_errors', 0);
 ob_start();
-require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
-rb_session_start();
-require_once __DIR__ . '/../includes/db_config.php';
 require_once __DIR__ . '/../vendor/autoload.php';
-
-require_once __DIR__ . '/../includes/has_premium_access.php';
-if (!has_premium_access()) {
-    header('Content-Type: application/json');
-    http_response_code(403);
-    die(json_encode(['error' => 'Premium subscription required']));
+$qaInput = PHP_SAPI === 'cli' ? getenv('ROTH_PDF_QA_INPUT') : false;
+if ($qaInput) {
+    $data = json_decode((string) file_get_contents($qaInput), true);
+} else {
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
+    rb_session_start();
+    require_once __DIR__ . '/../includes/db_config.php';
+    require_once __DIR__ . '/../includes/has_premium_access.php';
+    if (!has_premium_access()) {
+        header('Content-Type: application/json');
+        http_response_code(403);
+        die(json_encode(['error' => 'Premium subscription required']));
+    }
+    $data = json_decode(file_get_contents('php://input'), true);
 }
-
-$data = json_decode(file_get_contents('php://input'), true);
 if (!$data || !isset($data['withConversion'], $data['withoutConversion']) || !is_array($data['withConversion']['yearlyData'] ?? null)) {
     header('Content-Type: application/json');
     http_response_code(400);
     die(json_encode(['error' => 'Missing data']));
 }
 
-function rothEmbedChartImage(TCPDF $pdf, ?string $chartImage, string $title, float $width = 180): void {
+function rothEmbedChartImage(TCPDF $pdf, ?string $chartImage, string $title, float $x, float $y, float $width, float $height): void {
     if (empty($chartImage)) {
         return;
     }
@@ -36,12 +39,10 @@ function rothEmbedChartImage(TCPDF $pdf, ?string $chartImage, string $title, flo
     $tempFile = tempnam(sys_get_temp_dir(), 'rothchart_') . '.png';
     file_put_contents($tempFile, $imageData);
     $pdf->SetFont('helvetica', 'B', 12);
-    $pdf->Cell(0, 6, $title, 0, 1);
-    $pdf->Ln(2);
-    $yBefore = $pdf->GetY();
-    $pdf->Image($tempFile, 15, $yBefore, $width, 0, 'PNG');
+    $pdf->SetXY($x, $y);
+    $pdf->Cell($width, 6, $title, 0, 1);
+    $pdf->Image($tempFile, $x, $y + 8, $width, $height, 'PNG');
     unlink($tempFile);
-    $pdf->Ln(62);
 }
 
 function rothSumField(array $rows, string $field): float {
@@ -53,33 +54,42 @@ function rothSumField(array $rows, string $field): float {
 }
 
 function rothBuildYearlyTableHtml(array $rows, bool $includeIrmaa, bool $includeNiit): string {
-    $html = '<table border="1" cellpadding="3" style="font-size:7px;"><tr style="background:#059669;color:white;font-weight:bold;">';
-    $html .= '<th>Age</th><th>Year</th><th>Conv</th><th>RMD</th><th>Income</th><th>MAGI</th><th>Fed Tax</th>';
+    $widths = [4, 5, 6, 6, 7, 7, 8, 7];
+    $headers = ['Age', 'Year', 'Status', 'Conv', 'RMD', 'SS', 'MAGI', 'Fed Tax'];
+    if ($includeIrmaa) { $headers[] = 'IRMAA'; $widths[] = 6; }
+    if ($includeNiit) { $headers[] = 'NIIT'; $widths[] = 5; }
+    $headers = array_merge($headers, ['All-In', 'Spending', 'Trad IRA', 'Roth IRA', 'Taxable']);
+    $widths = array_merge($widths, [7, 7, 9, 8, 8]);
+    $html = '<table width="100%" border="1" cellpadding="2" style="font-size:6.5px;table-layout:fixed;"><thead><tr style="background-color:#059669;color:#ffffff;font-weight:bold;">';
+    foreach ($headers as $i => $header) {
+        $html .= '<th width="' . $widths[$i] . '%">' . $header . '</th>';
+    }
+    $html .= '</tr></thead><tbody>';
+    foreach ($rows as $r) {
+        $values = [
+            $r['age'], $r['year'], (($r['filingStatus'] ?? '') === 'married' ? 'MFJ' : ucfirst($r['filingStatus'] ?? '')),
+            '$' . number_format($r['conversion'], 0), '$' . number_format($r['rmd'], 0),
+            '$' . number_format($r['socialSecurity'] ?? 0, 0), '$' . number_format($r['magi'] ?? $r['income'], 0),
+            '$' . number_format($r['federalTax'], 0)
+        ];
     if ($includeIrmaa) {
-        $html .= '<th>IRMAA</th>';
+            $values[] = '$' . number_format($r['irmaa'] ?? 0, 0);
     }
     if ($includeNiit) {
-        $html .= '<th>NIIT</th>';
+            $values[] = '$' . number_format($r['niit'] ?? 0, 0);
     }
-    $html .= '<th>All-In</th><th>Cumul.</th><th>Trad IRA</th><th>Roth IRA</th></tr>';
-    foreach ($rows as $r) {
-        $allIn = $r['allInTax'] ?? $r['federalTax'];
-        $html .= '<tr><td>' . $r['age'] . '</td><td>' . $r['year'] . '</td>';
-        $html .= '<td>$' . number_format($r['conversion'], 0) . '</td><td>$' . number_format($r['rmd'], 0) . '</td>';
-        $html .= '<td>$' . number_format($r['income'], 0) . '</td><td>$' . number_format($r['magi'] ?? $r['income'], 0) . '</td>';
-        $html .= '<td>$' . number_format($r['federalTax'], 0) . '</td>';
-        if ($includeIrmaa) {
-            $html .= '<td>$' . number_format($r['irmaa'] ?? 0, 0) . '</td>';
+        $values = array_merge($values, [
+            '$' . number_format($r['allInTax'] ?? $r['federalTax'], 0), '$' . number_format($r['spending'] ?? 0, 0),
+            '$' . number_format($r['traditionalBalance'], 0), '$' . number_format($r['rothBalance'], 0),
+            '$' . number_format($r['taxableBalance'] ?? 0, 0)
+        ]);
+        $html .= '<tr>';
+        foreach ($values as $i => $value) {
+            $html .= '<td width="' . $widths[$i] . '%">' . htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8') . '</td>';
         }
-        if ($includeNiit) {
-            $html .= '<td>$' . number_format($r['niit'] ?? 0, 0) . '</td>';
-        }
-        $html .= '<td>$' . number_format($allIn, 0) . '</td>';
-        $html .= '<td>$' . number_format($r['totalTaxesPaid'], 0) . '</td>';
-        $html .= '<td>$' . number_format($r['traditionalBalance'], 0) . '</td>';
-        $html .= '<td>$' . number_format($r['rothBalance'], 0) . '</td></tr>';
+        $html .= '</tr>';
     }
-    $html .= '</table>';
+    $html .= '</tbody></table>';
     return $html;
 }
 
@@ -116,8 +126,17 @@ $pdf->Cell(0, 6, $info, 0, 1);
 $assumptions = 'Discount rate: ' . number_format((float)($data['discountRate'] ?? 0) * 100, 1) . '%';
 $assumptions .= '  |  IRMAA: ' . ((!empty($data['includeIrmaa']) && $data['includeIrmaa'] !== 'false') ? 'Yes' : 'No');
 $assumptions .= '  |  NIIT: ' . ((!empty($data['includeNiit']) && $data['includeNiit'] !== 'false') ? 'Yes' : 'No');
-$assumptions .= '  |  Investment income: $' . number_format((float)($data['investmentIncome'] ?? 0), 0);
+$assumptions .= '  |  Investment income: $' . number_format((float)($data['annualOrdinaryInvestmentIncome'] ?? 0) + (float)($data['annualLongTermGains'] ?? 0), 0);
 $pdf->Cell(0, 6, $assumptions, 0, 1);
+$detail = 'Filing: ' . (($data['filingStatus'] ?? '') === 'married' ? 'Married filing jointly' : ucfirst((string)($data['filingStatus'] ?? '')));
+$detail .= '  |  Social Security: $' . number_format((float)($data['socialSecuritySelf'] ?? 0) + (float)($data['socialSecuritySpouse'] ?? 0), 0);
+$detail .= '  |  Taxable brokerage: $' . number_format((float)($data['taxableAccount'] ?? 0), 0);
+$detail .= '  |  Target spending: $' . number_format((float)($data['targetAfterTaxSpending'] ?? 0), 0);
+$pdf->Cell(0, 6, $detail, 0, 1);
+$survivorDetail = 'Tax source: ' . ucfirst((string)($data['taxPaymentSource'] ?? 'taxable'));
+$survivorDetail .= '  |  Assumed death age: ' . ((float)($data['deathAge'] ?? 0) > 0 ? (int)$data['deathAge'] : 'None');
+$survivorDetail .= '  |  Survivor spending: ' . number_format((float)($data['survivorSpendingPercent'] ?? 75), 0) . '%';
+$pdf->Cell(0, 6, $survivorDetail, 0, 1);
 $pdf->Ln(4);
 
 $taxSavings = $data['taxSavings'] ?? 0;
@@ -148,6 +167,8 @@ if ($discountRate > 0) {
 }
 $resultsHtml .= '<tr style="background:#f0fdf4;"><td><b>First-year conversion tax cost</b></td><td>$' . number_format($convCost, 0) . '</td></tr>';
 $resultsHtml .= '<tr><td><b>Effective rate on conversion</b></td><td>' . number_format($effectiveRate, 2) . '%</td></tr>';
+$resultsHtml .= '<tr style="background:#f0fdf4;"><td><b>Ending after-tax wealth (no conversion)</b></td><td>$' . number_format($data['withoutConversion']['finalAfterTaxEstate'] ?? 0, 0) . '</td></tr>';
+$resultsHtml .= '<tr><td><b>Ending after-tax wealth (with conversion)</b></td><td>$' . number_format($data['withConversion']['finalAfterTaxEstate'] ?? 0, 0) . '</td></tr>';
 if ($includeIrmaa && isset($data['withConversion']['totalIrmaaPaid'], $data['withoutConversion']['totalIrmaaPaid'])) {
     $resultsHtml .= '<tr style="background:#f0fdf4;"><td><b>Lifetime IRMAA (no conversion)</b></td><td>$' . number_format($data['withoutConversion']['totalIrmaaPaid'], 0) . '</td></tr>';
     $resultsHtml .= '<tr><td><b>Lifetime IRMAA (with conversion)</b></td><td>$' . number_format($data['withConversion']['totalIrmaaPaid'], 0) . '</td></tr>';
@@ -189,12 +210,15 @@ $pdf->SetFont('helvetica', '', 9);
 $pdf->writeHTML($breakdownHtml, true, false, true, false, '');
 $pdf->Ln(4);
 
-rothEmbedChartImage($pdf, $data['chartImage'] ?? null, 'Cumulative All-In Taxes Paid Over Time');
-rothEmbedChartImage($pdf, $data['chartNoConvImage'] ?? null, 'Annual All-In Tax Cost — No Conversion', 88);
-$pdf->Ln(2);
-rothEmbedChartImage($pdf, $data['chartWithConvImage'] ?? null, 'Annual All-In Tax Cost — With Conversion', 88);
+if (!empty($data['chartImage']) || !empty($data['chartNoConvImage']) || !empty($data['chartWithConvImage'])) {
+    $pdf->AddPage();
+    rothEmbedChartImage($pdf, $data['chartImage'] ?? null, 'Cumulative All-In Taxes Paid Over Time', 15, 18, 180, 82);
+    rothEmbedChartImage($pdf, $data['chartNoConvImage'] ?? null, 'Annual All-In Tax Cost - No Conversion', 15, 120, 85, 62);
+    rothEmbedChartImage($pdf, $data['chartWithConvImage'] ?? null, 'Annual All-In Tax Cost - With Conversion', 110, 120, 85, 62);
+}
 
-$pdf->AddPage();
+$pdf->AddPage('L');
+$pdf->SetXY(15, 15);
 $pdf->SetFont('helvetica', 'B', 14);
 $pdf->SetTextColor(5, 150, 105);
 $pdf->Cell(0, 8, 'Year-by-Year — With Conversion', 0, 1);
@@ -203,7 +227,8 @@ $pdf->Ln(2);
 $pdf->SetFont('helvetica', '', 7);
 $pdf->writeHTML(rothBuildYearlyTableHtml($withRows, $includeIrmaa, $includeNiit), true, false, true, false, '');
 
-$pdf->AddPage();
+$pdf->AddPage('L');
+$pdf->SetXY(15, 15);
 $pdf->SetFont('helvetica', 'B', 14);
 $pdf->SetTextColor(5, 150, 105);
 $pdf->Cell(0, 8, 'Year-by-Year — No Conversion', 0, 1);
@@ -219,6 +244,16 @@ $pdf->Cell(0, 5, 'Generated by RonBelisle.com — For informational purposes onl
 
 $pdfBytes = $pdf->Output('', 'S');
 ob_end_clean();
+if ($qaInput) {
+    $qaOutput = getenv('ROTH_PDF_QA_OUTPUT');
+    if (!$qaOutput) {
+        fwrite(STDERR, "ROTH_PDF_QA_OUTPUT is required\n");
+        exit(2);
+    }
+    file_put_contents($qaOutput, $pdfBytes);
+    fwrite(STDOUT, $qaOutput . "\n");
+    exit;
+}
 header('Content-Type: application/pdf');
 header('Content-Disposition: attachment; filename="Roth_Conversion_Report_' . date('Y-m-d') . '.pdf"');
 header('Content-Length: ' . strlen($pdfBytes));

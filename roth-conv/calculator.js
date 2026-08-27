@@ -244,13 +244,23 @@ function getRothFormData() {
     rothIRA: el('rothIRA')?.value,
     currentIncome: el('currentIncome')?.value,
     retirementIncome: el('retirementIncome')?.value,
+    otherOrdinaryIncome: el('otherOrdinaryIncome')?.value,
+    socialSecuritySelf: el('socialSecuritySelf')?.value,
+    socialSecuritySpouse: el('socialSecuritySpouse')?.value,
+    taxableAccount: el('taxableAccount')?.value,
+    taxableCostBasis: el('taxableCostBasis')?.value,
+    annualOrdinaryInvestmentIncome: el('annualOrdinaryInvestmentIncome')?.value,
+    annualLongTermGains: el('annualLongTermGains')?.value,
     annualPortfolioWithdrawalRate: el('annualPortfolioWithdrawalRate')?.value,
     withdrawalMode: el('withdrawalMode')?.value,
     targetAfterTaxSpending: el('targetAfterTaxSpending')?.value,
     withdrawalOrder: el('withdrawalOrder')?.value,
+    targetMarginalRate: el('targetMarginalRate')?.value,
+    taxPaymentSource: el('taxPaymentSource')?.value,
     conversionAmount: el('conversionAmount')?.value,
     conversionYears: el('conversionYears')?.value,
     returnRate: el('returnRate')?.value,
+    taxableReturnRate: el('taxableReturnRate')?.value,
     inflationRate: el('inflationRate')?.value,
     discountRate: el('discountRate')?.value,
     includeIrmaa: el('includeIrmaa')?.checked,
@@ -259,11 +269,15 @@ function getRothFormData() {
     includeNiit: el('includeNiit')?.checked,
     investmentIncome: el('investmentIncome')?.value,
     retirementInvestmentIncome: el('retirementInvestmentIncome')?.value
+    ,deathAge: el('deathAge')?.value
+    ,survivorLifeExpectancy: el('survivorLifeExpectancy')?.value
+    ,survivorSpendingPercent: el('survivorSpendingPercent')?.value
+    ,survivorIncomePercent: el('survivorIncomePercent')?.value
   };
 }
 
 /** Run Roth analysis from a data object (form or loaded scenario). Returns same shape as displayResults expects. */
-function runRothAnalysis(data) {
+function runLegacyRothAnalysis(data) {
   const currentAge = parseInt(data.currentAge, 10);
   const spouseAge = data.spouseAge ? parseInt(data.spouseAge, 10) : null;
   const retirementAge = data.retirementAge ? parseInt(data.retirementAge, 10) : currentAge;
@@ -570,6 +584,11 @@ function runRothAnalysis(data) {
   };
 }
 
+function runRothAnalysis(data) {
+  if (!window.RothEngine) throw new Error('The Roth calculation engine failed to load.');
+  return window.RothEngine.runRothAnalysis(data);
+}
+
 function calculate() {
     const formData = getRothFormData();
     const result = runRothAnalysis(formData);
@@ -616,7 +635,7 @@ function displayResults(data) {
 
         <div class="info-box" style="margin-bottom: 25px;">
             <h3>Lifetime All-In Tax Comparison</h3>
-            <p style="margin: 0 0 12px; font-size: 13px; color: #4b5563;">All-in tax cost includes <strong>federal income tax</strong>${data.includeIrmaa ? ', <strong>Medicare IRMAA</strong> (2-year lookback)' : ''}${data.includeNiit ? ', and <strong>NIIT</strong> (3.8% net investment income tax)' : ''}. MAGI ≈ gross income before deductions plus tax-exempt interest.</p>
+            <p style="margin: 0 0 12px; font-size: 13px; color: #4b5563;">Both scenarios target the same after-tax spending. Taxes paid from brokerage assets reduce that account and taxable sales recognize estimated capital gains. Social Security uses the federal provisional-income calculation.</p>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
                 <div>
                     <strong>Without Conversion:</strong><br>
@@ -647,6 +666,16 @@ function displayResults(data) {
                 </div>
             </div>
             ` : ''}
+        </div>
+
+        <div class="info-box" style="margin-bottom:25px;">
+            <h3>Ending After-Tax Wealth</h3>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;">
+                <div><strong>No Conversion:</strong><br>$${data.withoutConversion.finalAfterTaxEstate.toLocaleString(undefined,{maximumFractionDigits:0})}</div>
+                <div><strong>With Conversion:</strong><br>$${data.withConversion.finalAfterTaxEstate.toLocaleString(undefined,{maximumFractionDigits:0})}</div>
+                <div><strong>Difference:</strong><br>$${(data.withConversion.finalAfterTaxEstate-data.withoutConversion.finalAfterTaxEstate).toLocaleString(undefined,{maximumFractionDigits:0})}</div>
+            </div>
+            <p style="margin:10px 0 0;font-size:13px;color:#4b5563;">Estimate includes taxable brokerage and Roth balances at full value and discounts the remaining traditional balance at the final modeled marginal rate.</p>
         </div>
 
         <div class="info-box" style="margin-bottom: 25px;">
@@ -797,8 +826,7 @@ function displayResults(data) {
             </p>
             ${data.seniorDeductionAdded > 0 ? `
               <p style="margin: 12px 0 0; font-size: 13px; color: #4b5563;">
-                Note: This run applied an extra 65+ senior deduction of <strong>$${data.seniorDeductionAdded.toLocaleString()}</strong>
-                (${data.seniorCount} ${data.seniorCount === 1 ? 'person' : 'people'} at $${SENIOR_DEDUCTION_65PLUS.toLocaleString()} each),
+                This run applied modeled age-65 deductions totaling <strong>$${data.seniorDeductionAdded.toLocaleString()}</strong>, including the regular additional standard deduction and any income-limited 2025-2028 enhanced deduction,
                 for a total standard deduction of <strong>$${data.standardDeduction.toLocaleString()}</strong>.
               </p>
             ` : ``}
@@ -822,7 +850,7 @@ function displayResults(data) {
                 </div>
                 <div>
                     <strong>Total Conversion Tax:</strong><br>
-                    ~$${(data.conversionTaxCost * data.conversionYears).toLocaleString(undefined, {maximumFractionDigits: 0})}
+                    ~$${data.conversionPeriodTaxDifference.toLocaleString(undefined, {maximumFractionDigits: 0})}
                 </div>
             </div>
         </div>
@@ -834,6 +862,7 @@ function displayResults(data) {
                     <thead>
                         <tr>
                             <th>Age</th>
+                            <th>Status</th>
                             <th>Year</th>
                             <th>Conversion</th>
                             <th>RMD</th>
@@ -849,6 +878,7 @@ function displayResults(data) {
                             <th>Net Cash</th>
                             <th>Traditional IRA</th>
                             <th>Roth IRA</th>
+                            <th>Taxable</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -865,6 +895,7 @@ function displayResults(data) {
                     <thead>
                         <tr>
                             <th>Age</th>
+                            <th>Status</th>
                             <th>Year</th>
                             <th>Conversion</th>
                             <th>RMD</th>
@@ -880,6 +911,7 @@ function displayResults(data) {
                             <th>Net Cash</th>
                             <th>Traditional IRA</th>
                             <th>Roth IRA</th>
+                            <th>Taxable</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -939,6 +971,7 @@ function generateTableRows(yearlyData, includeDiscounted, includeIrmaa, includeN
     return yearlyData.map(row => `
         <tr>
             <td>${row.age}</td>
+            <td>${row.filingStatus === 'married' ? 'MFJ' : row.filingStatus === 'single' ? 'Single' : row.filingStatus}</td>
             <td>${row.year}</td>
             <td>$${row.conversion.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
             <td>$${row.rmd.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
@@ -954,6 +987,7 @@ function generateTableRows(yearlyData, includeDiscounted, includeIrmaa, includeN
             <td>$${(row.netCash || 0).toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
             <td>$${row.traditionalBalance.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
             <td>$${row.rothBalance.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+            <td>$${(row.taxableBalance || 0).toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
         </tr>
     `).join('');
 }
