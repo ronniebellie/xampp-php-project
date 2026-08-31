@@ -162,9 +162,9 @@ function journey_sync_subscription_row(
     }
 
     $stripeStatus = (string) ($arr['status'] ?? '');
-    $cancelAtPeriodEnd = !empty($arr['cancel_at_period_end']);
-    $periodStart = journey_parse_time_value($arr['current_period_start'] ?? null);
-    $periodEnd = journey_parse_time_value($arr['current_period_end'] ?? null);
+    $cancelAtPeriodEnd = journey_subscription_has_scheduled_cancellation($arr, $nowTs);
+    $periodStart = journey_subscription_period_time($arr, 'current_period_start');
+    $periodEnd = journey_subscription_period_time($arr, 'current_period_end');
     $trialStart = journey_parse_time_value($arr['trial_start'] ?? null);
     $trialEnd = journey_parse_time_value($arr['trial_end'] ?? null);
     $canceledAt = journey_parse_time_value($arr['canceled_at'] ?? null);

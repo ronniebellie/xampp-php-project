@@ -6,6 +6,7 @@ declare(strict_types=1);
 $root = dirname(__DIR__, 2);
 require_once $root . '/includes/journey_checkout.php';
 require_once $root . '/includes/journey_billing_portal.php';
+require_once $root . '/includes/account_helpers.php';
 
 $passed = [];
 $failed = [];
@@ -69,6 +70,20 @@ $row['current_period_end'] = null;
 expectPortal('grace without an end is denied', !journey_stored_entitlement_allows_access($row, $now));
 $row['stripe_customer_id'] = 'bad_customer';
 expectPortal('malformed customer id is not manageable', !journey_subscription_row_is_manageable($row, $now));
+
+$activeCopy = rb_account_journey_copy(true, 'active', true, true);
+expectPortal('active subscription renders Active', $activeCopy['label'] === 'Active');
+$graceCopy = rb_account_journey_copy(true, 'canceled_grace', true, true);
+expectPortal('grace renders Active through period end', $graceCopy['label'] === 'Active through period end');
+expectPortal('grace copy explains access through billing period', strpos($graceCopy['detail'], 'until the end of the current billing period') !== false);
+expectPortal('grace keeps Open Journey Premium', $graceCopy['actionLabel'] === 'Open Journey Premium');
+$deletedCopy = rb_account_journey_copy(false, 'canceled', true, false);
+expectPortal('deleted subscription renders inactive', $deletedCopy['label'] === 'Journey Premium inactive');
+
+$accountSource = (string) file_get_contents($root . '/account.php');
+expectPortal('top banner has grace-specific heading', strpos($accountSource, 'Journey Premium active through period end') !== false);
+expectPortal('top banner checks canceled_grace', strpos($accountSource, "=== 'canceled_grace'") !== false);
+expectPortal('Calculator Premium management remains present', strpos($accountSource, 'Manage Calculator Premium subscription') !== false);
 
 journey_price_id_overrides_set(null);
 

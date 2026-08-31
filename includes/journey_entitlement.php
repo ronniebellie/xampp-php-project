@@ -205,11 +205,11 @@ function journey_evaluate_subscription_entitlement(array $subscription, ?int $no
 {
     $now = $nowTs ?? time();
     $stripeStatus = (string) ($subscription['stripe_status'] ?? $subscription['status'] ?? '');
-    $cancelAtPeriodEnd = !empty($subscription['cancel_at_period_end']);
+    $cancelAtPeriodEnd = journey_subscription_has_scheduled_cancellation($subscription, $now);
     $priceId = (string) ($subscription['stripe_price_id'] ?? $subscription['price_id'] ?? '');
     $productKey = (string) ($subscription['product_key'] ?? JOURNEY_PRODUCT_KEY);
 
-    $periodEndTs = journey_parse_time_value($subscription['current_period_end'] ?? null);
+    $periodEndTs = journey_subscription_period_time($subscription, 'current_period_end');
     $trialEndTs = journey_parse_time_value($subscription['trial_end'] ?? $subscription['trial_ends_at'] ?? null);
 
     $entitlementStatus = journey_normalize_entitlement_status(
@@ -249,6 +249,43 @@ function journey_evaluate_subscription_entitlement(array $subscription, ?int $no
         'priceId' => $priceId,
         'isJourneyPrice' => $isJourneyPrice,
     ];
+}
+
+/**
+ * Stripe may expose billing-period timestamps on the subscription item rather
+ * than the subscription. Support both API representations.
+ *
+ * @param array<string,mixed> $subscription
+ */
+function journey_subscription_period_time(array $subscription, string $field): ?int
+{
+    $direct = journey_parse_time_value($subscription[$field] ?? null);
+    if ($direct !== null) {
+        return $direct;
+    }
+    $items = $subscription['items']['data'] ?? [];
+    if (is_array($items) && isset($items[0]) && is_array($items[0])) {
+        return journey_parse_time_value($items[0][$field] ?? null);
+    }
+    return null;
+}
+
+/**
+ * Detect both legacy cancel_at_period_end and newer future cancel_at state.
+ *
+ * @param array<string,mixed> $subscription
+ */
+function journey_subscription_has_scheduled_cancellation(array $subscription, ?int $nowTs = null): bool
+{
+    if (!empty($subscription['cancel_at_period_end'])) {
+        return true;
+    }
+    $status = strtolower(trim((string) ($subscription['stripe_status'] ?? $subscription['status'] ?? '')));
+    if (!in_array($status, ['active', 'trialing'], true)) {
+        return false;
+    }
+    $cancelAt = journey_parse_time_value($subscription['cancel_at'] ?? null);
+    return $cancelAt !== null && $cancelAt > ($nowTs ?? time());
 }
 
 /**

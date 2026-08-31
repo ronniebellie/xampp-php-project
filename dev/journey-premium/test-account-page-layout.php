@@ -30,6 +30,8 @@ expectLayout('Journey Premium section present', strpos($src, '<h2>Journey Premiu
 expectLayout('Journey manage button present', strpos($src, '>Manage subscription</button>') !== false);
 expectLayout('Journey manage form posts to dedicated endpoint', strpos($src, 'action="/journey-billing-portal.php"') !== false);
 expectLayout('Journey manage form contains CSRF field', strpos($src, 'rb_csrf_field()') !== false);
+expectLayout('Journey banner reflects grace state', strpos($src, 'Journey Premium active through period end') !== false);
+expectLayout('Journey banner retains active state', strpos($src, "'Journey Premium active';") !== false);
 expectLayout('Calculator Premium teaser for non-calculator users', strpos($src, '<h2>Calculator Premium</h2>') !== false);
 expectLayout('Calculator teaser detail', strpos($src, 'Advanced planning features for the retirement calculators.') !== false);
 expectLayout('Learn link to premium.html', strpos($src, 'href="premium.html">Learn about Calculator Premium</a>') !== false);

@@ -63,53 +63,64 @@ function rb_account_journey_status(mysqli $conn, int $userId): array
         $entitlementStatus = 'none';
     }
 
-    $actionLabel = 'Continue Free Journey';
-    $actionUrl = 'https://journey.ronbelisle.com/';
-    $secondaryActionLabel = 'Start Journey Premium Trial';
-    $secondaryActionUrl = '/premium/journey.php';
-
-    if ($hasAccess) {
-        if ($entitlementStatus === 'trialing') {
-            $label = '30-day trial active';
-            $detail = 'Your Journey Premium trial is active. Your plan can save to your account so you can continue across browsers, devices, and over time.';
-        } elseif ($entitlementStatus === 'canceled_grace') {
-            $label = 'Active through period end';
-            $detail = 'Your Journey Premium access remains active through the end of the current billing period, including cloud saving.';
-        } else {
-            $label = 'Active';
-            $detail = 'Your Journey Premium access is active. Your plan can save to your account so you can continue across browsers, devices, and over time.';
-        }
-        $actionLabel = 'Open Journey Premium';
-        $actionUrl = 'https://journey.ronbelisle.com/';
-        $secondaryActionLabel = null;
-        $secondaryActionUrl = null;
-    } elseif ($hadSubscription || $cloudPlanExists) {
-        $label = $cloudPlanExists ? 'Saved Journey available' : 'Journey Premium inactive';
-        $detail = $cloudPlanExists
-            ? 'Your saved Journey is still available to review. Restore Journey Premium when you are ready to update it in the cloud again.'
-            : 'You can continue the free Journey anytime. Restore Journey Premium when you want cloud saving again.';
-        $actionLabel = 'Continue Free Journey';
-        $actionUrl = 'https://journey.ronbelisle.com/';
-        $secondaryActionLabel = 'Restore Journey Premium';
-        $secondaryActionUrl = '/premium/journey.php';
-    } else {
-        $label = 'Free Journey';
-        $detail = 'All six Journey phases are free to use. Journey Premium adds cloud saving so you can continue your plan across browsers, devices, and over time.';
-    }
+    $copy = rb_account_journey_copy($hasAccess, $entitlementStatus, $hadSubscription, $cloudPlanExists);
 
     return [
         'hasAccess' => $hasAccess,
         'entitlementStatus' => $entitlementStatus,
-        'label' => $label,
-        'detail' => $detail,
+        'label' => $copy['label'],
+        'detail' => $copy['detail'],
         'hadSubscription' => $hadSubscription,
         'cloudPlanExists' => $cloudPlanExists,
-        'actionLabel' => $actionLabel,
-        'actionUrl' => $actionUrl,
-        'secondaryActionLabel' => $secondaryActionLabel,
-        'secondaryActionUrl' => $secondaryActionUrl,
+        'actionLabel' => $copy['actionLabel'],
+        'actionUrl' => $copy['actionUrl'],
+        'secondaryActionLabel' => $copy['secondaryActionLabel'],
+        'secondaryActionUrl' => $copy['secondaryActionUrl'],
         'canManageSubscription' => journey_manageable_subscription($conn, $userId) !== null,
     ];
+}
+
+/**
+ * Pure account copy/state mapping used by the account page and regression tests.
+ *
+ * @return array<string,mixed>
+ */
+function rb_account_journey_copy(
+    bool $hasAccess,
+    string $entitlementStatus,
+    bool $hadSubscription,
+    bool $cloudPlanExists
+): array {
+    $copy = [
+        'label' => 'Free Journey',
+        'detail' => 'All six Journey phases are free to use. Journey Premium adds cloud saving so you can continue your plan across browsers, devices, and over time.',
+        'actionLabel' => 'Continue Free Journey',
+        'actionUrl' => 'https://journey.ronbelisle.com/',
+        'secondaryActionLabel' => 'Start Journey Premium Trial',
+        'secondaryActionUrl' => '/premium/journey.php',
+    ];
+    if ($hasAccess) {
+        if ($entitlementStatus === 'trialing') {
+            $copy['label'] = '30-day trial active';
+            $copy['detail'] = 'Your Journey Premium trial is active. Your plan can save to your account so you can continue across browsers, devices, and over time.';
+        } elseif ($entitlementStatus === 'canceled_grace') {
+            $copy['label'] = 'Active through period end';
+            $copy['detail'] = 'Your Journey Premium access remains available until the end of the current billing period, including cloud saving.';
+        } else {
+            $copy['label'] = 'Active';
+            $copy['detail'] = 'Your Journey Premium access is active. Your plan can save to your account so you can continue across browsers, devices, and over time.';
+        }
+        $copy['actionLabel'] = 'Open Journey Premium';
+        $copy['secondaryActionLabel'] = null;
+        $copy['secondaryActionUrl'] = null;
+    } elseif ($hadSubscription || $cloudPlanExists) {
+        $copy['label'] = $cloudPlanExists ? 'Saved Journey available' : 'Journey Premium inactive';
+        $copy['detail'] = $cloudPlanExists
+            ? 'Your saved Journey is still available to review. Restore Journey Premium when you are ready to update it in the cloud again.'
+            : 'You can continue the free Journey anytime. Restore Journey Premium when you want cloud saving again.';
+        $copy['secondaryActionLabel'] = 'Restore Journey Premium';
+    }
+    return $copy;
 }
 
 /**

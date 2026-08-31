@@ -98,6 +98,23 @@ expect(
     json_encode($grace)
 );
 
+$newStripeGrace = journey_evaluate_subscription_entitlement([
+    'status' => 'active',
+    'cancel_at_period_end' => false,
+    'cancel_at' => $future,
+    'items' => ['data' => [[
+        'current_period_end' => $future,
+        'price' => ['id' => $monthlyConfigured],
+    ]]],
+], $now);
+expect(
+    'future cancel_at with item period maps to grace',
+    $newStripeGrace['accessAllowed'] === true
+        && $newStripeGrace['entitlementStatus'] === 'canceled_grace'
+        && $newStripeGrace['accessThrough'] === gmdate('c', $future),
+    json_encode($newStripeGrace)
+);
+
 $graceEnded = journey_evaluate_subscription_entitlement([
     'status' => 'active',
     'cancel_at_period_end' => true,

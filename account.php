@@ -77,6 +77,8 @@ $is_calculator_premium = ($user['subscription_status'] === 'premium');
 // Journey Premium — authoritative product entitlement (same as Journey chrome).
 $journeyStatus = rb_account_journey_status($conn, $user_id);
 $is_journey_premium = !empty($journeyStatus['hasAccess']);
+$is_journey_canceled_grace = $is_journey_premium
+    && ($journeyStatus['entitlementStatus'] ?? '') === 'canceled_grace';
 $journeyPortalNotice = isset($_SESSION['journey_billing_portal_notice'])
     ? (string) $_SESSION['journey_billing_portal_notice']
     : '';
@@ -273,12 +275,18 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
     <?php if ($is_calculator_premium && $is_journey_premium): ?>
     <div class="premium-banner premium-active" style="background: linear-gradient(135deg, #2563eb 0%, #059669 100%); color: white; padding: 20px; text-align: center; margin-bottom: 30px; border-radius: 8px;">
         <h3 style="margin: 0 0 10px 0; font-size: 24px;">✓ Premium products active</h3>
-        <p style="margin: 0; opacity: 0.95;">Calculator Premium and Journey Premium are both active on this account.</p>
+        <p style="margin: 0; opacity: 0.95;"><?php echo $is_journey_canceled_grace
+            ? 'Calculator Premium is active. Journey Premium remains available until the end of its current billing period.'
+            : 'Calculator Premium and Journey Premium are both active on this account.'; ?></p>
     </div>
     <?php elseif ($is_journey_premium): ?>
     <div class="premium-banner premium-active" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 20px; text-align: center; margin-bottom: 30px; border-radius: 8px;">
-        <h3 style="margin: 0 0 10px 0; font-size: 24px;">✓ Journey Premium active</h3>
-        <p style="margin: 0; opacity: 0.95;">Your Retirement Planning Journey Premium access is active.</p>
+        <h3 style="margin: 0 0 10px 0; font-size: 24px;">✓ <?php echo $is_journey_canceled_grace
+            ? 'Journey Premium active through period end'
+            : 'Journey Premium active'; ?></h3>
+        <p style="margin: 0; opacity: 0.95;"><?php echo $is_journey_canceled_grace
+            ? 'Your Journey Premium access remains available until the end of the current billing period.'
+            : 'Your Retirement Planning Journey Premium access is active.'; ?></p>
     </div>
     <?php elseif ($is_calculator_premium): ?>
     <div class="premium-banner premium-active" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; padding: 20px; text-align: center; margin-bottom: 30px; border-radius: 8px;">
