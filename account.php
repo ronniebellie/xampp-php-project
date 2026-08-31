@@ -77,6 +77,10 @@ $is_calculator_premium = ($user['subscription_status'] === 'premium');
 // Journey Premium — authoritative product entitlement (same as Journey chrome).
 $journeyStatus = rb_account_journey_status($conn, $user_id);
 $is_journey_premium = !empty($journeyStatus['hasAccess']);
+$journeyPortalNotice = isset($_SESSION['journey_billing_portal_notice'])
+    ? (string) $_SESSION['journey_billing_portal_notice']
+    : '';
+unset($_SESSION['journey_billing_portal_notice']);
 
 // Banner helpers used by shared includes.
 $is_premium = $is_calculator_premium;
@@ -339,6 +343,21 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
                         </a>
                     <?php endif; ?>
                 </p>
+                <?php if (!empty($journeyStatus['canManageSubscription'])): ?>
+                    <form method="post" action="/journey-billing-portal.php" style="margin-top: 10px;">
+                        <?php echo rb_csrf_field(); ?>
+                        <button type="submit" class="btn btn-secondary">Manage subscription</button>
+                    </form>
+                <?php endif; ?>
+                <?php if ($journeyPortalNotice !== ''): ?>
+                    <p class="status-detail" role="alert" style="color:#92400e;">
+                        <?php echo $journeyPortalNotice === 'session_expired'
+                            ? 'Your session expired. Please try again.'
+                            : ($journeyPortalNotice === 'not_manageable'
+                                ? 'No manageable Journey Premium subscription was found.'
+                                : 'Could not open Journey Premium subscription management. Please try again or contact support.'); ?>
+                    </p>
+                <?php endif; ?>
             </div>
 
             <?php if ($is_calculator_premium): ?>

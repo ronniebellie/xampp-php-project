@@ -12,6 +12,7 @@ define('RB_ACCOUNT_HELPERS_LOADED', 1);
 
 require_once __DIR__ . '/journey_checkout.php';
 require_once __DIR__ . '/journey_plan_store.php';
+require_once __DIR__ . '/journey_billing_portal.php';
 
 /**
  * Journey Premium status for account UI — same authority as Journey chrome/status API.
@@ -26,7 +27,8 @@ require_once __DIR__ . '/journey_plan_store.php';
  *   actionLabel:string,
  *   actionUrl:string,
  *   secondaryActionLabel:?string,
- *   secondaryActionUrl:?string
+ *   secondaryActionUrl:?string,
+ *   canManageSubscription:bool
  * }
  */
 function rb_account_journey_status(mysqli $conn, int $userId): array
@@ -106,6 +108,7 @@ function rb_account_journey_status(mysqli $conn, int $userId): array
         'actionUrl' => $actionUrl,
         'secondaryActionLabel' => $secondaryActionLabel,
         'secondaryActionUrl' => $secondaryActionUrl,
+        'canManageSubscription' => journey_manageable_subscription($conn, $userId) !== null,
     ];
 }
 

@@ -101,7 +101,7 @@ function has_journey_premium_access(mysqli $conn, int $userId, ?int $nowTs = nul
 
     $entitlement = (string) ($row['entitlement_status'] ?? '');
     if ($entitlement !== '') {
-        return journey_entitlement_allows_premium_access($entitlement);
+        return journey_stored_entitlement_allows_access($row, $now);
     }
 
     $eval = journey_evaluate_subscription_entitlement([
@@ -113,6 +113,24 @@ function has_journey_premium_access(mysqli $conn, int $userId, ?int $nowTs = nul
     ], $now);
 
     return !empty($eval['accessAllowed']);
+}
+
+/**
+ * Evaluate a stored entitlement defensively when its final Stripe event may be late.
+ *
+ * @param array<string,mixed> $row
+ */
+function journey_stored_entitlement_allows_access(array $row, ?int $nowTs = null): bool
+{
+    $now = $nowTs ?? time();
+    $entitlement = strtolower(trim((string) ($row['entitlement_status'] ?? '')));
+    if ($entitlement === 'canceled_grace') {
+        $periodEnd = journey_parse_time_value($row['current_period_end'] ?? null);
+        if ($periodEnd === null || $periodEnd <= $now) {
+            return false;
+        }
+    }
+    return journey_entitlement_allows_premium_access($entitlement);
 }
 
 /**
