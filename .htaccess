@@ -16,6 +16,11 @@ RewriteRule ^(?:composer\.(?:json|lock)|deploy\.sh|db_config\.php)$ - [F,L,NC]
 # Pretty sitemap URL for Search Console and crawlers
 RewriteRule ^sitemap\.xml$ sitemap.php [L]
 
+# CalcForAdvisors 2.0 route foundation. These routes are non-production until
+# the production data audit, migration, subdomain, and exact frame CSP land.
+RewriteRule ^p/([a-z0-9](?:[a-z0-9-]{1,46}[a-z0-9]))/?$ advisor-portal.php?portal_slug=$1 [L,QSA]
+RewriteRule ^p/([a-z0-9](?:[a-z0-9-]{1,46}[a-z0-9]))/calculator/([a-z0-9]+(?:-[a-z0-9]+)*)/?$ advisor-calculator.php?portal_slug=$1&calculator_id=$2 [L,QSA]
+
 RewriteCond %{HTTP_HOST} ^www\.ronbelisle\.com$ [NC]
 RewriteRule ^ https://ronbelisle.com%{REQUEST_URI} [L,R=301]
 

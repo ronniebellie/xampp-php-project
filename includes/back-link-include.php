@@ -1,8 +1,11 @@
 <?php
+require_once __DIR__ . '/embed_mode.php';
+if (rb_is_embed_mode()) return;
+
 $backHref = isset($back_link_default_href) ? $back_link_default_href : '../';
 $backText = isset($back_link_default_text) ? $back_link_default_text : '← Return to home page';
-if (!empty($_GET['return_url']) && preg_match('#^https?://#', $_GET['return_url'])) {
-    $backHref = $_GET['return_url'];
+if (!empty($_GET['return_url']) && ($safeReturnUrl = rb_safe_calculator_return_url((string) $_GET['return_url']))) {
+    $backHref = $safeReturnUrl;
     $backText = '← Return to home page';
 }
 

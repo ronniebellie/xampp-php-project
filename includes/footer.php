@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/embed_mode.php'; if (rb_is_embed_mode()) return; ?>
 <hr style="margin: 40px 0 20px 0; border: 0; border-top: 1px solid #e2e8f0;" />
 
 <footer style="max-width: 980px; margin: 0 auto; padding: 0 20px 20px;">
