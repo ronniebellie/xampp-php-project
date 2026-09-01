@@ -1,12 +1,13 @@
 -- CalcForAdvisors 2.0 Phase 2: additive subscriber foundation.
 --
+-- Stage B reference SQL. Execute only through the fixed CLI migration runner.
 -- IMPORTANT:
---   1. Run sql/audit_calcforadvisors_phase2.sql first and review every result.
+--   1. Run the final preflight and Stage A first.
 --   2. Take a database backup before applying this migration.
 --   3. This migration adds nullable columns and indexes only. It does not alter
 --      IDs, delete rows, modify Stripe subscriptions, or touch saved scenarios.
---   4. Apply once. Existing project migrations do not use IF NOT EXISTS because
---      production MySQL compatibility has not been established for that syntax.
+--   4. The runner makes this rerunnable only when the whole expected foundation
+--      is absent or already exact; a partial/unexpected foundation is a STOP.
 
 ALTER TABLE calcforadvisors_subscribers
   ADD COLUMN portal_slug VARCHAR(48) NULL DEFAULT NULL AFTER trial_slug,
