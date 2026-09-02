@@ -739,6 +739,10 @@
     return path.indexOf('/ss-early-exit') !== -1 ? '..' : '';
   }
 
+  function scenarioDisplayName(scenario) {
+    return (scenario && (scenario.scenario_name || scenario.name)) || 'Untitled scenario';
+  }
+
   function gatherScenarioData() {
     return {
       mode: document.getElementById('mode').value,
@@ -1043,7 +1047,7 @@
           if (status) status.textContent = 'No saved scenarios.';
           return;
         }
-        const list = data.scenarios.map((s, i) => (i + 1) + '. ' + (s.name || s.scenario_name || 'Untitled')).join('\n');
+        const list = data.scenarios.map((s, i) => (i + 1) + '. ' + scenarioDisplayName(s)).join('\n');
         const choice = prompt('Load which scenario?\n' + list + '\n\nEnter number:');
         const idx = parseInt(choice, 10) - 1;
         if (isNaN(idx) || idx < 0 || idx >= data.scenarios.length) return;
@@ -1071,7 +1075,7 @@
           alert('Save at least 2 scenarios first, then compare.');
           return;
         }
-        const list = data.scenarios.map((s, i) => (i + 1) + '. ' + (s.name || 'Untitled')).join('\n');
+        const list = data.scenarios.map((s, i) => (i + 1) + '. ' + scenarioDisplayName(s)).join('\n');
         const choice = prompt('Select TWO scenarios to compare:\n\n' + list + '\n\nEnter two numbers (e.g. 1,2):');
         if (!choice) return;
         const parts = choice.split(',').map((s) => parseInt(s.trim(), 10) - 1);
@@ -1085,8 +1089,8 @@
         const r1 = computeSavedScenario(d1);
         const r2 = computeSavedScenario(d2);
         showComparison(
-          data.scenarios[parts[0]].name || 'Scenario A',
-          data.scenarios[parts[1]].name || 'Scenario B',
+          scenarioDisplayName(data.scenarios[parts[0]]),
+          scenarioDisplayName(data.scenarios[parts[1]]),
           r1,
           r2
         );

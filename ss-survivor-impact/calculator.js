@@ -662,6 +662,10 @@ function saveScenario() {
     .catch(function (err) { alert('Save failed: ' + err.message); });
 }
 
+function scenarioDisplayName(scenario) {
+    return (scenario && (scenario.scenario_name || scenario.name)) || 'Untitled scenario';
+}
+
 function loadScenario() {
     fetch(SSI_API_BASE + 'api/load_scenarios.php?calculator_type=ss-survivor-impact')
     .then(function (res) { return res.json(); })
@@ -672,7 +676,7 @@ function loadScenario() {
         }
         var message = 'Select a scenario:\n\n';
         data.scenarios.forEach(function (s, i) {
-            message += (i + 1) + '. ' + s.name + '\n';
+            message += (i + 1) + '. ' + scenarioDisplayName(s) + '\n';
         });
         var choice = prompt(message);
         if (!choice) return;
@@ -792,7 +796,7 @@ function compareScenarios() {
         }
         var message = 'Select TWO scenarios to compare:\n\n';
         data.scenarios.forEach(function (s, i) {
-            message += (i + 1) + '. ' + s.name + '\n';
+            message += (i + 1) + '. ' + scenarioDisplayName(s) + '\n';
         });
         var choice = prompt(message + '\nEnter two numbers separated by comma (e.g., "1,2"):');
         if (!choice) return;
@@ -806,7 +810,7 @@ function compareScenarios() {
         var s2 = data.scenarios[parts[1]];
         var r1 = RBSSHousehold.simulateHouseholdSS(buildOptsFromSavedData(s1.data));
         var r2 = RBSSHousehold.simulateHouseholdSS(buildOptsFromSavedData(s2.data));
-        showScenarioComparison(s1.name, s2.name, r1, r2);
+        showScenarioComparison(scenarioDisplayName(s1), scenarioDisplayName(s2), r1, r2);
     })
     .catch(function (err) { alert('Compare failed: ' + err.message); });
 }

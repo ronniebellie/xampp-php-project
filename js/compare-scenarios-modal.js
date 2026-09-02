@@ -1,10 +1,16 @@
 /**
  * Shared "Compare scenarios" modal for premium calculators.
  * Usage: CompareScenariosModal.open(apiBase, calculatorType, onCompare, { maxScenarios: 3 }).
- * onCompare(scenarios) receives an array of 2 or 3 scenario objects { id, name, data, created_at, updated_at }.
+ * onCompare(scenarios) receives an array of 2 or 3 scenario objects
+ * { id, scenario_name, name, data, created_at, updated_at }.
+ * scenario_name is canonical; name is accepted as a compatibility alias.
  */
 (function (global) {
   'use strict';
+
+  function scenarioDisplayName(scenario) {
+    return (scenario && (scenario.scenario_name || scenario.name)) || 'Untitled scenario';
+  }
 
   function open(apiBase, calculatorType, onCompare, options) {
     options = options || {};
@@ -87,7 +93,7 @@
           scenariosById[String(s.id)] = s;
         });
         var opt = '<option value="">— Select —</option>' + scenarios.map(function (s) {
-          return '<option value="' + s.id + '">' + escapeHtml(s.name) + '</option>';
+          return '<option value="' + s.id + '">' + escapeHtml(scenarioDisplayName(s)) + '</option>';
         }).join('');
         selectA.innerHTML = opt;
         selectB.innerHTML = opt;

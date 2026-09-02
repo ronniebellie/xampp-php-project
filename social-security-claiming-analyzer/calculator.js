@@ -510,6 +510,10 @@ function saveScenario() {
     .catch(err => alert('Save scenario failed: ' + err.message));
 }
 
+function scenarioDisplayName(scenario) {
+    return (scenario && (scenario.scenario_name || scenario.name)) || 'Untitled scenario';
+}
+
 function loadScenario() {
     fetch(SS_API_BASE + '/api/load_scenarios.php?calculator_type=social-security')
     .then(res => res.json())
@@ -526,7 +530,7 @@ function loadScenario() {
         
         let message = 'Select a scenario to load (or type "d" + number to delete):\n\n';
         data.scenarios.forEach((s, i) => {
-            message += `${i + 1}. ${s.name} (saved ${new Date(s.updated_at).toLocaleDateString()})\n`;
+            message += `${i + 1}. ${scenarioDisplayName(s)} (saved ${new Date(s.updated_at).toLocaleDateString()})\n`;
         });
         message += '\nExamples: Enter "1" to load, "d1" to delete';
         
@@ -537,7 +541,7 @@ function loadScenario() {
             const index = parseInt(choice.substring(1)) - 1;
             if (index >= 0 && index < data.scenarios.length) {
                 const scenario = data.scenarios[index];
-                if (confirm(`Delete "${scenario.name}"? This cannot be undone.`)) {
+                if (confirm(`Delete "${scenarioDisplayName(scenario)}"? This cannot be undone.`)) {
                     fetch(SS_API_BASE + '/api/delete_scenario.php', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
@@ -583,7 +587,7 @@ function compareScenarios() {
             return;
         }
         let message = 'Select TWO scenarios to compare:\n\n';
-        data.scenarios.forEach((s, i) => { message += `${i + 1}. ${s.name}\n`; });
+        data.scenarios.forEach((s, i) => { message += `${i + 1}. ${scenarioDisplayName(s)}\n`; });
         const choice = prompt(message + '\nEnter two numbers separated by comma (e.g., "1,2"):');
         if (!choice) return;
         const parts = choice.split(',').map(s => parseInt(s.trim()) - 1);
@@ -617,7 +621,7 @@ function compareScenarios() {
         const dataC2 = calculateLifetimeBenefits(monthlyC2, c2, life2, cola2, disc2);
         const total1 = Math.max(dataA1[dataA1.length-1].cumulativeTotal, dataB1[dataB1.length-1].cumulativeTotal, dataC1[dataC1.length-1].cumulativeTotal);
         const total2 = Math.max(dataA2[dataA2.length-1].cumulativeTotal, dataB2[dataB2.length-1].cumulativeTotal, dataC2[dataC2.length-1].cumulativeTotal);
-        showComparisonSS(s1.name, s2.name, {
+        showComparisonSS(scenarioDisplayName(s1), scenarioDisplayName(s2), {
             fra: fra1, monthlyA: monthlyA1, monthlyB: monthlyB1, monthlyC: monthlyC1,
             total: total1, life: life1, claimA: a1, claimB: b1, claimC: c1, pia: pia1
         }, {

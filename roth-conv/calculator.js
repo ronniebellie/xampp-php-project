@@ -1483,6 +1483,10 @@ function saveScenario() {
     .catch(err => alert('Save scenario failed: ' + err.message));
 }
 
+function scenarioDisplayName(scenario) {
+    return (scenario && (scenario.scenario_name || scenario.name)) || 'Untitled scenario';
+}
+
 function loadScenario() {
     fetch(RC_API_BASE + 'api/load_scenarios.php?calculator_type=roth-conversion')
     .then(res => res.json())
@@ -1499,7 +1503,7 @@ function loadScenario() {
         
         let message = 'Select a scenario to load (or type "d" + number to delete):\n\n';
         data.scenarios.forEach((s, i) => {
-            message += `${i + 1}. ${s.name} (saved ${new Date(s.updated_at).toLocaleDateString()})\n`;
+            message += `${i + 1}. ${scenarioDisplayName(s)} (saved ${new Date(s.updated_at).toLocaleDateString()})\n`;
         });
         message += '\nExamples: Enter "1" to load, "d1" to delete';
         
@@ -1510,7 +1514,7 @@ function loadScenario() {
             const index = parseInt(choice.substring(1)) - 1;
             if (index >= 0 && index < data.scenarios.length) {
                 const scenario = data.scenarios[index];
-                if (confirm(`Delete "${scenario.name}"? This cannot be undone.`)) {
+                if (confirm(`Delete "${scenarioDisplayName(scenario)}"? This cannot be undone.`)) {
                     fetch(RC_API_BASE + 'api/delete_scenario.php', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
@@ -1555,7 +1559,7 @@ function compareScenarios() {
             return;
         }
         let message = 'Select TWO scenarios to compare:\n\n';
-        data.scenarios.forEach((s, i) => { message += `${i + 1}. ${s.name}\n`; });
+        data.scenarios.forEach((s, i) => { message += `${i + 1}. ${scenarioDisplayName(s)}\n`; });
         message += '\nEnter two numbers separated by comma (e.g., "1,2"):';
         const choice = prompt(message);
         if (!choice) return;
@@ -1569,7 +1573,7 @@ function compareScenarios() {
         const s2 = data.scenarios[parts[1]];
         const result1 = runRothAnalysis(s1.data);
         const result2 = runRothAnalysis(s2.data);
-        showRothComparison(s1.name, s2.name, result1, result2, s1.data, s2.data);
+        showRothComparison(scenarioDisplayName(s1), scenarioDisplayName(s2), result1, result2, s1.data, s2.data);
     })
     .catch(() => alert('Failed to load scenarios.'));
 }

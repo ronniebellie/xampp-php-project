@@ -1052,6 +1052,10 @@ function saveScenario() {
     });
 }
 
+function scenarioDisplayName(scenario) {
+    return (scenario && (scenario.scenario_name || scenario.name)) || 'Untitled scenario';
+}
+
 function loadScenario() {
     fetch('/api/load_scenarios.php?calculator_type=rmd-impact')
     .then(res => res.json())
@@ -1068,7 +1072,7 @@ function loadScenario() {
         
         let message = 'Select a scenario to load (or type "d" + number to delete):\n\n';
         data.scenarios.forEach((s, i) => {
-            message += `${i + 1}. ${s.name} (saved ${new Date(s.updated_at).toLocaleDateString()})\n`;
+            message += `${i + 1}. ${scenarioDisplayName(s)} (saved ${new Date(s.updated_at).toLocaleDateString()})\n`;
         });
         message += '\nExamples: Enter "1" to load, "d1" to delete';
         
@@ -1079,7 +1083,7 @@ function loadScenario() {
             const index = parseInt(choice.substring(1)) - 1;
             if (index >= 0 && index < data.scenarios.length) {
                 const scenario = data.scenarios[index];
-                if (confirm(`Delete "${scenario.name}"? This cannot be undone.`)) {
+                if (confirm(`Delete "${scenarioDisplayName(scenario)}"? This cannot be undone.`)) {
                     fetch('/api/delete_scenario.php', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
@@ -1157,8 +1161,8 @@ function compareScenarios() {
 
         // Store comparison context for AI explanations in compare mode
         window.lastRMDCompare = {
-            name1: selected[0].name,
-            name2: selected[1].name,
+            name1: scenarioDisplayName(selected[0]),
+            name2: scenarioDisplayName(selected[1]),
             data1,
             data2,
             results1,
@@ -1168,9 +1172,9 @@ function compareScenarios() {
         if (selected.length >= 3) {
             const data3 = scenarioToProjectionData(selected[2]);
             const results3 = calculateProjection(data3);
-            showComparisonThree(selected[0].name, selected[1].name, selected[2].name, results1, results2, results3, data1, data2, data3);
+            showComparisonThree(scenarioDisplayName(selected[0]), scenarioDisplayName(selected[1]), scenarioDisplayName(selected[2]), results1, results2, results3, data1, data2, data3);
         } else {
-            showComparison(selected[0].name, selected[1].name, results1, results2, data1, data2);
+            showComparison(scenarioDisplayName(selected[0]), scenarioDisplayName(selected[1]), results1, results2, data1, data2);
         }
     }, { maxScenarios: 3 });
 }

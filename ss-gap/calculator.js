@@ -478,6 +478,10 @@ function saveScenario() {
     .catch(err => alert('Save scenario failed: ' + err.message));
 }
 
+function scenarioDisplayName(scenario) {
+    return (scenario && (scenario.scenario_name || scenario.name)) || 'Untitled scenario';
+}
+
 function loadScenario() {
     fetch(SSG_API_BASE + 'api/load_scenarios.php?calculator_type=ss-gap')
     .then(res => res.json())
@@ -494,7 +498,7 @@ function loadScenario() {
         
         let message = 'Select a scenario to load (or type "d" + number to delete):\\n\\n';
         data.scenarios.forEach((s, i) => {
-            message += `${i + 1}. ${s.name} (saved ${new Date(s.updated_at).toLocaleDateString()})\\n`;
+            message += `${i + 1}. ${scenarioDisplayName(s)} (saved ${new Date(s.updated_at).toLocaleDateString()})\\n`;
         });
         message += '\\nExamples: Enter "1" to load, "d1" to delete';
         
@@ -505,7 +509,7 @@ function loadScenario() {
             const index = parseInt(choice.substring(1)) - 1;
             if (index >= 0 && index < data.scenarios.length) {
                 const scenario = data.scenarios[index];
-                if (confirm(`Delete "${scenario.name}"? This cannot be undone.`)) {
+                if (confirm(`Delete "${scenarioDisplayName(scenario)}"? This cannot be undone.`)) {
                     fetch(SSG_API_BASE + 'api/delete_scenario.php', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
@@ -555,7 +559,7 @@ function showSSGapComparison(selected) {
     const labels = ['Target spending ($/yr)', 'SS income ($/yr)', 'Other income ($/yr)', 'Withdrawal rate (%)', 'Filing status'];
     const keys = ['targetSpending', 'ssIncome', 'otherIncome', 'withdrawalRate', 'filingStatus'];
     let html = '<h2 style="margin:0 0 15px 0; color: #92400e;">⚖️ Scenario comparison</h2><table style="width:100%; border-collapse: collapse;"><thead><tr style="background: #f59e0b; color: white;"><th style="padding: 8px; text-align: left;">Input</th>';
-    selected.forEach(function (s) { html += '<th style="padding: 8px; text-align: right;">' + (s.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</th>'; });
+    selected.forEach(function (s) { html += '<th style="padding: 8px; text-align: right;">' + scenarioDisplayName(s).replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</th>'; });
     html += '</tr></thead><tbody>';
     keys.forEach(function (key, i) {
         html += '<tr style="border-bottom: 1px solid #e5e7eb;"><td style="padding: 8px; font-weight: 600;">' + labels[i] + '</td>';

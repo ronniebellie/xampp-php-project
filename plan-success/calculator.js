@@ -531,6 +531,10 @@
       });
   }
 
+  function scenarioDisplayName(scenario) {
+    return (scenario && (scenario.scenario_name || scenario.name)) || 'Untitled scenario';
+  }
+
   function loadScenario() {
     fetch('/api/load_scenarios.php?calculator_type=' + encodeURIComponent(SCENARIO_TYPE), { credentials: 'same-origin' })
       .then(function (res) { return res.json(); })
@@ -539,7 +543,7 @@
         if (!data.scenarios || data.scenarios.length === 0) { alert('No saved scenarios yet. Save your first one!'); return; }
         var msg = 'Select a scenario to load (or type "d" + number to delete):\n\n';
         data.scenarios.forEach(function (s, i) {
-          msg += (i + 1) + '. ' + s.name + ' (saved ' + new Date(s.updated_at).toLocaleDateString() + ')\n';
+          msg += (i + 1) + '. ' + scenarioDisplayName(s) + ' (saved ' + new Date(s.updated_at).toLocaleDateString() + ')\n';
         });
         msg += '\nExamples: enter "1" to load, "d1" to delete';
         var choice = prompt(msg);
@@ -549,7 +553,7 @@
           var di = parseInt(choice.substring(1), 10) - 1;
           if (di < 0 || di >= data.scenarios.length) { alert('Invalid selection.'); return; }
           var del = data.scenarios[di];
-          if (!confirm('Delete "' + del.name + '"? This cannot be undone.')) return;
+          if (!confirm('Delete "' + scenarioDisplayName(del) + '"? This cannot be undone.')) return;
           fetch('/api/delete_scenario.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -582,7 +586,7 @@
         updateMethodVisibility();
         updateLabels();
         runMonteCarlo(true);
-        setSaveStatus('✓ Loaded "' + s.name + '"');
+        setSaveStatus('✓ Loaded "' + scenarioDisplayName(s) + '"');
         setTimeout(function () { setSaveStatus(''); }, 3000);
       })
       .catch(function (err) { alert('Load scenario failed: ' + err.message); });
@@ -663,4 +667,3 @@ function explainResults() {
     alert('Explain results: ' + err.message);
   });
 }
-

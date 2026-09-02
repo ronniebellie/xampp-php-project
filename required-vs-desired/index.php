@@ -710,6 +710,10 @@ $isPremium = has_premium_access();
             .catch(err => alert('Save scenario failed: ' + err.message));
         }
 
+        function scenarioDisplayName(scenario) {
+            return (scenario && (scenario.scenario_name || scenario.name)) || 'Untitled scenario';
+        }
+
         function loadScenario() {
             fetch(RVD_API_BASE + 'api/load_scenarios.php?calculator_type=required-vs-desired')
             .then(res => res.json())
@@ -726,7 +730,7 @@ $isPremium = has_premium_access();
                 
                 let message = 'Select a scenario to load (or type "d" + number to delete):\n\n';
                 data.scenarios.forEach((s, i) => {
-                    message += `${i + 1}. ${s.name} (saved ${new Date(s.updated_at).toLocaleDateString()})\n`;
+                    message += `${i + 1}. ${scenarioDisplayName(s)} (saved ${new Date(s.updated_at).toLocaleDateString()})\n`;
                 });
                 message += '\nExamples: Enter "1" to load, "d1" to delete';
                 
@@ -737,7 +741,7 @@ $isPremium = has_premium_access();
                     const index = parseInt(choice.substring(1)) - 1;
                     if (index >= 0 && index < data.scenarios.length) {
                         const scenario = data.scenarios[index];
-                        if (confirm(`Delete "${scenario.name}"? This cannot be undone.`)) {
+                        if (confirm(`Delete "${scenarioDisplayName(scenario)}"? This cannot be undone.`)) {
                             fetch(RVD_API_BASE + 'api/delete_scenario.php', {
                                 method: 'POST',
                                 headers: {'Content-Type': 'application/json'},

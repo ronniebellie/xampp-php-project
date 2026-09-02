@@ -349,6 +349,10 @@
     .catch(function (err) { alert('Save scenario failed: ' + err.message); });
   }
 
+  function scenarioDisplayName(scenario) {
+    return (scenario && (scenario.scenario_name || scenario.name)) || 'Untitled scenario';
+  }
+
   function loadScenario() {
     fetch(PAS_API_BASE + 'api/load_scenarios.php?calculator_type=vanguard-pas-vs-target-date', { credentials: 'include' })
     .then(function (res) { return res.json(); })
@@ -363,7 +367,7 @@
       }
       var message = 'Select a scenario to load (or type "d" + number to delete):\n\n';
       data.scenarios.forEach(function (s, i) {
-        message += (i + 1) + '. ' + s.name + ' (saved ' + new Date(s.updated_at).toLocaleDateString() + ')\n';
+        message += (i + 1) + '. ' + scenarioDisplayName(s) + ' (saved ' + new Date(s.updated_at).toLocaleDateString() + ')\n';
       });
       message += '\nExamples: Enter "1" to load, "d1" to delete';
       var choice = prompt(message + '\n\nEnter number or d+number:');
@@ -371,7 +375,7 @@
       var index;
       if (choice.toLowerCase().indexOf('d') === 0) {
         index = parseInt(choice.substring(1), 10) - 1;
-        if (index >= 0 && index < data.scenarios.length && confirm('Delete "' + data.scenarios[index].name + '"? This cannot be undone.')) {
+        if (index >= 0 && index < data.scenarios.length && confirm('Delete "' + scenarioDisplayName(data.scenarios[index]) + '"? This cannot be undone.')) {
           fetch(PAS_API_BASE + 'api/delete_scenario.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

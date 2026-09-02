@@ -32,6 +32,7 @@ while ($row = $result->fetch_assoc()) {
     $scenarios[] = [
         'id' => $row['id'],
         'scenario_name' => $row['scenario_name'],
+        'name' => $row['scenario_name'],
         'data' => json_decode($row['scenario_data'], true),
         'created_at' => $row['created_at'],
         'updated_at' => $row['updated_at']
