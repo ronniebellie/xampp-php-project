@@ -94,6 +94,21 @@ rollback() {
   echo "Rolled back to $previous" >&2
 }
 
+# The document root is a symlink.  Recycle mod_php workers immediately after
+# switching it so their realpath/opcache state cannot mix files from releases.
+if ! apachectl configtest; then
+  echo "ERROR: Apache configuration validation failed after activation" >&2
+  rollback
+  exit 1
+fi
+
+if ! apachectl graceful; then
+  echo "ERROR: Apache graceful reload failed after activation" >&2
+  rollback
+  apachectl graceful || true
+  exit 1
+fi
+
 homepage_body="$(mktemp)"
 directory_body="$(mktemp)"
 calc_body="$(mktemp)"
