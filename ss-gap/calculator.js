@@ -64,7 +64,7 @@ function updateGap() {
     const portfolioSavings = portfolioWithoutSS - portfolioNeeded;
     const savingsPercent = portfolioWithoutSS > 0 ? (portfolioSavings / portfolioWithoutSS * 100) : 0;
 
-    // Persist last computed values for Premium features (Explain/PDF/CSV).
+    // Persist last computed values for Premium Explain.
     window.lastSSGapResult = {
         targetSpending,
         ssIncome,
@@ -414,14 +414,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const saveBtn = document.getElementById('saveScenarioBtn');
     const loadBtn = document.getElementById('loadScenarioBtn');
     const compareBtn = document.getElementById('compareScenariosBtn');
-    const pdfBtn = document.getElementById('downloadPdfBtn');
-    const csvBtn = document.getElementById('downloadCsvBtn');
     const explainBtn = document.getElementById('explainResultsBtnInResults');
     if (saveBtn) saveBtn.addEventListener('click', saveScenario);
     if (loadBtn) loadBtn.addEventListener('click', loadScenario);
     if (compareBtn) compareBtn.addEventListener('click', compareScenarios);
-    if (pdfBtn) pdfBtn.addEventListener('click', downloadPDF);
-    if (csvBtn) csvBtn.addEventListener('click', downloadCSV);
     if (explainBtn) explainBtn.addEventListener('click', explainResults);
 
     if (window.RBUrlPrefill) {
@@ -575,12 +571,4 @@ function showSSGapComparison(selected) {
     if (firstForm && firstForm.parentNode) firstForm.parentNode.insertBefore(panel, firstForm);
     else if (wrap) wrap.insertBefore(panel, wrap.firstChild);
     panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function downloadPDF() {
-    alert('PDF download: Please run a calculation first, then use the PDF button.');
-}
-
-function downloadCSV() {
-    alert('CSV export: Please run a calculation first, then use the CSV button.');
 }

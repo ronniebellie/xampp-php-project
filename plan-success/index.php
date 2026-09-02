@@ -165,7 +165,7 @@ $isPremium = has_premium_access();
     </div>
 
     <?php if (!$isPremium): ?>
-    <?php $premium_upsell_text = 'Upgrade to Premium to save and compare scenarios, export PDF and CSV, and get AI-generated plain-language explanations of your specific results.'; include(__DIR__ . '/../includes/premium-upsell-banner.php'); ?>
+    <?php $premium_upsell_text = 'Upgrade to Premium to save and reload scenarios and get AI-generated plain-language explanations of your results.'; include(__DIR__ . '/../includes/premium-upsell-banner.php'); ?>
     <?php endif; ?>
   </div>
 
