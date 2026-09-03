@@ -69,6 +69,24 @@ $isPremium = has_premium_access();
                 </div>
 
                 <div class="input-group">
+                    <label for="contributionAmount">Ongoing Contribution</label>
+                    <div class="input-with-prefix">
+                        <span class="prefix">$</span>
+                        <input type="number" id="contributionAmount" value="0" min="0" step="any" inputmode="decimal" placeholder="0">
+                    </div>
+                    <span class="help-text">Added at the end of each selected period</span>
+                </div>
+
+                <div class="input-group">
+                    <label for="contributionFrequency">Contribution Frequency</label>
+                    <select id="contributionFrequency">
+                        <option value="monthly" selected>Monthly</option>
+                        <option value="quarterly">Quarterly</option>
+                        <option value="annual">Annual</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
                     <label for="advisorFee">Advisor Fee (%)</label>
                     <input type="range" id="advisorFee" value="1.0" min="0" max="5" step="0.05">
                     <div class="slider-label" style="margin-top: 4px; justify-content: flex-end;">
@@ -101,6 +119,7 @@ $isPremium = has_premium_access();
                 </div>
 
                 <button id="calculateBtn" class="calculate-btn" type="button">Calculate True Cost</button>
+                <p class="help-text" style="margin-top: 12px;">All projections are pre-tax. Contributions are added at the end of each selected period.</p>
             </div>
 
             <!-- Results Section -->
@@ -121,6 +140,25 @@ $isPremium = has_premium_access();
                         <span class="cb-part cb-total"><span class="cb-num" id="breakdownTotal">$0</span><span class="cb-desc">total opportunity cost</span></span>
                     </div>
                     <div class="cost-explanation">Extra amount you could have by investing in a Vanguard index fund instead of a managed portfolio</div>
+                </div>
+
+                <div class="comparison-section">
+                    <h3 class="comparison-section-title">Contributions</h3>
+                    <div class="comparison-table">
+                        <div class="comparison-header">
+                            <div class="col-label"></div>
+                            <div class="col-managed">Ongoing Contribution</div>
+                            <div class="col-vanguard">Total Contributions</div>
+                            <div class="col-difference">Total Invested</div>
+                        </div>
+                        <div class="comparison-row">
+                            <div class="row-label">Pre-tax</div>
+                            <div class="col-managed" id="contributionSummary"></div>
+                            <div class="col-vanguard" id="totalContributions"></div>
+                            <div class="col-difference" id="totalInvestedCapital"></div>
+                        </div>
+                    </div>
+                    <p class="help-text" style="margin-top: 8px;">All amounts shown are pre-tax. Total invested equals your starting portfolio plus contributions.</p>
                 </div>
 
                 <div class="comparison-section">
@@ -239,6 +277,7 @@ $isPremium = has_premium_access();
     <script>
     const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
     </script>
+    <script src="projection.js"></script>
     <script src="calculator.js"></script>
     <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/calculator-footer.php'; ?>
 </body>

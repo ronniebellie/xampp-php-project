@@ -29,12 +29,14 @@ header('Content-Disposition: attachment; filename="Managed_vs_Vanguard_' . date(
 header('Cache-Control: private, max-age=0, must-revalidate');
 echo "\xEF\xBB\xBF";
 $out = fopen('php://output', 'w');
-fputcsv($out, ['Year', 'Managed Portfolio', 'Managed Annual Fee', 'Managed Cumulative Fees', 'Vanguard Portfolio', 'Vanguard Annual Fee', 'Vanguard Cumulative Fees', 'Portfolio Difference']);
+fputcsv($out, ['Year', 'Contributions This Year', 'Cumulative Contributions', 'Managed Ending Balance', 'Managed Annual Fee', 'Managed Cumulative Fees', 'Vanguard Ending Balance', 'Vanguard Annual Fee', 'Vanguard Cumulative Fees', 'Portfolio Difference']);
 for ($i = 0; $i < count($mRows) && $i < count($vRows); $i++) {
     $m = $mRows[$i];
     $v = $vRows[$i];
     fputcsv($out, [
         $m['year'],
+        number_format((float)($m['contributions'] ?? 0), 2),
+        number_format((float)($m['cumulativeContributions'] ?? 0), 2),
         number_format($m['balance'], 2),
         number_format($m['fee'], 2),
         number_format($m['totalFees'], 2),

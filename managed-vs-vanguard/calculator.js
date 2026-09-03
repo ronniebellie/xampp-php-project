@@ -16,39 +16,46 @@ function formatCurrency(amount) {
     }).format(amount);
 }
 
-// Grow at gross return, then deduct fees (same model as vanguard-pas-vs-target-date)
-function calculatePortfolio(principal, annualReturnPct, feeRatePct, years) {
-    let yearlyData = [];
-    let balance = principal;
-    let totalFees = 0;
+function normalizeScenarioInputs(data) {
+    const source = data || {};
+    return {
+        portfolioValue: parseFloat(source.portfolioValue),
+        contributionAmount: source.contributionAmount === undefined || source.contributionAmount === null || source.contributionAmount === ''
+            ? 0
+            : parseFloat(source.contributionAmount),
+        contributionFrequency: ['monthly', 'quarterly', 'annual'].includes(source.contributionFrequency)
+            ? source.contributionFrequency
+            : 'monthly',
+        advisorFee: parseFloat(source.advisorFee),
+        vanguardFee: parseFloat(source.vanguardFee),
+        years: parseInt(source.years, 10),
+        returnRate: parseFloat(source.returnRate)
+    };
+}
 
-    yearlyData.push({ year: 0, balance: balance, fee: 0, totalFees: 0 });
-
-    for (let year = 1; year <= years; year++) {
-        balance = balance * (1 + annualReturnPct / 100);
-        const yearFee = balance * (feeRatePct / 100);
-        totalFees += yearFee;
-
-        yearlyData.push({
-            year: year,
-            balance: balance,
-            fee: yearFee,
-            totalFees: totalFees
-        });
-
-        balance = balance - yearFee;
-    }
-
-    return yearlyData;
+function projectScenario(inputs, feeRate) {
+    return MVProjection.projectPortfolio({
+        initialBalance: inputs.portfolioValue,
+        annualReturnPct: inputs.returnRate,
+        annualFeePct: feeRate,
+        years: inputs.years,
+        contributionAmount: inputs.contributionAmount,
+        contributionFrequency: inputs.contributionFrequency
+    });
 }
 
 // Main calculation
 function calculate(showAlerts) {
-    const portfolioValue = parseFloat(document.getElementById('portfolioValue').value);
-    const advisorFee = parseFloat(document.getElementById('advisorFee').value);
-    const vanguardFee = parseFloat(document.getElementById('vanguardFee').value);
-    const years = parseInt(document.getElementById('years').value, 10);
-    const returnRate = parseFloat(document.getElementById('returnRate').value);
+    const inputs = normalizeScenarioInputs({
+        portfolioValue: document.getElementById('portfolioValue').value,
+        contributionAmount: document.getElementById('contributionAmount').value,
+        contributionFrequency: document.getElementById('contributionFrequency').value,
+        advisorFee: document.getElementById('advisorFee').value,
+        vanguardFee: document.getElementById('vanguardFee').value,
+        years: document.getElementById('years').value,
+        returnRate: document.getElementById('returnRate').value
+    });
+    const { portfolioValue, contributionAmount, contributionFrequency, advisorFee, vanguardFee, years, returnRate } = inputs;
     const validationError = document.getElementById('validationError');
 
     const advisorFeeLabel = document.getElementById('advisorFeeLabel');
@@ -65,6 +72,8 @@ function calculate(showAlerts) {
         errorMessage = 'Enter an advisor fee between 0% and 5%.';
     } else if (isNaN(vanguardFee) || vanguardFee < 0 || vanguardFee > 1) {
         errorMessage = 'Enter a Vanguard expense ratio between 0% and 1%.';
+    } else if (isNaN(contributionAmount) || contributionAmount < 0) {
+        errorMessage = 'Enter an ongoing contribution of zero or more.';
     } else if (isNaN(years) || years < 1 || years > 50) {
         errorMessage = 'Choose an investment timeline between 1 and 50 years.';
     } else if (isNaN(returnRate) || returnRate < 0 || returnRate > 20) {
@@ -82,14 +91,16 @@ function calculate(showAlerts) {
     }
 
     if (validationError) validationError.style.display = 'none';
-    // Calculate both scenarios
-    const managedData = calculatePortfolio(portfolioValue, returnRate, advisorFee, years);
-    const vanguardData = calculatePortfolio(portfolioValue, returnRate, vanguardFee, years);
+    // Both the UI and exports consume these same annualized monthly projections.
+    const managedProjection = projectScenario(inputs, advisorFee);
+    const vanguardProjection = projectScenario(inputs, vanguardFee);
+    const managedData = managedProjection.yearlyData;
+    const vanguardData = vanguardProjection.yearlyData;
     
     // Get key values
     const midYear = Math.floor(years / 2);
-    const managedFinal = managedData[years].balance;
-    const vanguardFinal = vanguardData[years].balance;
+    const managedFinal = managedProjection.finalBalance;
+    const vanguardFinal = vanguardProjection.finalBalance;
     const opportunityCost = vanguardFinal - managedFinal;
     
     const managedYear1Fee = managedData[1].fee;
@@ -98,12 +109,11 @@ function calculate(showAlerts) {
     const managedMidValue = managedData[midYear].balance;
     const vanguardMidValue = vanguardData[midYear].balance;
     
-    const managedTotalFees = managedData[years].totalFees;
-    const vanguardTotalFees = vanguardData[years].totalFees;
+    const managedTotalFees = managedProjection.cumulativeFees;
+    const vanguardTotalFees = vanguardProjection.cumulativeFees;
     
     const directFeeDiff = managedTotalFees - vanguardTotalFees;
     const lostGrowth = opportunityCost - directFeeDiff;
-    const lostGrowthDisplay = Math.max(0, lostGrowth);
     
     // Update results
     document.getElementById('resultYears').textContent = years;
@@ -114,8 +124,14 @@ function calculate(showAlerts) {
     const breakdownGrowthEl = document.getElementById('breakdownGrowth');
     const breakdownTotalEl = document.getElementById('breakdownTotal');
     if (breakdownFeesEl) breakdownFeesEl.textContent = formatCurrency(directFeeDiff);
-    if (breakdownGrowthEl) breakdownGrowthEl.textContent = formatCurrency(lostGrowthDisplay);
+    if (breakdownGrowthEl) breakdownGrowthEl.textContent = formatCurrency(lostGrowth);
     if (breakdownTotalEl) breakdownTotalEl.textContent = formatCurrency(opportunityCost);
+    const contributionSummary = document.getElementById('contributionSummary');
+    const totalContributions = document.getElementById('totalContributions');
+    const totalInvestedCapital = document.getElementById('totalInvestedCapital');
+    if (contributionSummary) contributionSummary.textContent = formatCurrency(contributionAmount) + ' ' + contributionFrequency;
+    if (totalContributions) totalContributions.textContent = formatCurrency(managedProjection.cumulativeContributions) + ' total contributions';
+    if (totalInvestedCapital) totalInvestedCapital.textContent = formatCurrency(managedProjection.totalInvestedCapital) + ' total invested';
     
     // Update fee labels
     const managedFeeText = advisorFee.toFixed(2).replace(/\.00$/, '') + '% fee';
@@ -148,7 +164,7 @@ function calculate(showAlerts) {
     // Update insights
     document.getElementById('insightDirectFees').textContent = formatCurrency(directFeeDiff);
     document.getElementById('insightYears').textContent = years;
-    document.getElementById('insightLostGrowth').textContent = formatCurrency(lostGrowthDisplay);
+    document.getElementById('insightLostGrowth').textContent = formatCurrency(lostGrowth);
     document.getElementById('insightBeatBy').textContent = (advisorFee - vanguardFee).toFixed(2) + '%';
     
     // Create charts
@@ -158,15 +174,21 @@ function calculate(showAlerts) {
     // Store result for PDF/CSV
     window.lastMVResult = {
         portfolioValue,
+        contributionAmount,
+        contributionFrequency,
         advisorFee,
         vanguardFee,
         years,
         returnRate,
         managedData,
         vanguardData,
+        managedProjection,
+        vanguardProjection,
+        cumulativeContributions: managedProjection.cumulativeContributions,
+        totalInvestedCapital: managedProjection.totalInvestedCapital,
         opportunityCost,
         directFeeDiff,
-        lostGrowth: lostGrowthDisplay,
+        lostGrowth,
         managedFinal,
         vanguardFinal,
         managedTotalFees,
@@ -398,12 +420,19 @@ document.getElementById('calculateBtn').addEventListener('click', function() {
     calculate(true);
 });
 
-['portfolioValue', 'advisorFee', 'vanguardFee', 'years', 'returnRate'].forEach(id => {
+['portfolioValue', 'contributionAmount', 'advisorFee', 'vanguardFee', 'years', 'returnRate'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', function() {
         calculate(false);
     });
 });
+
+const contributionFrequencySelect = document.getElementById('contributionFrequency');
+if (contributionFrequencySelect) {
+    contributionFrequencySelect.addEventListener('change', function() {
+        calculate(false);
+    });
+}
 
 window.addEventListener('load', function() {
     calculate(false); // Update labels and result data; results panel stays hidden until user clicks Calculate
@@ -430,6 +459,8 @@ function saveScenario() {
     
     const formData = {
         portfolioValue: document.getElementById('portfolioValue')?.value,
+        contributionAmount: document.getElementById('contributionAmount')?.value,
+        contributionFrequency: document.getElementById('contributionFrequency')?.value,
         advisorFee: document.getElementById('advisorFee')?.value,
         vanguardFee: document.getElementById('vanguardFee')?.value,
         years: document.getElementById('years')?.value,
@@ -514,9 +545,10 @@ function loadScenario() {
             const index = parseInt(choice) - 1;
             if (index >= 0 && index < data.scenarios.length) {
                 const scenario = data.scenarios[index];
-                Object.keys(scenario.data).forEach(key => {
+                const normalized = normalizeScenarioInputs(scenario.data);
+                Object.keys(normalized).forEach(key => {
                     const input = document.getElementById(key);
-                    if (input) input.value = scenario.data[key];
+                    if (input) input.value = normalized[key];
                 });
                 alert('Scenario loaded! Click Calculate to see results.');
             }
@@ -546,27 +578,15 @@ function compareScenarios() {
         }
         const s1 = data.scenarios[parts[0]];
         const s2 = data.scenarios[parts[1]];
-        const d1 = {
-            portfolioValue: parseFloat(s1.data.portfolioValue),
-            advisorFee: parseFloat(s1.data.advisorFee),
-            vanguardFee: parseFloat(s1.data.vanguardFee),
-            years: parseInt(s1.data.years),
-            returnRate: parseFloat(s1.data.returnRate)
-        };
-        const d2 = {
-            portfolioValue: parseFloat(s2.data.portfolioValue),
-            advisorFee: parseFloat(s2.data.advisorFee),
-            vanguardFee: parseFloat(s2.data.vanguardFee),
-            years: parseInt(s2.data.years),
-            returnRate: parseFloat(s2.data.returnRate)
-        };
-        const res1 = calculatePortfolio(d1.portfolioValue, d1.returnRate, d1.advisorFee, d1.years);
-        const res2 = calculatePortfolio(d2.portfolioValue, d2.returnRate, d2.advisorFee, d2.years);
-        const v1 = calculatePortfolio(d1.portfolioValue, d1.returnRate, d1.vanguardFee || 0.04, d1.years);
-        const v2 = calculatePortfolio(d2.portfolioValue, d2.returnRate, d2.vanguardFee || 0.04, d2.years);
-        const opp1 = v1[v1.length - 1].balance - res1[res1.length - 1].balance;
-        const opp2 = v2[v2.length - 1].balance - res2[res2.length - 1].balance;
-        showMVComparison(scenarioDisplayName(s1), scenarioDisplayName(s2), res1, res2, v1, v2, d1, d2, opp1, opp2);
+        const d1 = normalizeScenarioInputs(s1.data);
+        const d2 = normalizeScenarioInputs(s2.data);
+        const managed1 = projectScenario(d1, d1.advisorFee);
+        const managed2 = projectScenario(d2, d2.advisorFee);
+        const vanguard1 = projectScenario(d1, d1.vanguardFee);
+        const vanguard2 = projectScenario(d2, d2.vanguardFee);
+        const opp1 = vanguard1.finalBalance - managed1.finalBalance;
+        const opp2 = vanguard2.finalBalance - managed2.finalBalance;
+        showMVComparison(scenarioDisplayName(s1), scenarioDisplayName(s2), managed1, managed2, vanguard1, vanguard2, d1, d2, opp1, opp2);
     })
     .catch(() => alert('Failed to load scenarios.'));
 }
@@ -586,27 +606,28 @@ function showMVComparison(name1, name2, m1, m2, v1, v2, d1, d2, opp1, opp2) {
                 <div>
                     <h3 style="color: #667eea;">${escapeHtml(name1)}</h3>
                     <div style="font-size: 0.9em; color: #666;">
-                        Portfolio: ${formatCurrency(d1.portfolioValue)} | Fee: ${d1.advisorFee}% | Years: ${d1.years} | Return: ${d1.returnRate}%
+                        Portfolio: ${formatCurrency(d1.portfolioValue)} | Contribution: ${formatCurrency(d1.contributionAmount)} ${d1.contributionFrequency} | Fee: ${d1.advisorFee}% | Years: ${d1.years} | Return: ${d1.returnRate}%
                     </div>
-                    <div style="margin-top: 8px;"><strong>Final value (managed):</strong> ${formatCurrency(m1[m1.length - 1].balance)}</div>
+                    <div style="margin-top: 8px;"><strong>Final value (managed):</strong> ${formatCurrency(m1.finalBalance)}</div>
                     <div><strong>Opportunity cost:</strong> ${formatCurrency(opp1)}</div>
                 </div>
                 <div>
                     <h3 style="color: #e53e3e;">${escapeHtml(name2)}</h3>
                     <div style="font-size: 0.9em; color: #666;">
-                        Portfolio: ${formatCurrency(d2.portfolioValue)} | Fee: ${d2.advisorFee}% | Years: ${d2.years} | Return: ${d2.returnRate}%
+                        Portfolio: ${formatCurrency(d2.portfolioValue)} | Contribution: ${formatCurrency(d2.contributionAmount)} ${d2.contributionFrequency} | Fee: ${d2.advisorFee}% | Years: ${d2.years} | Return: ${d2.returnRate}%
                     </div>
-                    <div style="margin-top: 8px;"><strong>Final value (managed):</strong> ${formatCurrency(m2[m2.length - 1].balance)}</div>
+                    <div style="margin-top: 8px;"><strong>Final value (managed):</strong> ${formatCurrency(m2.finalBalance)}</div>
                     <div><strong>Opportunity cost:</strong> ${formatCurrency(opp2)}</div>
                 </div>
             </div>
             <div style="overflow-x: auto;">
             <table style="width: 100%; border-collapse: collapse; min-width: 520px;">
                 <tr style="background: #f0f0f0;"><th>Metric</th><th>${escapeHtml(name1)}</th><th>${escapeHtml(name2)}</th><th>Difference</th></tr>
-                <tr><td>Final value (managed)</td><td>${formatCurrency(m1[m1.length - 1].balance)}</td><td>${formatCurrency(m2[m2.length - 1].balance)}</td><td>${formatCurrency(m2[m2.length - 1].balance - m1[m1.length - 1].balance)}</td></tr>
-                <tr><td>Final value (Vanguard)</td><td>${formatCurrency(v1[v1.length - 1].balance)}</td><td>${formatCurrency(v2[v2.length - 1].balance)}</td><td>${formatCurrency(v2[v2.length - 1].balance - v1[v1.length - 1].balance)}</td></tr>
+                <tr><td>Total contributions</td><td>${formatCurrency(m1.cumulativeContributions)}</td><td>${formatCurrency(m2.cumulativeContributions)}</td><td>${formatCurrency(m2.cumulativeContributions - m1.cumulativeContributions)}</td></tr>
+                <tr><td>Final value (managed)</td><td>${formatCurrency(m1.finalBalance)}</td><td>${formatCurrency(m2.finalBalance)}</td><td>${formatCurrency(m2.finalBalance - m1.finalBalance)}</td></tr>
+                <tr><td>Final value (Vanguard)</td><td>${formatCurrency(v1.finalBalance)}</td><td>${formatCurrency(v2.finalBalance)}</td><td>${formatCurrency(v2.finalBalance - v1.finalBalance)}</td></tr>
                 <tr><td>Opportunity cost</td><td>${formatCurrency(opp1)}</td><td>${formatCurrency(opp2)}</td><td>${formatCurrency(opp2 - opp1)}</td></tr>
-                <tr><td>Total fees (managed)</td><td>${formatCurrency(m1[m1.length - 1].totalFees)}</td><td>${formatCurrency(m2[m2.length - 1].totalFees)}</td><td>${formatCurrency(m2[m2.length - 1].totalFees - m1[m1.length - 1].totalFees)}</td></tr>
+                <tr><td>Total fees (managed)</td><td>${formatCurrency(m1.cumulativeFees)}</td><td>${formatCurrency(m2.cumulativeFees)}</td><td>${formatCurrency(m2.cumulativeFees - m1.cumulativeFees)}</td></tr>
             </table>
             </div>
         </div>
@@ -626,13 +647,14 @@ function explainResults() {
         return;
     }
     let summary = 'Managed Portfolio vs Vanguard Index Fund comparison.\n\n';
-    summary += 'Portfolio value: ' + formatCurrency(res.portfolioValue) + '. Advisor fee: ' + res.advisorFee + '%. Vanguard fee: ' + res.vanguardFee + '%. ';
-    summary += 'Timeline: ' + res.years + ' years. Expected annual return (before fees): ' + res.returnRate + '%.\n\n';
-    const lostGrowthDisplay = Math.max(0, res.lostGrowth);
+    summary += 'Starting portfolio value: ' + formatCurrency(res.portfolioValue) + '. Ongoing contribution: ' + formatCurrency(res.contributionAmount) + ' ' + res.contributionFrequency + '. ';
+    summary += 'Total contributions: ' + formatCurrency(res.cumulativeContributions) + '. Total invested capital: ' + formatCurrency(res.totalInvestedCapital) + '. ';
+    summary += 'Advisor fee: ' + res.advisorFee + '%. Vanguard fee: ' + res.vanguardFee + '%. ';
+    summary += 'Timeline: ' + res.years + ' years. Expected annual return (before fees): ' + res.returnRate + '%. All values are pre-tax.\n\n';
     summary += 'OPPORTUNITY COST BREAKDOWN (do not double-count):\n';
     summary += '- Total Opportunity Cost (grand total): ' + formatCurrency(res.opportunityCost) + '\n';
     summary += '- Direct Fee Difference (paid out of pocket): ' + formatCurrency(res.directFeeDiff) + '\n';
-    summary += '- Lost Growth (fees removed from market, could not compound): ' + formatCurrency(lostGrowthDisplay) + '\n';
+    summary += '- Lost Growth (fees removed from market, could not compound): ' + formatCurrency(res.lostGrowth) + '\n';
     summary += 'Relationship: Total Opportunity Cost = Direct Fee Difference + Lost Growth.\n\n';
     summary += 'Final portfolio: Managed ' + formatCurrency(res.managedFinal) + ' vs Vanguard ' + formatCurrency(res.vanguardFinal) + '. ';
     summary += 'Total fees paid: Managed ' + formatCurrency(res.managedTotalFees) + ' vs Vanguard ' + formatCurrency(res.vanguardTotalFees) + '. ';
@@ -684,6 +706,10 @@ function downloadPDF() {
     const chartImage2 = chartCanvas2 && window.Chart ? chartCanvas2.toDataURL('image/png') : null;
     const payload = {
         portfolioValue: res.portfolioValue,
+        contributionAmount: res.contributionAmount,
+        contributionFrequency: res.contributionFrequency,
+        cumulativeContributions: res.cumulativeContributions,
+        totalInvestedCapital: res.totalInvestedCapital,
         advisorFee: res.advisorFee,
         vanguardFee: res.vanguardFee,
         years: res.years,
@@ -724,6 +750,10 @@ function downloadCSV() {
         return;
     }
     const payload = {
+        portfolioValue: res.portfolioValue,
+        contributionAmount: res.contributionAmount,
+        contributionFrequency: res.contributionFrequency,
+        cumulativeContributions: res.cumulativeContributions,
         managedData: res.managedData,
         vanguardData: res.vanguardData
     };

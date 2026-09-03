@@ -48,9 +48,11 @@ $pdf->SetTextColor(220, 38, 38);
 $pdf->Cell(0, 8, 'Your Portfolio Details', 0, 1);
 $pdf->SetTextColor(0, 0, 0);
 $pdf->SetFont('helvetica', '', 9);
-$info = 'Portfolio Value: $' . number_format((float)($data['portfolioValue'] ?? 0), 0) . '  |  Advisor Fee: ' . ($data['advisorFee'] ?? 0) . '%  |  Vanguard Fee: ' . ($data['vanguardFee'] ?? 0.04) . '%';
+$info = 'Starting Portfolio: $' . number_format((float)($data['portfolioValue'] ?? 0), 0) . '  |  Ongoing Contribution: $' . number_format((float)($data['contributionAmount'] ?? 0), 0) . ' ' . ($data['contributionFrequency'] ?? 'monthly');
+$info .= '  |  Advisor Fee: ' . ($data['advisorFee'] ?? 0) . '%  |  Vanguard Fee: ' . ($data['vanguardFee'] ?? 0.04) . '%';
 $info .= '  |  Years: ' . ($data['years'] ?? 0) . '  |  Return Rate: ' . ($data['returnRate'] ?? 0) . '%';
 $pdf->Cell(0, 6, $info, 0, 1);
+$pdf->Cell(0, 6, 'All projections are pre-tax. Contributions are added at the end of each selected period.', 0, 1);
 $pdf->Ln(4);
 
 // Key results
@@ -63,6 +65,8 @@ $pdf->Cell(0, 8, 'Key Results', 0, 1);
 $pdf->SetTextColor(0, 0, 0);
 $pdf->SetFont('helvetica', '', 9);
 $resultsHtml = '<table border="0" cellpadding="6"><tr style="background:#fef2f2;"><td><b>Total Opportunity Cost</b></td><td>$' . number_format($oppCost, 0) . '</td></tr>';
+$resultsHtml .= '<tr><td><b>Total Contributions</b></td><td>$' . number_format((float)($data['cumulativeContributions'] ?? 0), 0) . '</td></tr>';
+$resultsHtml .= '<tr style="background:#fef2f2;"><td><b>Total Invested Capital</b></td><td>$' . number_format((float)($data['totalInvestedCapital'] ?? 0), 0) . '</td></tr>';
 $resultsHtml .= '<tr><td><b>Direct Fee Difference</b></td><td>$' . number_format($feeDiff, 0) . '</td></tr>';
 $resultsHtml .= '<tr style="background:#fef2f2;"><td><b>Lost Growth</b></td><td>$' . number_format($lostGrowth, 0) . '</td></tr>';
 $resultsHtml .= '<tr><td><b>Final Value (Managed)</b></td><td>$' . number_format((float)($data['managedFinal'] ?? 0), 0) . '</td></tr>';
@@ -111,12 +115,12 @@ $pdf->Ln(3);
 
 $mRows = $data['managedData'];
 $vRows = $data['vanguardData'];
-$tableHtml = '<table border="1" cellpadding="4" style="font-size:8px;"><tr style="background:#dc2626;color:white;font-weight:bold;"><th>Year</th><th>Managed Balance</th><th>Managed Fees</th><th>Vanguard Balance</th><th>Vanguard Fees</th><th>Difference</th></tr>';
+$tableHtml = '<table border="1" cellpadding="4" style="font-size:8px;"><tr style="background:#dc2626;color:white;font-weight:bold;"><th>Year</th><th>Contributions</th><th>Managed Ending Balance</th><th>Managed Fees</th><th>Vanguard Ending Balance</th><th>Vanguard Fees</th><th>Difference</th></tr>';
 for ($i = 0; $i < count($mRows) && $i < count($vRows); $i++) {
     $m = $mRows[$i];
     $v = $vRows[$i];
     $diff = $v['balance'] - $m['balance'];
-    $tableHtml .= '<tr><td>' . $m['year'] . '</td><td>$' . number_format($m['balance'], 0) . '</td><td>$' . number_format($m['fee'], 0) . '</td><td>$' . number_format($v['balance'], 0) . '</td><td>$' . number_format($v['fee'], 0) . '</td><td>$' . number_format($diff, 0) . '</td></tr>';
+    $tableHtml .= '<tr><td>' . $m['year'] . '</td><td>$' . number_format((float)($m['contributions'] ?? 0), 0) . '</td><td>$' . number_format($m['balance'], 0) . '</td><td>$' . number_format($m['fee'], 0) . '</td><td>$' . number_format($v['balance'], 0) . '</td><td>$' . number_format($v['fee'], 0) . '</td><td>$' . number_format($diff, 0) . '</td></tr>';
 }
 $tableHtml .= '</table>';
 $pdf->SetFont('helvetica', '', 8);
