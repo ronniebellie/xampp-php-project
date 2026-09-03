@@ -39,17 +39,25 @@ function rb_session_start(): void
         return;
     }
 
+    // Keep the existing PHP session name for compatibility, but apply the
+    // same cookie-only, host-only policy to every consumer session.
+    ini_set('session.use_strict_mode', '1');
+    ini_set('session.use_only_cookies', '1');
+
+    $lifetime = 0;
     if (rb_session_remember_active()) {
         ini_set('session.gc_maxlifetime', (string) RB_SESSION_REMEMBER_LIFETIME);
-        session_set_cookie_params([
-            'lifetime' => RB_SESSION_REMEMBER_LIFETIME,
-            'path' => '/',
-            'domain' => '',
-            'secure' => rb_session_is_https(),
-            'httponly' => true,
-            'samesite' => 'Lax',
-        ]);
+        $lifetime = RB_SESSION_REMEMBER_LIFETIME;
     }
+
+    session_set_cookie_params([
+        'lifetime' => $lifetime,
+        'path' => '/',
+        'domain' => '',
+        'secure' => rb_session_is_https(),
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
 
     session_start();
 

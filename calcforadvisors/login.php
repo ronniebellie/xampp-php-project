@@ -6,15 +6,9 @@ if (isset($_GET['debug'])) {
     ini_set('display_errors', 1);
     error_reporting(E_ALL);
 }
-session_set_cookie_params([
-    'lifetime' => 0,
-    'path' => '/',
-    'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
-    'httponly' => true,
-    'samesite' => 'Lax',
-]);
-session_start();
 require_once __DIR__ . '/includes/init.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
+calcforadvisors_session_start();
 require_once CALCFORADVISORS_INCLUDES . '/db_config.php';
 
 $error = '';

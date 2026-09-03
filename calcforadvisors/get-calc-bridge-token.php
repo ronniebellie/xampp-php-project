@@ -3,8 +3,9 @@
  * Generate signed token and redirect to ronbelisle.com calculators.
  * Requires calcforadvisors login.
  */
-session_start();
 require_once __DIR__ . '/includes/init.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
+calcforadvisors_session_start();
 require_once CALCFORADVISORS_INCLUDES . '/stripe_config.php';
 
 if (empty($_SESSION['calcforadvisors_subscriber_id'])) {

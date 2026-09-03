@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once __DIR__ . '/includes/session_bootstrap.php';
+calcforadvisors_session_start();
 $_SESSION['calcforadvisors_subscriber_id'] = null;
 $_SESSION['calcforadvisors_subscriber_email'] = null;
 $_SESSION['calcforadvisors_subscriber_plan'] = null;

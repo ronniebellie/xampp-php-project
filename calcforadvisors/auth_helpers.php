@@ -3,9 +3,8 @@
  * Auth helpers for calcforadvisors subscriber login.
  * Include this in any page that requires a logged-in subscriber.
  */
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/includes/session_bootstrap.php';
+calcforadvisors_session_start();
 
 function calcforadvisors_require_login() {
     if (empty($_SESSION['calcforadvisors_subscriber_id'])) {
