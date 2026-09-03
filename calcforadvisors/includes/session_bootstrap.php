@@ -32,3 +32,5 @@ function calcforadvisors_session_start(): void
     ]);
     session_start();
 }
+function calcforadvisors_session_regenerate_for_auth(): void { if (session_status() === PHP_SESSION_ACTIVE) { session_regenerate_id(true); } }
+function calcforadvisors_session_destroy(): void { if (session_status() !== PHP_SESSION_ACTIVE) { return; } $_SESSION = []; setcookie(session_name(), '', ['expires'=>time()-3600,'path'=>'/','domain'=>'','secure'=>calcforadvisors_session_is_https(),'httponly'=>true,'samesite'=>'Lax']); session_destroy(); }

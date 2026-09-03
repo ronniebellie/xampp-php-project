@@ -4,6 +4,7 @@
 # The artifact contains runtime files only and never contains Git metadata.
 
 set -euo pipefail
+export COPYFILE_DISABLE=1
 
 usage() {
   cat <<'USAGE'
@@ -121,7 +122,7 @@ if [ -s "$forbidden" ]; then
   exit 1
 fi
 
-tar -czf "$output" -C "$release_tree" .
+tar --no-xattrs -czf "$output" -C "$release_tree" .
 (
   cd "$(dirname "$output")"
   shasum -a 256 "$(basename "$output")" > "$(basename "$output").sha256"

@@ -73,6 +73,11 @@ mkdir "$release"
 tar -xzf "$incoming" -C "$release"
 rm "$incoming" "$incoming.sha256"
 
+if find "$release" -type f -name '._*' -print -quit | grep -q .; then
+  echo "ERROR: staged release contains AppleDouble files" >&2
+  exit 1
+fi
+
 if find "$release" -type d -name '.git' -print -quit | grep -q .; then
   echo "ERROR: staged release contains Git metadata" >&2
   exit 1

@@ -2,6 +2,7 @@
 /**
  * Shared helpers for login/register redirect and Premium trial signup flow.
  */
+require_once __DIR__ . '/csrf.php';
 
 if (!function_exists('rb_auth_safe_redirect_path')) {
     function rb_auth_safe_redirect_path(string $path): string
@@ -208,6 +209,8 @@ if (!function_exists('rb_auth_login_user')) {
         $_SESSION['user_name'] = $user['full_name'];
         $_SESSION['subscription_status'] = $user['subscription_status'] ?? 'free';
 
+        rb_session_regenerate_for_auth();
+        rb_csrf_rotate();
         rb_session_set_remember($remember);
     }
 }

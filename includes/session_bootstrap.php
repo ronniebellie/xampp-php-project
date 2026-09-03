@@ -82,7 +82,6 @@ function rb_session_set_remember(bool $remember): void
     if ($remember) {
         $_SESSION['remember_me'] = true;
         ini_set('session.gc_maxlifetime', (string) RB_SESSION_REMEMBER_LIFETIME);
-        session_regenerate_id(true);
         rb_session_refresh_remember_cookies();
         return;
     }
@@ -90,6 +89,13 @@ function rb_session_set_remember(bool $remember): void
     unset($_SESSION['remember_me']);
     rb_session_clear_remember_marker();
     rb_session_refresh_standard_session_cookie();
+}
+
+function rb_session_regenerate_for_auth(): void
+{
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_regenerate_id(true);
+    }
 }
 
 function rb_session_clear_remember_marker(): void
@@ -113,4 +119,14 @@ function rb_session_clear_remember_cookies(): void
     if (session_status() === PHP_SESSION_ACTIVE) {
         setcookie(session_name(), '', rb_session_cookie_options(time() - 3600));
     }
+}
+
+function rb_session_destroy(): void
+{
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        return;
+    }
+    $_SESSION = [];
+    rb_session_clear_remember_cookies();
+    session_destroy();
 }

@@ -24,10 +24,7 @@ if (!empty($token)) {
         $clear->bind_param('i', $row['id']);
         $clear->execute();
         $clear->close();
-        $_SESSION['calcforadvisors_subscriber_id'] = (int) $row['id'];
-        $_SESSION['calcforadvisors_subscriber_email'] = $row['email'];
-        $_SESSION['calcforadvisors_subscriber_plan'] = $row['plan'];
-        $_SESSION['calcforadvisors_subscriber_status'] = $row['status'];
+        calcforadvisors_authenticate_subscriber($row);
         // Don't redirect - render page in same request (Safari Private may block cookie on redirect)
     } else {
         $stmt->close();

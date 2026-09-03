@@ -80,7 +80,7 @@ function journey_status_build_response(mysqli $conn): array
 {
     $homeReturn = JOURNEY_STATUS_HOME_URL;
     $loginUrl = JOURNEY_STATUS_LOGIN_BASE . '?return=' . rawurlencode($homeReturn);
-    $logoutUrl = JOURNEY_STATUS_LOGOUT_BASE . '?return=' . rawurlencode($homeReturn);
+    $logoutUrl = JOURNEY_STATUS_LOGOUT_BASE;
 
     $authenticated = isset($_SESSION['user_id']) && (int) $_SESSION['user_id'] > 0;
     $base = [
@@ -101,6 +101,7 @@ function journey_status_build_response(mysqli $conn): array
         'checkoutUrl' => JOURNEY_STATUS_CHECKOUT_URL,
         'loginUrl' => $loginUrl,
         'logoutUrl' => $logoutUrl,
+        'logoutCsrfToken' => null,
         'workspaceUrl' => JOURNEY_STATUS_HOME_URL,
         'accountUrl' => JOURNEY_STATUS_ACCOUNT_URL,
         'trialDays' => JOURNEY_CHECKOUT_TRIAL_DAYS,
@@ -188,6 +189,7 @@ function journey_status_build_response(mysqli $conn): array
         'checkoutUrl' => JOURNEY_STATUS_CHECKOUT_URL,
         'loginUrl' => $loginUrl,
         'logoutUrl' => $logoutUrl,
+        'logoutCsrfToken' => rb_csrf_token(),
         'workspaceUrl' => JOURNEY_STATUS_HOME_URL,
         'accountUrl' => JOURNEY_STATUS_ACCOUNT_URL,
         'trialDays' => JOURNEY_CHECKOUT_TRIAL_DAYS,

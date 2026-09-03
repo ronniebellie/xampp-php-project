@@ -5,6 +5,16 @@
  */
 require_once __DIR__ . '/includes/session_bootstrap.php';
 calcforadvisors_session_start();
+require_once __DIR__ . '/includes/csrf.php';
+
+function calcforadvisors_authenticate_subscriber(array $subscriber): void {
+    $_SESSION['calcforadvisors_subscriber_id'] = (int) $subscriber['id'];
+    $_SESSION['calcforadvisors_subscriber_email'] = (string) $subscriber['email'];
+    $_SESSION['calcforadvisors_subscriber_plan'] = (string) $subscriber['plan'];
+    $_SESSION['calcforadvisors_subscriber_status'] = (string) $subscriber['status'];
+    calcforadvisors_session_regenerate_for_auth();
+    calcforadvisors_csrf_rotate();
+}
 
 function calcforadvisors_require_login() {
     if (empty($_SESSION['calcforadvisors_subscriber_id'])) {

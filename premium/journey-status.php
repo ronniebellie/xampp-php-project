@@ -6,6 +6,7 @@
  */
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
 rb_session_start();
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/csrf.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/db_config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/journey_status.php';
 

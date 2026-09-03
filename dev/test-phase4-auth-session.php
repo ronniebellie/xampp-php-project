@@ -34,6 +34,8 @@ foreach ([
 }
 $expect(strpos($consumerBootstrap, "session_name('") === false && strpos($consumerBootstrap, 'session_name("') === false, 'Consumer session cookie name changed during Phase 4A.');
 $expect(strpos($consumerBootstrap, "'user_id'") === false, 'Consumer bootstrap must not alter login session keys.');
+$expect(strpos($consumerBootstrap, 'function rb_session_regenerate_for_auth') !== false, 'Consumer auth regeneration helper is missing.');
+$expect(strpos($consumerBootstrap, 'function rb_session_destroy') !== false, 'Consumer session-destruction helper is missing.');
 
 $cfaBootstrap = $read('calcforadvisors/includes/session_bootstrap.php');
 foreach ([
@@ -48,6 +50,8 @@ foreach ([
     $expect(strpos($cfaBootstrap, $required) !== false, "CalcForAdvisors session bootstrap is missing {$required}.");
 }
 $expect(strpos($cfaBootstrap, "session_name('") === false && strpos($cfaBootstrap, 'session_name("') === false, 'CalcForAdvisors session cookie name changed during Phase 4A.');
+$expect(strpos($cfaBootstrap, 'function calcforadvisors_session_regenerate_for_auth') !== false, 'CFA auth regeneration helper is missing.');
+$expect(strpos($cfaBootstrap, 'function calcforadvisors_session_destroy') !== false, 'CFA session-destruction helper is missing.');
 
 $consumerDirectStarts = [
     'ss-survivor-impact/index.php',
@@ -100,6 +104,11 @@ $loginHelpers = $read('includes/auth_flow_helpers.php');
 foreach (["'user_id'", "'user_email'", "'user_name'", "'subscription_status'"] as $key) {
     $expect(strpos($loginHelpers, $key) !== false, "Consumer login key {$key} is no longer set.");
 }
+$expect(strpos($loginHelpers, 'rb_session_regenerate_for_auth();') !== false, 'Consumer login does not regenerate the session.');
+$expect(strpos($loginHelpers, 'rb_csrf_rotate();') !== false, 'Consumer login does not rotate CSRF.');
+$consumerLogout = $read('auth/logout.php');
+$expect(strpos($consumerLogout, "!== 'POST'") !== false && strpos($consumerLogout, 'rb_csrf_validate') !== false, 'Consumer logout is not POST-only with CSRF validation.');
+$expect(strpos($consumerLogout, 'rb_session_destroy();') !== false, 'Consumer logout does not fully destroy its session.');
 $authHelpers = $read('calcforadvisors/auth_helpers.php');
 foreach ([
     'calcforadvisors_subscriber_id',
@@ -109,6 +118,15 @@ foreach ([
 ] as $key) {
     $expect(strpos($authHelpers, $key) !== false, "CalcForAdvisors session key {$key} is no longer used.");
 }
+$expect(strpos($authHelpers, 'calcforadvisors_session_regenerate_for_auth();') !== false, 'CFA authentication does not regenerate the session.');
+$expect(strpos($authHelpers, 'calcforadvisors_csrf_rotate();') !== false, 'CFA authentication does not rotate CSRF.');
+$cfaLogout = $read('calcforadvisors/logout.php');
+$expect(strpos($cfaLogout, "!== 'POST'") !== false && strpos($cfaLogout, 'calcforadvisors_csrf_validate') !== false, 'CFA logout is not POST-only with CSRF validation.');
+$expect(strpos($cfaLogout, 'calcforadvisors_session_destroy();') !== false, 'CFA logout does not fully destroy its session.');
+$deploy = $read('deploy.sh');
+$build = $read('scripts/build-release.sh');
+$expect(strpos($build, 'COPYFILE_DISABLE=1') !== false && strpos($build, '--no-xattrs') !== false, 'Release build does not suppress macOS extended attributes.');
+$expect(strpos($deploy, "-name '._*'") !== false, 'Deployment does not reject AppleDouble files after extraction.');
 
 foreach (['api/load_scenarios.php', 'api/save_scenario.php', 'api/delete_scenario.php'] as $path) {
     $scenarioApi = $read($path);

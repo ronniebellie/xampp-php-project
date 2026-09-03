@@ -7,6 +7,7 @@ ob_start();
 require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/includes/session_bootstrap.php';
 calcforadvisors_session_start();
+require_once __DIR__ . '/auth_helpers.php';
 require_once CALCFORADVISORS_INCLUDES . '/db_config.php';
 
 $error = '';
@@ -61,10 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $upd->close();
                 $conn->close();
 
-                $_SESSION['calcforadvisors_subscriber_id'] = $newId;
-                $_SESSION['calcforadvisors_subscriber_email'] = $email;
-                $_SESSION['calcforadvisors_subscriber_plan'] = 'free';
-                $_SESSION['calcforadvisors_subscriber_status'] = 'active';
+                calcforadvisors_authenticate_subscriber(['id'=>$newId,'email'=>$email,'plan'=>'free','status'=>'active']);
 
                 ob_end_clean();
                 header('Location: trial-setup.php?token=' . urlencode($token) . '&msg=welcome');

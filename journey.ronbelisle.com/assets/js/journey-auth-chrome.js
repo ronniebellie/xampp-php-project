@@ -143,6 +143,7 @@
         var firstName = status.firstName || status.userName || 'there';
         var email = status.userEmail || '';
         var logoutUrl = status.logoutUrl || withReturn(DEFAULT_LOGOUT, DEFAULT_HOME);
+        var logoutCsrfToken = status.logoutCsrfToken || '';
         var workspaceUrl = status.workspaceUrl || DEFAULT_HOME;
         var accountUrl = status.accountUrl || DEFAULT_ACCOUNT;
         var checkoutUrl = status.checkoutUrl || DEFAULT_CHECKOUT;
@@ -241,11 +242,9 @@
             );
         }
 
-        actions.push(
-            '<a class="journey-account-link is-signout" href="' +
-                escapeHtml(logoutUrl) +
-                '">Sign out</a>'
-        );
+        if (logoutCsrfToken) {
+            actions.push('<form method="POST" action="' + escapeHtml(logoutUrl) + '"><input type="hidden" name="csrf_token" value="' + escapeHtml(logoutCsrfToken) + '"><input type="hidden" name="return" value="' + escapeHtml(returnUrl) + '"><button type="submit" class="journey-account-link is-signout">Sign out</button></form>');
+        }
 
         root.innerHTML =
             '<div class="journey-account-stack is-' +

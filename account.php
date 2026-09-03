@@ -444,7 +444,10 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
             <div class="account-section">
                 <h2>Actions</h2>
                 <a href="index.php" class="btn btn-secondary">Back to Home</a>
-                <a href="auth/logout.php" class="btn btn-secondary" style="margin-left: 10px;">Log Out</a>
+                <form method="POST" action="auth/logout.php" style="display:inline;">
+                    <?php echo rb_csrf_field(); ?>
+                    <button type="submit" class="btn btn-secondary" style="margin-left: 10px;">Log Out</button>
+                </form>
             </div>
         </div>
     </div>

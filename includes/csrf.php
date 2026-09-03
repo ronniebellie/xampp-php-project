@@ -16,6 +16,12 @@ function rb_csrf_token(): string
     return $_SESSION['rb_csrf_token'];
 }
 
+function rb_csrf_rotate(): string
+{
+    $_SESSION['rb_csrf_token'] = bin2hex(random_bytes(32));
+    return $_SESSION['rb_csrf_token'];
+}
+
 function rb_csrf_field(): string
 {
     $token = htmlspecialchars(rb_csrf_token(), ENT_QUOTES, 'UTF-8');

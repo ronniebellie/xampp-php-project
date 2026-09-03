@@ -1,6 +1,7 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
 rb_session_start();
+require_once __DIR__ . '/includes/csrf.php';
 
 // Serve jp-business mini-site when using jp-business subdomain (clean URLs: /npv-irr/, /breakeven-profit/)
 if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'jp-business.ronbelisle.com') {
@@ -864,7 +865,10 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
           <?php if ($isLoggedIn): ?>
             <p class="hero-action-label">Existing member</p>
             <p class="hero-welcome">Welcome back, <strong><?php echo htmlspecialchars($userName); ?></strong></p>
-            <a href="auth/logout.php" class="hero-btn hero-btn-secondary">Log Out</a>
+            <form method="POST" action="auth/logout.php" style="display:inline;">
+              <?php echo rb_csrf_field(); ?>
+              <button type="submit" class="hero-btn hero-btn-secondary">Log Out</button>
+            </form>
             <?php if (!$is_premium): ?>
               <div class="hero-premium-path">
                 <p class="hero-action-label">Calculator Premium</p>

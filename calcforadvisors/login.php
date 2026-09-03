@@ -9,6 +9,7 @@ if (isset($_GET['debug'])) {
 require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/includes/session_bootstrap.php';
 calcforadvisors_session_start();
+require_once __DIR__ . '/auth_helpers.php';
 require_once CALCFORADVISORS_INCLUDES . '/db_config.php';
 
 $error = '';
@@ -33,10 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (empty($user['password_hash'])) {
                 $error = 'Your account is not set up yet. Please contact support to get started.';
             } elseif (password_verify($password, $user['password_hash'])) {
-                $_SESSION['calcforadvisors_subscriber_id'] = $user['id'];
-                $_SESSION['calcforadvisors_subscriber_email'] = $user['email'];
-                $_SESSION['calcforadvisors_subscriber_plan'] = $user['plan'];
-                $_SESSION['calcforadvisors_subscriber_status'] = $user['status'];
+                calcforadvisors_authenticate_subscriber($user);
 
                 $redirect = $_SESSION['calcforadvisors_redirect_after_login'] ?? 'account.php';
                 unset($_SESSION['calcforadvisors_redirect_after_login']);

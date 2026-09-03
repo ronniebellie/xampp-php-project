@@ -95,7 +95,7 @@ $conn->close();
             <h1>My Account</h1>
             <nav class="nav">
                 <a href="index.html">calcforadvisors.com</a>
-                <a href="logout.php">Log out</a>
+                <form method="POST" action="logout.php" style="display:inline;"><?php echo calcforadvisors_csrf_field(); ?><button type="submit" style="border:0;background:none;padding:0;color:#2c5282;text-decoration:none;font-weight:600;cursor:pointer;">Log out</button></form>
             </nav>
         </header>
 
