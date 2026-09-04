@@ -26,12 +26,53 @@
         }
         
         .hero {
-            background: linear-gradient(135deg, #2c5282 0%, #3182ce 100%);
+            background-color: #153f6a;
+            background-image:
+                linear-gradient(90deg, rgba(11, 42, 73, 0.97) 0%, rgba(16, 62, 105, 0.89) 45%, rgba(16, 62, 105, 0.24) 100%),
+                url('assets/advisor-hero-v1.png');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
             color: white;
-            padding: 60px 20px;
-            text-align: center;
-            border-radius: 8px;
+            padding: 28px 20px 68px;
+            text-align: left;
             margin-bottom: 40px;
+        }
+
+        .hero .container {
+            max-width: 1080px;
+        }
+
+        .hero-nav {
+            display: flex;
+            justify-content: flex-end;
+            gap: 14px;
+            margin-bottom: 56px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .hero-nav a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .hero-nav a:hover,
+        .hero-nav a:focus-visible {
+            text-decoration: underline;
+        }
+
+        .hero-content {
+            max-width: 575px;
+        }
+
+        .hero-eyebrow {
+            margin: 0 0 14px;
+            color: #b9e5db;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
         }
         
         .hero h1 {
@@ -43,7 +84,14 @@
         .hero p {
             font-size: 20px;
             margin-bottom: 30px;
-            opacity: 0.95;
+            opacity: 0.98;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
         }
         
         .cta-button {
@@ -68,7 +116,6 @@
         .cta-button.secondary {
             background: transparent;
             border: 2px solid white;
-            margin-left: 15px;
         }
         
         .cta-button.secondary:hover {
@@ -324,7 +371,26 @@
         
         @media (max-width: 768px) {
             .hero {
-                padding: 40px 20px;
+                background-image:
+                    linear-gradient(90deg, rgba(11, 42, 73, 0.97) 0%, rgba(16, 62, 105, 0.89) 100%),
+                    url('assets/advisor-hero-v1.png');
+                background-position: 62% center;
+                padding: 22px 12px 44px;
+            }
+
+            .hero .container {
+                padding: 0 12px;
+            }
+
+            .hero-nav {
+                margin-bottom: 42px;
+                gap: 12px;
+                font-size: 14px;
+            }
+
+            .hero-eyebrow {
+                font-size: 12px;
+                margin-bottom: 10px;
             }
             
             .hero h1 {
@@ -346,6 +412,10 @@
                 padding: 14px 24px;
                 font-size: 16px;
             }
+
+            .hero-actions {
+                display: block;
+            }
             
             .cta-button:last-child {
                 margin-bottom: 0;
@@ -356,14 +426,35 @@
                 margin-top: 0;
             }
         }
+
+        @media (max-width: 420px) {
+            .hero-nav {
+                margin-bottom: 36px;
+            }
+
+            .hero h1 {
+                font-size: 25px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="hero">
         <div class="container">
-            <p style="text-align: right; margin-bottom: 0; font-size: 14px; opacity: 0.9;"><a href="register-free.php" style="color: white; text-decoration: underline;">Try free for 30 days</a> · <a href="login.php" style="color: white; text-decoration: underline;">Log in</a></p>
-            <h1>Your Brand. Your Clients. Our Calculators.</h1>
-            <p>Offer our premium retirement and financial planning calculators under your own branding—so your clients see you, not a third-party site.</p>
+            <nav class="hero-nav" aria-label="Account links">
+                <a href="register-free.php">Try free for 30 days</a>
+                <span aria-hidden="true">·</span>
+                <a href="login.php">Log in</a>
+            </nav>
+            <div class="hero-content">
+                <p class="hero-eyebrow">Built for financial professionals</p>
+                <h1>Your Brand. Your Clients. Our Calculators.</h1>
+                <p>Offer retirement and financial planning calculators under your own branding—so clients see you, not a third-party site.</p>
+                <div class="hero-actions">
+                    <a href="register-free.php" class="cta-button">Try free for 30 days</a>
+                    <a href="#samples" class="cta-button secondary">See example sites</a>
+                </div>
+            </div>
         </div>
     </div>
 
