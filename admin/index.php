@@ -59,7 +59,7 @@ $pageTitle = 'Administrator';
         <p>Private tools for site operations. Not available to customers.</p>
         <ul class="admin-list">
             <li>
-                <a href="/admin/journey-premium-trials.php">
+                <a href="/admin/recent-signups.php">
                     Recent Signups
                     <?php if ($newCount > 0): ?>
                         <span class="admin-badge"><?php echo (int) $newCount; ?> new</span>

@@ -535,7 +535,7 @@ function journey_admin_nav_html(mysqli $conn, string $active = ''): string
 
     return '<nav class="admin-nav" aria-label="Administrator">'
         . $link('/admin/', 'Admin home', 'home')
-        . $link('/admin/journey-premium-trials.php', $trialsLabel, 'trials')
+        . $link('/admin/recent-signups.php', $trialsLabel, 'trials')
         . $link('/admin/journey-feedback.php', $feedbackLabel, 'feedback')
         . $link('/account.php', 'My account', 'account')
         . '</nav>';
