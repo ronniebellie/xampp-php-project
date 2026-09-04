@@ -1,6 +1,6 @@
 <?php
 /**
- * Admin dashboard helpers for Recent Journey Premium Trials.
+ * Admin dashboard helpers for Recent Signups.
  *
  * Authoritative list source: user_product_subscriptions (product_key = journey)
  * with trial_start set, joined to users. Viewed state from
@@ -15,6 +15,27 @@ define('JOURNEY_ADMIN_TRIALS_LOADED', 1);
 require_once __DIR__ . '/journey_entitlement.php';
 
 const JOURNEY_ADMIN_TRIALS_DEFAULT_LIMIT = 50;
+
+const JOURNEY_ADMIN_SIGNUP_SOURCE_RON = 'ronbelisle';
+const JOURNEY_ADMIN_SIGNUP_SOURCE_CFA = 'calcforadvisors';
+
+/**
+ * Create the calculator-signup review ledger when an older installation has not
+ * run the matching migration yet. This table is deliberately separate from
+ * Stripe/webhook state.
+ */
+function journey_admin_ensure_signup_reviews_table(mysqli $conn): bool
+{
+    return (bool) $conn->query(
+        "CREATE TABLE IF NOT EXISTS admin_signup_reviews (
+            source VARCHAR(32) NOT NULL,
+            record_id BIGINT UNSIGNED NOT NULL,
+            viewed_at DATETIME NULL DEFAULT NULL,
+            PRIMARY KEY (source, record_id),
+            KEY idx_admin_signup_reviews_viewed (viewed_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    );
+}
 
 /**
  * Human-readable status for admin table.
@@ -143,6 +164,203 @@ function journey_admin_list_recent_trials(mysqli $conn, int $limit = JOURNEY_ADM
     }
     $stmt->close();
     return $rows;
+}
+
+/**
+ * Return Journey trials and both calculator-account sources in one timeline.
+ * Users that have a Journey trial are represented by that trial only, rather
+ * than duplicated as ronbelisle.com calculator accounts.
+ *
+ * @return list<array<string,mixed>>
+ */
+function journey_admin_list_recent_signups(mysqli $conn, int $limit = JOURNEY_ADMIN_TRIALS_DEFAULT_LIMIT): array
+{
+    $limit = max(1, min(100, $limit));
+    journey_admin_ensure_signup_reviews_table($conn);
+    $rows = [];
+
+    foreach (journey_admin_list_recent_trials($conn, $limit) as $trial) {
+        $trial['record_id'] = (int) ($trial['subscription_row_id'] ?? 0);
+        $trial['source_key'] = 'journey';
+        $trial['source_label'] = 'Journey Premium';
+        $trial['signup_at'] = $trial['trial_start'] ?? null;
+        $trial['signup_at_label'] = $trial['trial_start_label'] ?? '—';
+        $rows[] = $trial;
+    }
+
+    $productKey = JOURNEY_PRODUCT_KEY;
+    $ronSql = "SELECT u.id, u.full_name, u.email, u.subscription_status, u.created_at, r.viewed_at
+               FROM users u
+               LEFT JOIN admin_signup_reviews r
+                 ON r.source = 'ronbelisle' AND r.record_id = u.id
+               WHERE NOT EXISTS (
+                   SELECT 1 FROM user_product_subscriptions ups
+                   WHERE ups.user_id = u.id AND ups.product_key = ? AND ups.trial_start IS NOT NULL
+               )
+               ORDER BY u.created_at DESC, u.id DESC LIMIT ?";
+    $stmt = $conn->prepare($ronSql);
+    if ($stmt) {
+        $stmt->bind_param('si', $productKey, $limit);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        while ($res && ($row = $res->fetch_assoc())) {
+            $isNew = empty($row['viewed_at']);
+            $rows[] = [
+                'record_id' => (int) $row['id'],
+                'source_key' => JOURNEY_ADMIN_SIGNUP_SOURCE_RON,
+                'source_label' => 'ronbelisle.com Calculators',
+                'full_name' => trim((string) ($row['full_name'] ?? '')),
+                'email' => trim((string) ($row['email'] ?? '')),
+                'signup_at' => $row['created_at'] ?? null,
+                'signup_at_label' => journey_admin_format_db_datetime($row['created_at'] ?? null),
+                'status_label' => ucwords(str_replace('_', ' ', (string) ($row['subscription_status'] ?? 'free'))),
+                'viewed_at' => $row['viewed_at'] ?? null,
+                'is_new' => $isNew,
+                'review_label' => $isNew ? 'New' : 'Viewed',
+            ];
+        }
+        $stmt->close();
+    }
+
+    $cfaSql = "SELECT c.id, c.firm_name, c.email, c.plan, c.status, c.created_at, r.viewed_at
+               FROM calcforadvisors_subscribers c
+               LEFT JOIN admin_signup_reviews r
+                 ON r.source = 'calcforadvisors' AND r.record_id = c.id
+               ORDER BY c.created_at DESC, c.id DESC LIMIT ?";
+    $stmt = $conn->prepare($cfaSql);
+    if ($stmt) {
+        $stmt->bind_param('i', $limit);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        while ($res && ($row = $res->fetch_assoc())) {
+            $isNew = empty($row['viewed_at']);
+            $status = trim((string) ($row['status'] ?? ''));
+            $plan = trim((string) ($row['plan'] ?? ''));
+            $rows[] = [
+                'record_id' => (int) $row['id'],
+                'source_key' => JOURNEY_ADMIN_SIGNUP_SOURCE_CFA,
+                'source_label' => 'CalcForAdvisors',
+                'full_name' => trim((string) ($row['firm_name'] ?? '')),
+                'email' => trim((string) ($row['email'] ?? '')),
+                'signup_at' => $row['created_at'] ?? null,
+                'signup_at_label' => journey_admin_format_db_datetime($row['created_at'] ?? null),
+                'status_label' => trim(ucwords(str_replace('_', ' ', $status)) . ($plan !== '' ? ' · ' . ucwords($plan) : '')),
+                'viewed_at' => $row['viewed_at'] ?? null,
+                'is_new' => $isNew,
+                'review_label' => $isNew ? 'New' : 'Viewed',
+            ];
+        }
+        $stmt->close();
+    }
+
+    usort($rows, static function (array $a, array $b): int {
+        $timeCompare = strcmp((string) ($b['signup_at'] ?? ''), (string) ($a['signup_at'] ?? ''));
+        return $timeCompare !== 0 ? $timeCompare : ((int) ($b['record_id'] ?? 0) <=> (int) ($a['record_id'] ?? 0));
+    });
+    return array_slice($rows, 0, $limit);
+}
+
+/** @param list<array{source:string,record_id:int}> $records */
+function journey_admin_mark_calculator_signups_viewed(mysqli $conn, array $records): int
+{
+    if ($records === [] || !journey_admin_ensure_signup_reviews_table($conn)) {
+        return 0;
+    }
+    $stmt = $conn->prepare(
+        'INSERT INTO admin_signup_reviews (source, record_id, viewed_at)
+         VALUES (?, ?, UTC_TIMESTAMP())
+         ON DUPLICATE KEY UPDATE viewed_at = COALESCE(viewed_at, VALUES(viewed_at))'
+    );
+    if (!$stmt) {
+        return 0;
+    }
+    $marked = 0;
+    foreach ($records as $record) {
+        $source = (string) ($record['source'] ?? '');
+        $id = (int) ($record['record_id'] ?? 0);
+        if (!in_array($source, [JOURNEY_ADMIN_SIGNUP_SOURCE_RON, JOURNEY_ADMIN_SIGNUP_SOURCE_CFA], true) || $id < 1) {
+            continue;
+        }
+        $stmt->bind_param('si', $source, $id);
+        if ($stmt->execute() && $stmt->affected_rows > 0) {
+            $marked++;
+        }
+    }
+    $stmt->close();
+    return $marked;
+}
+
+function journey_admin_count_unviewed_signups(mysqli $conn): int
+{
+    $total = journey_admin_count_unviewed_trials($conn);
+    if (!journey_admin_ensure_signup_reviews_table($conn)) {
+        return $total;
+    }
+    $productKey = JOURNEY_PRODUCT_KEY;
+    $stmt = $conn->prepare(
+        "SELECT COUNT(*) c FROM (
+           SELECT u.id FROM users u
+           LEFT JOIN admin_signup_reviews r ON r.source = 'ronbelisle' AND r.record_id = u.id
+           WHERE r.viewed_at IS NULL AND NOT EXISTS (
+             SELECT 1 FROM user_product_subscriptions ups
+             WHERE ups.user_id = u.id AND ups.product_key = ? AND ups.trial_start IS NOT NULL
+           )
+           UNION ALL
+           SELECT c.id FROM calcforadvisors_subscribers c
+           LEFT JOIN admin_signup_reviews r ON r.source = 'calcforadvisors' AND r.record_id = c.id
+           WHERE r.viewed_at IS NULL
+         ) unseen"
+    );
+    if ($stmt) {
+        $stmt->bind_param('s', $productKey);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        $total += (int) ($row['c'] ?? 0);
+    }
+    return $total;
+}
+
+/** @return array{last_7_days:int,last_30_days:int,journey_trials:int,calculator_signups:int} */
+function journey_admin_signup_summary(mysqli $conn): array
+{
+    $out = ['last_7_days' => 0, 'last_30_days' => 0, 'journey_trials' => 0, 'calculator_signups' => 0];
+    $productKey = JOURNEY_PRODUCT_KEY;
+    $journey = $conn->prepare(
+        "SELECT COUNT(*) total,
+          SUM(trial_start >= UTC_TIMESTAMP() - INTERVAL 7 DAY) d7,
+          SUM(trial_start >= UTC_TIMESTAMP() - INTERVAL 30 DAY) d30
+         FROM user_product_subscriptions WHERE product_key = ? AND trial_start IS NOT NULL"
+    );
+    if ($journey) {
+        $journey->bind_param('s', $productKey);
+        $journey->execute();
+        $r = $journey->get_result()->fetch_assoc();
+        $journey->close();
+        $out['journey_trials'] = (int) ($r['total'] ?? 0);
+        $out['last_7_days'] += (int) ($r['d7'] ?? 0);
+        $out['last_30_days'] += (int) ($r['d30'] ?? 0);
+    }
+    $calculator = $conn->prepare(
+        "SELECT COUNT(*) total, SUM(created_at >= UTC_TIMESTAMP() - INTERVAL 7 DAY) d7,
+          SUM(created_at >= UTC_TIMESTAMP() - INTERVAL 30 DAY) d30 FROM (
+            SELECT u.created_at FROM users u WHERE NOT EXISTS (
+              SELECT 1 FROM user_product_subscriptions ups
+              WHERE ups.user_id = u.id AND ups.product_key = ? AND ups.trial_start IS NOT NULL
+            )
+            UNION ALL SELECT created_at FROM calcforadvisors_subscribers
+          ) calculator_accounts"
+    );
+    if ($calculator) {
+        $calculator->bind_param('s', $productKey);
+        $calculator->execute();
+        $r = $calculator->get_result()->fetch_assoc();
+        $calculator->close();
+        $out['calculator_signups'] = (int) ($r['total'] ?? 0);
+        $out['last_7_days'] += (int) ($r['d7'] ?? 0);
+        $out['last_30_days'] += (int) ($r['d30'] ?? 0);
+    }
+    return $out;
 }
 
 /**
@@ -297,8 +515,8 @@ function journey_admin_nav_html(mysqli $conn, string $active = ''): string
         require_once __DIR__ . '/journey_feedback.php';
     }
 
-    $newCount = journey_admin_count_unviewed_trials($conn);
-    $trialsLabel = 'Journey Premium Trials';
+    $newCount = journey_admin_count_unviewed_signups($conn);
+    $trialsLabel = 'Recent Signups';
     if ($newCount > 0) {
         $trialsLabel .= ' — ' . (int) $newCount . ' new';
     }

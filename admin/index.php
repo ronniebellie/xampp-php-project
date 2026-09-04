@@ -12,7 +12,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/journey_feedback.php';
 
 rb_require_admin($conn);
 
-$newCount = journey_admin_count_unviewed_trials($conn);
+$newCount = journey_admin_count_unviewed_signups($conn);
 $feedbackNew = journey_feedback_count_new($conn);
 $pageTitle = 'Administrator';
 ?>
@@ -60,7 +60,7 @@ $pageTitle = 'Administrator';
         <ul class="admin-list">
             <li>
                 <a href="/admin/journey-premium-trials.php">
-                    Recent Journey Premium Trials
+                    Recent Signups
                     <?php if ($newCount > 0): ?>
                         <span class="admin-badge"><?php echo (int) $newCount; ?> new</span>
                     <?php endif; ?>

@@ -1,7 +1,7 @@
 <?php
 /**
- * Recent Journey Premium Trials — private administrator view.
- * Marks currently listed unviewed trials as viewed when opened.
+ * Recent Signups — private administrator view.
+ * Marks currently listed unviewed signups as viewed when opened.
  */
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
 rb_session_start();
@@ -12,22 +12,39 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/journey_admin_trials.php';
 rb_require_admin($conn);
 
 $limit = JOURNEY_ADMIN_TRIALS_DEFAULT_LIMIT;
-$trials = journey_admin_list_recent_trials($conn, $limit);
+$signups = journey_admin_list_recent_signups($conn, $limit);
 
 // Mark currently displayed unseen records as viewed (after listing snapshot for labels).
 $toMark = [];
-foreach ($trials as $t) {
-    if (!empty($t['is_new']) && !empty($t['stripe_subscription_id'])) {
-        $toMark[] = (string) $t['stripe_subscription_id'];
+foreach ($signups as $signup) {
+    if (empty($signup['is_new'])) {
+        continue;
+    }
+    if (($signup['source_key'] ?? '') === 'journey' && !empty($signup['stripe_subscription_id'])) {
+        $toMark[] = (string) $signup['stripe_subscription_id'];
     }
 }
 if ($toMark !== []) {
     journey_admin_mark_trials_viewed($conn, $toMark);
 }
+$calculatorToMark = [];
+foreach ($signups as $signup) {
+    if (!empty($signup['is_new']) && in_array(
+        $signup['source_key'] ?? '',
+        [JOURNEY_ADMIN_SIGNUP_SOURCE_RON, JOURNEY_ADMIN_SIGNUP_SOURCE_CFA],
+        true
+    )) {
+        $calculatorToMark[] = [
+            'source' => (string) $signup['source_key'],
+            'record_id' => (int) $signup['record_id'],
+        ];
+    }
+}
+journey_admin_mark_calculator_signups_viewed($conn, $calculatorToMark);
 
-$summary = journey_admin_trial_summary($conn);
-$remainingNew = journey_admin_count_unviewed_trials($conn);
-$pageTitle = 'Recent Journey Premium Trials';
+$summary = journey_admin_signup_summary($conn);
+$remainingNew = journey_admin_count_unviewed_signups($conn);
+$pageTitle = 'Recent Signups';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -78,7 +95,8 @@ $pageTitle = 'Recent Journey Premium Trials';
         }
         .pill-new { background: #dbeafe; color: #1d4ed8; }
         .pill-viewed { background: #f1f5f9; color: #64748b; }
-        .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8rem; }
+        .detail { display: block; margin-top: 3px; color: #64748b; font-size: 0.78rem; }
+        .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
         .empty { color: #64748b; padding: 18px 0; }
         .footnote { margin-top: 16px; color: #94a3b8; font-size: 0.85rem; }
     </style>
@@ -89,8 +107,8 @@ $pageTitle = 'Recent Journey Premium Trials';
     <div class="admin-card">
         <h1><?php echo htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8'); ?></h1>
         <p class="lede">
-            Confirmed Journey Premium trial activations from Stripe webhook sync.
-            Opening this page marks the listed new trials as viewed.
+            Recent account and trial signups across Ron Belisle Calculators, Journey Premium, and CalcForAdvisors.
+            Opening this page marks the listed new signups as viewed.
             <?php if ($remainingNew > 0): ?>
                 <strong><?php echo (int) $remainingNew; ?> still unviewed</strong> outside this page’s recent window.
             <?php endif; ?>
@@ -99,49 +117,53 @@ $pageTitle = 'Recent Journey Premium Trials';
         <div class="admin-summary">
             <div class="admin-stat">
                 <span class="n"><?php echo (int) $summary['last_7_days']; ?></span>
-                <span class="l">Started last 7 days</span>
+                <span class="l">Signups last 7 days</span>
             </div>
             <div class="admin-stat">
                 <span class="n"><?php echo (int) $summary['last_30_days']; ?></span>
-                <span class="l">Started last 30 days</span>
+                <span class="l">Signups last 30 days</span>
             </div>
             <div class="admin-stat">
-                <span class="n"><?php echo (int) $summary['currently_trialing']; ?></span>
-                <span class="l">Currently trialing</span>
+                <span class="n"><?php echo (int) $summary['journey_trials']; ?></span>
+                <span class="l">Journey Premium trials</span>
             </div>
             <div class="admin-stat">
-                <span class="n"><?php echo (int) $summary['converted_to_active']; ?></span>
-                <span class="l">Converted to active</span>
+                <span class="n"><?php echo (int) $summary['calculator_signups']; ?></span>
+                <span class="l">Calculator signups</span>
             </div>
         </div>
 
         <div class="admin-table-wrap">
-            <?php if ($trials === []): ?>
-                <p class="empty">No Journey Premium trials recorded yet.</p>
+            <?php if ($signups === []): ?>
+                <p class="empty">No signups recorded yet.</p>
             <?php else: ?>
                 <table class="admin-table">
                     <thead>
                         <tr>
                             <th>Name</th>
                             <th>Email</th>
-                            <th>Trial started</th>
-                            <th>Trial ends</th>
+                            <th>Signup date/time</th>
+                            <th>Source</th>
                             <th>Status</th>
-                            <th>Stripe subscription</th>
-                            <th>Review</th>
+                            <th>Review status</th>
                         </tr>
                     </thead>
                     <tbody>
-                    <?php foreach ($trials as $t): ?>
+                    <?php foreach ($signups as $signup): ?>
                         <tr>
-                            <td><?php echo htmlspecialchars($t['full_name'] !== '' ? $t['full_name'] : '—', ENT_QUOTES, 'UTF-8'); ?></td>
-                            <td><?php echo htmlspecialchars($t['email'] !== '' ? $t['email'] : '—', ENT_QUOTES, 'UTF-8'); ?></td>
-                            <td><?php echo htmlspecialchars((string) $t['trial_start_label'], ENT_QUOTES, 'UTF-8'); ?></td>
-                            <td><?php echo htmlspecialchars((string) $t['trial_end_label'], ENT_QUOTES, 'UTF-8'); ?></td>
-                            <td><?php echo htmlspecialchars((string) $t['status_label'], ENT_QUOTES, 'UTF-8'); ?></td>
-                            <td class="mono"><?php echo htmlspecialchars((string) $t['stripe_subscription_id'], ENT_QUOTES, 'UTF-8'); ?></td>
+                            <td><?php echo htmlspecialchars($signup['full_name'] !== '' ? $signup['full_name'] : '—', ENT_QUOTES, 'UTF-8'); ?></td>
+                            <td><?php echo htmlspecialchars($signup['email'] !== '' ? $signup['email'] : '—', ENT_QUOTES, 'UTF-8'); ?></td>
+                            <td><?php echo htmlspecialchars((string) $signup['signup_at_label'], ENT_QUOTES, 'UTF-8'); ?></td>
+                            <td><?php echo htmlspecialchars((string) $signup['source_label'], ENT_QUOTES, 'UTF-8'); ?></td>
                             <td>
-                                <?php if (!empty($t['is_new'])): ?>
+                                <?php echo htmlspecialchars((string) $signup['status_label'], ENT_QUOTES, 'UTF-8'); ?>
+                                <?php if (($signup['source_key'] ?? '') === 'journey'): ?>
+                                    <span class="detail">Trial ends <?php echo htmlspecialchars((string) $signup['trial_end_label'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                    <span class="detail mono"><?php echo htmlspecialchars((string) $signup['stripe_subscription_id'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if (!empty($signup['is_new'])): ?>
                                     <span class="pill pill-new">New</span>
                                 <?php else: ?>
                                     <span class="pill pill-viewed">Viewed</span>
@@ -153,7 +175,7 @@ $pageTitle = 'Recent Journey Premium Trials';
                 </table>
             <?php endif; ?>
         </div>
-        <p class="footnote">Showing up to <?php echo (int) $limit; ?> most recent Journey Premium trials (newest first).</p>
+        <p class="footnote">Showing up to <?php echo (int) $limit; ?> most recent signups across all sources (newest first).</p>
     </div>
 </div>
 </body>
