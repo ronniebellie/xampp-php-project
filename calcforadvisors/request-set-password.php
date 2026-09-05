@@ -9,6 +9,7 @@ $error = 'Password setup by email is not available. Please contact support for a
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <?php include __DIR__ . '/includes/analytics.php'; ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Set Up Password - calcforadvisors.com</title>
