@@ -118,6 +118,12 @@ $pageTitle = 'Recent Signups';
             font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em;
             color: #64748b; font-weight: 700;
         }
+        table.admin-table th.actions-column,
+        table.admin-table td.actions-column {
+            background: #fff; box-shadow: -8px 0 10px -10px rgba(15, 23, 42, 0.45);
+            position: sticky; right: 0; white-space: nowrap; z-index: 1;
+        }
+        table.admin-table th.actions-column { z-index: 2; }
         .sort-button {
             appearance: none; border: 0; background: transparent; color: inherit;
             cursor: pointer; font: inherit; font-weight: inherit; letter-spacing: inherit;
@@ -201,7 +207,7 @@ $pageTitle = 'Recent Signups';
                             <th scope="col"><button class="sort-button" type="button" data-sort-column="3" data-sort-type="text">Source</button></th>
                             <th scope="col"><button class="sort-button" type="button" data-sort-column="4" data-sort-type="text">Status</button></th>
                             <th scope="col"><button class="sort-button" type="button" data-sort-column="5" data-sort-type="text">Review status</button></th>
-                            <th scope="col">Actions</th>
+                            <th class="actions-column" scope="col">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -225,7 +231,7 @@ $pageTitle = 'Recent Signups';
                                     <span class="pill pill-viewed">Viewed</span>
                                 <?php endif; ?>
                             </td>
-                            <td>
+                            <td class="actions-column">
                                 <form class="delete-form" method="POST" action="/admin/recent-signups.php" onsubmit="return window.confirm('Delete this signup permanently?');">
                                     <?php echo rb_csrf_field(); ?>
                                     <input type="hidden" name="source" value="<?php echo htmlspecialchars((string) $signup['source_key'], ENT_QUOTES, 'UTF-8'); ?>">
