@@ -27,7 +27,7 @@ const JOURNEY_ADMIN_SIGNUP_SOURCE_JOURNEY = 'journey';
  * Review-ledger cleanup is included in the same transaction so a successful
  * delete cannot leave dashboard-only metadata behind.
  */
-function journey_admin_delete_signup(mysqli $conn, string $source, int $recordId): bool
+function journey_admin_delete_signup(mysqli $conn, string $source, int $recordId, bool $manageTransaction = true): bool
 {
     if ($recordId < 1 || !in_array($source, [
         JOURNEY_ADMIN_SIGNUP_SOURCE_JOURNEY,
@@ -37,11 +37,13 @@ function journey_admin_delete_signup(mysqli $conn, string $source, int $recordId
         return false;
     }
 
-    if (!journey_admin_ensure_signup_reviews_table($conn)) {
+    if ($manageTransaction && !journey_admin_ensure_signup_reviews_table($conn)) {
         return false;
     }
 
-    $conn->begin_transaction();
+    if ($manageTransaction) {
+        $conn->begin_transaction();
+    }
     try {
         if ($source === JOURNEY_ADMIN_SIGNUP_SOURCE_JOURNEY) {
             $productKey = JOURNEY_PRODUCT_KEY;
@@ -58,8 +60,7 @@ function journey_admin_delete_signup(mysqli $conn, string $source, int $recordId
             $row = $lookup->get_result()->fetch_assoc();
             $lookup->close();
             if (!is_array($row)) {
-                $conn->rollback();
-                return false;
+                throw new RuntimeException('Journey signup was not found.');
             }
 
             $subscriptionId = (string) ($row['stripe_subscription_id'] ?? '');
@@ -98,8 +99,7 @@ function journey_admin_delete_signup(mysqli $conn, string $source, int $recordId
             $row = $lookup->get_result()->fetch_assoc();
             $lookup->close();
             if (!is_array($row)) {
-                $conn->rollback();
-                return false;
+                throw new RuntimeException('Calculator signup was not found.');
             }
 
             $deleteSource = $conn->prepare('DELETE FROM users WHERE id = ?');
@@ -119,8 +119,7 @@ function journey_admin_delete_signup(mysqli $conn, string $source, int $recordId
         $deleted = $deleteSource->affected_rows === 1;
         $deleteSource->close();
         if (!$deleted) {
-            $conn->rollback();
-            return false;
+            throw new RuntimeException('Signup deletion did not affect one row.');
         }
 
         if ($source === JOURNEY_ADMIN_SIGNUP_SOURCE_JOURNEY) {
@@ -160,11 +159,70 @@ function journey_admin_delete_signup(mysqli $conn, string $source, int $recordId
             $deleteReview->close();
         }
 
-        $conn->commit();
+        if ($manageTransaction) {
+            $conn->commit();
+        }
         return true;
     } catch (Throwable $e) {
+        if (!$manageTransaction) {
+            throw $e;
+        }
         $conn->rollback();
         return false;
+    }
+}
+
+/**
+ * Delete multiple dashboard signups atomically.
+ *
+ * @param list<array{source:string,record_id:int}> $records
+ * @return int Number deleted, or 0 when validation/deletion failed
+ */
+function journey_admin_delete_signups(mysqli $conn, array $records): int
+{
+    if ($records === [] || count($records) > JOURNEY_ADMIN_TRIALS_DEFAULT_LIMIT) {
+        return 0;
+    }
+
+    $validated = [];
+    foreach ($records as $record) {
+        $source = isset($record['source']) && is_string($record['source']) ? $record['source'] : '';
+        $recordId = filter_var($record['record_id'] ?? null, FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1],
+        ]);
+        if ($recordId === false || !in_array($source, [
+            JOURNEY_ADMIN_SIGNUP_SOURCE_JOURNEY,
+            JOURNEY_ADMIN_SIGNUP_SOURCE_RON,
+            JOURNEY_ADMIN_SIGNUP_SOURCE_CFA,
+        ], true)) {
+            return 0;
+        }
+        $key = $source . ':' . (int) $recordId;
+        if (isset($validated[$key])) {
+            return 0;
+        }
+        $validated[$key] = ['source' => $source, 'record_id' => (int) $recordId];
+    }
+
+    if (!journey_admin_ensure_signup_reviews_table($conn)) {
+        return 0;
+    }
+
+    $conn->begin_transaction();
+    try {
+        foreach ($validated as $record) {
+            journey_admin_delete_signup(
+                $conn,
+                $record['source'],
+                $record['record_id'],
+                false
+            );
+        }
+        $conn->commit();
+        return count($validated);
+    } catch (Throwable $e) {
+        $conn->rollback();
+        return 0;
     }
 }
 

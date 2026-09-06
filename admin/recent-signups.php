@@ -13,20 +13,39 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/journey_admin_trials.php';
 rb_require_admin($conn);
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
-    $source = isset($_POST['source']) && is_string($_POST['source']) ? $_POST['source'] : '';
-    $recordId = filter_var($_POST['record_id'] ?? null, FILTER_VALIDATE_INT, [
-        'options' => ['min_range' => 1],
-    ]);
-
     if (!rb_csrf_validate(isset($_POST['csrf_token']) && is_string($_POST['csrf_token']) ? $_POST['csrf_token'] : null)) {
         http_response_code(403);
         exit('Invalid request token.');
     }
 
-    if ($recordId === false || !journey_admin_delete_signup($conn, $source, (int) $recordId)) {
-        $_SESSION['recent_signups_error'] = 'Signup could not be deleted.';
+    if (($_POST['action'] ?? '') === 'delete_batch') {
+        $sources = isset($_POST['sources']) && is_array($_POST['sources']) ? $_POST['sources'] : [];
+        $recordIds = isset($_POST['record_ids']) && is_array($_POST['record_ids']) ? $_POST['record_ids'] : [];
+        $records = [];
+        if ($sources !== [] && count($sources) === count($recordIds)) {
+            foreach ($sources as $index => $source) {
+                $records[] = [
+                    'source' => is_string($source) ? $source : '',
+                    'record_id' => $recordIds[$index] ?? null,
+                ];
+            }
+        }
+        $deleted = journey_admin_delete_signups($conn, $records);
+        if ($deleted < 1) {
+            $_SESSION['recent_signups_error'] = 'No signups were deleted.';
+        } else {
+            $_SESSION['recent_signups_success'] = $deleted . ($deleted === 1 ? ' signup deleted.' : ' signups deleted.');
+        }
     } else {
-        $_SESSION['recent_signups_success'] = 'Signup deleted.';
+        $source = isset($_POST['source']) && is_string($_POST['source']) ? $_POST['source'] : '';
+        $recordId = filter_var($_POST['record_id'] ?? null, FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1],
+        ]);
+        if ($recordId === false || !journey_admin_delete_signup($conn, $source, (int) $recordId)) {
+            $_SESSION['recent_signups_error'] = 'Signup could not be deleted.';
+        } else {
+            $_SESSION['recent_signups_success'] = 'Signup deleted.';
+        }
     }
     header('Location: /admin/recent-signups.php', true, 303);
     exit;
@@ -107,6 +126,7 @@ $pageTitle = 'Recent Signups';
         .admin-stat .n { display: block; font-size: 1.4rem; font-weight: 700; color: #0f172a; }
         .admin-stat .l { display: block; font-size: 0.8rem; color: #64748b; margin-top: 2px; }
         .admin-table-wrap { overflow-x: auto; }
+        .table-controls { display: flex; justify-content: flex-end; margin: 0 0 10px; }
         table.admin-table {
             width: 100%; border-collapse: collapse; font-size: 0.92rem;
         }
@@ -124,6 +144,12 @@ $pageTitle = 'Recent Signups';
             position: sticky; right: 0; white-space: nowrap; z-index: 1;
         }
         table.admin-table th.actions-column { z-index: 2; }
+        table.admin-table th.select-column, table.admin-table td.select-column {
+            padding-left: 6px; padding-right: 6px; text-align: center; width: 30px;
+        }
+        table.admin-table tr.is-selected td { background-color: #eff6ff; }
+        table.admin-table tr.is-selected td.actions-column { background-color: #eff6ff; }
+        .row-select, #select-all-signups { cursor: pointer; }
         .sort-button {
             appearance: none; border: 0; background: transparent; color: inherit;
             cursor: pointer; font: inherit; font-weight: inherit; letter-spacing: inherit;
@@ -154,6 +180,12 @@ $pageTitle = 'Recent Signups';
         }
         .delete-button:hover { background: #fef2f2; }
         .delete-button:focus-visible { outline: 2px solid #dc2626; outline-offset: 2px; }
+        .delete-selected-button {
+            appearance: none; background: #b91c1c; border: 1px solid #b91c1c; border-radius: 7px;
+            color: #fff; cursor: pointer; font: inherit; font-size: 0.86rem; font-weight: 700;
+            padding: 7px 11px;
+        }
+        .delete-selected-button:disabled { background: #cbd5e1; border-color: #cbd5e1; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -194,25 +226,37 @@ $pageTitle = 'Recent Signups';
             </div>
         </div>
 
-        <div class="admin-table-wrap">
-            <?php if ($signups === []): ?>
+        <?php if ($signups === []): ?>
+            <div class="admin-table-wrap">
                 <p class="empty">No signups recorded yet.</p>
-            <?php else: ?>
+            </div>
+        <?php else: ?>
+            <form id="batch-delete-form" method="POST" action="/admin/recent-signups.php">
+                <?php echo rb_csrf_field(); ?>
+                <input type="hidden" name="action" value="delete_batch">
+                <div id="batch-delete-fields"></div>
+                <div class="table-controls">
+                    <button class="delete-selected-button" id="delete-selected" type="submit" disabled>Delete Selected</button>
+                </div>
+            </form>
+            <div class="admin-table-wrap">
                 <table class="admin-table" id="signups-table">
                     <thead>
                         <tr>
-                            <th scope="col"><button class="sort-button" type="button" data-sort-column="0" data-sort-type="text">Name</button></th>
-                            <th scope="col"><button class="sort-button" type="button" data-sort-column="1" data-sort-type="text">Email</button></th>
-                            <th scope="col" aria-sort="descending"><button class="sort-button" type="button" data-sort-column="2" data-sort-type="date">Signup date/time</button></th>
-                            <th scope="col"><button class="sort-button" type="button" data-sort-column="3" data-sort-type="text">Source</button></th>
-                            <th scope="col"><button class="sort-button" type="button" data-sort-column="4" data-sort-type="text">Status</button></th>
-                            <th scope="col"><button class="sort-button" type="button" data-sort-column="5" data-sort-type="text">Review status</button></th>
+                            <th class="select-column" scope="col"><input id="select-all-signups" type="checkbox" aria-label="Select all displayed signups" title="Select all"></th>
+                            <th scope="col"><button class="sort-button" type="button" data-sort-column="1" data-sort-type="text">Name</button></th>
+                            <th scope="col"><button class="sort-button" type="button" data-sort-column="2" data-sort-type="text">Email</button></th>
+                            <th scope="col" aria-sort="descending"><button class="sort-button" type="button" data-sort-column="3" data-sort-type="date">Signup date/time</button></th>
+                            <th scope="col"><button class="sort-button" type="button" data-sort-column="4" data-sort-type="text">Source</button></th>
+                            <th scope="col"><button class="sort-button" type="button" data-sort-column="5" data-sort-type="text">Status</button></th>
+                            <th scope="col"><button class="sort-button" type="button" data-sort-column="6" data-sort-type="text">Review status</button></th>
                             <th class="actions-column" scope="col">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                     <?php foreach ($signups as $signup): ?>
                         <tr>
+                            <td class="select-column"><input class="row-select" type="checkbox" aria-label="Select <?php echo htmlspecialchars($signup['full_name'] !== '' ? $signup['full_name'] : (string) $signup['email'], ENT_QUOTES, 'UTF-8'); ?>" data-source="<?php echo htmlspecialchars((string) $signup['source_key'], ENT_QUOTES, 'UTF-8'); ?>" data-record-id="<?php echo (int) $signup['record_id']; ?>"></td>
                             <td data-sort-value="<?php echo htmlspecialchars(strtolower((string) $signup['full_name']), ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($signup['full_name'] !== '' ? $signup['full_name'] : '—', ENT_QUOTES, 'UTF-8'); ?></td>
                             <td data-sort-value="<?php echo htmlspecialchars(strtolower((string) $signup['email']), ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($signup['email'] !== '' ? $signup['email'] : '—', ENT_QUOTES, 'UTF-8'); ?></td>
                             <td data-sort-value="<?php echo htmlspecialchars((string) $signup['signup_at'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars((string) $signup['signup_at_label'], ENT_QUOTES, 'UTF-8'); ?></td>
@@ -243,8 +287,8 @@ $pageTitle = 'Recent Signups';
                     <?php endforeach; ?>
                     </tbody>
                 </table>
-            <?php endif; ?>
-        </div>
+            </div>
+        <?php endif; ?>
         <p class="footnote">Showing up to <?php echo (int) $limit; ?> most recent signups across all sources (newest first).</p>
     </div>
 </div>
@@ -254,6 +298,58 @@ $pageTitle = 'Recent Signups';
     if (!table || !table.tBodies.length) return;
     var headers = Array.prototype.slice.call(table.querySelectorAll('.sort-button'));
     var tbody = table.tBodies[0];
+    var selectAll = document.getElementById('select-all-signups');
+    var batchForm = document.getElementById('batch-delete-form');
+    var batchFields = document.getElementById('batch-delete-fields');
+    var deleteSelected = document.getElementById('delete-selected');
+    var rowCheckboxes = Array.prototype.slice.call(table.querySelectorAll('.row-select'));
+
+    function selectedRows() {
+        return rowCheckboxes.filter(function (checkbox) { return checkbox.checked; });
+    }
+
+    function updateSelection() {
+        var selected = selectedRows();
+        deleteSelected.disabled = selected.length === 0;
+        selectAll.checked = selected.length === rowCheckboxes.length;
+        selectAll.indeterminate = selected.length > 0 && selected.length < rowCheckboxes.length;
+        selectAll.title = selectAll.checked ? 'Clear selection' : 'Select all';
+        rowCheckboxes.forEach(function (checkbox) {
+            checkbox.closest('tr').classList.toggle('is-selected', checkbox.checked);
+        });
+    }
+
+    selectAll.addEventListener('change', function () {
+        rowCheckboxes.forEach(function (checkbox) { checkbox.checked = selectAll.checked; });
+        updateSelection();
+    });
+    rowCheckboxes.forEach(function (checkbox) {
+        checkbox.addEventListener('change', updateSelection);
+    });
+    batchForm.addEventListener('submit', function (event) {
+        var selected = selectedRows();
+        if (selected.length === 0) {
+            event.preventDefault();
+            updateSelection();
+            return;
+        }
+        batchFields.textContent = '';
+        selected.forEach(function (checkbox) {
+            var source = document.createElement('input');
+            source.type = 'hidden';
+            source.name = 'sources[]';
+            source.value = checkbox.getAttribute('data-source');
+            batchFields.appendChild(source);
+            var recordId = document.createElement('input');
+            recordId.type = 'hidden';
+            recordId.name = 'record_ids[]';
+            recordId.value = checkbox.getAttribute('data-record-id');
+            batchFields.appendChild(recordId);
+        });
+        if (!window.confirm('Permanently delete the ' + selected.length + ' selected signup ' + (selected.length === 1 ? 'record?' : 'records?'))) {
+            event.preventDefault();
+        }
+    });
 
     headers.forEach(function (button) {
         button.addEventListener('click', function () {
