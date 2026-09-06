@@ -18,9 +18,13 @@ function calcforadvisors_authenticate_subscriber(array $subscriber): void {
 
 function calcforadvisors_require_login() {
     if (empty($_SESSION['calcforadvisors_subscriber_id'])) {
-        $_SESSION['calcforadvisors_redirect_after_login'] = $_SERVER['REQUEST_URI'] ?? 'account.php';
-        $debug = isset($_GET['debug']) ? '?debug=1' : '';
-        header('Location: login.php' . $debug);
+        $requestUri = (string) ($_SERVER['REQUEST_URI'] ?? '/account.php');
+        $path = parse_url($requestUri, PHP_URL_PATH);
+        if (!is_string($path) || $path === '' || $path[0] !== '/' || strpos($path, '//') === 0) {
+            $path = '/account.php';
+        }
+        $_SESSION['calcforadvisors_redirect_after_login'] = $path;
+        header('Location: login.php');
         exit;
     }
 }

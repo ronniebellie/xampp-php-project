@@ -5,7 +5,9 @@ register_shutdown_function(function () {
     $e = error_get_last();
     if ($e && in_array($e['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
         if (!headers_sent()) header('Content-Type: application/json');
-        echo json_encode(['success' => false, 'error' => 'Server error: ' . ($e['message'] ?? 'Unknown')]);
+        error_log('save_scenario fatal error: ' . ($e['message'] ?? 'Unknown'));
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => 'Server error']);
     }
 });
 
@@ -41,6 +43,7 @@ if ($owner['type'] === 'user') {
 if ($stmt->execute()) {
     echo json_encode(['success' => true, 'scenario_id' => (int) $conn->insert_id]);
 } else {
-    $dbError = $conn->error;
-    echo json_encode(['success' => false, 'error' => 'Failed to save scenario' . ($dbError ? ': ' . $dbError : '')]);
+    error_log('save_scenario database error: ' . $stmt->error);
+    http_response_code(500);
+    echo json_encode(['success' => false, 'error' => 'Failed to save scenario']);
 }

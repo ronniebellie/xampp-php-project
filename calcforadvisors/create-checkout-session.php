@@ -32,10 +32,9 @@ if ($price_id === 'price_xxx') {
 
 \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
 
-$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-$base = $scheme . '://' . $host . dirname($_SERVER['REQUEST_URI']);
-$base = rtrim($base, '/');
+$base = defined('CALCFORADVISORS_BASE_URL')
+    ? rtrim(CALCFORADVISORS_BASE_URL, '/')
+    : 'https://calcforadvisors.com';
 
 try {
     $session = \Stripe\Checkout\Session::create([
@@ -59,7 +58,8 @@ try {
     exit;
 
 } catch (Exception $e) {
+    error_log('CalcForAdvisors checkout session creation failed: ' . $e->getMessage());
     http_response_code(500);
-    echo 'Error: ' . htmlspecialchars($e->getMessage());
+    echo 'Unable to start checkout. Please try again or contact support.';
     exit;
 }

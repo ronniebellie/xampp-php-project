@@ -2,10 +2,6 @@
 /**
  * calcforadvisors subscriber login.
  */
-if (isset($_GET['debug'])) {
-    ini_set('display_errors', 1);
-    error_reporting(E_ALL);
-}
 require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/includes/session_bootstrap.php';
 calcforadvisors_session_start();
@@ -16,10 +12,16 @@ $error = '';
 $msg = $_GET['msg'] ?? '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!calcforadvisors_csrf_validate($_POST['csrf_token'] ?? null)) {
+        http_response_code(403);
+        $error = 'Your session expired. Please reload the page and try again.';
+    }
     $email = filter_var($_POST['email'] ?? '', FILTER_SANITIZE_EMAIL);
     $password = $_POST['password'] ?? '';
 
-    if (empty($email) || empty($password)) {
+    if ($error !== '') {
+        // Preserve the CSRF error without attempting authentication.
+    } elseif (empty($email) || empty($password)) {
         $error = 'Email and password are required.';
     } else {
         $stmt = $conn->prepare('SELECT id, email, password_hash, plan, status FROM calcforadvisors_subscribers WHERE email = ? AND status = ?');
@@ -128,9 +130,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="message" style="background:#d1fae5;color:#065f46;padding:12px;border-radius:8px;margin-bottom:18px;font-size:14px;">Your password has been set. Log in below.</div>
         <?php endif; ?>
         <?php if ($error): ?>
-            <div class="error"><?php echo $error; ?></div>
+            <div class="error"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></div>
         <?php endif; ?>
         <form method="POST" action="">
+            <?php echo calcforadvisors_csrf_field(); ?>
             <div class="form-group">
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" required value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">

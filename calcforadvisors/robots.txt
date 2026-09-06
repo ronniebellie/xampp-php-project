@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /account.php
+Disallow: /login.php
+Disallow: /trial-setup.php
+Disallow: /billing-portal.php
+Disallow: /success.php

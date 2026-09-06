@@ -1,0 +1,18 @@
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+# Keep implementation details and source artifacts out of the public web root.
+RewriteRule (^|/)\.(?!well-known(?:/|$)) - [F,L,NC]
+RewriteRule (^|/)(?:includes|vendor)(?:/|$) - [F,L,NC]
+RewriteRule (^|/)[^/]+\.(?:bak|backup|old|orig|save|swp|swo|sql|md)$ - [F,L,NC]
+RewriteRule (^|/)[^/]+~$ - [F,L,NC]
+RewriteRule ^(?:composer\.(?:json|lock)|db_config\.php)$ - [F,L,NC]
+</IfModule>
+
+<IfModule mod_headers.c>
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "SAMEORIGIN"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+Header always set Strict-Transport-Security "max-age=31536000"
+</IfModule>

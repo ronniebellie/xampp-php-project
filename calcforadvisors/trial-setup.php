@@ -61,12 +61,18 @@ $error = '';
 $msg = $_GET['msg'] ?? '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$trialExpired) {
+    if (!calcforadvisors_csrf_validate($_POST['csrf_token'] ?? null)) {
+        http_response_code(403);
+        $error = 'Your session expired. Please reload the page and try again.';
+    }
     $firmName = trim($_POST['firm_name'] ?? '');
     $logoUrl = trim($_POST['logo_url'] ?? '');
     $bannerUrl = trim($_POST['banner_url'] ?? '');
     $customSlug = strtolower(trim(preg_replace('/[^a-z0-9-]/', '', $_POST['custom_slug'] ?? '')));
 
-    if (empty($firmName)) {
+    if ($error !== '') {
+        // Preserve the CSRF error without changing the trial profile.
+    } elseif (empty($firmName)) {
         $error = 'Firm name is required.';
     } elseif (strlen($firmName) > 255) {
         $error = 'Firm name is too long.';
@@ -164,6 +170,7 @@ $trialUrl = $trialSlug ? $baseUrl . '/trial.php?s=' . $trialSlug : '';
                 <p style="color: #64748b; margin-bottom: 20px;">Add your firm name and logo. You'll get a shareable link to your branded calculator page for 30 days.</p>
                 <?php if ($error): ?><div class="error"><?php echo htmlspecialchars($error); ?></div><?php endif; ?>
                 <form method="POST">
+                    <?php echo calcforadvisors_csrf_field(); ?>
                     <label for="firm_name">Firm name *</label>
                     <input type="text" id="firm_name" name="firm_name" required maxlength="255" value="<?php echo htmlspecialchars($firmName ?? ''); ?>" placeholder="e.g. Smith Retirement Planning">
                     <label for="logo_url">Logo URL (optional)</label>
