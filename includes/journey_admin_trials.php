@@ -18,6 +18,155 @@ const JOURNEY_ADMIN_TRIALS_DEFAULT_LIMIT = 50;
 
 const JOURNEY_ADMIN_SIGNUP_SOURCE_RON = 'ronbelisle';
 const JOURNEY_ADMIN_SIGNUP_SOURCE_CFA = 'calcforadvisors';
+const JOURNEY_ADMIN_SIGNUP_SOURCE_JOURNEY = 'journey';
+
+/**
+ * Permanently delete one signup from its authoritative source table.
+ *
+ * The source and database ID must match a row that this dashboard can display.
+ * Review-ledger cleanup is included in the same transaction so a successful
+ * delete cannot leave dashboard-only metadata behind.
+ */
+function journey_admin_delete_signup(mysqli $conn, string $source, int $recordId): bool
+{
+    if ($recordId < 1 || !in_array($source, [
+        JOURNEY_ADMIN_SIGNUP_SOURCE_JOURNEY,
+        JOURNEY_ADMIN_SIGNUP_SOURCE_RON,
+        JOURNEY_ADMIN_SIGNUP_SOURCE_CFA,
+    ], true)) {
+        return false;
+    }
+
+    if (!journey_admin_ensure_signup_reviews_table($conn)) {
+        return false;
+    }
+
+    $conn->begin_transaction();
+    try {
+        if ($source === JOURNEY_ADMIN_SIGNUP_SOURCE_JOURNEY) {
+            $productKey = JOURNEY_PRODUCT_KEY;
+            $lookup = $conn->prepare(
+                'SELECT user_id, stripe_subscription_id FROM user_product_subscriptions
+                 WHERE id = ? AND product_key = ? AND trial_start IS NOT NULL
+                 LIMIT 1 FOR UPDATE'
+            );
+            if (!$lookup) {
+                throw new RuntimeException('Could not prepare Journey signup lookup.');
+            }
+            $lookup->bind_param('is', $recordId, $productKey);
+            $lookup->execute();
+            $row = $lookup->get_result()->fetch_assoc();
+            $lookup->close();
+            if (!is_array($row)) {
+                $conn->rollback();
+                return false;
+            }
+
+            $subscriptionId = (string) ($row['stripe_subscription_id'] ?? '');
+            $userId = (int) ($row['user_id'] ?? 0);
+            $deleteLedger = $conn->prepare(
+                'DELETE FROM journey_admin_trial_notifications WHERE stripe_subscription_id = ?'
+            );
+            if (!$deleteLedger) {
+                throw new RuntimeException('Could not prepare Journey review cleanup.');
+            }
+            $deleteLedger->bind_param('s', $subscriptionId);
+            $deleteLedger->execute();
+            $deleteLedger->close();
+
+            $deleteSource = $conn->prepare(
+                'DELETE FROM user_product_subscriptions
+                 WHERE id = ? AND product_key = ? AND trial_start IS NOT NULL'
+            );
+            if (!$deleteSource) {
+                throw new RuntimeException('Could not prepare Journey signup deletion.');
+            }
+            $deleteSource->bind_param('is', $recordId, $productKey);
+        } elseif ($source === JOURNEY_ADMIN_SIGNUP_SOURCE_RON) {
+            $productKey = JOURNEY_PRODUCT_KEY;
+            $lookup = $conn->prepare(
+                'SELECT id FROM users WHERE id = ? AND NOT EXISTS (
+                    SELECT 1 FROM user_product_subscriptions ups
+                    WHERE ups.user_id = users.id AND ups.product_key = ? AND ups.trial_start IS NOT NULL
+                ) LIMIT 1 FOR UPDATE'
+            );
+            if (!$lookup) {
+                throw new RuntimeException('Could not prepare calculator signup lookup.');
+            }
+            $lookup->bind_param('is', $recordId, $productKey);
+            $lookup->execute();
+            $row = $lookup->get_result()->fetch_assoc();
+            $lookup->close();
+            if (!is_array($row)) {
+                $conn->rollback();
+                return false;
+            }
+
+            $deleteSource = $conn->prepare('DELETE FROM users WHERE id = ?');
+            if (!$deleteSource) {
+                throw new RuntimeException('Could not prepare calculator signup deletion.');
+            }
+            $deleteSource->bind_param('i', $recordId);
+        } else {
+            $deleteSource = $conn->prepare('DELETE FROM calcforadvisors_subscribers WHERE id = ?');
+            if (!$deleteSource) {
+                throw new RuntimeException('Could not prepare CalcForAdvisors signup deletion.');
+            }
+            $deleteSource->bind_param('i', $recordId);
+        }
+
+        $deleteSource->execute();
+        $deleted = $deleteSource->affected_rows === 1;
+        $deleteSource->close();
+        if (!$deleted) {
+            $conn->rollback();
+            return false;
+        }
+
+        if ($source === JOURNEY_ADMIN_SIGNUP_SOURCE_JOURNEY) {
+            $deleteUser = $conn->prepare('DELETE FROM users WHERE id = ?');
+            if (!$deleteUser) {
+                throw new RuntimeException('Could not prepare Journey user deletion.');
+            }
+            $deleteUser->bind_param('i', $userId);
+            $deleteUser->execute();
+            $userDeleted = $deleteUser->affected_rows === 1;
+            $deleteUser->close();
+            if (!$userDeleted) {
+                throw new RuntimeException('Journey user deletion failed.');
+            }
+
+            $ronSource = JOURNEY_ADMIN_SIGNUP_SOURCE_RON;
+            $deleteReview = $conn->prepare(
+                'DELETE FROM admin_signup_reviews WHERE source = ? AND record_id = ?'
+            );
+            if (!$deleteReview) {
+                throw new RuntimeException('Could not prepare Journey user review cleanup.');
+            }
+            $deleteReview->bind_param('si', $ronSource, $userId);
+            $deleteReview->execute();
+            $deleteReview->close();
+        }
+
+        if ($source !== JOURNEY_ADMIN_SIGNUP_SOURCE_JOURNEY) {
+            $deleteReview = $conn->prepare(
+                'DELETE FROM admin_signup_reviews WHERE source = ? AND record_id = ?'
+            );
+            if (!$deleteReview) {
+                throw new RuntimeException('Could not prepare signup review cleanup.');
+            }
+            $deleteReview->bind_param('si', $source, $recordId);
+            $deleteReview->execute();
+            $deleteReview->close();
+        }
+
+        $conn->commit();
+        return true;
+    } catch (Throwable $e) {
+        $conn->rollback();
+        return false;
+    }
+}
 
 /**
  * Create the calculator-signup review ledger when an older installation has not
@@ -181,7 +330,7 @@ function journey_admin_list_recent_signups(mysqli $conn, int $limit = JOURNEY_AD
 
     foreach (journey_admin_list_recent_trials($conn, $limit) as $trial) {
         $trial['record_id'] = (int) ($trial['subscription_row_id'] ?? 0);
-        $trial['source_key'] = 'journey';
+        $trial['source_key'] = JOURNEY_ADMIN_SIGNUP_SOURCE_JOURNEY;
         $trial['source_label'] = 'Journey Premium';
         $trial['signup_at'] = $trial['trial_start'] ?? null;
         $trial['signup_at_label'] = $trial['trial_start_label'] ?? '—';

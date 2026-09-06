@@ -7,9 +7,38 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
 rb_session_start();
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/db_config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/admin_auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/csrf.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/journey_admin_trials.php';
 
 rb_require_admin($conn);
+
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+    $source = isset($_POST['source']) && is_string($_POST['source']) ? $_POST['source'] : '';
+    $recordId = filter_var($_POST['record_id'] ?? null, FILTER_VALIDATE_INT, [
+        'options' => ['min_range' => 1],
+    ]);
+
+    if (!rb_csrf_validate(isset($_POST['csrf_token']) && is_string($_POST['csrf_token']) ? $_POST['csrf_token'] : null)) {
+        http_response_code(403);
+        exit('Invalid request token.');
+    }
+
+    if ($recordId === false || !journey_admin_delete_signup($conn, $source, (int) $recordId)) {
+        $_SESSION['recent_signups_error'] = 'Signup could not be deleted.';
+    } else {
+        $_SESSION['recent_signups_success'] = 'Signup deleted.';
+    }
+    header('Location: /admin/recent-signups.php', true, 303);
+    exit;
+}
+
+$successMessage = isset($_SESSION['recent_signups_success'])
+    ? (string) $_SESSION['recent_signups_success']
+    : '';
+$errorMessage = isset($_SESSION['recent_signups_error'])
+    ? (string) $_SESSION['recent_signups_error']
+    : '';
+unset($_SESSION['recent_signups_success'], $_SESSION['recent_signups_error']);
 
 $limit = JOURNEY_ADMIN_TRIALS_DEFAULT_LIMIT;
 $signups = journey_admin_list_recent_signups($conn, $limit);
@@ -108,6 +137,17 @@ $pageTitle = 'Recent Signups';
         .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
         .empty { color: #64748b; padding: 18px 0; }
         .footnote { margin-top: 16px; color: #94a3b8; font-size: 0.85rem; }
+        .notice { border-radius: 8px; margin: 0 0 18px; padding: 10px 12px; font-size: 0.9rem; }
+        .notice-success { background: #dcfce7; color: #166534; }
+        .notice-error { background: #fee2e2; color: #991b1b; }
+        .delete-form { margin: 0; }
+        .delete-button {
+            appearance: none; background: #fff; border: 1px solid #dc2626; border-radius: 6px;
+            color: #b91c1c; cursor: pointer; font: inherit; font-size: 0.78rem;
+            font-weight: 700; padding: 4px 8px;
+        }
+        .delete-button:hover { background: #fef2f2; }
+        .delete-button:focus-visible { outline: 2px solid #dc2626; outline-offset: 2px; }
     </style>
 </head>
 <body>
@@ -122,6 +162,12 @@ $pageTitle = 'Recent Signups';
                 <strong><?php echo (int) $remainingNew; ?> still unviewed</strong> outside this page’s recent window.
             <?php endif; ?>
         </p>
+
+        <?php if ($successMessage !== ''): ?>
+            <p class="notice notice-success" role="status"><?php echo htmlspecialchars($successMessage, ENT_QUOTES, 'UTF-8'); ?></p>
+        <?php elseif ($errorMessage !== ''): ?>
+            <p class="notice notice-error" role="alert"><?php echo htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8'); ?></p>
+        <?php endif; ?>
 
         <div class="admin-summary">
             <div class="admin-stat">
@@ -155,6 +201,7 @@ $pageTitle = 'Recent Signups';
                             <th scope="col"><button class="sort-button" type="button" data-sort-column="3" data-sort-type="text">Source</button></th>
                             <th scope="col"><button class="sort-button" type="button" data-sort-column="4" data-sort-type="text">Status</button></th>
                             <th scope="col"><button class="sort-button" type="button" data-sort-column="5" data-sort-type="text">Review status</button></th>
+                            <th scope="col">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -177,6 +224,14 @@ $pageTitle = 'Recent Signups';
                                 <?php else: ?>
                                     <span class="pill pill-viewed">Viewed</span>
                                 <?php endif; ?>
+                            </td>
+                            <td>
+                                <form class="delete-form" method="POST" action="/admin/recent-signups.php" onsubmit="return window.confirm('Delete this signup permanently?');">
+                                    <?php echo rb_csrf_field(); ?>
+                                    <input type="hidden" name="source" value="<?php echo htmlspecialchars((string) $signup['source_key'], ENT_QUOTES, 'UTF-8'); ?>">
+                                    <input type="hidden" name="record_id" value="<?php echo (int) $signup['record_id']; ?>">
+                                    <button class="delete-button" type="submit">Delete</button>
+                                </form>
                             </td>
                         </tr>
                     <?php endforeach; ?>
