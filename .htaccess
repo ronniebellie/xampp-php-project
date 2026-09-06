@@ -35,6 +35,10 @@ RewriteRule ^ https://ronbelisle.com%{REQUEST_URI} [L,R=301]
 RewriteCond %{HTTP_HOST} ^ronbelisle\.com$ [NC]
 RewriteRule ^retirement-app(/.*)?$ / [R=301,L]
 
+# AI Budget Auditor was intentionally retired with no replacement.
+RewriteCond %{HTTP_HOST} ^ronbelisle\.com$ [NC]
+RewriteRule ^tools/ai-budget-auditor/?$ - [G,L,NC]
+
 # Calculator footers used relative about/disclaimer links; redirect nested copies to root.
 RewriteCond %{HTTP_HOST} ^ronbelisle\.com$ [NC]
 RewriteRule ^.+/about\.php$ /about.php [R=301,L]

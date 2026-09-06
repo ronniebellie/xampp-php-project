@@ -170,6 +170,23 @@ do
   fi
 done
 
+retired_status="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 12 \
+  "https://ronbelisle.com/tools/ai-budget-auditor/?retirement_check=$release_id")"
+if [ "$retired_status" != "410" ]; then
+  echo "ERROR: retired AI Budget Auditor URL returned $retired_status instead of 410" >&2
+  rollback
+  exit 1
+fi
+
+legacy_about_headers="$(curl -sS -o /dev/null -D - --max-redirs 0 --max-time 12 \
+  "https://ronbelisle.com/compound-interest/about.php?redirect_check=$release_id")"
+if ! printf '%s\n' "$legacy_about_headers" | grep -q '^HTTP/.* 301 ' \
+  || ! printf '%s\n' "$legacy_about_headers" | grep -qi '^Location: https://ronbelisle\.com/about\.php'; then
+  echo "ERROR: legacy compound-interest about URL did not redirect permanently to /about.php" >&2
+  rollback
+  exit 1
+fi
+
 echo "Published release $release_id"
 echo "Previous release retained at $previous"
 REMOTE
