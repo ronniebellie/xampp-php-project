@@ -44,10 +44,10 @@ $page_title = 'Your Retirement Planning Journey';
             <div class="container hero-grid">
                 <div class="hero-copy">
                     <p class="eyebrow">Guided retirement planning</p>
-                    <h1 id="journey-title">Your Retirement Planning Journey</h1>
+                    <h1 id="journey-title">Your Retirement Journey Matters</h1>
                     <div class="intro-copy" data-journey-home-intro>
-                        <p data-journey-home-intro-lead>Retirement planning is a series of connected decisions about spending, Social Security, investments, taxes, and protecting your family.</p>
-                        <p data-journey-home-intro-body>This <strong>six-phase Journey</strong> helps you build your initial retirement plan one decision at a time. It is designed primarily for people approaching retirement who are preparing those decisions—spending, Social Security, retirement income, taxes, and protecting their household.</p>
+                        <p data-journey-home-intro-lead>Retirement isn't one decision. It's a series of connected decisions about spending, Social Security, investments, taxes, and protecting your family.</p>
+                        <p data-journey-home-intro-body>Your Retirement Planning Journey guides you through six phases to help you build your initial retirement plan—one decision at a time.</p>
                     </div>
                     <p class="audience-aside">Already retired? Many of the individual planning tools may still be useful, but this six-phase Journey is currently built around preparing for retirement.</p>
                     <a class="primary-action" href="/phases/spending-goals.php" data-journey-home-cta>Begin Your Journey</a>
