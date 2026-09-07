@@ -140,6 +140,7 @@
     }
 
     function renderAuthenticated(root, status) {
+        var returnUrl = currentReturnUrl();
         var firstName = status.firstName || status.userName || 'there';
         var email = status.userEmail || '';
         var logoutUrl = status.logoutUrl || withReturn(DEFAULT_LOGOUT, DEFAULT_HOME);
