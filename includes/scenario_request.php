@@ -33,8 +33,23 @@ function rb_scenario_data_error(array $data, string $operation): ?array
     $type = $data['calculator_type'] ?? null;
     $name = $data['scenario_name'] ?? null;
     if (!is_string($type) || !preg_match('/^[a-z0-9_-]{1,64}$/D', $type)) return [400, 'Invalid calculator type'];
-    if (!is_string($name) || trim($name) === '' || strlen($name) > 255) return [400, 'Scenario name must be 1–255 bytes'];
+    if (!is_string($name) || trim($name) === '' || preg_match_all('/./us', $name) > 255) return [400, 'Scenario name must be 1–255 characters'];
     if (!isset($data['scenario_data']) || !is_array($data['scenario_data'])) return [400, 'Invalid scenario data'];
+    return null;
+}
+
+/** Match the existing consumer/advisor schemas without changing either table. */
+function rb_scenario_storage_error(array $data, string $ownerType): ?array
+{
+    $maxName = $ownerType === 'user' ? 100 : 255;
+    $maxType = $ownerType === 'user' ? 50 : 64;
+    if (preg_match_all('/./us', $data['scenario_name']) > $maxName) {
+        return [400, "Scenario name must be at most {$maxName} characters"];
+    }
+    if (strlen($data['calculator_type']) > $maxType) return [400, 'Calculator type is too long'];
+    // Both tables use TEXT: its limit is bytes, including JSON escaping/structure.
+    $encoded = json_encode($data['scenario_data']);
+    if ($encoded === false || strlen($encoded) > 65535) return [413, 'Scenario data is too large'];
     return null;
 }
 

@@ -107,6 +107,22 @@ foreach ([['scenario_name', []], ['scenario_name', ' '], ['scenario_name', str_r
 foreach ([1, '1'] as $id) expectPhase1(rb_scenario_data_error(['scenario_id' => $id], 'delete') === null, 'Valid database ID accepted');
 foreach ([0, -1, 1.5, true, '1x', '1e2', [], null, '99999999999999999999999999'] as $id) expectPhase1(rb_scenario_data_error(['scenario_id' => $id], 'delete')[0] === 400, 'Malformed ID rejected');
 
+// Verified production limits differ between the consumer and advisor tables.
+foreach (['user' => [100, 50], 'cfa' => [255, 64]] as $ownerType => [$nameLimit, $typeLimit]) {
+    $boundary = ['scenario_name' => str_repeat('é', $nameLimit), 'calculator_type' => str_repeat('a', $typeLimit), 'scenario_data' => ['v' => 'fixture']];
+    expectPhase1(rb_scenario_data_error($boundary, 'save') === null, 'Names use Unicode character counts, not UTF-8 bytes');
+    expectPhase1(rb_scenario_storage_error($boundary, $ownerType) === null, 'Exact owner-specific name/type limits accepted');
+    expectPhase1(rb_scenario_storage_error(array_replace($boundary, ['scenario_name' => $boundary['scenario_name'] . 'x']), $ownerType)[0] === 400, 'Name beyond owner storage limit rejected');
+    expectPhase1(rb_scenario_storage_error(array_replace($boundary, ['calculator_type' => $boundary['calculator_type'] . 'a']), $ownerType)[0] === 400, 'Type beyond owner storage limit rejected');
+    $boundary['scenario_data'] = ['v' => str_repeat('x', 65527)];
+    expectPhase1(strlen(json_encode($boundary['scenario_data'])) === 65535, 'TEXT boundary fixture has exact encoded byte size');
+    expectPhase1(rb_scenario_storage_error($boundary, $ownerType) === null, 'Exact TEXT capacity accepted');
+    $boundary['scenario_data']['v'] .= 'x';
+    expectPhase1(rb_scenario_storage_error($boundary, $ownerType)[0] === 413, 'TEXT overflow rejected before insert');
+    $boundary['scenario_data'] = ['v' => str_repeat('é', 11000)];
+    expectPhase1(rb_scenario_storage_error($boundary, $ownerType)[0] === 413, 'JSON escaping counts toward storage byte limit');
+}
+
 // Guard integration and unchanged ownership boundaries.
 foreach (['save', 'delete'] as $op) {
     $source = file_get_contents(__DIR__ . '/../api/' . $op . '_scenario.php');

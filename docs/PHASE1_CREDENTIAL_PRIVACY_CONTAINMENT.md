@@ -32,7 +32,7 @@ Bridge authentication regenerates the session ID, deletes the prior session, rot
 
 Scenario save/delete requests must be POST JSON with the current session's X-CSRF-Token. The shared calculator footer supplies the token and explicit request wrapper. The wrapper never sends the token to another origin and does not follow redirects. APIs reject invalid request types, tokens, malformed JSON, invalid fields, and bodies above 1 MiB before database access. Existing authenticated ownership constraints are unchanged.
 
-Already-open calculator tabs must reload after release or a bridge authentication/CSRF rotation. Names are limited to 255 UTF-8 bytes; oversized input receives an explicit error rather than truncation.
+Already-open calculator tabs must reload after release or a bridge authentication/CSRF rotation. Names are limited to 100 Unicode characters for consumer scenarios and 255 for advisor scenarios. Calculator types are limited to 50/64 characters respectively. Both tables have a 65,535-byte TEXT limit, checked against the encoded JSON, including escaping and structure. Oversized input receives an explicit error before insertion rather than truncation or a database failure.
 
 ## Verification
 
@@ -87,3 +87,7 @@ The PHP unit tests use isolated sessions and a stateful password-store double fo
 - `ss-survivor-impact/calculator.js`
 - `survivor-gap/calculator.js`
 - `vanguard-pas-vs-target-date/calculator.js`
+
+## Pre-deployment verification correction
+
+Read-only production schema inspection confirmed that consumer scenarios use VARCHAR(100) names, VARCHAR(50) calculator types, and TEXT data; advisor scenarios use VARCHAR(255), VARCHAR(64), and TEXT. The initial Phase 1 guard was wider than the consumer columns and both TEXT limits. The follow-up correction applies owner-specific storage validation after authentication, before insertion. It changes no schema or financial calculations. Unicode names are counted in characters; JSON storage is counted in encoded bytes.

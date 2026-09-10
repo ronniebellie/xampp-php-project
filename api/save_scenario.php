@@ -25,6 +25,9 @@ if (!$owner) {
     exit;
 }
 
+$storageError = rb_scenario_storage_error($data, $owner['type']);
+if ($storageError) rb_scenario_fail($storageError);
+
 $calculator_type = $data['calculator_type'] ?? '';
 $scenario_name = $data['scenario_name'] ?? '';
 $scenario_data = json_encode($data['scenario_data'] ?? []);
