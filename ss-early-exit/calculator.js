@@ -1019,7 +1019,7 @@
       if (!name) return;
       const status = document.getElementById('saveStatus');
       try {
-        const res = await fetch(apiBase() + '/api/save_scenario.php', {
+        const res = await rbScenarioFetch(apiBase() + '/api/save_scenario.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

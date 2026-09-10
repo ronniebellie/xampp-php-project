@@ -20,7 +20,7 @@
         return window.location.href;
     }
 
-    // Append UTM tags so returning shared traffic is attributed in GA4.
+    // Preserve source tags on shared links; parameterized pages suppress analytics.
     function withUtm(rawUrl, network) {
         try {
             const u = new URL(rawUrl, window.location.href);
@@ -39,7 +39,7 @@
             window.rbTrack('share_click', {
                 method: network,
                 item: shareTitle,
-                page_location: window.location.href
+                page_location: window.location.origin + window.location.pathname
             });
         }
     }

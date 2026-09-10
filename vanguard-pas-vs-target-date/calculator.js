@@ -324,7 +324,7 @@
       pctModerate: document.getElementById('pctModerate').value,
       pctAggressive: document.getElementById('pctAggressive').value
     };
-    fetch(PAS_API_BASE + 'api/save_scenario.php', {
+    rbScenarioFetch(PAS_API_BASE + 'api/save_scenario.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -376,7 +376,7 @@
       if (choice.toLowerCase().indexOf('d') === 0) {
         index = parseInt(choice.substring(1), 10) - 1;
         if (index >= 0 && index < data.scenarios.length && confirm('Delete "' + scenarioDisplayName(data.scenarios[index]) + '"? This cannot be undone.')) {
-          fetch(PAS_API_BASE + 'api/delete_scenario.php', {
+          rbScenarioFetch(PAS_API_BASE + 'api/delete_scenario.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',

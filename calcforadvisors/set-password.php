@@ -1,72 +1,62 @@
 <?php
-/**
- * Set password via token from email (calcforadvisors).
- */
 require_once __DIR__ . '/includes/init.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
+calcforadvisors_session_start();
+require_once __DIR__ . '/includes/csrf.php';
 require_once CALCFORADVISORS_INCLUDES . '/db_config.php';
 require_once CALCFORADVISORS_INCLUDES . '/stripe_config.php';
+require_once CALCFORADVISORS_INCLUDES . '/password_tokens.php';
+$secret = defined('CALCFORADVISORS_AUTH_SECRET') ? (string) CALCFORADVISORS_AUTH_SECRET : '';
 
+header('Cache-Control: no-store');
+header('Referrer-Policy: no-referrer');
+header('X-Robots-Tag: noindex, nofollow');
 $error = '';
-$token = $_GET['token'] ?? $_POST['token'] ?? '';
-
-if (!defined('CALCFORADVISORS_AUTH_SECRET') || CALCFORADVISORS_AUTH_SECRET === 'replace-with-random-secret-32chars') {
-    $error = 'Password setup is not configured. Please contact support.';
-} elseif (empty($token)) {
-    $error = 'Invalid or missing link. Please request a new setup link from the login page.';
+$showForm = false;
+$token = $_SERVER['REQUEST_METHOD'] === 'POST' ? ($_POST['token'] ?? '') : ($_GET['token'] ?? '');
+$token = is_string($token) ? $token : '';
+$email = rb_password_token_email($token);
+if ($email === null) {
+    $error = 'This link is invalid or has expired. Please contact support.';
 } else {
-    $parts = explode('.', $token);
-    if (count($parts) !== 3) {
-        $error = 'Invalid link. Please request a new setup link.';
+    $stmt = $conn->prepare("SELECT id, password_hash FROM calcforadvisors_subscribers WHERE email = ? AND status = 'active'");
+    $stmt->bind_param('s', $email);
+    $stmt->execute();
+    $stmt->bind_result($accountId, $oldHash);
+    $found = $stmt->fetch();
+    $stmt->close();
+    if (!$found || !rb_password_token_verify($token, $oldHash, 'advisor-password', $secret)) {
+        $error = 'This link is invalid or has expired. Please contact support.';
     } else {
-        list($encEmail, $encExpiry, $sig) = $parts;
-        $payload = $encEmail . '.' . $encExpiry;
-        $expected = hash_hmac('sha256', $payload, CALCFORADVISORS_AUTH_SECRET);
-
-        if (!hash_equals($expected, $sig)) {
-            $error = 'Invalid link. Please request a new setup link.';
-        } else {
-            $email = base64_decode($encEmail, true);
-            $expiry = (int) base64_decode($encExpiry, true);
-
-            if ($email === false || $expiry < time()) {
-                $error = 'This link has expired. Please request a new setup link.';
+        $showForm = true;
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $csrf = $_POST['csrf_token'] ?? null;
+            $password = $_POST['password'] ?? '';
+            $confirm = $_POST['password_confirm'] ?? '';
+            if (!is_string($csrf) || !calcforadvisors_csrf_validate($csrf)) {
+                http_response_code(403);
+                $error = 'The form expired. Please reload the link and try again.';
+            } elseif (!is_string($password) || !is_string($confirm) || strlen($password) < 8) {
+                $error = 'Password must be at least 8 characters.';
+            } elseif ($password !== $confirm) {
+                $error = 'Passwords do not match.';
             } else {
-                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                    $password = $_POST['password'] ?? '';
-                    $confirm = $_POST['password_confirm'] ?? '';
-
-                    if (strlen($password) < 8) {
-                        $error = 'Password must be at least 8 characters.';
-                    } elseif ($password !== $confirm) {
-                        $error = 'Passwords do not match.';
-                    } else {
-                        $hash = password_hash($password, PASSWORD_DEFAULT);
-                        $stmt = $conn->prepare('UPDATE calcforadvisors_subscribers SET password_hash = ? WHERE email = ? AND status = ?');
-                        $status = 'active';
-                        $stmt->bind_param('sss', $hash, $email, $status);
-                        $stmt->execute();
-
-                        if ($stmt->affected_rows > 0) {
-                            $stmt->close();
-                            $conn->close();
-                            header('Location: login.php?msg=password_set');
-                            exit;
-                        }
-                        $stmt->close();
-                        $error = 'Could not update password. Please request a new link.';
-                    }
+                $hash = password_hash($password, PASSWORD_DEFAULT);
+                if (rb_password_token_redeem($conn, 'calcforadvisors_subscribers', (int) $accountId, $oldHash, $hash)) {
+                    calcforadvisors_csrf_rotate();
+                    header('Location: login.php?msg=password_set');
+                    exit;
                 }
+                $showForm = false;
+                $error = 'This link is no longer valid. Please contact support.';
             }
         }
     }
 }
-
-$showForm = empty($error) || $_SERVER['REQUEST_METHOD'] === 'POST';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php include __DIR__ . '/includes/analytics.php'; ?>
     <?php include __DIR__ . '/includes/social-metadata.php'; ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -130,8 +120,9 @@ $showForm = empty($error) || $_SERVER['REQUEST_METHOD'] === 'POST';
             <?php if ($error): ?>
                 <div class="error"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
-            <form method="POST" action="">
-                <input type="hidden" name="token" value="<?php echo htmlspecialchars($token); ?>">
+            <form method="POST" action="set-password.php">
+                <?php echo calcforadvisors_csrf_field(); ?>
+                <input type="hidden" name="token" value="<?php echo htmlspecialchars($token, ENT_QUOTES, 'UTF-8'); ?>">
                 <div class="form-group">
                     <label for="password">New Password</label>
                     <input type="password" id="password" name="password" required minlength="8" placeholder="At least 8 characters">

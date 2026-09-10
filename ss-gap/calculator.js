@@ -447,7 +447,7 @@ function saveScenario() {
         filingStatus: document.getElementById('filingStatus')?.value
     };
     
-    fetch(SSG_API_BASE + 'api/save_scenario.php', {
+    rbScenarioFetch(SSG_API_BASE + 'api/save_scenario.php', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
@@ -506,7 +506,7 @@ function loadScenario() {
             if (index >= 0 && index < data.scenarios.length) {
                 const scenario = data.scenarios[index];
                 if (confirm(`Delete "${scenarioDisplayName(scenario)}"? This cannot be undone.`)) {
-                    fetch(SSG_API_BASE + 'api/delete_scenario.php', {
+                    rbScenarioFetch(SSG_API_BASE + 'api/delete_scenario.php', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({ scenario_id: scenario.id })

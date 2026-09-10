@@ -1,6 +1,6 @@
 <?php
 /**
- * Password reset tokens for ronbelisle.com users (HMAC-signed, no DB storage).
+ * Password reset tokens for ronbelisle.com users (password-state-bound, no token table).
  */
 require_once __DIR__ . '/config_bootstrap.php';
 require_once __DIR__ . '/stripe_config.php';
@@ -26,34 +26,14 @@ function rb_password_reset_configured(): bool {
     return rb_password_reset_secret() !== '';
 }
 
-function rb_password_reset_create_token(string $email, int $ttlSeconds = 86400): string {
-    $expiry = time() + $ttlSeconds;
-    $payload = base64_encode($email) . '.' . base64_encode((string) $expiry);
-    $sig = hash_hmac('sha256', $payload, rb_password_reset_secret());
-    return $payload . '.' . $sig;
+require_once __DIR__ . '/password_tokens.php';
+
+function rb_password_reset_create_token(string $email, ?string $passwordHash, int $ttlSeconds = 86400): string {
+    return rb_password_token_create($email, $passwordHash, 'consumer-password', rb_password_reset_secret(), $ttlSeconds);
 }
 
-/** @return string|false email on success */
-function rb_password_reset_verify_token(string $token) {
-    if (!rb_password_reset_configured()) {
-        return false;
-    }
-    $parts = explode('.', $token);
-    if (count($parts) !== 3) {
-        return false;
-    }
-    [$encEmail, $encExpiry, $sig] = $parts;
-    $payload = $encEmail . '.' . $encExpiry;
-    $expected = hash_hmac('sha256', $payload, rb_password_reset_secret());
-    if (!hash_equals($expected, $sig)) {
-        return false;
-    }
-    $email = base64_decode($encEmail, true);
-    $expiry = (int) base64_decode($encExpiry, true);
-    if ($email === false || $expiry < time()) {
-        return false;
-    }
-    return $email;
+function rb_password_reset_verify_token(string $token, ?string $passwordHash): bool {
+    return rb_password_token_verify($token, $passwordHash, 'consumer-password', rb_password_reset_secret());
 }
 
 function rb_auth_base_url(): string {

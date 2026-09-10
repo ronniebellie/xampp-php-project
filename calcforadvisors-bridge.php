@@ -5,12 +5,15 @@
  */
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
 rb_session_start();
+require_once __DIR__ . '/includes/bridge_security.php';
+header('Referrer-Policy: no-referrer');
+header('Cache-Control: no-store');
 require_once __DIR__ . '/includes/db_config.php';
 
 $token = $_GET['token'] ?? '';
 $redirect = $_GET['redirect'] ?? '/rmd-impact/';
 
-if (empty($token)) {
+if (!is_string($token) || $token === '') {
     header('Location: https://calcforadvisors.com/login.php?msg=bridge_missing');
     exit;
 }
@@ -58,9 +61,8 @@ if (!$stmt->fetch() || $status !== 'active') {
 }
 $stmt->close();
 
-$_SESSION['calcforadvisors_subscriber_id'] = $id;
-$_SESSION['calcforadvisors_plan'] = $plan;
+rb_bridge_authenticate((int) $id, $plan);
 
-$target = (strpos($redirect, '/') === 0) ? $redirect : '/rmd-impact/';
+$target = rb_bridge_redirect($redirect);
 header('Location: ' . $target);
 exit;

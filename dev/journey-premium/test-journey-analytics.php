@@ -22,6 +22,7 @@ function expectA(string $name, bool $cond, string $detail = ''): void
 }
 
 $shared = (string) file_get_contents($root . '/includes/analytics.php');
+$privacy = (string) file_get_contents($root . '/calcforadvisors/assets/js/analytics-privacy.js');
 $journeyAnalyticsPhp = (string) file_get_contents($root . '/journey.ronbelisle.com/includes/analytics.php');
 $header = (string) file_get_contents($root . '/journey.ronbelisle.com/includes/site-header.php');
 $js = (string) file_get_contents($root . '/journey.ronbelisle.com/assets/js/journey-analytics.js');
@@ -39,13 +40,13 @@ $docs = (string) file_get_contents($root . '/journey.ronbelisle.com/docs/GA4_JOU
 
 expectA('shared measurement id remains main site', strpos($shared, 'G-3NB2DLYQFZ') !== false);
 expectA('shared does not use journey measurement id', strpos($shared, 'G-8PMXKZ60L4') === false);
-expectA('shared cookie domain parent', strpos($shared, "cookie_domain: 'ronbelisle.com'") !== false);
-expectA('shared config guard', strpos($shared, '__rbGtagConfigured') !== false);
+expectA('shared cookie domain parent', strpos($shared, "'G-3NB2DLYQFZ', 'ronbelisle.com'") !== false);
+expectA('shared config guard', strpos($privacy, '__rbAnalyticsInitialized') !== false && strpos($shared, 'rbAnalyticsInit') !== false);
 expectA('shared rbTrack helper', strpos($shared, 'window.rbTrack') !== false);
 expectA('journey uses dedicated measurement id', strpos($journeyAnalyticsPhp, 'G-8PMXKZ60L4') !== false);
 expectA('journey removed old measurement id', strpos($journeyAnalyticsPhp, 'G-3NB2DLYQFZ') === false);
 expectA('journey does not include shared analytics file', strpos($journeyAnalyticsPhp, '$rbSharedAnalytics') === false);
-expectA('journey config guard', strpos($journeyAnalyticsPhp, '__journeyGtagConfigured') !== false);
+expectA('journey config guard', strpos($privacy, '__rbAnalyticsInitialized') !== false && strpos($journeyAnalyticsPhp, 'rbAnalyticsInit') !== false);
 expectA('site header loads analytics php', strpos($header, "include __DIR__ . '/analytics.php'") !== false);
 expectA('site header loads journey-analytics.js', strpos($header, 'journey-analytics.js') !== false);
 

@@ -637,7 +637,7 @@
       var name = input.value.trim();
       if (!name) { input.focus(); return; }
       status.textContent = 'Saving…';
-    fetch(API_BASE + 'api/save_scenario.php', {
+    rbScenarioFetch(API_BASE + 'api/save_scenario.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

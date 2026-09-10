@@ -511,7 +511,7 @@
       if (el) data[id] = el.value;
     });
     setSaveStatus('Saving…');
-    fetch('/api/save_scenario.php', {
+    rbScenarioFetch('/api/save_scenario.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
@@ -554,7 +554,7 @@
           if (di < 0 || di >= data.scenarios.length) { alert('Invalid selection.'); return; }
           var del = data.scenarios[di];
           if (!confirm('Delete "' + scenarioDisplayName(del) + '"? This cannot be undone.')) return;
-          fetch('/api/delete_scenario.php', {
+          rbScenarioFetch('/api/delete_scenario.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'same-origin',

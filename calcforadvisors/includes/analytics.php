@@ -1,8 +1,4 @@
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-3H2WE32QVT"></script>
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-3H2WE32QVT');
+<?php readfile(__DIR__ . '/../assets/js/analytics-privacy.js'); ?>
+window.rbAnalyticsInit('G-3H2WE32QVT');
 </script>

@@ -1,50 +1,54 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
 rb_session_start();
+require_once __DIR__ . '/../includes/csrf.php';
 require_once __DIR__ . '/../includes/db_config.php';
 require_once __DIR__ . '/../includes/password_reset.php';
+$secret = rb_password_reset_secret();
 
+header('Cache-Control: no-store');
+header('Referrer-Policy: no-referrer');
+header('X-Robots-Tag: noindex, nofollow');
 $error = '';
-$token = $_GET['token'] ?? $_POST['token'] ?? '';
-$email = false;
 $showForm = false;
-
-if (!rb_password_reset_configured()) {
-    $error = 'Password reset is not configured. Please contact support.';
-} elseif ($token === '') {
-    $error = 'Invalid or missing link. Please request a new reset link.';
+$token = $_SERVER['REQUEST_METHOD'] === 'POST' ? ($_POST['token'] ?? '') : ($_GET['token'] ?? '');
+$token = is_string($token) ? $token : '';
+$email = rb_password_token_email($token);
+if ($email === null) {
+    $error = 'This link is invalid or has expired. Please contact support.';
 } else {
-    $email = rb_password_reset_verify_token($token);
-    if ($email === false) {
-        $error = 'This link is invalid or has expired. Please request a new reset link.';
-    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $password = $_POST['password'] ?? '';
-        $confirm = $_POST['password_confirm'] ?? '';
-
-        if (strlen($password) < 8) {
-            $error = 'Password must be at least 8 characters.';
-            $showForm = true;
-        } elseif ($password !== $confirm) {
-            $error = 'Passwords do not match.';
-            $showForm = true;
-        } else {
-            $hash = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $conn->prepare('UPDATE users SET password_hash = ? WHERE email = ?');
-            $stmt->bind_param('ss', $hash, $email);
-            $stmt->execute();
-
-            if ($stmt->affected_rows > 0) {
-                $stmt->close();
-                $conn->close();
-                header('Location: login.php?msg=password_reset');
-                exit;
-            }
-            $stmt->close();
-            $error = 'Could not update password. Please request a new reset link.';
-            $showForm = true;
-        }
+    $stmt = $conn->prepare("SELECT id, password_hash FROM users WHERE email = ?");
+    $stmt->bind_param('s', $email);
+    $stmt->execute();
+    $stmt->bind_result($accountId, $oldHash);
+    $found = $stmt->fetch();
+    $stmt->close();
+    if (!$found || !rb_password_token_verify($token, $oldHash, 'consumer-password', $secret)) {
+        $error = 'This link is invalid or has expired. Please contact support.';
     } else {
         $showForm = true;
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $csrf = $_POST['csrf_token'] ?? null;
+            $password = $_POST['password'] ?? '';
+            $confirm = $_POST['password_confirm'] ?? '';
+            if (!is_string($csrf) || !rb_csrf_validate($csrf)) {
+                http_response_code(403);
+                $error = 'The form expired. Please reload the link and try again.';
+            } elseif (!is_string($password) || !is_string($confirm) || strlen($password) < 8) {
+                $error = 'Password must be at least 8 characters.';
+            } elseif ($password !== $confirm) {
+                $error = 'Passwords do not match.';
+            } else {
+                $hash = password_hash($password, PASSWORD_DEFAULT);
+                if (rb_password_token_redeem($conn, 'users', (int) $accountId, $oldHash, $hash)) {
+                    rb_csrf_rotate();
+                    header('Location: login.php?msg=password_reset');
+                    exit;
+                }
+                $showForm = false;
+                $error = 'This link is no longer valid. Please contact support.';
+            }
+        }
     }
 }
 ?>
@@ -116,8 +120,9 @@ if (!rb_password_reset_configured()) {
         <?php endif; ?>
 
         <?php if ($showForm): ?>
-            <form method="POST" action="">
-                <input type="hidden" name="token" value="<?php echo htmlspecialchars($token); ?>">
+            <form method="POST" action="reset-password.php">
+                <?php echo rb_csrf_field(); ?>
+                <input type="hidden" name="token" value="<?php echo htmlspecialchars($token, ENT_QUOTES, 'UTF-8'); ?>">
                 <div class="form-group">
                     <label for="password">New Password</label>
                     <input type="password" id="password" name="password" required minlength="8">

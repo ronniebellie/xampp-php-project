@@ -13,6 +13,9 @@ register_shutdown_function(function () {
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
 rb_session_start();
+require_once __DIR__ . '/../includes/scenario_request.php';
+header('Cache-Control: no-store');
+$data = rb_scenario_read_request('save');
 require_once __DIR__ . '/../includes/db_config.php';
 require_once __DIR__ . '/../includes/has_premium_access.php';
 
@@ -22,7 +25,6 @@ if (!$owner) {
     exit;
 }
 
-$data = json_decode(file_get_contents('php://input'), true);
 $calculator_type = $data['calculator_type'] ?? '';
 $scenario_name = $data['scenario_name'] ?? '';
 $scenario_data = json_encode($data['scenario_data'] ?? []);

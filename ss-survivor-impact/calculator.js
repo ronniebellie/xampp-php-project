@@ -643,7 +643,7 @@ function saveScenario() {
     var scenarioName = prompt('Enter a name for this scenario:', 'My couples SS plan');
     if (!scenarioName) return;
 
-    fetch(SSI_API_BASE + 'api/save_scenario.php', {
+    rbScenarioFetch(SSI_API_BASE + 'api/save_scenario.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

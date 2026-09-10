@@ -1,35 +1,7 @@
-<?php
-/**
- * Shared Google Analytics 4 tag for ronbelisle.com (main calculators site).
- * Measurement ID: G-3NB2DLYQFZ
- *
- * Journey (journey.ronbelisle.com) uses its own dedicated GA4 property via
- * journey.ronbelisle.com/includes/analytics.php.
- */
-?>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-3NB2DLYQFZ"></script>
+<?php /* Shared, privacy-gated GA4 initialization. */ ?>
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  if (!window.__rbGtagConfigured) {
-    window.__rbGtagConfigured = true;
-    gtag('js', new Date());
-    gtag('config', 'G-3NB2DLYQFZ', {
-      cookie_domain: 'ronbelisle.com',
-      send_page_view: true
-    });
-  }
-
-  // Lightweight event helper: window.rbTrack('event_name', { param: value })
-  // Never pass names, emails, account IDs, or financial values in params.
-  window.rbTrack = function (name, params) {
-    try {
-      if (typeof gtag !== 'function' || !name) return;
-      gtag('event', name, params || {});
-    } catch (e) {}
-  };
-
+<?php readfile(__DIR__ . '/../calcforadvisors/assets/js/analytics-privacy.js'); ?>
+window.rbAnalyticsInit('G-3NB2DLYQFZ', 'ronbelisle.com');
   // Declarative click tracking: add data-rb-event="name" to any element.
   // Extra params via data-rb-param-<key>="value" (e.g. data-rb-param-placement="homepage_hero").
   if (!window.__rbTrackClickBound) {

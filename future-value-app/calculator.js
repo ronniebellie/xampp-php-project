@@ -535,7 +535,7 @@ function saveScenario() {
         annuityYears: document.getElementById('annuityYears')?.value
     };
     
-    fetch(FV_API_BASE + 'api/save_scenario.php', {
+    rbScenarioFetch(FV_API_BASE + 'api/save_scenario.php', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
@@ -590,7 +590,7 @@ function loadScenario() {
             if (index >= 0 && index < data.scenarios.length) {
                 const scenario = data.scenarios[index];
                 if (confirm(`Delete "${scenario.name}"? This cannot be undone.`)) {
-                    fetch(FV_API_BASE + 'api/delete_scenario.php', {
+                    rbScenarioFetch(FV_API_BASE + 'api/delete_scenario.php', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({ scenario_id: scenario.id })

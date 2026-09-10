@@ -1,6 +1,9 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
 rb_session_start();
+require_once __DIR__ . '/../includes/scenario_request.php';
+header('Cache-Control: no-store');
+$data = rb_scenario_read_request('delete');
 require_once __DIR__ . '/../includes/db_config.php';
 require_once __DIR__ . '/../includes/has_premium_access.php';
 
@@ -12,7 +15,6 @@ if (!$owner) {
     exit;
 }
 
-$data = json_decode(file_get_contents('php://input'), true);
 $scenario_id = (int) ($data['scenario_id'] ?? 0);
 
 if (!$scenario_id) {
