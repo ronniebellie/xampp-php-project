@@ -13,14 +13,21 @@
     return spouse.startMonthly * Math.pow(1 + colaRate / 100, yearsReceiving);
   }
 
-  /** Deceased spouse benefit for survivor: COLA continues from amount at death. */
-  function survivorBenefitFromDeceased(spouse, deceasedAge, colaRate) {
-    if (deceasedAge < spouse.deathAge) {
-      return spouseMonthlyAtYear(spouse, deceasedAge, colaRate);
-    }
-    var atDeath = spouseMonthlyAtYear(spouse, spouse.deathAge, colaRate);
-    var yearsSinceDeath = deceasedAge - spouse.deathAge;
-    return atDeath * Math.pow(1 + colaRate / 100, yearsSinceDeath);
+  function deceasedWorkerBenefitBasis(spouse, colaRate) {
+    return spouse.startMonthly * Math.pow(1 + colaRate / 100, Math.max(0, spouse.deathAge - spouse.claimAge));
+  }
+
+  /**
+   * Supported aged-survivor branch: claim at age 60 for 71.5% of the deceased
+   * worker's modeled retirement-benefit basis. Other early ages/FRA need data
+   * not present in the offline package and are rejected rather than estimated.
+   */
+  function survivorBenefitFromDeceased(spouse, deceasedAge, colaRate, survivorAge, survivorAgeAtDeath) {
+    if (survivorAgeAtDeath > 60) throw new RangeError('Survivor claims beginning after age 60 require an exact reduction/FRA schedule not supplied in the offline reference package.');
+    if (survivorAge < 60) return 0;
+    var deceasedBasis = deceasedWorkerBenefitBasis(spouse, colaRate);
+    var yearsSinceClaim = survivorAge - 60;
+    return deceasedBasis * 0.715 * Math.pow(1 + colaRate / 100, yearsSinceClaim);
   }
 
   var PHASE_LABELS = {
@@ -68,11 +75,13 @@
       householdMonthly = monthlyH + monthlyL;
     } else if (!hAlive && lAlive) {
       phase = 'survivor_lower';
-      var survivorFromH = survivorBenefitFromDeceased(higher, ageH, colaRate);
+      var lowerAgeAtDeath = higher.birthYear + higher.deathAge - lower.birthYear;
+      var survivorFromH = survivorBenefitFromDeceased(higher, ageH, colaRate, ageL, lowerAgeAtDeath);
       householdMonthly = Math.max(monthlyL, survivorFromH);
     } else {
       phase = 'survivor_higher';
-      var survivorFromL = survivorBenefitFromDeceased(lower, ageL, colaRate);
+      var higherAgeAtDeath = lower.birthYear + lower.deathAge - higher.birthYear;
+      var survivorFromL = survivorBenefitFromDeceased(lower, ageL, colaRate, ageH, higherAgeAtDeath);
       householdMonthly = Math.max(monthlyH, survivorFromL);
     }
 
@@ -119,7 +128,8 @@
         firstDeathCalendarYear = year;
         firstDeathWho = row.phase === 'survivor_lower' ? 'higher' : 'lower';
         if (firstDeathWho === 'higher') {
-          survivorFloorAtDeath = spouseMonthlyAtYear(higher, higher.deathAge, colaRate);
+          var lowerAtDeath = higher.birthYear + higher.deathAge - lower.birthYear;
+          survivorFloorAtDeath = survivorBenefitFromDeceased(higher, higher.deathAge, colaRate, lowerAtDeath, lowerAtDeath);
         }
       }
 
@@ -166,7 +176,7 @@
       firstDeathCalendarYear: firstDeathCalendarYear,
       lowerOwnReceived: lowerOwnReceived,
       delayAnalysis: delayAnalysis,
-      survivorFloor: survivorFloorAtDeath || higher.startMonthly
+      survivorFloor: survivorFloorAtDeath || deceasedWorkerBenefitBasis(higher, colaRate) * 0.715
     };
   }
 
@@ -201,7 +211,7 @@
     }
 
     var higherAtFra = FC.calculateMonthlyBenefit(higher.pia, higher.birthYear, Math.round(higher.fraAge));
-    var higherAtDeath = spouseMonthlyAtYear(higher, higher.deathAge, colaRate);
+    var higherAtDeath = deceasedWorkerBenefitBasis(higher, colaRate);
 
     return {
       earlyCompareAge: earlyAge,
@@ -239,6 +249,7 @@
     compareStrategies: compareStrategies,
     spouseMonthlyAtYear: spouseMonthlyAtYear,
     survivorBenefitFromDeceased: survivorBenefitFromDeceased,
+    deceasedWorkerBenefitBasis: deceasedWorkerBenefitBasis,
     formatHouseholdPhase: formatHouseholdPhase
   };
 })(typeof window !== 'undefined' ? window : this);

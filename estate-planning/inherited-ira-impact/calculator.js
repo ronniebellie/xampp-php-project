@@ -1,61 +1,8 @@
 // Inherited IRA & Legacy Tax Impact Calculator
 // Reuses 2026 brackets and RMD logic; projects owner to death, then simulates heir 10-year rule.
 
-const TAX_BRACKETS_2026 = {
-  single: [
-    { min: 0, max: 11925, rate: 0.10 },
-    { min: 11925, max: 48475, rate: 0.12 },
-    { min: 48475, max: 103350, rate: 0.22 },
-    { min: 103350, max: 197300, rate: 0.24 },
-    { min: 197300, max: 250525, rate: 0.32 },
-    { min: 250525, max: 626350, rate: 0.35 },
-    { min: 626350, max: Infinity, rate: 0.37 }
-  ],
-  married: [
-    { min: 0, max: 23850, rate: 0.10 },
-    { min: 23850, max: 96950, rate: 0.12 },
-    { min: 96950, max: 206700, rate: 0.22 },
-    { min: 206700, max: 394600, rate: 0.24 },
-    { min: 394600, max: 501050, rate: 0.32 },
-    { min: 501050, max: 751600, rate: 0.35 },
-    { min: 751600, max: Infinity, rate: 0.37 }
-  ],
-  married_separate: [
-    { min: 0, max: 11925, rate: 0.10 },
-    { min: 11925, max: 48475, rate: 0.12 },
-    { min: 48475, max: 103350, rate: 0.22 },
-    { min: 103350, max: 197300, rate: 0.24 },
-    { min: 197300, max: 250525, rate: 0.32 },
-    { min: 250525, max: 375800, rate: 0.35 },
-    { min: 375800, max: Infinity, rate: 0.37 }
-  ],
-  head: [
-    { min: 0, max: 17000, rate: 0.10 },
-    { min: 17000, max: 64850, rate: 0.12 },
-    { min: 64850, max: 103350, rate: 0.22 },
-    { min: 103350, max: 197300, rate: 0.24 },
-    { min: 197300, max: 250500, rate: 0.32 },
-    { min: 250500, max: 626350, rate: 0.35 },
-    { min: 626350, max: Infinity, rate: 0.37 }
-  ]
-};
-
-const STANDARD_DEDUCTION_2026 = {
-  single: 15000,
-  married: 30000,
-  married_separate: 15000,
-  head: 22500
-};
-
-const RMD_DIVISORS = {
-  73: 26.5, 74: 25.5, 75: 24.6, 76: 23.7, 77: 22.9, 78: 22.0, 79: 21.1,
-  80: 20.2, 81: 19.4, 82: 18.5, 83: 17.7, 84: 16.8, 85: 16.0, 86: 15.2,
-  87: 14.4, 88: 13.7, 89: 12.9, 90: 12.2, 91: 11.5, 92: 10.8, 93: 10.1,
-  94: 9.5, 95: 8.9, 96: 8.4, 97: 7.8, 98: 7.3, 99: 6.8, 100: 6.4,
-  101: 6.0, 102: 5.6, 103: 5.2, 104: 4.9, 105: 4.6, 106: 4.3, 107: 4.1,
-  108: 3.9, 109: 3.7, 110: 3.5, 111: 3.4, 112: 3.3, 113: 3.1, 114: 3.0,
-  115: 2.9, 116: 2.8, 117: 2.7, 118: 2.5, 119: 2.3, 120: 2.0
-};
+const TAX_BRACKETS_2026 = RBFederalTax.brackets;
+const STANDARD_DEDUCTION_2026 = RBFederalTax.deductions;
 
 function calculateFederalTax(taxableIncome, filingStatus) {
   const brackets = TAX_BRACKETS_2026[filingStatus] || TAX_BRACKETS_2026.single;
@@ -72,16 +19,10 @@ function calculateFederalTax(taxableIncome, filingStatus) {
   return tax;
 }
 
-function calculateRMD(age, balance) {
-  if (age < 73) return 0;
-  const divisor = RMD_DIVISORS[Math.min(age, 120)] || 6.4;
-  return balance / divisor;
-}
-
 /** Project owner from currentAge to deathAge: growth, RMDs, optional conversions. Returns balances at death and owner lifetime tax. */
 function projectOwnerToDeath(params) {
   const {
-    currentAge,
+    currentAge, birthYear,
     deathAge,
     filingStatus,
     traditionalIRA,
@@ -100,15 +41,14 @@ function projectOwnerToDeath(params) {
   const conversionEnd = currentAge + conversionYears - 1;
 
   for (let age = currentAge; age <= deathAge; age++) {
-    trad *= (1 + returnRate);
-    roth *= (1 + returnRate);
-
     let income = retirementIncome;
     let rmd = 0;
     let conversion = 0;
 
-    if (age >= 73 && trad > 0) {
-      rmd = calculateRMD(age, trad);
+    if (trad > 0) {
+      const resolved = RBTaxRmd.resolveRMD({ownerAge: age, priorYearEndBalance: trad, birthYear});
+      if (!resolved.supported) throw new RangeError(resolved.reason);
+      rmd = resolved.amount;
       trad -= rmd;
       income += rmd;
     }
@@ -121,6 +61,8 @@ function projectOwnerToDeath(params) {
 
     const taxable = Math.max(0, income - deduction);
     totalTax += calculateFederalTax(taxable, filingStatus);
+    trad *= (1 + returnRate);
+    roth *= (1 + returnRate);
   }
 
   return {
@@ -193,6 +135,7 @@ function getFormData() {
 
   return {
     currentAge: parseInt(document.getElementById('currentAge')?.value, 10) || 68,
+    birthYear: parseInt(document.getElementById('birthYear')?.value, 10),
     deathAge: parseInt(document.getElementById('deathAge')?.value, 10) || 90,
     filingStatus: document.getElementById('filingStatus')?.value || 'married',
     traditionalIRA: parseFloat(document.getElementById('traditionalIRA')?.value) || 0,
@@ -203,6 +146,8 @@ function getFormData() {
     conversionYears: parseInt(document.getElementById('conversionYears')?.value, 10) || 10,
     heirs,
     payoutStrategy: document.getElementById('payoutStrategy')?.value || 'level',
+    beneficiaryCategory: document.getElementById('beneficiaryCategory')?.value || 'other',
+    ownerDiedBeforeRequiredBeginningDate: document.getElementById('diedBeforeRbd')?.value === 'yes',
     inheritedReturnRate: (parseFloat(document.getElementById('inheritedReturnRate')?.value) || 5) / 100
   };
 }
@@ -213,17 +158,28 @@ function runAnalysis() {
     alert('Please enter at least one heir with a share % greater than 0.');
     return null;
   }
+  const inheritedRule = RBInheritedIraRules.classify(d);
+  if (!inheritedRule.supported) {
+    alert('Unsupported inherited-IRA case: ' + inheritedRule.reason);
+    return null;
+  }
 
-  const noConv = projectOwnerToDeath({
+  let noConv, withConv;
+  try {
+  noConv = projectOwnerToDeath({
     ...d,
     conversionAmount: 0,
     conversionYears: 0
   });
-  const withConv = projectOwnerToDeath({
+  withConv = projectOwnerToDeath({
     ...d,
     conversionAmount: d.conversionAmount,
     conversionYears: d.conversionYears
   });
+  } catch (error) {
+    alert('Unsupported owner RMD case: ' + error.message);
+    return null;
+  }
 
   function heirResults(ownerResult) {
     const tradAtDeath = ownerResult.traditionalAtDeath;
@@ -478,4 +434,3 @@ function explainResults() {
     alert('Explain results: ' + err.message);
   });
 }
-

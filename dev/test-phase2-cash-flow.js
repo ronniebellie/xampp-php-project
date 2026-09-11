@@ -71,7 +71,7 @@ test('Roth multiyear account invariants across tax sources, orders, RMDs and dep
  }
 });
 const context=vm.createContext({console});
-for(const file of ['js/lib/finance-core.js','js/lib/rmd-tax-core.js','retirement-plan/plan-engine.js','retirement-plan/monte-carlo-engine.js']) vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context,{filename:file});
+for(const file of ['js/lib/finance-core.js','js/lib/federal-tax-2026.js','js/lib/rmd-tax-core.js','retirement-plan/plan-engine.js','retirement-plan/monte-carlo-engine.js']) vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context,{filename:file});
 const pBase={currentAge:60,retirementAge:60,planEndAge:60,birthYear:1966,balance:100000,annualContribution:0,
  returnPreRetirement:0,returnRetirement:0,baseAnnualSpending:10000,ssAlreadyReceiving:true,ssCurrentMonthly:0,
  ssClaimAge:67,spouseSsMonthly:0,otherGuaranteedAnnual:0,withdrawalRate:.04,inflation:0,colaRate:0,
@@ -97,7 +97,7 @@ test('Plan only taxes traditional draws, retains account source across years',()
  close(p.years[5].traditionalWithdrawal,10000/.9,'traditional after other exhausted');planLedger(p);
 });
 test('Plan excess RMD is saved after tax; no wealth disappears',()=>{
- const p=plan({currentAge:73,retirementAge:73,planEndAge:73,balance:265000,baseAnnualSpending:0});const r=p.years[0];
+ const p=plan({currentAge:73,retirementAge:73,planEndAge:73,birthYear:1953,balance:265000,baseAnnualSpending:0});const r=p.years[0];
  close(r.rmd,10000,'RMD');close(r.taxesPaid,1000,'RMD tax');close(r.surplus,9000,'saved excess');close(r.balanceEnd,264000,'wealth less tax only');planLedger(p);
 });
 test('Plan delayed withdrawals report a gap even with assets remaining',()=>{

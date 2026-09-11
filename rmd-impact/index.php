@@ -33,13 +33,13 @@ $isPremium = has_premium_access();
 
         <div class="info-box-blue" style="margin-bottom: 30px;">
             <h2>Understanding RMDs</h2>
-            <p>Required Minimum Distributions (RMDs) force you to withdraw a percentage of your tax-deferred retirement accounts starting at age 73. Many retirees also take planned withdrawals from their IRA or 401(k) long before RMDs begin to fund living expenses — this calculator lets you model those withdrawals and see how they affect your future RMDs and tax brackets. Once RMDs start, any traditional withdrawal you already take counts toward satisfying the RMD for that year.</p>
+            <p>Required Minimum Distributions (RMDs) begin at the age set for your birth cohort. Many retirees also take planned withdrawals from their IRA or 401(k) before RMDs begin — this calculator models those withdrawals and their effect on future RMDs and tax brackets.</p>
             <details style="margin-top: 16px;">
                 <summary style="cursor: pointer; font-weight: 600; color: #334155;">How each projection year is calculated</summary>
                 <ol style="margin: 12px 0 0 0; padding-left: 20px; color: #475569; line-height: 1.65;">
                     <li><strong>Start-of-year balance</strong> — Traditional IRA balance at the beginning of the age year.</li>
                     <li><strong>Planned withdrawal</strong> — Your annual amount (optionally inflation-adjusted), split by source.</li>
-                    <li><strong>Required RMD</strong> — At age 73+, the IRS minimum on the <em>start-of-year</em> traditional balance.</li>
+                    <li><strong>Required RMD</strong> — At the applicable cohort age, the IRS minimum on the prior December 31 traditional balance.</li>
                     <li><strong>Traditional IRA withdrawal</strong> — The greater of your planned traditional amount and the RMD (capped at the account balance). Planned traditional withdrawals count toward the RMD; only a shortfall is added on top.</li>
                     <li><strong>Subtract withdrawals</strong> — Withdrawals reduce each account before growth is applied.</li>
                     <li><strong>Apply growth</strong> — Remaining balances grow at your entered rate for the rest of the year. <strong>Withdrawals come first, then growth</strong> on what is left.</li>
@@ -68,6 +68,7 @@ $isPremium = has_premium_access();
 </div>
 <?php endif; ?>
 
+        <p class="sub">Federal estimates use fixed 2026 ordinary-income brackets and base standard deductions. Future calendar years reuse these values as a projection assumption, not future statutory law. Credits, itemized deductions and additional age-based deductions are not included.</p>
         <form id="rmdForm">
             <h3>Your Current Situation</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
@@ -75,6 +76,11 @@ $isPremium = has_premium_access();
                     <label for="currentAge" style="display: block; margin-bottom: 5px; font-weight: 600;">Your Current Age</label>
                     <input type="number" id="currentAge" min="50" max="100" value="68" required style="width: 100%;">
                     <small style="color: #666;">Enter your age today</small>
+                </div>
+                <div>
+                    <label for="birthYear" style="display: block; margin-bottom: 5px; font-weight: 600;">Your Birth Year</label>
+                    <input type="number" id="birthYear" min="1900" max="<?php echo (int)date('Y'); ?>" value="<?php echo (int)date('Y') - 68; ?>" required style="width: 100%;">
+                    <small style="color: #666;">Determines the statutory RMD commencement age</small>
                 </div>
                 <div>
                     <label for="accountBalance" style="display: block; margin-bottom: 5px; font-weight: 600;">Tax-Deferred Account Balance (as of 12/31 last year) ($)</label>
@@ -105,7 +111,7 @@ $isPremium = has_premium_access();
             </div>
 
             <h3 style="margin-top: 30px;">Planned Portfolio Withdrawals <span style="font-weight: 400; font-size: 0.85em; color: #666;">(optional)</span></h3>
-            <p style="color: #555; font-size: 0.95em; margin: 0 0 15px 0; line-height: 1.5;">If you are already withdrawing from retirement accounts to cover living expenses, enter those withdrawals here. Withdrawals from a traditional IRA/401(k) reduce your tax-deferred balance and lower future RMDs. After age 73, traditional withdrawals count toward your RMD — only the shortfall (if any) is added on top.</p>
+            <p style="color: #555; font-size: 0.95em; margin: 0 0 15px 0; line-height: 1.5;">If you are already withdrawing from retirement accounts to cover living expenses, enter those withdrawals here. Once RMDs begin for your cohort, traditional withdrawals count toward the requirement — only a shortfall is added.</p>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 15px;">
                 <div>
                     <label for="enableWithdrawals" style="display: block; margin-bottom: 5px; font-weight: 600;">Include planned withdrawals?</label>
@@ -452,7 +458,9 @@ $isPremium = has_premium_access();
     <script>
     const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
 </script>
-<script src="calculator.js"></script>
+<script src="../js/lib/federal-tax-2026.js"></script>
+<script src="../js/lib/rmd-tax-core.js"></script>
+    <script src="calculator.js"></script>
     <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/calculator-footer.php'; ?>
 </body>
 </html>

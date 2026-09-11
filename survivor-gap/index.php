@@ -30,7 +30,7 @@ $isPremium = has_premium_access();
 
         <div class="info-box-blue" style="margin-bottom: 30px;">
             <h2>Understanding the Annuity Choice</h2>
-            <p>If you have a pension or retirement account (e.g., TIAA-CREF, state or public retirement systems, teacher plans) that can be converted to an annuity, you often face a choice: <strong>single-life</strong> (higher monthly benefit, ends when you die) or <strong>joint-life</strong> (lower monthly benefit, continues to your survivor). The joint-life option typically reduces your monthly payment by 14–18% because it must fund payments for two lives. This calculator shows you the dollar cost of that reduction over your expected retirement years—and how life insurance could help fill the gap for your survivor with tax-free benefits.</p>
+            <p>If you have a pension or retirement account (e.g., TIAA-CREF, state or public retirement systems, teacher plans) that can be converted to an annuity, you often face a choice: <strong>single-life</strong> (higher monthly benefit, ends when you die) or <strong>joint-life</strong> (lower monthly benefit, continues to your survivor). This calculator estimates the capital needed at death to replace the selected survivor payments for an explicit period. The pension reduction while both spouses live is shown separately.</p>
             <p style="margin-top: 12px;"><strong>Tip:</strong> Get your exact single-life and joint-life amounts from your plan provider (TIAA, state retirement system, etc.) or their online estimator, then enter them here.</p>
         </div>
 
@@ -62,19 +62,25 @@ $isPremium = has_premium_access();
                     <small style="color: #666;">Lower amount; survivor continues to receive benefit</small>
                 </div>
                 <div>
-                    <label for="yearsInRetirement" style="display: block; margin-bottom: 5px; font-weight: 600;">Expected Years in Retirement</label>
+                    <label for="yearsInRetirement" style="display: block; margin-bottom: 5px; font-weight: 600;">Survivor Payment Years After Death</label>
                     <input type="number" id="yearsInRetirement" min="1" max="40" value="18" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
-                    <small style="color: #666;">Typical life expectancy beyond retirement: 17–19 years</small>
+                    <small style="color: #666;">Assumed duration, not a guaranteed lifetime horizon</small>
                 </div>
             </div>
 
-            <h3 style="margin-top: 30px;">Optional: See How Life Insurance Fills the Gap</h3>
-            <p style="color: #666; margin-bottom: 15px;">Get a whole life insurance quote for a policy with a death benefit roughly equal to the total gap below, then enter the monthly premium to compare.</p>
+            <div style="margin-bottom: 20px;">
+                <label for="survivorPercent">Survivor continuation (% of joint-life monthly pension)</label>
+                <input type="number" id="survivorPercent" min="0" max="100" value="100" step="any" required>
+                <label for="discountRate">Effective annual discount rate (%)</label>
+                <input type="number" id="discountRate" min="0" max="20" value="0" step="any" required>
+            </div>
+            <h3 style="margin-top: 30px;">Optional: Premium Budget</h3>
+            <p style="color: #666; margin-bottom: 15px;">An entered premium is only a budget assumption. It does not establish what coverage can be purchased.</p>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                 <div>
                     <label for="insurancePremium" style="display: block; margin-bottom: 5px; font-weight: 600;">Estimated Monthly Insurance Premium ($)</label>
                     <input type="number" id="insurancePremium" min="0" step="any" value="" placeholder="e.g. 400" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
-                    <small style="color: #666;">Leave blank to skip the insurance comparison</small>
+                    <small style="color: #666;">Leave blank to skip the premium budget</small>
                 </div>
                 <div>
                     <label for="yearsPayingPremiums" style="display: block; margin-bottom: 5px; font-weight: 600;">Years You'll Pay Premiums</label>
@@ -101,7 +107,7 @@ $isPremium = has_premium_access();
             </div>
 
             <div class="chart-section">
-                <h3>Cumulative Survivor Gap Over Time</h3>
+                <h3>Undiscounted Survivor Payments Over Time</h3>
                 <div class="chart-wrapper" style="height: 350px;">
                     <canvas id="cumulativeGapChart"></canvas>
                 </div>
@@ -140,6 +146,7 @@ $isPremium = has_premium_access();
     <script>
     const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
     </script>
+    <script src="../js/lib/survivor-gap-core.js"></script>
     <script src="calculator.js"></script>
     <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/calculator-footer.php'; ?>
 </body>

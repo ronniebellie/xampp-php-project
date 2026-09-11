@@ -1,83 +1,8 @@
 // RMD Impact Calculator JavaScript
 
-// RMD divisor table from IRS Uniform Lifetime Table
-const rmdDivisors = {
-    73: 26.5, 74: 25.5, 75: 24.6, 76: 23.7, 77: 22.9, 78: 22.0, 79: 21.1,
-    80: 20.2, 81: 19.4, 82: 18.5, 83: 17.7, 84: 16.8, 85: 16.0, 86: 15.2,
-    87: 14.4, 88: 13.7, 89: 12.9, 90: 12.2, 91: 11.5, 92: 10.8, 93: 10.1,
-    94: 9.5, 95: 8.9, 96: 8.4, 97: 7.8, 98: 7.3, 99: 6.8, 100: 6.4
-};
-
-// Joint Life and Last Survivor Expectancy Table (for when spouse is sole beneficiary and 10+ years younger)
-// Key format: "ownerAge-spouseAge" -> divisor
-// This is a simplified version - in production you'd want the full IRS table
-const jointLifeExpectancy = {
-    // Sample entries - format: ownerAge_spouseAge: divisor
-    '73_63': 23.1, '73_62': 23.3, '73_61': 23.6, '73_60': 23.8, '73_59': 24.0, '73_58': 24.2, '73_57': 24.4, '73_56': 24.7, '73_55': 24.9, '73_54': 25.1, '73_53': 25.3,
-    '74_64': 22.3, '74_63': 22.5, '74_62': 22.7, '74_61': 22.9, '74_60': 23.1, '74_59': 23.4, '74_58': 23.6, '74_57': 23.8, '74_56': 24.0, '74_55': 24.2, '74_54': 24.5,
-    '75_65': 21.5, '75_64': 21.7, '75_63': 21.9, '75_62': 22.1, '75_61': 22.3, '75_60': 22.5, '75_59': 22.7, '75_58': 23.0, '75_57': 23.2, '75_56': 23.4, '75_55': 23.6,
-    '80_70': 17.5, '80_69': 17.7, '80_68': 17.9, '80_67': 18.1, '80_66': 18.3, '80_65': 18.5, '80_64': 18.7, '80_63': 18.9, '80_62': 19.1, '80_61': 19.3, '80_60': 19.5,
-    '85_75': 14.2, '85_74': 14.4, '85_73': 14.5, '85_72': 14.7, '85_71': 14.9, '85_70': 15.0, '85_69': 15.2, '85_68': 15.4, '85_67': 15.6, '85_66': 15.7, '85_65': 15.9,
-    '90_80': 11.7, '90_79': 11.8, '90_78': 12.0, '90_77': 12.1, '90_76': 12.3, '90_75': 12.4, '90_74': 12.5, '90_73': 12.7, '90_72': 12.8, '90_71': 13.0, '90_70': 13.1,
-    '95_85': 9.6, '95_84': 9.7, '95_83': 9.8, '95_82': 9.9, '95_81': 10.1, '95_80': 10.2, '95_79': 10.3, '95_78': 10.4, '95_77': 10.5, '95_76': 10.6, '95_75': 10.7,
-    '100_90': 8.1, '100_89': 8.2, '100_88': 8.3, '100_87': 8.4, '100_86': 8.5, '100_85': 8.5, '100_84': 8.6, '100_83': 8.7, '100_82': 8.8, '100_81': 8.9, '100_80': 9.0
-};
-
-/**
- * Get RMD divisor based on age and spouse beneficiary status
- */
-function getRMDDivisor(ownerAge, isSpouseBeneficiary, spouseAge) {
-    // If spouse is sole beneficiary and more than 10 years younger, use Joint Life table
-    if (isSpouseBeneficiary && spouseAge && (ownerAge - spouseAge) > 10) {
-        const key = `${ownerAge}_${spouseAge}`;
-        if (jointLifeExpectancy[key]) {
-            return jointLifeExpectancy[key];
-        }
-        // If exact match not found, interpolate or use closest value
-        // For simplicity, fall back to uniform table if not in our simplified table
-    }
-    
-    // Use Uniform Lifetime Table
-    return rmdDivisors[ownerAge] || 6.4; // Default to 6.4 for ages over 100
-}
-
-// 2026 Tax Brackets (estimated)
-const taxBrackets2026 = {
-    single: [
-        { max: 11600, rate: 0.10 },
-        { max: 47150, rate: 0.12 },
-        { max: 100525, rate: 0.22 },
-        { max: 191950, rate: 0.24 },
-        { max: 243725, rate: 0.32 },
-        { max: 609350, rate: 0.35 },
-        { max: Infinity, rate: 0.37 }
-    ],
-    married: [
-        { max: 23200, rate: 0.10 },
-        { max: 94300, rate: 0.12 },
-        { max: 201050, rate: 0.22 },
-        { max: 383900, rate: 0.24 },
-        { max: 487450, rate: 0.32 },
-        { max: 731200, rate: 0.35 },
-        { max: Infinity, rate: 0.37 }
-    ],
-    hoh: [
-        { max: 16550, rate: 0.10 },
-        { max: 63100, rate: 0.12 },
-        { max: 100500, rate: 0.22 },
-        { max: 191950, rate: 0.24 },
-        { max: 243700, rate: 0.32 },
-        { max: 609350, rate: 0.35 },
-        { max: Infinity, rate: 0.37 }
-    ]
-};
-
-const standardDeductions2026 = {
-    single: 14600,
-    married: 29200,
-    hoh: 21900
-};
-
+// Fixed 2026 statutory brackets; later years use the same projection assumption.
+const taxBrackets2026 = RBFederalTax.brackets;
+const standardDeductions2026 = RBFederalTax.deductions;
 let myChart = null;
 
 function calculateTaxBracket(taxableIncome, filingStatus) {
@@ -111,11 +36,11 @@ function formatPercent(value, decimals) {
     return (Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals)).toFixed(decimals) + '%';
 }
 
-/** Planned traditional withdrawal vs RMD — shortfall or voluntary excess after age 73. */
+/** Planned traditional withdrawal vs RMD — shortfall or voluntary excess once required. */
 function computeRmdInteraction(plannedTraditional, rmdAmount, age) {
     const planned = plannedTraditional || 0;
     const rmd = rmdAmount || 0;
-    if (age < 73 || rmd <= 0) {
+    if (rmd <= 0) {
         return { rmdShortfall: 0, excessOverRmd: 0 };
     }
     return {
@@ -130,7 +55,7 @@ function getCalculationMethodologyHtml() {
         '<ol style="margin: 0; padding-left: 20px; color: #475569; font-size: 0.95em; line-height: 1.6;">' +
         '<li><strong>Start-of-year balance</strong> — Traditional IRA balance at the beginning of the age year (after all prior-year withdrawals and growth).</li>' +
         '<li><strong>Planned withdrawal</strong> — Your entered annual amount (optionally inflation-adjusted), split across Traditional / Roth / Taxable per your source setting.</li>' +
-        '<li><strong>Required RMD</strong> — At age 73+, the IRS minimum on the <em>start-of-year</em> traditional balance (Uniform or Joint Life table).</li>' +
+        '<li><strong>Required RMD</strong> — Beginning at the birth-cohort age, the IRS minimum uses the prior December 31 traditional balance and the applicable verified table.</li>' +
         '<li><strong>Traditional IRA withdrawal</strong> — The greater of your planned traditional amount and the RMD (capped at the account balance). Any planned traditional withdrawal counts toward the RMD; only a shortfall is added on top.</li>' +
         '<li><strong>Subtract withdrawals</strong> — Planned Roth and taxable withdrawals are taken from those balances; the traditional withdrawal reduces the IRA balance.</li>' +
         '<li><strong>Apply growth</strong> — Each account\'s <em>remaining</em> balance grows at your entered rate for the rest of the year. Withdrawals happen before growth, not after.</li>' +
@@ -201,10 +126,12 @@ function isWithdrawalActive(age, data, wc) {
 }
 
 function getProjectionStartAge(data) {
+    const start = RBTaxRmd.rmdStartAgeForBirthYear(data.birthYear);
+    if (!start.supported) throw new RangeError(start.reason);
     if (isWithdrawalsEnabled(data)) {
-        return Math.min(73, getWithdrawalConfig(data).startAge);
+        return Math.min(start.age, getWithdrawalConfig(data).startAge);
     }
-    return 73;
+    return start.age;
 }
 
 /**
@@ -266,7 +193,9 @@ function calculateProjection(data) {
     let rothBalance = parseFloat(data.rothBalance) || 0;
     let taxableBalance = parseFloat(data.taxableBalance) || 0;
     const startAge = data.currentAge;
-    const rmdStartAge = 73;
+    const startResult = RBTaxRmd.rmdStartAgeForBirthYear(data.birthYear);
+    if (!startResult.supported) throw new RangeError(startResult.reason);
+    const rmdStartAge = startResult.age;
     let currentSpouseAge = data.spouseAge;
     const wc = getWithdrawalConfig(data);
 
@@ -289,10 +218,11 @@ function calculateProjection(data) {
         // the start-of-year balance.
         let rmdAmount = 0;
         if (age >= rmdStartAge && tradStart > 0) {
-            const divisor = getRMDDivisor(age, data.isSpouseBeneficiary, currentSpouseAge);
-            if (divisor) {
-                rmdAmount = tradStart / divisor;
-            }
+            const rmd = RBTaxRmd.resolveRMD({ownerAge: age, priorYearEndBalance: tradStart,
+                birthYear: data.birthYear, isSpouseSoleBeneficiary: data.isSpouseBeneficiary,
+                spouseAge: currentSpouseAge});
+            if (!rmd.supported) throw new RangeError(rmd.reason);
+            rmdAmount = rmd.amount;
         }
 
         // Once RMDs begin, any planned traditional withdrawal counts toward the
@@ -402,7 +332,7 @@ function generateInterpretation(results, data) {
             msg += 'Withdrawals begin in ' + MONTH_NAMES[month] + ' ' + data.withdrawalStartYear + '. ';
         }
         if (firstDiff > 1) {
-            msg += `Because you plan to withdraw before RMDs begin, your first RMD at age 73 is about ${formatCurrency(firstRMD.rmdAmount)} instead of ${formatCurrency(baseFirst.rmdAmount)} — roughly ${formatCurrency(firstDiff)} lower per year. `;
+            msg += `Because you plan to withdraw before RMDs begin, your first RMD at age ${firstRMD.age} is about ${formatCurrency(firstRMD.rmdAmount)} instead of ${formatCurrency(baseFirst.rmdAmount)} — roughly ${formatCurrency(firstDiff)} lower per year. `;
         } else if (data.withdrawalSource === 'roth' || data.withdrawalSource === 'taxable') {
             msg += 'Your withdrawals come from Roth and/or taxable accounts, so they don\'t reduce your traditional (tax-deferred) balance — your RMDs stay the same as if you hadn\'t withdrawn. Drawing from your traditional IRA/401(k) first is what lowers future RMDs. ';
         } else {
@@ -423,9 +353,9 @@ function generateInterpretation(results, data) {
     }
 
     if (data.accountBalance <= 50000) {
-        interpretation += `<li><strong>Your RMDs will be very modest.</strong> With a current balance of ${formatCurrency(data.accountBalance)}, your first RMD at age 73 will only be around ${formatCurrency(firstRMD.rmdAmount)}. This is unlikely to create any significant tax burden.</li>`;
+        interpretation += `<li><strong>Your RMDs will be very modest.</strong> With a current balance of ${formatCurrency(data.accountBalance)}, your first RMD at age ${firstRMD.age} will be around ${formatCurrency(firstRMD.rmdAmount)}.</li>`;
     } else if (data.accountBalance <= 200000) {
-        interpretation += `<li><strong>Your RMDs will be manageable.</strong> Starting at ${formatCurrency(firstRMD.rmdAmount)} at age 73, these withdrawals shouldn't dramatically impact your taxes for most situations.</li>`;
+        interpretation += `<li><strong>Your RMDs will be manageable.</strong> Starting at ${formatCurrency(firstRMD.rmdAmount)} at age ${firstRMD.age}, review the projected tax effect.</li>`;
     } else if (data.accountBalance <= 600000) {
         interpretation += `<li><strong>RMD planning may be beneficial.</strong> With ${formatCurrency(data.accountBalance)} in tax-deferred accounts, your RMDs will be substantial enough that strategies like Roth conversions or QCDs could help reduce your tax burden.</li>`;
     } else {
@@ -498,7 +428,7 @@ function displayResults(results, data) {
 
     const summaryHTML = `
         <div class="summary-card">
-            <div class="summary-label">First RMD (Age 73)</div>
+            <div class="summary-label">First RMD (Age ${firstRMD.age || '—'})</div>
             <div class="summary-value">${formatCurrency(firstRMD.rmdAmount)}</div>
         </div>
         <div class="summary-card">
@@ -736,6 +666,7 @@ function gatherRMDFormData() {
     const spouseAge = spouseBeneficiary ? parseInt(document.getElementById('spouseAge').value, 10) : null;
     const data = {
         currentAge: parseInt(document.getElementById('currentAge').value, 10),
+        birthYear: parseInt(document.getElementById('birthYear').value, 10),
         accountBalance: parseFloat(document.getElementById('accountBalance').value),
         growthRate: parseFloat(document.getElementById('growthRate').value),
         socialSecurity: parseFloat(document.getElementById('socialSecurity').value) || 0,
@@ -751,7 +682,7 @@ function gatherRMDFormData() {
 }
 
 const RMD_FORM_COMPARE_KEYS = [
-    'currentAge', 'accountBalance', 'growthRate', 'socialSecurity', 'pension', 'otherIncome',
+    'currentAge', 'birthYear', 'accountBalance', 'growthRate', 'socialSecurity', 'pension', 'otherIncome',
     'filingStatus', 'useStandardDeduction', 'isSpouseBeneficiary', 'spouseAge',
     'enableWithdrawals', 'withdrawalAmount', 'withdrawalStartMode', 'withdrawalStartAge',
     'withdrawalStartMonth', 'withdrawalStartYear', 'planStartYear', 'withdrawalEndAge',
@@ -852,7 +783,13 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    const results = calculateProjection(data);
+    let results;
+    try {
+        results = calculateProjection(data);
+    } catch (error) {
+        alert('Unsupported statutory case: ' + error.message);
+        return;
+    }
     displayResults(results, data);
 
     // Set share URL so that "Share" actions can reproduce this scenario/results
@@ -860,6 +797,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (shareEl) {
         const params = new URLSearchParams();
         params.set('currentAge', String(data.currentAge));
+        params.set('birthYear', String(data.birthYear));
         params.set('accountBalance', String(data.accountBalance));
         params.set('growthRate', String(data.growthRate));
         params.set('socialSecurity', String(data.socialSecurity));
@@ -1243,7 +1181,7 @@ function showComparison(name1, name2, results1, results2, data1, data2) {
             </thead>
             <tbody>
                 <tr style="background: #fff; border-bottom: 1px solid #ddd;">
-                    <td style="padding: 8px; font-weight: 600;">First RMD (Age 73)</td>
+                    <td style="padding: 8px; font-weight: 600;">First RMD</td>
                     <td style="padding: 8px; text-align: right;">$${firstRMD1.rmdAmount.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
                     <td style="padding: 8px; text-align: right;">$${firstRMD2.rmdAmount.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
                     <td style="padding: 8px; text-align: right; font-weight: 600; color: ${firstRMD2.rmdAmount - firstRMD1.rmdAmount >= 0 ? '#e53e3e' : '#10b981'};">
@@ -1342,7 +1280,7 @@ function showComparisonThree(name1, name2, name3, results1, results2, results3, 
                 </tr>
             </thead>
             <tbody>
-                <tr style="background: #fff; border-bottom: 1px solid #ddd;"><td style="padding: 8px; font-weight: 600;">First RMD (Age 73)</td><td style="padding: 8px; text-align: right;">${fmt(first1 && first1.rmdAmount)}</td><td style="padding: 8px; text-align: right;">${fmt(first2 && first2.rmdAmount)}</td><td style="padding: 8px; text-align: right;">${fmt(first3 && first3.rmdAmount)}</td></tr>
+                <tr style="background: #fff; border-bottom: 1px solid #ddd;"><td style="padding: 8px; font-weight: 600;">First RMD</td><td style="padding: 8px; text-align: right;">${fmt(first1 && first1.rmdAmount)}</td><td style="padding: 8px; text-align: right;">${fmt(first2 && first2.rmdAmount)}</td><td style="padding: 8px; text-align: right;">${fmt(first3 && first3.rmdAmount)}</td></tr>
                 <tr style="background: #f9fafb; border-bottom: 1px solid #ddd;"><td style="padding: 8px; font-weight: 600;">RMD at Age 80</td><td style="padding: 8px; text-align: right;">${fmt(r80_1 && r80_1.rmdAmount)}</td><td style="padding: 8px; text-align: right;">${fmt(r80_2 && r80_2.rmdAmount)}</td><td style="padding: 8px; text-align: right;">${fmt(r80_3 && r80_3.rmdAmount)}</td></tr>
                 <tr style="background: #fff; border-bottom: 1px solid #ddd;"><td style="padding: 8px; font-weight: 600;">RMD at Age 90</td><td style="padding: 8px; text-align: right;">${fmt(r90_1 && r90_1.rmdAmount)}</td><td style="padding: 8px; text-align: right;">${fmt(r90_2 && r90_2.rmdAmount)}</td><td style="padding: 8px; text-align: right;">${fmt(r90_3 && r90_3.rmdAmount)}</td></tr>
                 <tr style="background: #f9fafb;"><td style="padding: 8px; font-weight: 600;">Peak Tax Bracket</td><td style="padding: 8px; text-align: right;">${pct(peakTax(results1))}</td><td style="padding: 8px; text-align: right;">${pct(peakTax(results2))}</td><td style="padding: 8px; text-align: right;">${pct(peakTax(results3))}</td></tr>
@@ -1392,7 +1330,7 @@ function explainResults() {
                    ', current age ' + d2.currentAge + ', expected growth ' + d2.growthRate + '%. ';
         summary += 'Both scenarios assume Social Security of ' + formatCurrency(d1.socialSecurity) + ' per year and the same tax filing details.\n\n';
 
-        summary += 'At age 73, the first RMD in Scenario 1 is ' + formatCurrency(first1.rmdAmount) +
+        summary += 'The first RMD in Scenario 1 is ' + formatCurrency(first1.rmdAmount) +
                    ' versus ' + formatCurrency(first2.rmdAmount) + ' in Scenario 2. ';
         summary += 'By age 80 the RMDs grow to ' + formatCurrency(age80_1.rmdAmount) + ' vs ' +
                    formatCurrency(age80_2.rmdAmount) + ', and by age 90 they reach ' +
@@ -1436,7 +1374,7 @@ function explainResults() {
         const peakTax = Math.max(...results.map(r => r.taxBracket));
         const peakEffective = Math.max(...results.map(r => r.effectiveTaxRate));
 
-        summary += 'First RMD at age 73: ' + formatCurrency(firstRMD.rmdAmount) + '. ';
+        summary += 'First RMD at age ' + firstRMD.age + ': ' + formatCurrency(firstRMD.rmdAmount) + '. ';
         summary += 'RMD at age 80: ' + formatCurrency(age80Data.rmdAmount) + '. ';
         summary += 'RMD at age 90: ' + formatCurrency(age90Data.rmdAmount) + '. ';
         summary += 'Peak estimated marginal tax bracket: ' + peakTax + '%. ';

@@ -9,7 +9,11 @@
   if (!FC) throw new Error('RBFinance (finance-core.js) must load before plan-engine.js');
   if (!TR) throw new Error('RBTaxRmd (rmd-tax-core.js) must load before plan-engine.js');
 
-  var RMD_START_AGE = TR.RMD_START_AGE;
+  function getRmdStartAge(inputs) {
+    var result = TR.rmdStartAgeForBirthYear(inputs.birthYear);
+    if (!result.supported) throw new RangeError(result.reason);
+    return result.age;
+  }
 
   function annualSocialSecurity(age, inputs, ssMonthlyBaseline) {
     if (inputs.ssAlreadyReceiving) {
@@ -82,9 +86,10 @@
   }
 
   function pickMilestoneAges(inputs) {
+    var rmdStartAge = getRmdStartAge(inputs);
     var ages = [inputs.currentAge, inputs.retirementAge];
     if (inputs.ssClaimAge !== inputs.retirementAge) ages.push(inputs.ssClaimAge);
-    if (inputs.currentAge < RMD_START_AGE && inputs.planEndAge >= RMD_START_AGE) ages.push(RMD_START_AGE);
+    if (inputs.currentAge < rmdStartAge && inputs.planEndAge >= rmdStartAge) ages.push(rmdStartAge);
     ages.push(inputs.planEndAge);
     var seen = {};
     return ages.filter(function (a) {
@@ -164,6 +169,7 @@
    * @returns {{ years: object[], summary: object, milestones: object[] }}
    */
   function runDeterministicPlan(inputs, retirementReturn) {
+    var rmdStartAge = getRmdStartAge(inputs);
     var ssMonthlyBaseline = inputs.ssAlreadyReceiving
       ? (inputs.ssCurrentMonthly || 0)
       : FC.calculateMonthlyBenefit(
@@ -220,7 +226,10 @@
           rmdStarts: false
         });
       } else {
-        var rmd = Math.min(traditional, TR.calculateRMD(age, traditional, isSpouseBeneficiary, spouseAge));
+        var rmdResult = TR.resolveRMD({ownerAge: age, priorYearEndBalance: traditionalStart,
+          birthYear: inputs.birthYear, isSpouseSoleBeneficiary: isSpouseBeneficiary, spouseAge: spouseAge});
+        if (!rmdResult.supported) throw new RangeError(rmdResult.reason);
+        var rmd = Math.min(traditional, rmdResult.amount);
         var spending = annualSpendingAtAge(age, inputs);
         var householdSsAnnual = householdSocialSecurityAnnual(age, inputs, ssMonthlyBaseline);
         var otherIncome = inputs.otherGuaranteedAnnual;
@@ -281,7 +290,7 @@
           federalTax: federalTax,
           marginalRate: marginalRate,
           totalIncome: householdSsAnnual + otherIncome + portfolioWithdrawal,
-          rmdStarts: age === RMD_START_AGE
+          rmdStarts: age === rmdStartAge
         });
       }
 
@@ -321,7 +330,7 @@
       return y.age === Math.max(inputs.retirementAge, inputs.ssClaimAge, withdrawalStartAge);
     }) || retirementRow;
 
-    var firstRmdRow = years.find(function (y) { return y.age === RMD_START_AGE; });
+    var firstRmdRow = years.find(function (y) { return y.age === rmdStartAge; });
 
     var summaryAge = Math.max(inputs.currentAge, inputs.retirementAge);
     var summaryUserMonthly = annualSocialSecurity(summaryAge, inputs, ssMonthlyBaseline) / 12;
@@ -352,13 +361,13 @@
         retirementAnnualIncome: retirementIncomeRow ? retirementIncomeRow.totalIncome : 0,
         lifetimeFederalTax: lifetimeFederalTax,
         firstRmdAmount: firstRmdRow ? firstRmdRow.rmd : 0,
-        rmdStartAge: RMD_START_AGE
+        rmdStartAge: rmdStartAge
       }
     };
   }
 
   global.RBPlanEngine = {
-    RMD_START_AGE: RMD_START_AGE,
+    rmdStartAgeForBirthYear: TR.rmdStartAgeForBirthYear,
     runDeterministicPlan: runDeterministicPlan,
     targetNestEggAtRetirement: targetNestEggAtRetirement
   };

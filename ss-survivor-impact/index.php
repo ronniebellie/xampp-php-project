@@ -79,12 +79,12 @@ $isPremium = has_premium_access();
         <div class="info-box-blue" style="margin-bottom: 24px;">
             <h2>Three rules couples often miss</h2>
             <ol style="margin: 0; padding-left: 20px; line-height: 1.7;">
-                <li><strong>One check after death.</strong> The survivor receives the higher of the two benefits — no stacking.</li>
+                <li><strong>One check after death.</strong> Supported age-60 survivor claims use 71.5% of the deceased worker benefit basis and are compared with the survivor's own benefit — no stacking.</li>
                 <li><strong>The higher earner's delay usually matters most.</strong> Delayed credits pass through to the survivor benefit.</li>
                 <li><strong>The lower earner's delay often doesn't.</strong> Years of forgone checks may buy nothing if the survivor benefit replaces their own.</li>
                 <li><strong>Longevity is the hidden variable.</strong> Wives often outlive husbands by several years — which is a key reason planners recommend the higher earner delay to 70. The larger check may fund the survivor's remaining lifetime.</li>
             </ol>
-            <p style="margin: 12px 0 0 0; font-size: 14px; color: #4b5563;">This tool models retirement benefits and survivor transitions only — not spousal benefits while both are alive, taxes, or the earnings test. Survivor benefits must be applied for separately.</p>
+            <p style="margin: 12px 0 0 0; font-size: 14px; color: #4b5563;">Statutory scope is limited to regular aged-survivor claims beginning at age 60 (71.5%). Later early-claim ages, survivor-FRA claims, disabled survivors age 50–59, child-care cases, remarriage and other eligibility details are explicitly unsupported. Survivor benefits must be applied for separately.</p>
         </div>
 
         <div class="cross-link">
@@ -308,7 +308,7 @@ $isPremium = has_premium_access();
 
             <details class="ss-assumptions" style="margin: 24px 0; padding: 16px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
                 <summary style="cursor: pointer; font-weight: 600; color: #334155;">Model assumptions</summary>
-                <p style="margin: 12px 0 0; font-size: 14px; line-height: 1.65; color: #475569;">These comparisons assume both spouses receive the benefits shown until the first death, after which the survivor receives the larger benefit. Annual COLAs are applied throughout. Taxes, Medicare premiums, spousal benefits while both spouses are alive, the earnings test, and legislative changes are not modeled. Survivor benefits must be applied for separately.</p>
+                <p style="margin: 12px 0 0; font-size: 14px; line-height: 1.65; color: #475569;">These comparisons support an age-60 survivor claim at 71.5% of the deceased worker benefit basis and compare it with the survivor's own benefit. Annual COLAs are applied. Other survivor claiming ages and eligibility branches are unsupported. Taxes, Medicare premiums, spousal benefits while both spouses are alive, and the earnings test are not modeled.</p>
             </details>
 
             <?php

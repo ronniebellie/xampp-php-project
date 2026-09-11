@@ -142,7 +142,8 @@ $defaultRetirementAge = 67;
 </div>
 <?php endif; ?>
 
-    <form id="planForm">
+    <p class="sub">Federal estimates use fixed 2026 ordinary-income brackets and base standard deductions. Future calendar years reuse these values as a projection assumption, not future statutory law. Credits, itemized deductions and additional age-based deductions are not included.</p>
+        <form id="planForm">
       <h3>About you</h3>
       <div class="form-grid">
         <div>
@@ -518,7 +519,8 @@ $defaultRetirementAge = 67;
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="../js/lib/finance-core.js"></script>
-  <script src="../js/lib/rmd-tax-core.js"></script>
+  <script src="../js/lib/federal-tax-2026.js"></script>
+    <script src="../js/lib/rmd-tax-core.js"></script>
   <script src="../js/lib/url-prefill.js"></script>
   <script src="deep-links.js?v=<?php echo (int) @filemtime(__DIR__ . '/deep-links.js'); ?>"></script>
   <script src="plan-engine.js?v=<?php echo (int) @filemtime(__DIR__ . '/plan-engine.js'); ?>"></script>

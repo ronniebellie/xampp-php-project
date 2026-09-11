@@ -1,0 +1,5 @@
+/** Supported inherited-IRA branches from IRS Publication 590-B (2025). */
+(function(global){'use strict';
+function classify(opts){opts=opts||{};var category=opts.beneficiaryCategory;if(category!=='noneligible_designated'&&category!=='eligible_designated_elects_10_year')return {supported:false,reason:'This beneficiary category is not implemented from the available authoritative material.'};if(opts.ownerDiedBeforeRequiredBeginningDate!==true)return {supported:false,reason:'Post-required-beginning-date annual distribution mechanics are not implemented from the available authoritative material.'};return {supported:true,rule:'10-year',deadlineYear:10,annualDistributionsRequired:false,description:'The account must be fully distributed by December 31 of the year containing the 10th anniversary of death; no annual distribution path is prescribed by this supported branch.'};}
+var api={RULE_VERSION:'IRS-Pub-590-B-2025',classify:classify};if(typeof module!=='undefined'&&module.exports)module.exports=api;else global.RBInheritedIraRules=api;
+})(typeof window!=='undefined'?window:this);

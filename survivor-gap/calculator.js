@@ -17,108 +17,26 @@ function formatCurrency(amount) {
     }).format(amount);
 }
 
-function displayResults(singleLifeMonthly, jointLifeMonthly, yearsInRetirement, insurancePremium, yearsPayingPremiums) {
-    const monthlyGap = Math.max(0, singleLifeMonthly - jointLifeMonthly);
-    const annualGap = monthlyGap * 12;
-    const totalGap = annualGap * yearsInRetirement;
-    const reductionPercent = singleLifeMonthly > 0
-        ? ((singleLifeMonthly - jointLifeMonthly) / singleLifeMonthly * 100)
-        : 0;
-    const increasePercent = jointLifeMonthly > 0
-        ? ((singleLifeMonthly - jointLifeMonthly) / jointLifeMonthly * 100)
-        : 0;
-
-    // Insurance comparison (optional)
+function displayResults(singleLifeMonthly, jointLifeMonthly, survivorYears, insurancePremium, yearsPayingPremiums, survivorPercent, discountRate) {
+    const result = RBSurvivorGap.calculate({ singleLifeMonthly, jointLifeMonthly, survivorYears, survivorPercent, discountRate });
+    const monthlyGap = result.optionCostMonthly;
+    document.getElementById('summaryCards').innerHTML = '<div class="summary-grid">' + [
+        ['Pension option cost while both alive / month', monthlyGap],
+        ['Lost survivor income / month', result.survivorMonthly],
+        ['Undiscounted survivor payments', result.totalPayments],
+        ['Capital needed at death (present value)', result.presentValue]
+    ].map(([label, value]) => `<div class="summary-card"><div class="summary-label">${label}</div><div class="summary-value">${formatCurrency(value)}</div></div>`).join('') + '</div>';
+    const summary = `Single-life pension ${formatCurrency(singleLifeMonthly)}/month ends at death. Joint-life pension ${formatCurrency(jointLifeMonthly)}/month has a ${survivorPercent}% survivor continuation: ${formatCurrency(result.survivorMonthly)}/month for an assumed ${survivorYears} years. At ${discountRate}% effective annual discount rate, the capital needed at death is ${formatCurrency(result.presentValue)}. Payments are level, at month-end. No taxes, inflation, fees, mortality probabilities or insurance pricing are modeled. This is a finite-period income replacement estimate, not a guaranteed lifetime benefit or insurance quote.`;
+    document.getElementById('interpretation').innerHTML = '<h3>What This Means</h3><p>' + summary + '</p><p>The pension option cost while both spouses live is separate from the survivor income lost after death. Actual contract terms, other survivor resources and the chosen survivor period must be reviewed.</p>';
     const insEl = document.getElementById('insuranceComparison');
+    insEl.style.display = insurancePremium > 0 ? 'block' : 'none';
     if (insurancePremium > 0) {
-        const totalPremiums = insurancePremium * 12 * (yearsPayingPremiums || yearsInRetirement);
-        const netMonthlyWithInsurance = singleLifeMonthly - insurancePremium;
-        const monthlySavingsVsJoint = netMonthlyWithInsurance - jointLifeMonthly;
-        const premiumVsGap = monthlyGap - insurancePremium;
-
-        let html = '<h3 style="color: #166534; margin-top: 0;">How Life Insurance Fills the Gap</h3>';
-        html += '<p><strong>Strategy:</strong> Take single-life (higher annuity) + buy life insurance. When you pass, your survivor receives the death benefit tax-free—roughly equal to the total gap. (Often, whole life premiums are lower than the monthly gap for equivalent coverage.)</p>';
-        html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;">';
-        html += `<div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0;"><strong>Total premiums paid</strong><br><span style="font-size: 1.3em;">${formatCurrency(totalPremiums)}</span></div>`;
-        html += `<div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0;"><strong>Survivor receives (death benefit)</strong><br><span style="font-size: 1.3em;">${formatCurrency(totalGap)}</span> <small style="color: #166534;">tax-free</small></div>`;
-        html += `<div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0;"><strong>Your net monthly</strong><br><span style="font-size: 1.3em;">${formatCurrency(netMonthlyWithInsurance)}</span><br><small>single-life minus premium</small></div>`;
-        html += '</div>';
-        html += '<ul style="margin: 0; padding-left: 20px;">';
-        html += `<li><strong>Monthly cost comparison:</strong> Joint-life costs you ${formatCurrency(monthlyGap)}/month in foregone income. Insurance costs ${formatCurrency(insurancePremium)}/month. `;
-        if (premiumVsGap > 0) {
-            html += `Insurance is ${formatCurrency(premiumVsGap)}/month <em>less</em> than the joint-life reduction—you keep more while alive and still protect your survivor.</li>`;
-        } else if (premiumVsGap < 0) {
-            html += `Insurance costs ${formatCurrency(-premiumVsGap)}/month more than the joint-life reduction; the trade-off is a tax-free lump sum for your survivor.</li>`;
-        } else {
-            html += `Same monthly cost either way; insurance gives your survivor a tax-free lump sum.</li>`;
-        }
-        if (monthlySavingsVsJoint > 0) {
-            html += `<li><strong>vs joint-life:</strong> With single-life + insurance, you receive ${formatCurrency(monthlySavingsVsJoint)}/month more than with joint-life alone.</li>`;
-        }
-        html += '</ul>';
-        html += '<div style="margin-top: 20px; height: 220px;"><canvas id="insuranceComparisonChart"></canvas></div>';
-        insEl.innerHTML = html;
-        insEl.style.display = 'block';
-        createInsuranceComparisonChart(monthlyGap, insurancePremium);
-    } else {
-        insEl.style.display = 'none';
+        insEl.innerHTML = `<h3>Entered premium budget only</h3><p>${formatCurrency(insurancePremium)}/month for ${yearsPayingPremiums} years totals ${formatCurrency(insurancePremium * 12 * yearsPayingPremiums)} in undiscounted premiums. This input does not establish a purchasable death benefit, eligibility, policy duration, guarantees, or tax treatment.</p>`;
     }
-
-    // Summary cards
-    let html = '<div class="summary-grid">';
-    html += `
-        <div class="summary-card">
-            <div class="summary-label">Monthly Gap</div>
-            <div class="summary-value">${formatCurrency(monthlyGap)}</div>
-        </div>
-        <div class="summary-card">
-            <div class="summary-label">Annual Gap</div>
-            <div class="summary-value">${formatCurrency(annualGap)}</div>
-        </div>
-        <div class="summary-card">
-            <div class="summary-label">Total Gap (${yearsInRetirement} yrs)</div>
-            <div class="summary-value">${formatCurrency(totalGap)}</div>
-        </div>
-        <div class="summary-card">
-            <div class="summary-label">Joint-Life Reduction</div>
-            <div class="summary-value">${reductionPercent.toFixed(1)}%</div>
-        </div>
-    `;
-    html += '</div>';
-    document.getElementById('summaryCards').innerHTML = html;
-
-    // Interpretation
-    let interpretation = '<h3>What This Means</h3><ul>';
-
-    interpretation += `<li><strong>The monthly gap is ${formatCurrency(monthlyGap)}.</strong> `;
-    interpretation += `By choosing a single-life annuity instead of a joint-life annuity, you receive ${formatCurrency(singleLifeMonthly)}/month—${formatCurrency(monthlyGap)} more per month compared to a joint-life annuity, a ${increasePercent.toFixed(1)}% increase. `;
-    interpretation += `Over ${yearsInRetirement} years, this totals ${formatCurrency(totalGap)} in savings.</li>`;
-
-    interpretation += `<li><strong>But if you pass first, your survivor receives nothing from this annuity under single-life.</strong> `;
-    interpretation += `With joint-life, they would have continued to receive ${formatCurrency(jointLifeMonthly)}/month. `;
-    interpretation += `That's why life insurance can be a way to keep your higher single-life payments and still protect your survivor.</li>`;
-
-    interpretation += `<li><strong>Life insurance could fill the gap.</strong> `;
-    interpretation += `A life insurance policy with a death benefit of approximately ${formatCurrency(totalGap)} could provide your survivor with tax-free funds to replace the lost annuity income. `;
-    interpretation += `Premiums paid during your working years may be lower than the ${formatCurrency(monthlyGap)}/month you're giving up with joint-life—especially if you're at peak earning years with a paid-off home and no dependents at home.</li>`;
-
-    interpretation += `<li><strong>Get your exact numbers.</strong> `;
-    interpretation += `Annuity payout amounts vary by provider (TIAA, state retirement systems, etc.) and depend on your age and your spouse's age. `;
-    interpretation += `Use your plan's online estimator or contact them directly for precise single-life and joint-life quotes.</li>`;
-
-    interpretation += '</ul>';
-    document.getElementById('interpretation').innerHTML = interpretation;
-
-    const summary = 'Survivor Gap. Single-life ' + formatCurrency(singleLifeMonthly) + '/month, joint-life ' + formatCurrency(jointLifeMonthly) + '/month. Monthly gap ' + formatCurrency(monthlyGap) + ', annual gap ' + formatCurrency(annualGap) + '. Over ' + yearsInRetirement + ' years total gap ' + formatCurrency(totalGap) + '. Joint-life reduction ' + reductionPercent.toFixed(1) + '%.' + (insurancePremium > 0 ? ' Insurance premium ' + formatCurrency(insurancePremium) + '/month.' : '');
-    window.lastSurvivorGapResult = { summary };
-
-    // Show results first so chart containers exist
+    window.lastSurvivorGapResult = { summary, ...result };
     document.getElementById('results').style.display = 'block';
-
-    // Create charts (after DOM is visible)
     createComparisonChart(singleLifeMonthly, jointLifeMonthly, monthlyGap);
-    createCumulativeGapChart(annualGap, yearsInRetirement);
-
+    createCumulativeGapChart(result.survivorMonthly * 12, survivorYears);
     document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -133,7 +51,7 @@ function createComparisonChart(singleLifeMonthly, jointLifeMonthly, monthlyGap) 
     window.comparisonChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: ['Single-Life', 'Joint-Life', 'Monthly Gap'],
+            labels: ['Single-Life', 'Joint-Life', 'Pension option cost'],
             datasets: [{
                 label: 'Monthly Benefit ($)',
                 data: [singleLifeMonthly, jointLifeMonthly, monthlyGap],
@@ -169,53 +87,6 @@ function createComparisonChart(singleLifeMonthly, jointLifeMonthly, monthlyGap) 
     });
 }
 
-function createInsuranceComparisonChart(monthlyGap, insurancePremium) {
-    const ctx = document.getElementById('insuranceComparisonChart');
-    if (!ctx) return;
-
-    if (window.insuranceComparisonChart instanceof Chart) {
-        window.insuranceComparisonChart.destroy();
-    }
-
-    window.insuranceComparisonChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Joint-life reduction\n(foregone income)', 'Insurance premium'],
-            datasets: [{
-                label: 'Monthly cost ($)',
-                data: [monthlyGap, insurancePremium],
-                backgroundColor: ['#f59e0b', '#22c55e'],
-                borderColor: ['#d97706', '#16a34a'],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            indexAxis: 'y',
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return formatCurrency(context.raw) + '/month';
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    title: { display: true, text: 'Monthly cost ($)' },
-                    ticks: {
-                        callback: function(v) { return '$' + (v / 1000).toFixed(1) + 'k'; }
-                    }
-                }
-            }
-        }
-    });
-}
-
 function createCumulativeGapChart(annualGap, yearsInRetirement) {
     const ctx = document.getElementById('cumulativeGapChart');
     if (!ctx) return;
@@ -236,7 +107,7 @@ function createCumulativeGapChart(annualGap, yearsInRetirement) {
         data: {
             labels: years,
             datasets: [{
-                label: 'Cumulative Gap',
+                label: 'Undiscounted survivor payments',
                 data: cumulative,
                 borderColor: '#667eea',
                 backgroundColor: 'rgba(102, 126, 234, 0.1)',
@@ -262,11 +133,11 @@ function createCumulativeGapChart(annualGap, yearsInRetirement) {
             },
             scales: {
                 x: {
-                    title: { display: true, text: 'Years in Retirement' }
+                    title: { display: true, text: 'Years after annuitant death' }
                 },
                 y: {
                     beginAtZero: true,
-                    title: { display: true, text: 'Cumulative Gap' },
+                    title: { display: true, text: 'Undiscounted survivor payments' },
                     ticks: {
                         callback: function(value) {
                             return '$' + (value / 1000).toFixed(0) + 'k';
@@ -283,7 +154,7 @@ document.getElementById('survivorGapForm').addEventListener('submit', function(e
 
     const singleLifeMonthly = parseFloat(document.getElementById('singleLifeMonthly').value) || 0;
     const jointLifeMonthly = parseFloat(document.getElementById('jointLifeMonthly').value) || 0;
-    const yearsInRetirement = parseInt(document.getElementById('yearsInRetirement').value, 10) || 18;
+    const yearsInRetirement = Number(document.getElementById('yearsInRetirement').value);
     const insurancePremium = parseFloat(document.getElementById('insurancePremium').value) || 0;
     const yearsPayingPremiums = parseInt(document.getElementById('yearsPayingPremiums').value, 10) || yearsInRetirement;
 
@@ -297,7 +168,10 @@ document.getElementById('survivorGapForm').addEventListener('submit', function(e
         return;
     }
 
-    displayResults(singleLifeMonthly, jointLifeMonthly, yearsInRetirement, insurancePremium, yearsPayingPremiums);
+    try {
+        displayResults(singleLifeMonthly, jointLifeMonthly, yearsInRetirement, insurancePremium, yearsPayingPremiums,
+            Number(document.getElementById('survivorPercent').value), Number(document.getElementById('discountRate').value));
+    } catch (error) { alert(error.message); }
 });
 
 // Premium Save/Load + Explain
@@ -353,9 +227,12 @@ function saveScenario() {
     if (!scenarioName) return;
 
     const formData = {
+        modelVersion: 3,
         singleLifeMonthly: document.getElementById('singleLifeMonthly')?.value,
         jointLifeMonthly: document.getElementById('jointLifeMonthly')?.value,
         yearsInRetirement: document.getElementById('yearsInRetirement')?.value,
+        survivorPercent: document.getElementById('survivorPercent')?.value,
+        discountRate: document.getElementById('discountRate')?.value,
         insurancePremium: document.getElementById('insurancePremium')?.value,
         yearsPayingPremiums: document.getElementById('yearsPayingPremiums')?.value
     };
@@ -439,11 +316,18 @@ function loadScenario() {
             const index = parseInt(choice) - 1;
             if (index >= 0 && index < data.scenarios.length) {
                 const scenario = data.scenarios[index];
+                document.getElementById('survivorPercent').value = 100;
+                document.getElementById('discountRate').value = 0;
                 Object.keys(scenario.data || {}).forEach(key => {
                     const input = document.getElementById(key);
                     if (input) input.value = scenario.data[key] ?? '';
                 });
-                alert('Scenario loaded! Click Calculate to see results.');
+                if (!scenario.data || scenario.data.modelVersion !== 3) {
+                    document.getElementById('yearsInRetirement').value = '';
+                    alert('Legacy scenario loaded. Enter the survivor duration after death and review the survivor percentage and discount rate before calculating. The old retirement duration was not a survivor period.');
+                } else {
+                    alert('Scenario loaded! Click Calculate to see results.');
+                }
             }
         }
     })

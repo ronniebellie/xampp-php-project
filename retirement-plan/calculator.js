@@ -549,7 +549,11 @@
       alert('Please check: ' + errors.join(', ') + '.');
       return;
     }
-    displayResults(PE.runDeterministicPlan(inputs), inputs);
+    try {
+      displayResults(PE.runDeterministicPlan(inputs), inputs);
+    } catch (error) {
+      alert('Unsupported statutory case: ' + error.message);
+    }
   }
 
   function getFormDataForSave() {

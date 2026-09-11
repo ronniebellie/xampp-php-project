@@ -46,12 +46,17 @@ $rb_includes = dirname(__DIR__, 2) . '/includes';
             </p>
         </div>
 
+        <p class="sub">Federal estimates use fixed 2026 ordinary-income brackets and base standard deductions. Future calendar years reuse these values as a projection assumption, not future statutory law. Credits, itemized deductions and additional age-based deductions are not included.</p>
         <form id="inheritedIRAForm">
             <h3>Your situation (owner)</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 22px;">
                 <div>
                     <label for="currentAge" style="display: block; margin-bottom: 4px; font-weight: 600;">Your current age</label>
                     <input type="number" id="currentAge" value="68" min="50" max="95" required style="width: 100%; padding: 8px;">
+                </div>
+                <div>
+                    <label for="birthYear" style="display: block; margin-bottom: 4px; font-weight: 600;">Your birth year</label>
+                    <input type="number" id="birthYear" value="<?php echo (int)date('Y') - 68; ?>" min="1900" max="<?php echo (int)date('Y'); ?>" required style="width: 100%; padding: 8px;">
                 </div>
                 <div>
                     <label for="deathAge" style="display: block; margin-bottom: 4px; font-weight: 600;">Assumed age at death</label>
@@ -127,10 +132,25 @@ $rb_includes = dirname(__DIR__, 2) . '/includes';
             <h3 style="margin-top: 28px;">Inherited IRA assumptions</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 22px;">
                 <div>
+                    <label for="beneficiaryCategory" style="display: block; margin-bottom: 4px; font-weight: 600;">Beneficiary category</label>
+                    <select id="beneficiaryCategory" style="width: 100%; padding: 8px;">
+                        <option value="noneligible_designated">Noneligible designated beneficiary</option>
+                        <option value="eligible_designated_elects_10_year">Eligible designated beneficiary electing 10-year rule</option>
+                        <option value="other">Other / not sure (unsupported)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="diedBeforeRbd" style="display: block; margin-bottom: 4px; font-weight: 600;">Owner died before required beginning date?</label>
+                    <select id="diedBeforeRbd" style="width: 100%; padding: 8px;">
+                        <option value="yes">Yes</option>
+                        <option value="no" selected>No / not sure (unsupported)</option>
+                    </select>
+                </div>
+                <div>
                     <label for="payoutStrategy" style="display: block; margin-bottom: 4px; font-weight: 600;">Withdrawal strategy</label>
                     <select id="payoutStrategy" style="width: 100%; padding: 8px;">
                         <option value="level">Level over 10 years</option>
-                        <option value="year10">All in year 10</option>
+                        <option value="year10">Defer all to the 10-year deadline</option>
                     </select>
                 </div>
                 <div>
@@ -138,6 +158,7 @@ $rb_includes = dirname(__DIR__, 2) . '/includes';
                     <input type="number" id="inheritedReturnRate" value="5" min="0" max="15" step="any" style="width: 100%; padding: 8px;">
                 </div>
             </div>
+            <p style="font-size:13px;color:#666;">These withdrawal paths are optional scenarios only for the supported pre-required-beginning-date branch; they are not presented as universal annual distribution requirements.</p>
 
             <div style="text-align: center; margin: 28px 0;">
                 <button type="submit" class="button" style="font-size: 1.1em; padding: 12px 28px;">Calculate legacy tax impact</button>
@@ -168,6 +189,9 @@ $rb_includes = dirname(__DIR__, 2) . '/includes';
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="../../js/explain-results-modal.js"></script>
+    <script src="../../js/lib/federal-tax-2026.js"></script>
+    <script src="../../js/lib/rmd-tax-core.js"></script>
+    <script src="../../js/lib/inherited-ira-rules.js"></script>
     <script src="calculator.js"></script>
 </body>
 </html>

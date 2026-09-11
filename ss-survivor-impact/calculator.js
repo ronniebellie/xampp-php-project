@@ -184,14 +184,16 @@ function updateLongevityHints() {
     var hDeath = RBActuarial.getActuarialDeathAge(higherSex, higherAge);
     var lDeath = RBActuarial.getActuarialDeathAge(lowerSex, lowerAge);
 
-    document.getElementById('higherLongevityHint').innerHTML =
-        'Life expectancy: ~' + hRemaining.toFixed(1) + ' more years → planning death age <strong>' + hDeath + '</strong>';
-    document.getElementById('lowerLongevityHint').innerHTML =
-        'Life expectancy: ~' + lRemaining.toFixed(1) + ' more years → planning death age <strong>' + lDeath + '</strong>';
+    document.getElementById('higherLongevityHint').innerHTML = hRemaining == null
+        ? 'No exact SSA 2021 fixture for age ' + higherAge + '; use the Advanced custom death-age override.'
+        : 'Life expectancy: ' + hRemaining.toFixed(2) + ' more years → planning death age <strong>' + hDeath + '</strong>';
+    document.getElementById('lowerLongevityHint').innerHTML = lRemaining == null
+        ? 'No exact SSA 2021 fixture for age ' + lowerAge + '; use the Advanced custom death-age override.'
+        : 'Life expectancy: ' + lRemaining.toFixed(2) + ' more years → planning death age <strong>' + lDeath + '</strong>';
 
     if (!override) {
-        document.getElementById('higherDeathAge').value = hDeath;
-        document.getElementById('lowerDeathAge').value = lDeath;
+        if (hDeath != null) document.getElementById('higherDeathAge').value = hDeath;
+        if (lDeath != null) document.getElementById('lowerDeathAge').value = lDeath;
     }
     syncDeathLabels();
 }
@@ -277,14 +279,14 @@ function buildLongevityNote(opts, result) {
     if (result.firstDeathWho === 'higher' && gap > 3) {
         note += '<li><strong>Survivor years matter:</strong> The lower earner is modeled to outlive the higher earner by about ' +
             gap + ' years. Household income after the first death (' + formatCurrency(result.afterFirstDeath) +
-            ' total) depends heavily on the higher earner\'s benefit as the survivor benefit at first death — a key reason planners often want the higher earner to delay.</li>';
+            ' total) depends on the supported age-60 survivor payment derived from the higher earner\'s modeled benefit basis.</li>';
     } else if (result.firstDeathWho === 'higher' && gap <= 3) {
         note += '<li><strong>Short survivor period:</strong> The lower earner outlives the higher earner by only ~' +
             gap + ' year(s) in this scenario — less time for an enlarged survivor benefit to compound in value.</li>';
     }
 
     if (h.sex === 'male' && l.sex === 'female' && result.firstDeathWho === 'higher') {
-        note += '<li><strong>Typical pattern:</strong> Male higher earner dies first; female lower earner may collect his larger benefit as a survivor for many years — making his claiming age the more important decision for long-run household income.</li>';
+        note += '<li><strong>Modeled pattern:</strong> The lower earner may receive the supported reduced age-60 survivor payment when it exceeds their own benefit.</li>';
     }
 
     return note;
@@ -430,7 +432,7 @@ function buildStrategyInsight(strategies, result) {
     });
     var couplesRec = strategies.find(function (s) { return s.name === 'Lower early, higher at 70'; });
 
-    var html = 'Because the higher earner\'s delayed benefit becomes the survivor benefit, delaying the higher earner often produces the highest lifetime household benefit. Delaying the lower earner is frequently less valuable because that benefit may later be replaced by the survivor benefit.';
+    var html = 'The model compares the survivor\'s own benefit with the supported reduced age-60 survivor payment. It does not model later survivor claiming ages.';
 
     if (best.name === 'Lower early, higher at 70') {
         html += ' In this scenario, <em>Lower early, higher at 70</em> leads the comparison.';
@@ -569,7 +571,17 @@ function createHouseholdChart(yearly) {
 function runAnalysis() {
     updateLongevityHints();
     var opts = getFormInputs();
-    var result = RBSSHousehold.simulateHouseholdSS(opts);
+    if (opts.higherEarner.deathAge == null || opts.lowerEarner.deathAge == null) {
+        alert('Unsupported longevity age: choose an age with an exact SSA 2021 fixture or enable the Advanced custom death-age override.');
+        return;
+    }
+    var result;
+    try {
+        result = RBSSHousehold.simulateHouseholdSS(opts);
+    } catch (error) {
+        alert('Unsupported Social Security survivor case: ' + error.message);
+        return;
+    }
     var d = result.delayAnalysis;
 
     var heroHtml = buildHeroSentence(result, opts);
@@ -581,7 +593,7 @@ function runAnalysis() {
         '<div class="summary-card"><div class="summary-label">Before first death</div><div class="summary-value">' + formatCurrency(result.beforeFirstDeath) + '</div></div>' +
         '<div class="summary-card"><div class="summary-label">After first death</div><div class="summary-value">' + formatCurrency(result.afterFirstDeath) + '</div></div>' +
         '<div class="summary-card"><div class="summary-label">' + longevityLabel + '</div><div class="summary-value">' + opts.higherEarner.deathAge + ' / ' + opts.lowerEarner.deathAge + '</div></div>' +
-        '<div class="summary-card"><div class="summary-label">Survivor benefit at first death</div><div class="summary-value">' + formatCurrency(d.higherAtDeath) + '</div></div>' +
+        '<div class="summary-card"><div class="summary-label">Supported survivor payment</div><div class="summary-value">' + formatCurrency(result.survivorFloor) + '</div></div>' +
         '<div class="summary-card"><div class="summary-label">Survivor years (approx.)</div><div class="summary-value">' + Math.max(0, opts.lowerEarner.deathAge - opts.higherEarner.deathAge) + '</div></div>';
 
     document.getElementById('timelineVisual').innerHTML = buildTimeline(result);
