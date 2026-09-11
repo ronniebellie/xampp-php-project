@@ -31,6 +31,7 @@
       var yearWithdrawal = (withdrawalPct > 0 && y >= withdrawalStartYear) ? balance * (withdrawalPct / 100) : 0;
       totalFees += yearFee;
       totalWithdrawals += yearWithdrawal;
+      balance = balance - yearFee - yearWithdrawal;
       yearlyData.push({
         year: y,
         balance: balance,
@@ -39,7 +40,6 @@
         withdrawal: yearWithdrawal,
         totalWithdrawals: totalWithdrawals
       });
-      balance = balance - yearFee - yearWithdrawal;
     }
     return yearlyData;
   }

@@ -163,7 +163,7 @@
    * @param {object} inputs
    * @returns {{ years: object[], summary: object, milestones: object[] }}
    */
-  function runDeterministicPlan(inputs) {
+  function runDeterministicPlan(inputs, retirementReturn) {
     var ssMonthlyBaseline = inputs.ssAlreadyReceiving
       ? (inputs.ssCurrentMonthly || 0)
       : FC.calculateMonthlyBenefit(
@@ -180,20 +180,34 @@
     var years = [];
     var balance = inputs.balance;
     var depletedAge = null;
+    var shortfallAge = null;
+    var traditional = balance * taxDeferredPct;
+    var otherAssets = balance - traditional;
 
     for (var age = inputs.currentAge; age <= inputs.planEndAge; age++) {
       var balanceStart = balance;
+      var traditionalStart = traditional;
+      var otherAssetsStart = otherAssets;
       var phase = age < inputs.retirementAge ? 'accumulation' : 'retirement';
       var contribution = phase === 'accumulation' ? inputs.annualContribution : 0;
       var returnRate = phase === 'accumulation' ? inputs.returnPreRetirement : inputs.returnRetirement;
 
+      if (phase === 'retirement' && retirementReturn) returnRate = retirementReturn(age);
+      returnRate = Math.max(-100, returnRate);
       if (phase === 'accumulation') {
-        balance = balance * (1 + returnRate / 100) + contribution;
+        traditional = traditional * (1 + returnRate / 100) + contribution * taxDeferredPct;
+        otherAssets = otherAssets * (1 + returnRate / 100) + contribution * (1 - taxDeferredPct);
+        balance = traditional + otherAssets;
         years.push({
           age: age,
           phase: phase,
           balanceStart: balanceStart,
           balanceEnd: balance,
+          traditionalBalance: traditional, otherAssetsBalance: otherAssets,
+          traditionalStart: traditionalStart, otherAssetsStart: otherAssetsStart,
+          investmentReturn: balanceStart * returnRate / 100,
+          requestedSpending: 0, fundedSpending: 0, spendingShortfall: 0, taxShortfall: 0,
+          taxesPaid: 0, traditionalWithdrawal: 0, otherWithdrawal: 0, surplus: 0,
           spending: 0,
           socialSecurity: 0,
           otherIncome: 0,
@@ -206,43 +220,60 @@
           rmdStarts: false
         });
       } else {
-        var taxDeferredBalance = balanceStart * taxDeferredPct;
-        var rmd = TR.calculateRMD(age, taxDeferredBalance, isSpouseBeneficiary, spouseAge);
+        var rmd = Math.min(traditional, TR.calculateRMD(age, traditional, isSpouseBeneficiary, spouseAge));
         var spending = annualSpendingAtAge(age, inputs);
-        var ssAnnual = annualSocialSecurity(age, inputs, ssMonthlyBaseline);
-        var spouseSsAnnual = annualSpouseSocialSecurity(age, inputs);
-        var householdSsAnnual = ssAnnual + spouseSsAnnual;
+        var householdSsAnnual = householdSocialSecurityAnnual(age, inputs, ssMonthlyBaseline);
         var otherIncome = inputs.otherGuaranteedAnnual;
-        var withdrawalStartAge = portfolioWithdrawalStartAge(inputs);
-        var spendingGap = Math.max(0, spending - householdSsAnnual - otherIncome);
-        var spendingGapWithdrawal = age >= withdrawalStartAge ? spendingGap : 0;
-        var portfolioWithdrawal = Math.max(rmd, spendingGapWithdrawal);
-        if (portfolioWithdrawal > balanceStart) portfolioWithdrawal = balanceStart;
-
-        var taxableIncome = TR.estimateTaxableIncome(
-          portfolioWithdrawal,
-          householdSsAnnual,
-          otherIncome,
-          inputs.filingStatus,
-          inputs.useStandardDeduction !== false
-        );
-        var federalTax = TR.calculateFederalTax(taxableIncome, inputs.filingStatus);
-        var marginalRate = TR.getMarginalRate(taxableIncome, inputs.filingStatus);
-        lifetimeFederalTax += federalTax;
-
-        var afterWithdrawal = Math.max(0, balanceStart - portfolioWithdrawal);
-        balance = afterWithdrawal * (1 + returnRate / 100);
-
-        if (balance <= 0 && depletedAge === null && age < inputs.planEndAge) {
-          depletedAge = age;
+        var income = householdSsAnnual + otherIncome;
+        var canWithdraw = age >= portfolioWithdrawalStartAge(inputs);
+        // Keep the actual account split over time. Mandatory distributions come
+        // from traditional assets; discretionary draws use other assets first.
+        var traditionalWithdrawal = rmd, otherWithdrawal = 0;
+        traditional -= rmd;
+        var cash = income + rmd;
+        var taxableIncome, federalTax;
+        for (var pass = 0; pass < 128; pass++) {
+          taxableIncome = TR.estimateTaxableIncome(traditionalWithdrawal, householdSsAnnual,
+            otherIncome, inputs.filingStatus, inputs.useStandardDeduction !== false);
+          federalTax = TR.calculateFederalTax(taxableIncome, inputs.filingStatus);
+          var need = Math.max(0, spending + federalTax - cash);
+          if (!canWithdraw || need < 1e-7 || traditional + otherAssets < 1e-7) break;
+          var fromOther = Math.min(need, otherAssets);
+          otherAssets -= fromOther; otherWithdrawal += fromOther; cash += fromOther;
+          var fromTraditional = Math.min(need - fromOther, traditional);
+          traditional -= fromTraditional; traditionalWithdrawal += fromTraditional; cash += fromTraditional;
         }
+        var taxesPaid = Math.min(cash, federalTax);
+        var taxShortfall = Math.max(0, federalTax - taxesPaid);
+        var fundedSpending = Math.min(spending, Math.max(0, cash - taxesPaid));
+        var spendingShortfall = Math.max(0, spending - fundedSpending);
+        var surplus = Math.max(0, cash - taxesPaid - fundedSpending);
+        otherAssets += surplus; // Excess RMD/income is saved, not consumed or lost.
+        var investmentReturn = (traditional + otherAssets) * returnRate / 100;
+        traditional *= 1 + returnRate / 100;
+        otherAssets *= 1 + returnRate / 100;
+        balance = traditional + otherAssets;
+        var portfolioWithdrawal = traditionalWithdrawal + otherWithdrawal;
+        var marginalRate = TR.getMarginalRate(taxableIncome, inputs.filingStatus);
+        lifetimeFederalTax += taxesPaid;
+        if (balance <= 1e-7 && depletedAge === null) depletedAge = age;
+        if ((spendingShortfall > 1e-6 || taxShortfall > 1e-6) && shortfallAge === null) shortfallAge = age;
 
         years.push({
           age: age,
           phase: phase,
           balanceStart: balanceStart,
           balanceEnd: balance,
-          spending: spending,
+          traditionalStart: traditionalStart, otherAssetsStart: otherAssetsStart,
+          traditionalBalance: traditional, otherAssetsBalance: otherAssets,
+          traditionalWithdrawal: traditionalWithdrawal, otherWithdrawal: otherWithdrawal,
+          requestedSpending: spending, fundedSpending: fundedSpending, spendingShortfall: spendingShortfall,
+          taxesPaid: taxesPaid, taxShortfall: taxShortfall, surplus: surplus, investmentReturn: investmentReturn,
+          taxFunding: {income: Math.min(taxesPaid, income),
+            traditional: Math.min(Math.max(0, taxesPaid-income), traditionalWithdrawal),
+            other: Math.max(0, taxesPaid-income-traditionalWithdrawal)},
+          contribution: 0,
+          spending: fundedSpending,
           socialSecurity: householdSsAnnual,
           otherIncome: otherIncome,
           rmd: rmd,
@@ -277,6 +308,10 @@
       withdrawalStartAge: withdrawalStartAge
     });
 
+    if (shortfallAge !== null) status = {
+      code: 'shortfall', headline: 'Unfunded spending or taxes from age ' + shortfallAge,
+      detail: 'Available income and permitted withdrawals do not fully fund the plan. See annual shortfalls.', tone: 'bad'
+    };
     var milestoneAges = pickMilestoneAges(inputs);
     var milestones = milestoneAges.map(function (a) {
       return years.find(function (y) { return y.age === a; }) || null;
@@ -309,6 +344,9 @@
           : (inputs.spouseSsMonthly || 0),
         householdSsMonthlyAtClaim: summaryUserMonthly + summarySpouseMonthly,
         fraAge: FC.fraAgeFromBirthYear(inputs.birthYear),
+        shortfallAge: shortfallAge,
+        totalSpendingShortfall: years.reduce(function (sum, row) { return sum + row.spendingShortfall; }, 0),
+        totalTaxShortfall: years.reduce(function (sum, row) { return sum + row.taxShortfall; }, 0),
         depletedAge: depletedAge,
         endingBalance: years.length ? years[years.length - 1].balanceEnd : balance,
         retirementAnnualIncome: retirementIncomeRow ? retirementIncomeRow.totalIncome : 0,

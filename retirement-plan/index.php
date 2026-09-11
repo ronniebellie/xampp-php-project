@@ -412,7 +412,7 @@ $defaultRetirementAge = 67;
                 <th>Other income</th>
                 <th>RMD</th>
                 <th>Est. federal tax</th>
-                <th>Total income</th>
+                <th>Total income</th><th>Spending requested / funded</th><th>Unfunded spending + tax</th>
               </tr>
             </thead>
             <tbody id="milestoneBody"></tbody>
@@ -433,7 +433,7 @@ $defaultRetirementAge = 67;
                 <th>Other income</th>
                 <th>RMD</th>
                 <th>Est. federal tax</th>
-                <th>Total income</th>
+                <th>Total income</th><th>Spending requested / funded</th><th>Unfunded spending + tax</th>
               </tr>
             </thead>
             <tbody id="fullTableBody"></tbody>
@@ -445,9 +445,9 @@ $defaultRetirementAge = 67;
         <h3>Monte Carlo stress test <?php if ($isPremium): ?><span style="font-size:14px;color:#0d9488;font-weight:600;">Premium</span><?php endif; ?></h3>
         <p style="color:#4b5563;margin-bottom:12px;">
           Thousands of random market scenarios test whether <strong>portfolio withdrawals can cover your spending gap</strong>
-          (after Social Security and other income) through your plan end age, using the same monthly timing as our
-          <a href="../plan-success/" target="_blank" rel="noopener">Plan Success</a> calculator. At <strong>10% volatility</strong>
-          a ~3.8% initial gap rate often lands near <strong>80–85%</strong>; at <strong>12%</strong> all-equity volatility, <strong>72–78%</strong> is typical.
+          and estimated federal taxes through your plan end age. Simulations use the same annual
+          cash-flow timing, RMDs, account sources and tax funding as the deterministic plan.
+          Zero volatility reproduces the deterministic plan at the same expected return.
         </p>
         <div id="mcResultsWrap">
           <div id="mcPremiumResults" style="<?php echo $isPremium ? '' : 'display:none;'; ?>">
@@ -478,7 +478,7 @@ $defaultRetirementAge = 67;
         <h3 style="color: #92400e; margin-top: 0;">Educational model only</h3>
         <p style="margin: 0; color: #78350f; line-height: 1.6;">
           Federal tax estimates are simplified (standard deduction, 50% of Social Security treated as taxable, no state tax, IRMAA, or NIIT).
-          RMDs apply to the tax-deferred portion of your portfolio only. Monte Carlo uses random annual returns (not a forecast of actual markets).
+          The initial tax-deferred share also allocates contributions. Other assets are treated as tax-free principal/Roth assets because no taxable cost basis is supplied; taxable gains are not modeled. Discretionary withdrawals use other assets before traditional assets. Surplus income and excess RMDs are saved in other assets. Taxes and spending occur before annual investment returns; taxes take priority if resources are insufficient. RMDs apply to the tax-deferred portion of your portfolio only. Monte Carlo uses random annual returns (not a forecast of actual markets).
           This is educational — not tax or financial advice.
         </p>
       </div>

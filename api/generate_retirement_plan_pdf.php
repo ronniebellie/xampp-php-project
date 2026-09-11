@@ -200,7 +200,7 @@ if (isset($data['chartImage']) && !empty($data['chartImage'])) {
     );
 }
 
-if ($monteCarlo && !empty($monteCarlo['successRate'])) {
+if ($monteCarlo && isset($monteCarlo['successRate'])) {
     $pdf->SetFont('helvetica', 'B', 16);
     $pdf->SetTextColor(102, 126, 234);
     $pdf->Cell(0, 8, 'Monte Carlo Stress Test', 0, 1);
@@ -269,8 +269,13 @@ $pdf->writeHTML($tableHtml, true, false, true, false, '');
 $pdf->Ln(8);
 $pdf->SetFont('helvetica', '', 9);
 $pdf->SetTextColor(80, 80, 80);
+$cashFlowHtml = '<h3>Spending funding</h3><table border="1" cellpadding="4"><tr><th>Age</th><th>Requested</th><th>Funded</th><th>Spending shortfall</th><th>Unpaid tax</th></tr>';
+foreach ($projections as $row) {
+    $cashFlowHtml .= '<tr><td>' . (int)($row['age'] ?? 0) . '</td><td>' . rp_money($row['requestedSpending'] ?? 0) . '</td><td>' . rp_money($row['fundedSpending'] ?? 0) . '</td><td>' . rp_money($row['spendingShortfall'] ?? 0) . '</td><td>' . rp_money($row['taxShortfall'] ?? 0) . '</td></tr>';
+}
+$pdf->writeHTML($cashFlowHtml . '</table>', true, false, true, false, '');
 $disclaimer = 'Educational model only. Federal tax estimates are simplified. RMDs apply to the tax-deferred '
-    . 'portion only. Monte Carlo results (if shown) are not predictions of future markets. Not financial or tax advice.';
+    . 'portion only. Other assets are modeled as tax-free principal/Roth; taxable gains are not modeled. Taxes and spending precede annual returns. Excess income and RMDs are saved. Monte Carlo results (if shown) are not predictions of future markets. Not financial or tax advice.';
 $pdf->MultiCell(0, 5, $disclaimer, 0, 'L');
 
 $pdf->SetY(-20);

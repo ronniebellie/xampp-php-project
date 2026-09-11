@@ -151,6 +151,8 @@ $includeNiit = !empty($data['includeNiit']) && $data['includeNiit'] !== 'false' 
 
 $withRows = $data['withConversion']['yearlyData'];
 $withoutRows = $data['withoutConversion']['yearlyData'] ?? [];
+$pdf->MultiCell(0, 5, 'Unfunded spending / unpaid taxes: no conversion $' . number_format(sumField($withoutRows, 'spendingShortfall'), 0) . ' / $' . number_format(sumField($withoutRows, 'taxShortfall'), 0) . '; with conversion $' . number_format(sumField($withRows, 'spendingShortfall'), 0) . ' / $' . number_format(sumField($withRows, 'taxShortfall'), 0) . '. Spending in the tables is funded spending. Tax savings alone do not establish plan feasibility. Unpaid taxes are not deducted from the estate estimate.', 0, 'L');
+
 
 $pdf->SetFont('helvetica', 'B', 14);
 $pdf->SetTextColor(5, 150, 105);

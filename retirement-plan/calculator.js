@@ -284,7 +284,7 @@
         portfolioNote.style.display = 'block';
         portfolioNote.textContent =
           'Spending-gap withdrawals from your portfolio begin at age ' + s.portfolioWithdrawalStartAge +
-          ' (projected balance then: ' + fmt(s.balanceAtWithdrawalStart) + '). Until then, only investment growth and any required RMDs affect the balance in this model.';
+          ' (projected balance then: ' + fmt(s.balanceAtWithdrawalStart) + '). Until then, income and RMDs fund taxes and spending; unmet amounts are reported as shortfalls. Surplus cash is saved.';
       } else {
         portfolioNote.style.display = 'none';
         portfolioNote.textContent = '';
@@ -316,7 +316,7 @@
     var depletedNote = el('depletedNote');
     if (s.depletedAge) {
       depletedNote.style.display = 'block';
-      depletedNote.textContent = 'On this projection, portfolio withdrawals may exhaust savings around age ' + s.depletedAge + ' (before age ' + lastInputs.planEndAge + '). Premium users can see the full year-by-year path.';
+      depletedNote.textContent = 'On this projection, portfolio withdrawals may exhaust savings around age ' + s.depletedAge + '. Premium users can see the full year-by-year path.';
     } else {
       depletedNote.style.display = 'block';
       depletedNote.textContent = 'Ending balance at age ' + lastInputs.planEndAge + ': ' + fmt(s.endingBalance) + '.';
@@ -342,21 +342,21 @@
     }
     if (summaryEl) {
       var mcStartNote = mc.startAge > inputs.currentAge
-        ? (' when portfolio withdrawals begin at age ' + mc.startAge)
+        ? (' from retirement age ' + mc.startAge)
         : '';
       var gapRateNote = mc.gapWithdrawalRatePct > 0
         ? (' Initial spending-gap withdrawal rate: <strong>' + mc.gapWithdrawalRatePct + '%</strong> of portfolio.')
         : '';
       summaryEl.innerHTML =
-        'Your plan funded the <strong>spending gap from portfolio withdrawals</strong>' + mcStartNote +
+        'Your plan funded the <strong>spending and estimated taxes</strong>' + mcStartNote +
         ' through age <strong>' + inputs.planEndAge + '</strong> in <strong>' + mc.successRate + '%</strong> of ' +
         mc.numSims.toLocaleString() + ' simulations (starting portfolio ' + fmt(mc.startBalance) + ', return ' +
         mc.expectedReturnPct + '%, volatility ' + mc.volatilityPct + '%).' + gapRateNote + '<br><br>' +
         '<span style="font-size:13px;color:#4b5563;">The deterministic chart uses a <strong>fixed</strong> return each year. Monte Carlo randomizes returns — ' +
-        'being <strong>on track</strong> there does not require a 90%+ success rate here. Lower volatility (e.g. 8–10%) raises the score; 12% reflects an all-equity path.</span><br><br>' +
+        'both use the same annual taxes, RMDs and cash-flow timing. Zero volatility reproduces the fixed-return plan.</span><br><br>' +
         '<strong>Ending balance at age ' + inputs.planEndAge + ':</strong> 25th percentile = ' + fmt(mc.p25) +
         ', median = ' + fmt(mc.p50) + ', 75th = ' + fmt(mc.p75) +
-        '. Failures mean the portfolio could not cover the spending gap in at least one year.';
+        '. Failures mean available income and permitted withdrawals could not cover spending or estimated taxes in at least one year.';
     }
 
     var canvas = el('mcDistributionChart');
@@ -470,6 +470,8 @@
       '<td>' + rmdCell + '</td>' +
       '<td>' + taxCell + '</td>' +
       '<td>' + (y.totalIncome ? fmt(y.totalIncome) : '—') + '</td>' +
+      '<td>' + fmt(y.requestedSpending || 0) + ' / ' + fmt(y.fundedSpending || 0) + '</td>' +
+      '<td>' + fmt((y.spendingShortfall || 0) + (y.taxShortfall || 0)) + '</td>' +
       '</tr>';
   }
 
@@ -496,10 +498,10 @@
     }).join('');
 
     html += '<tr style="filter:blur(4px);user-select:none;pointer-events:none;opacity:0.7;">' +
-      '<td>…</td><td>$•••,•••</td><td>$••,•••</td><td>$••,•••</td><td>—</td><td>$••,•••</td><td>$••,•••</td><td>$••,•••</td></tr>';
+      '<td>…</td><td>$•••,•••</td><td>$••,•••</td><td>$••,•••</td><td>—</td><td>$••,•••</td><td>$••,•••</td><td>$••,•••</td><td>$••,•••</td><td>$••,•••</td></tr>';
     html += '<tr style="filter:blur(4px);user-select:none;pointer-events:none;opacity:0.7;">' +
-      '<td>…</td><td>$•••,•••</td><td>$••,•••</td><td>$••,•••</td><td>—</td><td>$••,•••</td><td>$••,•••</td><td>$••,•••</td></tr>';
-    html += '<tr><td colspan="8" style="text-align:center;padding:16px;background:#f5f3ff;color:#5b21b6;font-weight:600;">' +
+      '<td>…</td><td>$•••,•••</td><td>$••,•••</td><td>$••,•••</td><td>—</td><td>$••,•••</td><td>$••,•••</td><td>$••,•••</td><td>$••,•••</td><td>$••,•••</td></tr>';
+    html += '<tr><td colspan="10" style="text-align:center;padding:16px;background:#f5f3ff;color:#5b21b6;font-weight:600;">' +
       'Premium: see every year from age ' + lastInputs.currentAge + ' to ' + lastInputs.planEndAge + '</td></tr>';
     tbody.innerHTML = html;
   }
@@ -703,7 +705,7 @@
 
   function exportCsv() {
     if (!lastResult || !lastInputs) return;
-    var header = ['Age', 'Portfolio', 'Withdrawal', 'Social Security (household)', 'Other Income', 'RMD', 'Est Federal Tax', 'Total Income'];
+    var header = ['Age', 'Portfolio', 'Withdrawal', 'Social Security (household)', 'Other Income', 'RMD', 'Est Federal Tax', 'Total Income', 'Requested Spending', 'Funded Spending', 'Spending Shortfall', 'Taxes Paid', 'Unpaid Tax', 'Traditional Withdrawal', 'Other Withdrawal'];
     var lines = [header.join(',')];
     lastResult.years.forEach(function (y) {
       lines.push([
@@ -714,7 +716,10 @@
         Math.round(y.otherIncome || 0),
         Math.round(y.rmd || 0),
         Math.round(y.federalTax || 0),
-        Math.round(y.totalIncome || 0)
+        Math.round(y.totalIncome || 0),
+        Math.round(y.requestedSpending || 0), Math.round(y.fundedSpending || 0),
+        Math.round(y.spendingShortfall || 0), Math.round(y.taxesPaid || 0), Math.round(y.taxShortfall || 0),
+        Math.round(y.traditionalWithdrawal || 0), Math.round(y.otherWithdrawal || 0)
       ].join(','));
     });
     var blob = new Blob([lines.join('\n')], { type: 'text/csv' });
@@ -790,6 +795,8 @@
           otherIncome: y.otherIncome || 0,
           rmd: y.rmd || 0,
           federalTax: y.federalTax || 0,
+          requestedSpending: y.requestedSpending || 0, fundedSpending: y.fundedSpending || 0,
+          spendingShortfall: y.spendingShortfall || 0, taxShortfall: y.taxShortfall || 0,
           totalIncome: y.totalIncome || 0
         };
       }),

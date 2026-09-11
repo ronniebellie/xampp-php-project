@@ -30,8 +30,12 @@ const result=engine.runRothAnalysis(base);
 // Headline conversion cost must be identical to the first-row scenario difference.
 close(result.conversionTaxCost,result.withConversion.yearlyData[0].allInTax-result.withoutConversion.yearlyData[0].allInTax,.01);
 // Taxes funded from brokerage must reduce brokerage wealth relative to an otherwise identical Roth-funded run.
-const rothFunded=engine.runRothAnalysis({...base,taxPaymentSource:'roth'});
-assert.ok(result.withConversion.finalTaxableBalance<rothFunded.withConversion.finalTaxableBalance);
+const fundingCase={...base,lifeExpectancy:69,survivorLifeExpectancy:69,
+  socialSecuritySelf:0,socialSecuritySpouse:0,annualOrdinaryInvestmentIncome:0,annualLongTermGains:0,
+  targetAfterTaxSpending:0,conversionAmount:100000};
+const taxableFunded=engine.runRothAnalysis(fundingCase);
+const rothFunded=engine.runRothAnalysis({...fundingCase,taxPaymentSource:'roth'});
+assert.ok(taxableFunded.withConversion.finalTaxableBalance<rothFunded.withConversion.finalTaxableBalance);
 // RMD uses the prior year-end balance, without first applying the current year's return.
 const rmdResult=engine.runRothAnalysis({...base,currentAge:73,spouseAge:73,lifeExpectancy:73,survivorLifeExpectancy:73,returnRate:7,conversionAmount:0,conversionYears:1,targetAfterTaxSpending:0});
 close(rmdResult.withoutConversion.yearlyData[0].rmd,1180000/26.5,.01);
@@ -45,7 +49,7 @@ const nextRow=widow.withConversion.yearlyData.find(r=>r.age===80);
 assert.strictEqual(deathRow.filingStatus,'married');
 assert.strictEqual(nextRow.filingStatus,'single');
 assert.ok(nextRow.socialSecurity<deathRow.socialSecurity);
-// Both alternatives deliver the same spending target by construction.
-close(widow.withConversion.totalSpending,widow.withoutConversion.totalSpending,.01);
+// Both alternatives request the same target; actual funding can differ.
+close(widow.withConversion.totalRequestedSpending,widow.withoutConversion.totalRequestedSpending,.01);
 
 console.log('Roth engine tests passed');

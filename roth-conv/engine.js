@@ -176,51 +176,78 @@
       const ordinaryInvestment=c.annualOrdinaryInvestmentIncome*inflationFactor(year,c.inflationRate);
       const scheduledGains=c.annualLongTermGains*inflationFactor(year,c.inflationRate);
       const taxExempt=c.taxExemptInterest*inflationFactor(year,c.inflationRate);
+      const beginningAssets=state.traditional+state.roth+state.taxable;
       const beginningTraditional=state.traditional;
       const rmd=ownerAge>=rmdStartAge && RMD[Math.min(120,Math.floor(ownerAge))]?Math.min(state.traditional,beginningTraditional/RMD[Math.min(120,Math.floor(ownerAge))]):0;
       state.traditional-=rmd; totalRMDs+=rmd;
       const conversionActive=doConversion && !survivor && i<c.conversionYears;
       const conversion=conversionActive?Math.min(c.conversionAmount,state.traditional):0;
       state.traditional-=conversion; state.roth+=conversion;
-      const spending=c.withdrawalMode==='target_after_tax'&&c.targetAfterTaxSpending>0
+      const spending=c.withdrawalMode==='target_after_tax'
         ?c.targetAfterTaxSpending*inflationFactor(year,c.inflationRate)*(survivor?c.survivorSpendingPercent:1)
         :(c.annualPortfolioWithdrawalRate/100)*(state.traditional+state.roth+state.taxable);
-      let cash=ss+other+ordinaryInvestment+scheduledGains+rmd;
-      let ordinaryWithdrawal=0,rothWithdrawal=0,taxableWithdrawal=0,realizedGain=0,taxFundingSold=0;
+      const externalIncome=ss+other+ordinaryInvestment+scheduledGains+taxExempt;
+      let cash=externalIncome+rmd;
+      let ordinaryWithdrawal=0,rothWithdrawal=0,taxableWithdrawal=0,realizedGain=0;
+      const taxWithdrawals={traditional:0,roth:0,taxable:0};
       const prelim=federalTax({year,filingStatus,ages,socialSecurity:ss,ordinaryIncome:other+ordinaryInvestment+rmd+conversion,longTermCapitalGains:scheduledGains,taxExemptInterest:taxExempt,inflationRate:c.inflationRate,includeNiit:c.includeNiit,netInvestmentIncome:ordinaryInvestment});
       const targetBracket=bracketsFor(year,filingStatus,c.inflationRate).find(b=>b[1]===c.targetMarginalRate);
       const traditionalRoom=targetBracket?Math.max(0,targetBracket[0]-prelim.taxableIncome):0;
       if(spending>cash){const w=withdrawForCash(state,spending-cash,c.withdrawalOrder,traditionalRoom);ordinaryWithdrawal+=w.traditional;rothWithdrawal+=w.roth;taxableWithdrawal+=w.taxable;realizedGain+=w.taxableGain;cash+=w.traditional+w.roth+w.taxable;}
       let taxResult,irmaa=0,allInTax=0;
-      for(let pass=0;pass<8;pass++){
+      for(let pass=0;pass<128;pass++){
         taxResult=federalTax({year,filingStatus,ages,socialSecurity:ss,ordinaryIncome:other+ordinaryInvestment+rmd+conversion+ordinaryWithdrawal,longTermCapitalGains:scheduledGains+realizedGain,taxExemptInterest:taxExempt,inflationRate:c.inflationRate,includeNiit:c.includeNiit,netInvestmentIncome:ordinaryInvestment});
         const lookback=year-2, lookbackStatus=statusHistory[lookback]||filingStatus, lookbackMagi=magiHistory[lookback] == null ? taxResult.magi : magiHistory[lookback];
         const enrollees=c.includeIrmaa?(survivor?(ownerAge>=c.medicareStartAge?1:0):([primaryAge,spouseAge].filter(a=>a!=null&&a>=c.medicareStartAge).length)):0;
         irmaa=c.includeIrmaa?irmaaAnnual(lookbackMagi,lookbackStatus,year,c.inflationRate,enrollees):0;
         allInTax=taxResult.federalTax+taxResult.niit+irmaa;
-        if(c.taxPaymentSource!=='taxable') break;
-        const need=Math.max(0,allInTax-taxFundingSold);
-        if(need<1||state.taxable<=0) break;
-        const sale=sellTaxable(state,need); taxableWithdrawal+=sale.gross; taxFundingSold+=sale.gross; realizedGain+=sale.gain;
-      }
-      if(c.taxPaymentSource!=='taxable'){
-        const w=withdrawForCash(state,allInTax,c.taxPaymentSource==='roth'?'roth_then_traditional':'traditional_then_roth',0);
+        // Reserve the requested spending, then fund taxes from the selected account.
+        // Recompute after every draw: traditional draws and taxable gains can add tax.
+        const need=Math.max(0,spending+allInTax-cash);
+        if(need<1e-7 || state.traditional+state.roth+state.taxable<1e-7) break;
+        let w={traditional:0,roth:0,taxable:0,taxableGain:0};
+        if(c.taxPaymentSource==='taxable'){
+          const sale=sellTaxable(state,need);
+          w=withdrawForCash(state,need-sale.gross,'traditional_then_roth',0);
+          w.taxable+=sale.gross;w.taxableGain+=sale.gain;
+        }else{
+          w=withdrawForCash(state,need,c.taxPaymentSource==='roth'?'roth_then_traditional':'traditional_then_roth',0);
+        }
         ordinaryWithdrawal+=w.traditional;rothWithdrawal+=w.roth;taxableWithdrawal+=w.taxable;realizedGain+=w.taxableGain;
+        taxWithdrawals.traditional+=w.traditional;taxWithdrawals.roth+=w.roth;taxWithdrawals.taxable+=w.taxable;
+        cash+=w.traditional+w.roth+w.taxable;
       }
-      const surplus=Math.max(0,cash-spending);
+      const taxesPaid=Math.min(cash,allInTax);
+      const taxShortfall=Math.max(0,allInTax-taxesPaid);
+      const fundedSpending=Math.min(spending,Math.max(0,cash-taxesPaid));
+      const spendingShortfall=Math.max(0,spending-fundedSpending);
+      // Attribute every tax dollar to cash actually received; no unfunded tax is paid.
+      const taxFunding={traditional:0,roth:0,taxable:0,income:0,rmd:0};
+      let unassigned=taxesPaid;
+      for(const key of ['taxable','traditional','roth']){
+        taxFunding[key]=Math.min(unassigned,taxWithdrawals[key]);unassigned-=taxFunding[key];
+      }
+      for(const [key,available] of [['income',externalIncome],['rmd',rmd],['traditional',ordinaryWithdrawal-taxWithdrawals.traditional],['roth',rothWithdrawal-taxWithdrawals.roth],['taxable',taxableWithdrawal-taxWithdrawals.taxable]]){
+        const amount=Math.min(unassigned,available);taxFunding[key]+=amount;unassigned-=amount;
+      }
+      const surplus=Math.max(0,cash-taxesPaid-fundedSpending);
       if(surplus){state.taxable+=surplus;state.basis+=surplus;}
+      const investmentReturn=(state.traditional+state.roth)*c.returnRate+state.taxable*c.taxableReturnRate;
       state.traditional*=1+c.returnRate; state.roth*=1+c.returnRate; state.taxable*=1+c.taxableReturnRate;
-      const discounted=allInTax/Math.pow(1+c.discountRate,i);
-      totalTaxesPaid+=allInTax;totalDiscountedTaxesPaid+=discounted;totalIrmaaPaid+=irmaa;totalNiitPaid+=taxResult.niit;totalSpending+=spending;
+      const discounted=taxesPaid/Math.pow(1+c.discountRate,i);
+      totalTaxesPaid+=taxesPaid;totalDiscountedTaxesPaid+=discounted;totalIrmaaPaid+=Math.min(irmaa,Math.max(0,taxesPaid-taxResult.federalTax-taxResult.niit));totalNiitPaid+=Math.min(taxResult.niit,Math.max(0,taxesPaid-taxResult.federalTax));totalSpending+=fundedSpending;
       magiHistory[year]=taxResult.magi;statusHistory[year]=filingStatus;
       rows.push({age:primaryAge,survivorAge:survivor?ownerAge:null,year,filingStatus,conversion,rmd,totalWithdrawal:ordinaryWithdrawal+rothWithdrawal+taxableWithdrawal,
         traditionalWithdrawal:ordinaryWithdrawal,rothWithdrawal,taxableWithdrawal,realizedCapitalGain:realizedGain,socialSecurity:ss,taxableSocialSecurity:taxResult.taxableSocialSecurity,
         income:taxResult.magi-taxExempt,magi:taxResult.magi,taxableIncome:taxResult.taxableIncome,federalTax:taxResult.federalTax,irmaa,niit:taxResult.niit,allInTax,
-        totalTaxesPaid,totalDiscountedTaxesPaid,netCash:spending,spending,traditionalBalance:state.traditional,rothBalance:state.roth,taxableBalance:state.taxable,
+        totalTaxesPaid,totalDiscountedTaxesPaid,beginningAssets,externalIncome,investmentReturn,taxesPaid,taxShortfall,taxFunding,
+        requestedSpending:spending,fundedSpending,spendingShortfall,netCash:fundedSpending,spending:fundedSpending,traditionalBalance:state.traditional,rothBalance:state.roth,taxableBalance:state.taxable,
         standardDeduction:taxResult.deduction.total,enhancedSeniorDeduction:taxResult.deduction.enhancedSenior});
     }
     const last=rows[rows.length-1];
-    return {totalTaxesPaid,totalDiscountedTaxesPaid,totalIrmaaPaid,totalNiitPaid,totalRMDs,totalSpending,yearlyData:rows,
+    return {totalRequestedSpending:rows.reduce((s,r)=>s+r.requestedSpending,0),
+      totalSpendingShortfall:rows.reduce((s,r)=>s+r.spendingShortfall,0),totalTaxShortfall:rows.reduce((s,r)=>s+r.taxShortfall,0),
+      totalTaxesPaid,totalDiscountedTaxesPaid,totalIrmaaPaid,totalNiitPaid,totalRMDs,totalSpending,yearlyData:rows,
       finalTraditionalBalance:last.traditionalBalance,finalRothBalance:last.rothBalance,finalTaxableBalance:last.taxableBalance,
       finalAfterTaxEstate:last.rothBalance+last.taxableBalance+last.traditionalBalance*(1-marginalRate(last.taxableIncome,last.year,last.filingStatus,c.inflationRate))};
   }

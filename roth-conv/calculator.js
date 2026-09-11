@@ -635,7 +635,7 @@ function displayResults(data) {
 
         <div class="info-box" style="margin-bottom: 25px;">
             <h3>Lifetime All-In Tax Comparison</h3>
-            <p style="margin: 0 0 12px; font-size: 13px; color: #4b5563;">Both scenarios target the same after-tax spending. Taxes paid from brokerage assets reduce that account and taxable sales recognize estimated capital gains. Social Security uses the federal provisional-income calculation.</p>
+            <p style="margin: 0 0 12px; font-size: 13px; color: #4b5563;">Requested spending is shown separately from funded spending. Taxes are paid before spending; any unmet spending or unpaid tax is reported as a shortfall. Surplus income funds taxes first; the selected tax account is then used, with other accounts as fallback. Taxes paid from brokerage assets reduce that account and taxable sales recognize estimated capital gains. Social Security uses the federal provisional-income calculation. Enter investment cash distributions separately from price appreciation: account return assumptions must exclude those distributions to avoid double counting.</p>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
                 <div>
                     <strong>Without Conversion:</strong><br>
@@ -670,6 +670,7 @@ function displayResults(data) {
 
         <div class="info-box" style="margin-bottom:25px;">
             <h3>Ending After-Tax Wealth</h3>
+            <p>Unfunded spending / unpaid taxes: no conversion $${Math.round(data.withoutConversion.totalSpendingShortfall).toLocaleString()} / $${Math.round(data.withoutConversion.totalTaxShortfall).toLocaleString()}; with conversion $${Math.round(data.withConversion.totalSpendingShortfall).toLocaleString()} / $${Math.round(data.withConversion.totalTaxShortfall).toLocaleString()}. Tax savings and ending wealth alone do not establish that spending was funded. Unpaid taxes are not deducted from the estate estimate.</p>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;">
                 <div><strong>No Conversion:</strong><br>$${data.withoutConversion.finalAfterTaxEstate.toLocaleString(undefined,{maximumFractionDigits:0})}</div>
                 <div><strong>With Conversion:</strong><br>$${data.withConversion.finalAfterTaxEstate.toLocaleString(undefined,{maximumFractionDigits:0})}</div>
@@ -875,7 +876,7 @@ function displayResults(data) {
                             <th>All-In Tax</th>
                             <th>Cumulative All-In</th>
                             ${hasDiscount ? '<th>Cumulative (PV)</th>' : ''}
-                            <th>Net Cash</th>
+                            <th>Funded Spending</th><th>Requested Spending</th><th>Spending Shortfall</th><th>Unpaid Tax</th>
                             <th>Traditional IRA</th>
                             <th>Roth IRA</th>
                             <th>Taxable</th>
@@ -908,7 +909,7 @@ function displayResults(data) {
                             <th>All-In Tax</th>
                             <th>Cumulative All-In</th>
                             ${hasDiscount ? '<th>Cumulative (PV)</th>' : ''}
-                            <th>Net Cash</th>
+                            <th>Funded Spending</th><th>Requested Spending</th><th>Spending Shortfall</th><th>Unpaid Tax</th>
                             <th>Traditional IRA</th>
                             <th>Roth IRA</th>
                             <th>Taxable</th>
@@ -985,6 +986,9 @@ function generateTableRows(yearlyData, includeDiscounted, includeIrmaa, includeN
             <td>$${row.totalTaxesPaid.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
             ${includeDiscounted ? `<td>$${row.totalDiscountedTaxesPaid.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>` : ''}
             <td>$${(row.netCash || 0).toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+            <td>$${(row.requestedSpending || 0).toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+            <td>$${(row.spendingShortfall || 0).toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+            <td>$${(row.taxShortfall || 0).toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
             <td>$${row.traditionalBalance.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
             <td>$${row.rothBalance.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
             <td>$${(row.taxableBalance || 0).toLocaleString(undefined, {maximumFractionDigits: 0})}</td>

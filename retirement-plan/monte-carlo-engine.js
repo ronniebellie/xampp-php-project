@@ -36,101 +36,6 @@
     return arr[i] * (1 - f) + arr[i + 1] * f;
   }
 
-  function annualSocialSecurity(age, inputs, ssMonthlyBaseline) {
-    if (inputs.ssAlreadyReceiving) {
-      if (age < inputs.currentAge) return 0;
-      var yearsFromNow = age - inputs.currentAge;
-      var monthlyNow = ssMonthlyBaseline;
-      for (var y = 1; y <= yearsFromNow; y++) {
-        monthlyNow *= 1 + inputs.colaRate / 100;
-      }
-      return monthlyNow * 12;
-    }
-    if (age < inputs.ssClaimAge) return 0;
-    var yearsSinceClaim = age - inputs.ssClaimAge;
-    var monthly = ssMonthlyBaseline;
-    for (var y = 1; y <= yearsSinceClaim; y++) {
-      monthly *= 1 + inputs.colaRate / 100;
-    }
-    return monthly * 12;
-  }
-
-  function annualSpouseSocialSecurity(age, inputs) {
-    if (inputs.spouseSsAlreadyReceiving) {
-      var monthlyReceiving = inputs.spouseSsCurrentMonthly || 0;
-      if (monthlyReceiving <= 0) return 0;
-      if (age < inputs.currentAge) return 0;
-      var yearsFromNow = age - inputs.currentAge;
-      var spouseMonthly = monthlyReceiving;
-      for (var s = 1; s <= yearsFromNow; s++) {
-        spouseMonthly *= 1 + inputs.colaRate / 100;
-      }
-      return spouseMonthly * 12;
-    }
-    var monthly = inputs.spouseSsMonthly || 0;
-    if (monthly <= 0) return 0;
-    var startAge = inputs.spouseSsClaimAge || inputs.ssClaimAge;
-    if (age < startAge) return 0;
-    var yearsSinceClaim = age - startAge;
-    for (var i = 1; i <= yearsSinceClaim; i++) {
-      monthly *= 1 + inputs.colaRate / 100;
-    }
-    return monthly * 12;
-  }
-
-  function portfolioWithdrawalStartAge(inputs) {
-    var start = inputs.portfolioWithdrawalStartAge;
-    if (start != null && !isNaN(start) && start > 0) return start;
-    return inputs.retirementAge;
-  }
-
-  function annualSpendingAtAge(age, inputs) {
-    if (age < inputs.retirementAge) return 0;
-    var yearsSinceRetirement = age - inputs.retirementAge;
-    return inputs.baseAnnualSpending * Math.pow(1 + inputs.inflation / 100, yearsSinceRetirement);
-  }
-
-  function simulateRetirementYear(balanceStart, age, inputs, ssMonthlyBaseline, returnRate) {
-    var spending = annualSpendingAtAge(age, inputs);
-    var ssAnnual = annualSocialSecurity(age, inputs, ssMonthlyBaseline);
-    var spouseSsAnnual = annualSpouseSocialSecurity(age, inputs);
-    var otherIncome = inputs.otherGuaranteedAnnual;
-    var withdrawalStartAge = portfolioWithdrawalStartAge(inputs);
-    var spendingGap = Math.max(0, spending - ssAnnual - spouseSsAnnual - otherIncome);
-    var spendingGapWithdrawal = age >= withdrawalStartAge ? spendingGap : 0;
-
-    if (spendingGapWithdrawal <= 0) {
-      return {
-        balanceEnd: balanceStart * (1 + returnRate),
-        depleted: false,
-        spendingShortfall: false
-      };
-    }
-
-    // Match Plan Success (monthly): portfolio grows through the year; spending gap is
-    // withdrawn in 12 monthly slices. Failure only if the balance cannot fund a slice.
-    var balance = balanceStart;
-    var monthlyGap = spendingGapWithdrawal / 12;
-    var onePlus = 1 + returnRate;
-    var monthFactor = onePlus <= 0 ? 0 : Math.pow(onePlus, 1 / 12);
-    var spendingShortfall = false;
-
-    for (var m = 0; m < 12; m++) {
-      if (balance < monthlyGap) {
-        spendingShortfall = true;
-        balance = Math.max(0, (balance - monthlyGap) * monthFactor);
-        break;
-      }
-      balance = (balance - monthlyGap) * monthFactor;
-    }
-
-    return {
-      balanceEnd: Math.max(0, balance),
-      depleted: balance <= 0,
-      spendingShortfall: spendingShortfall
-    };
-  }
-
   /**
    * Stress-test whether portfolio withdrawals can fund the spending gap through plan end age.
    *
@@ -139,16 +44,8 @@
    * @param {object} options - { expectedReturnPct, volatilityPct, numSims }
    */
   function runRetirementStressTest(inputs, deterministic, options) {
-    var withdrawalStartAge = portfolioWithdrawalStartAge(inputs);
-    var inRetirement = inputs.currentAge >= inputs.retirementAge;
-    var startAge;
-    if (!inRetirement) {
-      startAge = Math.max(inputs.retirementAge, withdrawalStartAge);
-    } else if (withdrawalStartAge > inputs.currentAge) {
-      startAge = withdrawalStartAge;
-    } else {
-      startAge = inputs.currentAge;
-    }
+    var withdrawalStartAge = inputs.portfolioWithdrawalStartAge || inputs.retirementAge;
+    var startAge = Math.max(inputs.currentAge, inputs.retirementAge);
     var yearsToModel = inputs.planEndAge - startAge + 1;
     if (yearsToModel <= 0) {
       return {
@@ -165,27 +62,21 @@
     var startRow = deterministic.years.find(function (y) { return y.age === startAge; });
     var startBalance = startRow ? startRow.balanceStart : inputs.balance;
     var firstGapRow = deterministic.years.find(function (y) {
-      return y.age >= withdrawalStartAge && y.spending > 0;
+      return y.age >= withdrawalStartAge && y.requestedSpending > 0;
     });
     var initialGapWithdrawal = 0;
     if (firstGapRow) {
-      initialGapWithdrawal = Math.max(0, firstGapRow.spending - (firstGapRow.socialSecurity || 0) -
+      initialGapWithdrawal = Math.max(0, firstGapRow.requestedSpending - (firstGapRow.socialSecurity || 0) -
         (firstGapRow.otherIncome || 0));
     }
     var gapWithdrawalRatePct = startBalance > 0
       ? parseFloat((initialGapWithdrawal / startBalance * 100).toFixed(2))
       : 0;
 
-    var ssMonthlyBaseline = inputs.ssAlreadyReceiving
-      ? (inputs.ssCurrentMonthly || 0)
-      : FC.calculateMonthlyBenefit(
-        inputs.ssPiaMonthly,
-        inputs.birthYear,
-        inputs.ssClaimAge
-      );
-
-    var mean = (options.expectedReturnPct || inputs.returnRetirement || 5) / 100;
-    var stdDev = (options.volatilityPct || 12) / 100;
+    var expectedReturnPct = options.expectedReturnPct != null ? options.expectedReturnPct : inputs.returnRetirement;
+    var volatilityPct = options.volatilityPct != null ? options.volatilityPct : 12;
+    var mean = expectedReturnPct / 100;
+    var stdDev = volatilityPct / 100;
     var numSims = FC.clamp(options.numSims || 1000, 100, 5000);
 
     resetRng();
@@ -194,34 +85,13 @@
     var endingBalances = [];
 
     for (var s = 0; s < numSims; s++) {
-      var balance = startBalance;
-      var failed = false;
-
-      var yearRets = [];
-      for (var yr = 0; yr < yearsToModel; yr++) {
-        yearRets.push(normalRandom(mean, stdDev));
-      }
-
-      for (var y = 0; y < yearsToModel && !failed; y++) {
-        var age = startAge + y;
-        var step = simulateRetirementYear(
-          balance,
-          age,
-          inputs,
-          ssMonthlyBaseline,
-          yearRets[y]
-        );
-        balance = step.balanceEnd;
-        if (step.spendingShortfall) {
-          failed = true;
-          endingBalances.push(balance);
-        }
-      }
-
-      if (!failed) {
-        successCount++;
-        endingBalances.push(balance);
-      }
+      // Reuse the complete annual ledger: taxes, RMDs, delayed draws and surplus.
+      // Accumulation remains deterministic; only retirement returns are sampled.
+      var simulation = global.RBPlanEngine.runDeterministicPlan(inputs, function () {
+        return Math.max(-100, normalRandom(mean, stdDev) * 100);
+      });
+      if (simulation.summary.shortfallAge === null) successCount++;
+      endingBalances.push(simulation.summary.endingBalance);
     }
 
     endingBalances.sort(function (a, b) { return a - b; });
@@ -260,8 +130,8 @@
       initialGapWithdrawal: initialGapWithdrawal,
       gapWithdrawalRatePct: gapWithdrawalRatePct,
       yearsToModel: yearsToModel,
-      expectedReturnPct: options.expectedReturnPct || inputs.returnRetirement,
-      volatilityPct: options.volatilityPct || 12,
+      expectedReturnPct: expectedReturnPct,
+      volatilityPct: volatilityPct,
       histogram: { labels: labels, counts: buckets }
     };
   }

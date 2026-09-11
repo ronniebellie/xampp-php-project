@@ -63,7 +63,9 @@ function writeScenarioRows($out, string $scenario, array $rows): void {
             number_format($r['netCash'] ?? 0, 2),
             number_format($r['traditionalBalance'], 2),
             number_format($r['rothBalance'], 2),
-            number_format($r['taxableBalance'] ?? 0, 2)
+            number_format($r['taxableBalance'] ?? 0, 2),
+            number_format($r['requestedSpending'] ?? 0, 2), number_format($r['spendingShortfall'] ?? 0, 2),
+            number_format($r['taxesPaid'] ?? 0, 2), number_format($r['taxShortfall'] ?? 0, 2)
         ]);
     }
 }
@@ -102,7 +104,7 @@ $header = [
     'Scenario', 'Age', 'Year', 'Filing Status', 'Conversion', 'RMD', 'Social Security', 'Taxable Social Security', 'Portfolio Withdrawal', 'Taxable Brokerage Withdrawal', 'Realized Capital Gain',
     'Total Income', 'MAGI', 'Taxable Income', 'Federal Tax', 'IRMAA', 'NIIT',
     'All-In Tax', 'Cumulative All-In Tax', 'Cumulative All-In Tax (PV)',
-    'After-Tax Spending', 'Traditional IRA', 'Roth IRA', 'Taxable Brokerage'
+    'Funded Spending', 'Traditional IRA', 'Roth IRA', 'Taxable Brokerage', 'Requested Spending', 'Spending Shortfall', 'Taxes Paid', 'Unpaid Tax'
 ];
 fputcsv($out, $header);
 
