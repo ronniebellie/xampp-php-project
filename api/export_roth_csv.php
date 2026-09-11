@@ -89,14 +89,14 @@ if ($hasDiscount) {
     fputcsv($out, ['Break-even age (discounted)', $data['breakEvenAgeDiscounted'] ?? '']);
 }
 if ($includeIrmaa) {
-    fputcsv($out, ['Lifetime IRMAA — no conversion', number_format(sumField($withoutRows, 'irmaa'), 2)]);
-    fputcsv($out, ['Lifetime IRMAA — with conversion', number_format(sumField($withRows, 'irmaa'), 2)]);
-    fputcsv($out, ['IRMAA reduction', number_format($data['irmaaReduction'] ?? 0, 2)]);
+    fputcsv($out, ['Lifetime IRMAA assessed — no conversion', number_format(sumField($withoutRows, 'irmaa'), 2)]);
+    fputcsv($out, ['Lifetime IRMAA assessed — with conversion', number_format(sumField($withRows, 'irmaa'), 2)]);
+    fputcsv($out, ['IRMAA paid reduction', number_format($data['irmaaReduction'] ?? 0, 2)]);
 }
 if ($includeNiit) {
-    fputcsv($out, ['Lifetime NIIT — no conversion', number_format(sumField($withoutRows, 'niit'), 2)]);
-    fputcsv($out, ['Lifetime NIIT — with conversion', number_format(sumField($withRows, 'niit'), 2)]);
-    fputcsv($out, ['NIIT reduction', number_format($data['niitReduction'] ?? 0, 2)]);
+    fputcsv($out, ['Lifetime NIIT assessed — no conversion', number_format(sumField($withoutRows, 'niit'), 2)]);
+    fputcsv($out, ['Lifetime NIIT assessed — with conversion', number_format(sumField($withRows, 'niit'), 2)]);
+    fputcsv($out, ['NIIT paid reduction', number_format($data['niitReduction'] ?? 0, 2)]);
 }
 fputcsv($out, []);
 

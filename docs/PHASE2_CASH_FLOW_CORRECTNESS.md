@@ -122,6 +122,41 @@ modeling in Retirement Plan are not introduced here. The cash accounting is
 consistent with the stated inputs and existing tax assumptions; this phase does
 not certify those separate tax-rule approximations.
 
-No live-site verification was performed, as requested. PDF layout has not been
-visually rendered in this phase. No unrelated calculators or shared financial
+No live-site verification was performed, as requested. PDF layout and numeric exports were subsequently verified locally; see below. No unrelated calculators or shared financial
 helpers were changed.
+
+
+## Final local pre-deployment review
+
+Review of commit `768a8fc60cc3105e6ba2127af139b933973e478e` found a
+Phase 2 Roth PDF failure: the added shortfall summary called `sumField`, while
+the report defines `rothSumField`. Corrected the calls and added
+`dev/test-phase2-roth-pdf.php`, which executes the real CLI PDF path and checks
+that it exits successfully and produces a nonempty PDF. The original committed
+report reproduced exit 255 before the correction.
+
+The same local review corrected report presentation defects in the affected
+exports: aligned Retirement Plan timeline header/body widths (an inherited
+layout issue exposed by checking the tax columns), kept input rows together,
+and repeated the new spending-funding table's header across page breaks. Roth
+PDF/CSV labels now explicitly distinguish assessed tax liabilities from amounts
+actually paid; these differ in depleted scenarios. No engine, statutory table,
+or RMD rule changed in this correction.
+
+Six synthetic PDFs cover one-year funded plans, exhausted portfolios with
+spending/unpaid-tax shortfalls, and long retirement horizons (31 Roth years and
+36 Retirement Plan years). Rendered all pages locally with Poppler and inspected
+the layouts. PDF table extraction and CSV parsing matched every modeled year
+against saved calculator output (1,314 numeric/row consistency checks, including
+PAS final balances). Checked tax-source labels, shortfall disclosures, 0% Monte
+Carlo success/volatility, assumptions, repeated table headers and text boundaries.
+These fixtures omitted optional chart images; chart datasets/export payloads
+remain covered by the cash-flow suite.
+
+Roth PDFs used the existing CLI QA entry point. Retirement Plan PDF and server CSV
+rendering used temporary CLI harnesses that bypassed only request authentication,
+database loading and input transport, and executed the repository's report body.
+No customer data, website, browser, database, or production configuration was used.
+The browser-side Retirement Plan CSV function ran in a local VM with a captured
+Blob. The correction passed the 1,719-assertion cash-flow suite, existing regression
+suites, the new actual-PDF regression, and PHP syntax validation.

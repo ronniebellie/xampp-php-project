@@ -184,7 +184,7 @@ $inputRows = array_merge($inputRows, [
 $inputsHtml = '<table border="0" cellpadding="7" style="background-color:#f9fafb;">';
 foreach ($inputRows as $i => $row) {
     $border = $i < count($inputRows) - 1 ? 'border-bottom:1px solid #e5e7eb;' : '';
-    $inputsHtml .= '<tr><td width="55%" style="' . $border . '"><b>' . rp_h($row[0]) . ':</b></td>'
+    $inputsHtml .= '<tr nobr="true"><td width="55%" style="' . $border . '"><b>' . rp_h($row[0]) . ':</b></td>'
         . '<td width="45%" style="' . $border . '">' . rp_h($row[1]) . '</td></tr>';
 }
 $inputsHtml .= '</table>';
@@ -239,27 +239,27 @@ $pdf->Ln(3);
 
 $tableHtml = '<table border="1" cellpadding="5" style="border-collapse:collapse;font-size:8px;">'
     . '<thead><tr style="background-color:#667eea;color:white;font-weight:bold;text-align:center;">'
-    . '<th width="8%">Age</th>'
-    . '<th width="14%">Portfolio</th>'
-    . '<th width="12%">Withdrawal</th>'
+    . '<th width="6%">Age</th>'
+    . '<th width="16%">Portfolio</th>'
+    . '<th width="14%">Withdrawal</th>'
     . '<th width="12%">SS</th>'
     . '<th width="10%">Other</th>'
-    . '<th width="10%">RMD</th>'
-    . '<th width="12%">Est. tax</th>'
-    . '<th width="12%">Income</th>'
+    . '<th width="12%">RMD</th>'
+    . '<th width="14%">Est. tax</th>'
+    . '<th width="16%">Income</th>'
     . '</tr></thead><tbody>';
 
 foreach ($projections as $i => $row) {
     $rowColor = ($i % 2 === 0) ? '#f9fafb' : '#ffffff';
     $tableHtml .= '<tr style="background-color:' . $rowColor . ';text-align:right;">'
-        . '<td style="text-align:center;">' . (int) ($row['age'] ?? 0) . '</td>'
-        . '<td>' . rp_money($row['balanceEnd'] ?? 0) . '</td>'
-        . '<td>' . rp_money($row['withdrawal'] ?? 0) . '</td>'
-        . '<td>' . rp_money($row['socialSecurity'] ?? 0) . '</td>'
-        . '<td>' . rp_money($row['otherIncome'] ?? 0) . '</td>'
-        . '<td>' . rp_money($row['rmd'] ?? 0) . '</td>'
-        . '<td>' . rp_money($row['federalTax'] ?? 0) . '</td>'
-        . '<td>' . rp_money($row['totalIncome'] ?? 0) . '</td>'
+        . '<td width="6%" style="text-align:center;">' . (int) ($row['age'] ?? 0) . '</td>'
+        . '<td width="16%">' . rp_money($row['balanceEnd'] ?? 0) . '</td>'
+        . '<td width="14%">' . rp_money($row['withdrawal'] ?? 0) . '</td>'
+        . '<td width="12%">' . rp_money($row['socialSecurity'] ?? 0) . '</td>'
+        . '<td width="10%">' . rp_money($row['otherIncome'] ?? 0) . '</td>'
+        . '<td width="12%">' . rp_money($row['rmd'] ?? 0) . '</td>'
+        . '<td width="14%">' . rp_money($row['federalTax'] ?? 0) . '</td>'
+        . '<td width="16%">' . rp_money($row['totalIncome'] ?? 0) . '</td>'
         . '</tr>';
 }
 $tableHtml .= '</tbody></table>';
@@ -269,11 +269,11 @@ $pdf->writeHTML($tableHtml, true, false, true, false, '');
 $pdf->Ln(8);
 $pdf->SetFont('helvetica', '', 9);
 $pdf->SetTextColor(80, 80, 80);
-$cashFlowHtml = '<h3>Spending funding</h3><table border="1" cellpadding="4"><tr><th>Age</th><th>Requested</th><th>Funded</th><th>Spending shortfall</th><th>Unpaid tax</th></tr>';
+$cashFlowHtml = '<h3>Spending funding</h3><table border="1" cellpadding="4"><thead><tr><th>Age</th><th>Requested</th><th>Funded</th><th>Spending shortfall</th><th>Unpaid tax</th></tr></thead><tbody>';
 foreach ($projections as $row) {
     $cashFlowHtml .= '<tr><td>' . (int)($row['age'] ?? 0) . '</td><td>' . rp_money($row['requestedSpending'] ?? 0) . '</td><td>' . rp_money($row['fundedSpending'] ?? 0) . '</td><td>' . rp_money($row['spendingShortfall'] ?? 0) . '</td><td>' . rp_money($row['taxShortfall'] ?? 0) . '</td></tr>';
 }
-$pdf->writeHTML($cashFlowHtml . '</table>', true, false, true, false, '');
+$pdf->writeHTML($cashFlowHtml . '</tbody></table>', true, false, true, false, '');
 $disclaimer = 'Educational model only. Federal tax estimates are simplified. RMDs apply to the tax-deferred '
     . 'portion only. Other assets are modeled as tax-free principal/Roth; taxable gains are not modeled. Taxes and spending precede annual returns. Excess income and RMDs are saved. Monte Carlo results (if shown) are not predictions of future markets. Not financial or tax advice.';
 $pdf->MultiCell(0, 5, $disclaimer, 0, 'L');

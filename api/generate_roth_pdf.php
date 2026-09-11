@@ -58,7 +58,7 @@ function rothBuildYearlyTableHtml(array $rows, bool $includeIrmaa, bool $include
     $headers = ['Age', 'Year', 'Status', 'Conv', 'RMD', 'SS', 'MAGI', 'Fed Tax'];
     if ($includeIrmaa) { $headers[] = 'IRMAA'; $widths[] = 6; }
     if ($includeNiit) { $headers[] = 'NIIT'; $widths[] = 5; }
-    $headers = array_merge($headers, ['All-In', 'Spending', 'Trad IRA', 'Roth IRA', 'Taxable']);
+    $headers = array_merge($headers, ['Tax Due', 'Funded', 'Trad IRA', 'Roth IRA', 'Taxable']);
     $widths = array_merge($widths, [7, 7, 9, 8, 8]);
     $html = '<table width="100%" border="1" cellpadding="2" style="font-size:6.5px;table-layout:fixed;"><thead><tr style="background-color:#059669;color:#ffffff;font-weight:bold;">';
     foreach ($headers as $i => $header) {
@@ -151,7 +151,7 @@ $includeNiit = !empty($data['includeNiit']) && $data['includeNiit'] !== 'false' 
 
 $withRows = $data['withConversion']['yearlyData'];
 $withoutRows = $data['withoutConversion']['yearlyData'] ?? [];
-$pdf->MultiCell(0, 5, 'Unfunded spending / unpaid taxes: no conversion $' . number_format(sumField($withoutRows, 'spendingShortfall'), 0) . ' / $' . number_format(sumField($withoutRows, 'taxShortfall'), 0) . '; with conversion $' . number_format(sumField($withRows, 'spendingShortfall'), 0) . ' / $' . number_format(sumField($withRows, 'taxShortfall'), 0) . '. Spending in the tables is funded spending. Tax savings alone do not establish plan feasibility. Unpaid taxes are not deducted from the estate estimate.', 0, 'L');
+$pdf->MultiCell(0, 5, 'Unfunded spending / unpaid taxes: no conversion $' . number_format(rothSumField($withoutRows, 'spendingShortfall'), 0) . ' / $' . number_format(rothSumField($withoutRows, 'taxShortfall'), 0) . '; with conversion $' . number_format(rothSumField($withRows, 'spendingShortfall'), 0) . ' / $' . number_format(rothSumField($withRows, 'taxShortfall'), 0) . '. Spending in the tables is funded spending. Tax savings alone do not establish plan feasibility. Unpaid taxes are not deducted from the estate estimate.', 0, 'L');
 
 
 $pdf->SetFont('helvetica', 'B', 14);
@@ -172,13 +172,13 @@ $resultsHtml .= '<tr><td><b>Effective rate on conversion</b></td><td>' . number_
 $resultsHtml .= '<tr style="background:#f0fdf4;"><td><b>Ending after-tax wealth (no conversion)</b></td><td>$' . number_format($data['withoutConversion']['finalAfterTaxEstate'] ?? 0, 0) . '</td></tr>';
 $resultsHtml .= '<tr><td><b>Ending after-tax wealth (with conversion)</b></td><td>$' . number_format($data['withConversion']['finalAfterTaxEstate'] ?? 0, 0) . '</td></tr>';
 if ($includeIrmaa && isset($data['withConversion']['totalIrmaaPaid'], $data['withoutConversion']['totalIrmaaPaid'])) {
-    $resultsHtml .= '<tr style="background:#f0fdf4;"><td><b>Lifetime IRMAA (no conversion)</b></td><td>$' . number_format($data['withoutConversion']['totalIrmaaPaid'], 0) . '</td></tr>';
-    $resultsHtml .= '<tr><td><b>Lifetime IRMAA (with conversion)</b></td><td>$' . number_format($data['withConversion']['totalIrmaaPaid'], 0) . '</td></tr>';
+    $resultsHtml .= '<tr style="background:#f0fdf4;"><td><b>Lifetime IRMAA paid (no conversion)</b></td><td>$' . number_format($data['withoutConversion']['totalIrmaaPaid'], 0) . '</td></tr>';
+    $resultsHtml .= '<tr><td><b>Lifetime IRMAA paid (with conversion)</b></td><td>$' . number_format($data['withConversion']['totalIrmaaPaid'], 0) . '</td></tr>';
     $resultsHtml .= '<tr style="background:#f0fdf4;"><td><b>IRMAA reduction</b></td><td>$' . number_format($data['irmaaReduction'] ?? 0, 0) . '</td></tr>';
 }
 if ($includeNiit && isset($data['withConversion']['totalNiitPaid'], $data['withoutConversion']['totalNiitPaid'])) {
-    $resultsHtml .= '<tr><td><b>Lifetime NIIT (no conversion)</b></td><td>$' . number_format($data['withoutConversion']['totalNiitPaid'], 0) . '</td></tr>';
-    $resultsHtml .= '<tr style="background:#f0fdf4;"><td><b>Lifetime NIIT (with conversion)</b></td><td>$' . number_format($data['withConversion']['totalNiitPaid'], 0) . '</td></tr>';
+    $resultsHtml .= '<tr><td><b>Lifetime NIIT paid (no conversion)</b></td><td>$' . number_format($data['withoutConversion']['totalNiitPaid'], 0) . '</td></tr>';
+    $resultsHtml .= '<tr style="background:#f0fdf4;"><td><b>Lifetime NIIT paid (with conversion)</b></td><td>$' . number_format($data['withConversion']['totalNiitPaid'], 0) . '</td></tr>';
     $resultsHtml .= '<tr><td><b>NIIT reduction</b></td><td>$' . number_format($data['niitReduction'] ?? 0, 0) . '</td></tr>';
 }
 $resultsHtml .= '</table>';
@@ -187,14 +187,14 @@ $pdf->Ln(4);
 
 $pdf->SetFont('helvetica', 'B', 12);
 $pdf->SetTextColor(5, 150, 105);
-$pdf->Cell(0, 6, 'Lifetime All-In Tax Breakdown', 0, 1);
+$pdf->Cell(0, 6, 'Lifetime Assessed Tax Breakdown', 0, 1);
 $pdf->SetTextColor(0, 0, 0);
 $breakdownHtml = '<table border="1" cellpadding="5" style="font-size:9px;"><tr style="background:#e5e7eb;font-weight:bold;"><th>Component</th><th>No Conversion</th><th>With Conversion</th><th>Difference</th></tr>';
 $components = [
     ['Federal income tax', 'federalTax'],
     ['Medicare IRMAA', 'irmaa', $includeIrmaa],
     ['NIIT (3.8%)', 'niit', $includeNiit],
-    ['Total all-in tax', 'allInTax', true, true]
+    ['Total assessed tax', 'allInTax', true, true]
 ];
 foreach ($components as $comp) {
     if (isset($comp[2]) && !$comp[2]) {
