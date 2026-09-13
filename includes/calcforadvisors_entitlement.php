@@ -174,7 +174,7 @@ function cfa_evaluate_advisor_entitlement(array $subscriber, ?DateTimeImmutable 
 
     // Preserve legacy no-card trials, but do not upgrade them to calculator
     // Premium. If no explicit end was migrated, retain the existing 30-day rule.
-    if ($plan === 'free') {
+    if ($plan === 'free' && $stripeStatus === '' && !in_array($legacyStatus, ['canceled', 'inactive', 'past_due'], true)) {
         if ($trialEnds === null) {
             $created = cfa_parse_utc_datetime($subscriber['created_at'] ?? null);
             $trialEnds = $created ? $created->modify('+' . CFA_LEGACY_TRIAL_DAYS . ' days') : null;
@@ -196,10 +196,17 @@ function cfa_evaluate_advisor_entitlement(array $subscriber, ?DateTimeImmutable 
     }
 
     if ($stripeStatus === 'active') {
+        if (!empty($subscriber['last_stripe_event_created']) && ($accessEnds === null || $now >= $accessEnds)) {
+            return $result('expired', false, false, false, $accessEnds, 'verified_period_end_reached');
+        }
+        if (!empty($subscriber['cancel_at_period_end'])) {
+            if ($accessEnds === null || $now >= $accessEnds) return $result('canceled_expired', false, false, false, $accessEnds, 'scheduled_cancellation_reached');
+            return $result('scheduled_to_cancel', true, true, false, $accessEnds, 'active_until_scheduled_end');
+        }
         return $result('active', true, true, false, $accessEnds, 'stripe_subscription_active');
     }
 
-    if ($stripeStatus === 'past_due' || $legacyStatus === 'past_due') {
+    if ($stripeStatus === 'past_due' || ($stripeStatus === '' && $legacyStatus === 'past_due')) {
         $graceEnds = $pastDueStarted ? $pastDueStarted->modify('+' . CFA_PAST_DUE_GRACE_DAYS . ' days') : null;
         if ($graceEnds !== null && $now < $graceEnds) {
             return $result('past_due_grace', true, true, true, $graceEnds, 'past_due_within_grace');
@@ -207,7 +214,7 @@ function cfa_evaluate_advisor_entitlement(array $subscriber, ?DateTimeImmutable 
         return $result('past_due_expired', false, false, false, $graceEnds, $pastDueStarted ? 'past_due_grace_expired' : 'past_due_start_unknown');
     }
 
-    if (in_array($stripeStatus, ['canceled', 'cancelled'], true) || in_array($legacyStatus, ['canceled', 'cancelled'], true)) {
+    if (in_array($stripeStatus, ['canceled', 'cancelled'], true) || ($stripeStatus === '' && in_array($legacyStatus, ['canceled', 'cancelled'], true))) {
         if ($accessEnds !== null && $now < $accessEnds) {
             return $result('canceled_paid_through', true, true, false, $accessEnds, 'canceled_with_remaining_access');
         }
@@ -231,7 +238,8 @@ function cfa_load_advisor_subscriber_for_entitlement(mysqli $conn, int $subscrib
     $sql = 'SELECT id, email, plan, status, created_at,
                    stripe_customer_id, stripe_subscription_id,
                    stripe_subscription_status, trial_ends_at, access_ends_at,
-                   trial_used_at, past_due_started_at, portal_slug
+                   trial_used_at, past_due_started_at, portal_slug,
+                   cancel_at_period_end, last_stripe_event_created
               FROM calcforadvisors_subscribers WHERE id = ? LIMIT 1';
     $stmt = $conn->prepare($sql);
     if (!$stmt) return null;
@@ -259,4 +267,12 @@ function cfa_advisor_entitlement(mysqli $conn, int $subscriberId, ?DateTimeImmut
 function cfa_has_advisor_premium_entitlement(mysqli $conn, int $subscriberId, ?DateTimeImmutable $now = null): bool
 {
     return cfa_advisor_entitlement($conn, $subscriberId, $now)['has_premium'] === true;
+}
+
+/** Billing recovery is NOT the white-label portal_available entitlement. */
+function cfa_billing_customer(array $subscriber, int $authenticatedId): ?string
+{
+    $customer = $subscriber['stripe_customer_id'] ?? null;
+    return $authenticatedId > 0 && (int) ($subscriber['id'] ?? 0) === $authenticatedId
+        && is_string($customer) && preg_match('/^cus_[A-Za-z0-9]+$/D', $customer) ? $customer : null;
 }

@@ -8,6 +8,8 @@ require_once CALCFORADVISORS_INCLUDES . '/db_config.php';
 
 calcforadvisors_require_login();
 $sub = calcforadvisors_get_subscriber();
+$entitlement = cfa_evaluate_advisor_entitlement($sub);
+$billingAvailable = cfa_billing_customer($sub, (int) $sub['id']) !== null;
 
 $msg = $_GET['msg'] ?? '';
 $billingError = $_SESSION['billing_portal_error'] ?? null;
@@ -119,10 +121,12 @@ $conn->close();
             <p>
                 <strong>Email:</strong> <?php echo htmlspecialchars($sub['email']); ?><br>
                 <strong>Plan:</strong> <?php echo htmlspecialchars($sub['plan']); ?><br>
-                <strong>Status:</strong> <span class="status <?php echo $sub['status'] === 'canceled' ? 'canceled' : ''; ?>"><?php echo htmlspecialchars($sub['status']); ?></span>
+                <strong>Status:</strong> <span class="status"><?php echo htmlspecialchars(str_replace('_', ' ', $entitlement['state'])); ?></span><br>
+                <?php if ($entitlement['access_until']): ?>Access endpoint (UTC): <?php echo htmlspecialchars($entitlement['access_until']); ?><?php endif; ?>
             </p>
-            <?php if ($sub['status'] === 'active' && $sub['plan'] !== 'free'): ?>
-                <a href="billing-portal.php" class="btn">Manage subscription & billing</a>
+            <?php if ($billingAvailable): ?>
+                <form action="billing-portal.php" method="post"><?php echo calcforadvisors_csrf_field(); ?><button class="btn" type="submit">Manage subscription & billing</button></form>
+                <p>Billing management remains available even when calculator access has expired.</p>
             <?php elseif ($sub['plan'] === 'free'): ?>
                 <a href="index.html#pricing" class="btn">Upgrade to paid</a>
             <?php endif; ?>

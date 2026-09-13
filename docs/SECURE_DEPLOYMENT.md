@@ -175,6 +175,19 @@ Regression: `php dev/test-release-platform.php` (installed Composer required).
 It covers manifest-free success, missing/version-incompatible extensions,
 incompatible PHP/root requirements, invalid metadata, and artifact immutability.
 
+### Subscription identity and entitlement
+
+The advisor account row is the local owner of the authoritative Stripe customer
+and subscription IDs. Webhooks resolve by those IDs (and a bound Checkout
+session for first-time provisioning), never by email alone. Email matching is
+case/whitespace-insensitive only for login and duplicate-signup prevention; it
+does not merge unrelated existing identities. Entitlement is evaluated from
+the persisted Stripe status, period/trial endpoints, cancellation flag, and
+past-due grace window on every authenticated request. Billing-portal access is
+separate and uses only the authenticated row's validated customer ID, so a
+recoverable billing problem does not strand the account or grant calculator
+access to another customer.
+
 ## 8. Secrets and history
 
 Before resuming feature deployment, scan the entire Git history with a secret

@@ -32,9 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Passwords do not match.';
     } else {
         // Check if email already exists
-        $stmt = $conn->prepare('SELECT id, password_hash, stripe_customer_id FROM calcforadvisors_subscribers WHERE email = ? AND status = ?');
-        $status = 'active';
-        $stmt->bind_param('ss', $email, $status);
+        $stmt = $conn->prepare('SELECT id, password_hash, stripe_customer_id FROM calcforadvisors_subscribers WHERE LOWER(TRIM(email)) = LOWER(TRIM(?)) LIMIT 2');
+        $stmt->bind_param('s', $email);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -51,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $hash = password_hash($password, PASSWORD_DEFAULT);
             $plan = 'free';
+            $status = 'active';
 
             $stmt = $conn->prepare('INSERT INTO calcforadvisors_subscribers (email, plan, status, stripe_customer_id, stripe_subscription_id, password_hash) VALUES (?, ?, ?, NULL, NULL, ?)');
             $stmt->bind_param('ssss', $email, $plan, $status, $hash);

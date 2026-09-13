@@ -33,10 +33,11 @@ function calcforadvisors_get_subscriber() {
     if (empty($_SESSION['calcforadvisors_subscriber_id'])) {
         return null;
     }
-    return [
-        'id' => $_SESSION['calcforadvisors_subscriber_id'],
-        'email' => $_SESSION['calcforadvisors_subscriber_email'] ?? '',
-        'plan' => $_SESSION['calcforadvisors_subscriber_plan'] ?? 'monthly',
-        'status' => $_SESSION['calcforadvisors_subscriber_status'] ?? 'active',
-    ];
+    global $conn;
+    require_once __DIR__ . '/includes/init.php';
+    require_once CALCFORADVISORS_INCLUDES . '/calcforadvisors_entitlement.php';
+    $row = cfa_load_advisor_subscriber_for_entitlement($conn, (int) $_SESSION['calcforadvisors_subscriber_id']);
+    if ($row === null) { http_response_code(403); exit('Account unavailable.'); }
+    // Identity stays logged in; billing state is refreshed on every request.
+    return $row;
 }

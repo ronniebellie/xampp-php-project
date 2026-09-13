@@ -24,13 +24,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (empty($email) || empty($password)) {
         $error = 'Email and password are required.';
     } else {
-        $stmt = $conn->prepare('SELECT id, email, password_hash, plan, status FROM calcforadvisors_subscribers WHERE email = ? AND status = ?');
-        $status = 'active';
-        $stmt->bind_param('ss', $email, $status);
+        $stmt = $conn->prepare('SELECT id, email, password_hash, plan, status FROM calcforadvisors_subscribers WHERE LOWER(TRIM(email)) = LOWER(TRIM(?))');
+        $stmt->bind_param('s', $email);
         $stmt->execute();
         $result = $stmt->get_result();
 
-        if ($result->num_rows >= 1) {
+        if ($result->num_rows === 1) {
             $user = $result->fetch_assoc();
 
             if (empty($user['password_hash'])) {
