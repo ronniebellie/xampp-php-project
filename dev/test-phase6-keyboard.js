@@ -1,0 +1,15 @@
+'use strict';
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
+let key,closed=0,restored=0,prevented=0;
+const opener={isConnected:true,focus(){restored++;}},background={inert:false,contains(){return false;}};
+const first={disabled:false,getClientRects:()=>[1],focus(){document.activeElement=first;}},last={disabled:false,getClientRects:()=>[1],focus(){document.activeElement=last;}};
+const attrs={},box={setAttribute(k,v){attrs[k]=v;},querySelector:()=>({textContent:'Compare scenarios'}),querySelectorAll:()=>[first,last],addEventListener(k,fn){key=fn;},removeEventListener(){key=null;},focus(){document.activeElement=box;}};
+const overlay={},document={activeElement:opener,body:{children:[background,overlay]}},window={};
+vm.runInNewContext(fs.readFileSync(__dirname+'/../js/dialog-accessibility.js','utf8'),{window,document});
+const release=window.rbAccessibleDialog(box,overlay,()=>{closed++;release();});
+assert.equal(attrs.role,'dialog');assert.equal(attrs['aria-modal'],'true');assert.equal(background.inert,true);
+key({key:'Tab',shiftKey:false,preventDefault(){prevented++;}});assert.equal(document.activeElement,first);
+key({key:'Tab',shiftKey:true,preventDefault(){prevented++;}});assert.equal(document.activeElement,last);
+key({key:'Tab',shiftKey:false,preventDefault(){prevented++;}});assert.equal(document.activeElement,first);
+key({key:'Escape',preventDefault(){prevented++;}});assert.equal(closed,1);assert.equal(restored,1);assert.equal(background.inert,false);assert.equal(key,null);assert.equal(prevented,4);
+console.log('Phase 6 keyboard: role, focus entry/wrapping, Escape, background isolation and focus restoration passed.');

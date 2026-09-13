@@ -24,6 +24,14 @@
     conversation: []
   };
 
+  var restoreFocus = function () {};
+  function closeModal() {
+    if (state.overlay) state.overlay.remove();
+    state.overlay = null;
+    restoreFocus();
+    restoreFocus = function () {};
+  }
+
   function getThreadEl() {
     return state.overlay ? state.overlay.querySelector('#explainModalThread') : null;
   }
@@ -67,6 +75,7 @@
     appendThreadMessage('user', question);
     input.value = '';
     setFollowUpBusy(true);
+    var requestOverlay = state.overlay;
 
     fetch(apiUrl(), {
       method: 'POST',
@@ -81,6 +90,7 @@
     })
       .then(function (res) { return res.text(); })
       .then(function (text) {
+        if (state.overlay !== requestOverlay) return;
         setFollowUpBusy(false);
         var data;
         try { data = JSON.parse(text); } catch (e) {
@@ -93,6 +103,7 @@
         appendThreadMessage('assistant', answer);
       })
       .catch(function (err) {
+        if (state.overlay !== requestOverlay) return;
         setFollowUpBusy(false);
         alert('Follow-up: ' + err.message);
       });
@@ -112,7 +123,7 @@
       });
     }
     var closeBtn = state.overlay.querySelector('#explainModalCloseBtn');
-    if (closeBtn) closeBtn.addEventListener('click', function () { state.overlay.remove(); });
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
   }
 
   function open(explanation, options) {
@@ -121,12 +132,12 @@
     state.resultsSummary = options.resultsSummary || options.results_summary || '';
     state.conversation = [{ role: 'assistant', content: explanation }];
 
-    if (state.overlay) state.overlay.remove();
+    closeModal();
 
     var overlay = document.createElement('div');
     overlay.id = 'explainResultsModalOverlay';
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px;';
-    overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.remove(); });
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) closeModal(); });
 
     var box = document.createElement('div');
     box.style.cssText = 'background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:560px;width:100%;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;';
@@ -136,7 +147,7 @@
       '<div style="padding:24px 24px 16px;overflow-y:auto;flex:1;">' +
         '<h2 style="margin:0 0 16px 0;font-size:1.25rem;color:#1f2937;">🤖 AI Explanation</h2>' +
         '<div id="explainModalMain" style="color:#374151;line-height:1.7;white-space:pre-wrap;">' + escapeHtml(explanation) + '</div>' +
-        '<div id="explainModalThread"></div>' +
+        '<div id="explainModalThread" aria-live="polite"></div>' +
       '</div>' +
       '<div style="padding:16px 24px;border-top:1px solid #e5e7eb;background:#f9fafb;">' +
         '<label for="explainFollowUpInput" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:8px;">Ask a follow-up question about these results</label>' +
@@ -151,6 +162,7 @@
     overlay.appendChild(box);
     global.document.body.appendChild(overlay);
     state.overlay = overlay;
+    restoreFocus = global.rbAccessibleDialog ? global.rbAccessibleDialog(box, overlay, closeModal) : function () {};
     bindFollowUpHandlers();
   }
 

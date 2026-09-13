@@ -8,6 +8,7 @@ require_once CALCFORADVISORS_INCLUDES . '/db_config.php';
 
 calcforadvisors_require_login();
 $sub = calcforadvisors_get_subscriber();
+require_once CALCFORADVISORS_INCLUDES . '/calculator_catalog.php';
 $entitlement = cfa_evaluate_advisor_entitlement($sub);
 $billingAvailable = cfa_billing_customer($sub, (int) $sub['id']) !== null;
 
@@ -135,7 +136,7 @@ $conn->close();
         <?php if ($sub['plan'] === 'free'): ?>
         <div class="card">
             <h2>30-Day White-Label Trial</h2>
-            <p>Add your firm name and logo to get a shareable branded page with links to 14 retirement calculators. Valid for 30 days from sign-up.</p>
+            <p>Add your firm name and logo to get a shareable branded page with links to <?php echo count(rb_advisor_calculators()); ?> retirement calculators. Valid for 30 days from sign-up. Calculators open on RonBelisle.com; Premium features require eligible sign-in.</p>
             <?php if ($trialExpired): ?>
                 <p style="color: #dc2626; font-weight: 600;">Your trial has ended. Upgrade for ongoing white-label access.</p>
                 <a href="index.html#pricing" class="btn">Upgrade to paid</a>

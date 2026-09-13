@@ -24,7 +24,7 @@
     overlay.id = 'compareScenariosModalOverlay';
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px;';
     overlay.addEventListener('click', function (e) {
-      if (e.target === overlay) close();
+      if (e.target === overlay) closeModal();
     });
 
     var box = document.createElement('div');
@@ -34,9 +34,9 @@
     box.innerHTML =
       '<h2 style="margin:0 0 20px 0;font-size:1.35rem;color:#1f2937;">Compare scenarios</h2>' +
       '<p style="color:#6b7280;font-size:0.9rem;margin:0 0 16px 0;">Choose 2 or 3 saved scenarios to compare side-by-side.</p>' +
-      '<div style="margin-bottom:12px;"><label style="display:block;font-weight:600;margin-bottom:4px;font-size:0.9rem;">Scenario A</label><select id="compareSelectA" style="width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px;"></select></div>' +
-      '<div style="margin-bottom:12px;"><label style="display:block;font-weight:600;margin-bottom:4px;font-size:0.9rem;">Scenario B</label><select id="compareSelectB" style="width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px;"></select></div>' +
-      '<div id="compareSelectCRow" style="margin-bottom:16px;display:none;"><label style="display:block;font-weight:600;margin-bottom:4px;font-size:0.9rem;">Scenario C</label><select id="compareSelectC" style="width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px;"></select></div>' +
+      '<div style="margin-bottom:12px;"><label style="display:block;font-weight:600;margin-bottom:4px;font-size:0.9rem;" for="compareSelectA">Scenario A</label><select id="compareSelectA" style="width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px;"></select></div>' +
+      '<div style="margin-bottom:12px;"><label style="display:block;font-weight:600;margin-bottom:4px;font-size:0.9rem;" for="compareSelectB">Scenario B</label><select id="compareSelectB" style="width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px;"></select></div>' +
+      '<div id="compareSelectCRow" style="margin-bottom:16px;display:none;"><label style="display:block;font-weight:600;margin-bottom:4px;font-size:0.9rem;" for="compareSelectC">Scenario C</label><select id="compareSelectC" style="width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px;"></select></div>' +
       '<button type="button" id="compareAddThirdBtn" style="background:none;border:none;color:#3182ce;cursor:pointer;font-size:0.9rem;padding:0 0 16px 0;text-decoration:underline;">+ Add third scenario</button>' +
       '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">' +
       '<button type="button" id="compareCancelBtn" style="padding:10px 20px;border:1px solid #d1d5db;border-radius:8px;background:#fff;cursor:pointer;font-weight:600;">Cancel</button>' +
@@ -52,7 +52,9 @@
     var selectC = document.getElementById('compareSelectC');
     var addThirdBtn = document.getElementById('compareAddThirdBtn');
 
+    var releaseFocus = global.rbAccessibleDialog ? global.rbAccessibleDialog(box, overlay, closeModal) : function () {};
     function closeModal() {
+      releaseFocus();
       if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
     }
 
@@ -112,6 +114,7 @@
     addThirdBtn.addEventListener('click', function () {
       selectCRow.style.display = 'block';
       addThirdBtn.style.display = 'none';
+      selectC.focus();
     });
 
     document.getElementById('compareCancelBtn').addEventListener('click', closeModal);

@@ -386,6 +386,8 @@ $pdf->Ln(4);
 $pdf->Cell(0, 5, 'This report is for informational purposes only and does not constitute financial advice.', 0, 0, 'C');
 
 // Capture PDF to string so we can send it as the only output (no stray bytes)
+require_once __DIR__ . '/../includes/report_context.php';
+rb_report_context($pdf);
 $pdfBytes = $pdf->Output('', 'S');
 ob_end_clean();
 header('Content-Type: application/pdf');
