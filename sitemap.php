@@ -13,7 +13,7 @@ if ($h === 'www.ronbelisle.com' || $h === 'ronbelisle.com') {
     $base = rb_seo_site_base_url();
 }
 
-$today = date('Y-m-d');
+require_once __DIR__ . '/includes/calculator_catalog.php';
 
 $urls = [
     ['loc' => '/', 'priority' => '1.0', 'changefreq' => 'weekly'],
@@ -59,6 +59,16 @@ $urls = [
     ['loc' => '/disclaimer.php', 'priority' => '0.5', 'changefreq' => 'yearly'],
 ];
 
+$catalogRoutes = [];
+foreach (rb_calculator_catalog() as $calculator) {
+    if ($calculator['active']) $catalogRoutes[$calculator['route']] = ['loc'=>$calculator['route'], 'priority'=>'0.9', 'changefreq'=>'monthly'];
+}
+$knownCatalogRoutes = array_column(rb_calculator_catalog(), 'route');
+foreach ($urls as $url) {
+    if (!in_array($url['loc'], $knownCatalogRoutes, true)) $catalogRoutes[$url['loc']] = $url;
+}
+$urls = array_values($catalogRoutes);
+
 echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
 echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
 
@@ -68,7 +78,6 @@ foreach ($urls as $u) {
     $changefreq = $u['changefreq'] ?? 'monthly';
     echo "  <url>\n";
     echo "    <loc>" . htmlspecialchars($loc) . "</loc>\n";
-    echo "    <lastmod>{$today}</lastmod>\n";
     echo "    <changefreq>{$changefreq}</changefreq>\n";
     echo "    <priority>{$priority}</priority>\n";
     echo "  </url>\n";

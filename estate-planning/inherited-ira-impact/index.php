@@ -186,12 +186,12 @@ $rb_includes = dirname(__DIR__, 2) . '/includes';
         <?php if (!$isPremium): ?>
             <?php
             $premium_upsell_headline = 'Unlock Premium for This Calculator';
-            $premium_upsell_text = 'Save and compare scenarios, export PDF and CSV, get AI-generated plain-language explanations of your specific results, and access full year-by-year tables.';
+            $premium_upsell_text = 'Get AI-generated plain-language explanations of your results. Review the supported inherited-IRA scope and assumptions before sharing.';
             $premium_upsell_link = '/premium.html';
             include(__DIR__ . '/../../includes/premium-upsell-banner.php');
             ?>
         <?php endif; ?>
-        <?php include(__DIR__ . '/../../includes/footer_simple.php'); ?>
+        <?php include(__DIR__ . '/../../includes/calculator-footer.php'); ?>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

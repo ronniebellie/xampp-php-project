@@ -55,7 +55,7 @@ function cfa_load_public_portal(mysqli $conn, string $slug): ?array
     $result = $conn->query('SHOW COLUMNS FROM calcforadvisors_subscribers');
     if (!$result) return null;
     while ($column = $result->fetch_assoc()) $columns[(string) $column['Field']] = true;
-    $wanted = ['id','plan','status','created_at','trial_slug','portal_slug','firm_name','advisor_name','logo_url','banner_url','public_email','phone','website_url','disclosure_text','stripe_subscription_status','trial_ends_at','access_ends_at','past_due_started_at'];
+    $wanted = ['id','plan','status','created_at','trial_slug','portal_slug','firm_name','advisor_name','logo_url','banner_url','public_email','phone','website_url','disclosure_text','stripe_subscription_status','trial_ends_at','access_ends_at','past_due_started_at','cancel_at_period_end','last_stripe_event_created'];
     $selected = array_values(array_filter($wanted, static fn(string $name): bool => isset($columns[$name])));
     if (!$selected || (!isset($columns['portal_slug']) && !isset($columns['trial_slug']))) return null;
     $where = isset($columns['portal_slug']) && isset($columns['trial_slug'])

@@ -155,11 +155,14 @@ function journey_plan_request_csrf_token(): ?string
  */
 function journey_plan_read_json_body(): ?array
 {
-    $raw = file_get_contents('php://input');
+    $limit = 2097152;
+    if ((int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > $limit) return null;
+    $raw = file_get_contents('php://input', false, null, 0, $limit + 1);
+    if ($raw !== false && strlen($raw) > $limit) return null;
     if ($raw === false || trim($raw) === '') {
         return [];
     }
-    $decoded = json_decode($raw, true);
+    $decoded = json_decode($raw, true, 32);
     return is_array($decoded) ? $decoded : null;
 }
 

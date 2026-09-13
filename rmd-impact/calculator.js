@@ -1398,7 +1398,7 @@ function explainResults() {
     }
 
     const apiUrl = (window.location.origin || '') + '/api/explain_results.php';
-    fetch(apiUrl, {
+    window.rbExplainFetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

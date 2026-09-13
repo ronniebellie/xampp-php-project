@@ -10,6 +10,7 @@ RewriteRule ^(?:composer\.(?:json|lock)|db_config\.php)$ - [F,L,NC]
 </IfModule>
 
 <IfModule mod_headers.c>
+Header always set Content-Security-Policy "base-uri 'self'; object-src 'none'; frame-ancestors 'self'"
 Header always set X-Content-Type-Options "nosniff"
 Header always set X-Frame-Options "SAMEORIGIN"
 Header always set Referrer-Policy "strict-origin-when-cross-origin"

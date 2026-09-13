@@ -985,7 +985,7 @@
       btn.textContent = 'Loading…';
     }
     try {
-      const res = await fetch(apiBase() + '/api/explain_results.php', {
+      const res = await window.rbExplainFetch(apiBase() + '/api/explain_results.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

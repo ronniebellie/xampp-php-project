@@ -227,21 +227,17 @@ function journey_admin_delete_signups(mysqli $conn, array $records): int
 }
 
 /**
- * Create the calculator-signup review ledger when an older installation has not
- * run the matching migration yet. This table is deliberately separate from
- * Stripe/webhook state.
+ * Check the ledger installed by 20260904_001_admin_signup_reviews_up.sql.
+ * Runtime requests never create schema objects.
  */
 function journey_admin_ensure_signup_reviews_table(mysqli $conn): bool
 {
-    return (bool) $conn->query(
-        "CREATE TABLE IF NOT EXISTS admin_signup_reviews (
-            source VARCHAR(32) NOT NULL,
-            record_id BIGINT UNSIGNED NOT NULL,
-            viewed_at DATETIME NULL DEFAULT NULL,
-            PRIMARY KEY (source, record_id),
-            KEY idx_admin_signup_reviews_viewed (viewed_at)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
-    );
+    try {
+        return (bool) $conn->query('SELECT source, record_id, viewed_at FROM admin_signup_reviews LIMIT 0');
+    } catch (Throwable $e) {
+        error_log('Admin review ledger unavailable: apply the documented migration');
+        return false;
+    }
 }
 
 /**

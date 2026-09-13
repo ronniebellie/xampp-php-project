@@ -15,6 +15,8 @@
  * feature behaves exactly as before (OpenAI only). A per-advisor monthly cap
  * (FABLE5_MONTHLY_CAP) prevents runaway spend; over the cap we fall back to OpenAI.
  */
+require_once __DIR__ . '/../includes/api_resources.php';
+rb_api_errors();
 error_reporting(0);
 ini_set('display_errors', 0);
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
@@ -61,57 +63,22 @@ if (!has_premium_access()) {
 
 /** Is this request from a paid calcforadvisors advisor (the Fable 5 tier)? */
 function explain_is_advisor_tier() {
-    return !empty($_SESSION['calcforadvisors_subscriber_id'])
-        && in_array($_SESSION['calcforadvisors_plan'] ?? '', ['monthly', 'annual'], true);
-}
-
-/**
- * Monthly cap helpers (best-effort). On any DB problem we return a "cannot
- * confirm" result so the caller falls back to the cheap model — failing safe
- * toward lower cost rather than risking uncapped Fable 5 spend.
- */
-function fable5_under_cap($conn, $subscriber_id) {
-    if (!$conn) return false;
-    $period = date('Ym');
-    $ok = @$conn->query(
-        "CREATE TABLE IF NOT EXISTS ai_explain_usage (" .
-        "subscriber_id INT NOT NULL, period CHAR(6) NOT NULL, " .
-        "used INT NOT NULL DEFAULT 0, PRIMARY KEY (subscriber_id, period))"
-    );
-    if ($ok === false) return false;
-    $stmt = @$conn->prepare("SELECT used FROM ai_explain_usage WHERE subscriber_id = ? AND period = ?");
-    if (!$stmt) return false;
-    $stmt->bind_param("is", $subscriber_id, $period);
-    if (!$stmt->execute()) { $stmt->close(); return false; }
-    $used = 0;
-    $stmt->bind_result($used);
-    $stmt->fetch();
-    $stmt->close();
-    return ((int) $used) < FABLE5_MONTHLY_CAP;
-}
-
-function fable5_record_usage($conn, $subscriber_id) {
-    if (!$conn) return;
-    $period = date('Ym');
-    $stmt = @$conn->prepare(
-        "INSERT INTO ai_explain_usage (subscriber_id, period, used) VALUES (?, ?, 1) " .
-        "ON DUPLICATE KEY UPDATE used = used + 1"
-    );
-    if (!$stmt) return;
-    $stmt->bind_param("is", $subscriber_id, $period);
-    @$stmt->execute();
-    $stmt->close();
+    return (get_scenario_owner()['type'] ?? null) === 'cfa';
 }
 
 // Parse JSON input
-$raw = file_get_contents('php://input');
-$data = json_decode($raw, true);
 
-if (!$data || empty($data['results_summary'])) {
-    header('Content-Type: application/json');
-    http_response_code(400);
-    die(json_encode(['error' => 'Missing results_summary. Send JSON: { "calculator_type": "...", "results_summary": "..." }']));
-}
+$data = rb_read_api_json(65536);
+try { $data=rb_ai_data($data); } catch(Throwable $e) { rb_api_error(400,'Invalid or oversized explanation request'); }
+require_once __DIR__.'/../includes/csrf.php';
+$token=$_SERVER['HTTP_X_CSRF_TOKEN']??null;
+if(!is_string($token)||!rb_csrf_validate($token)) rb_api_error(403,'Reload the calculator and try again.');
+$owner=get_scenario_owner();
+if(!$owner) rb_api_error(403,'Premium account required');
+$lease=rb_ai_lease($owner['type'].':'.$owner['id']);
+if(!$lease){header('Retry-After: 60');rb_api_error(429,'Please wait before requesting another explanation.');}
+register_shutdown_function(static function()use($lease){if(is_resource($lease))fclose($lease);});
+
 
 $calculator_type = isset($data['calculator_type']) ? trim($data['calculator_type']) : 'calculator';
 $results_summary = trim($data['results_summary']);
@@ -200,6 +167,7 @@ function call_openai($model, $messages, $max_tokens) {
         ],
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT => 30,
+        CURLOPT_CONNECTTIMEOUT => 5,
     ]);
     $response = curl_exec($ch);
     $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -257,6 +225,7 @@ function call_anthropic($model, $messages, $max_tokens, $effort) {
         ],
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT => 45,
+        CURLOPT_CONNECTTIMEOUT => 5,
     ]);
     $response = curl_exec($ch);
     $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -301,17 +270,18 @@ $use_fable = false;
 $advisor_sid = null;
 if (explain_is_advisor_tier() && explain_anthropic_configured()) {
     $advisor_sid = (int) $_SESSION['calcforadvisors_subscriber_id'];
-    if (fable5_under_cap($conn ?? null, $advisor_sid)) {
+    if (rb_ai_reserve_monthly($conn ?? null, $advisor_sid, (int) FABLE5_MONTHLY_CAP)) {
         $use_fable = true;
     }
 }
 
+if(session_status()===PHP_SESSION_ACTIVE) session_write_close();
 $explanation = null;
 
 if ($use_fable) {
     $result = call_anthropic(FABLE5_MODEL, $messages, $max_tokens, FABLE5_EFFORT);
     if ($result['ok']) {
-        fable5_record_usage($conn ?? null, $advisor_sid);
+        // Attempt reserved atomically before the provider call.
         $explanation = $result['text'];
     }
     // On refusal or error, fall through to OpenAI (if available) so the advisor
@@ -328,7 +298,8 @@ if ($explanation === null) {
     if (!$result['ok']) {
         header('Content-Type: application/json');
         http_response_code(502);
-        die(json_encode(['error' => $result['error']]));
+        error_log('AI provider request failed');
+        die(json_encode(['error' => 'AI service is temporarily unavailable. Please try again.']));
     }
     $explanation = $result['text'];
 }

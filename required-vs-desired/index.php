@@ -633,7 +633,7 @@ $isPremium = has_premium_access();
             const btn = document.getElementById('explainResultsBtnInResults');
             const origText = btn ? btn.textContent : '';
             if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
-            fetch(RVD_API_BASE + 'api/explain_results.php', {
+            window.rbExplainFetch(RVD_API_BASE + 'api/explain_results.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'same-origin',

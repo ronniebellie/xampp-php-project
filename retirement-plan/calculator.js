@@ -876,7 +876,7 @@
     var btn = el('explainResultsBtnInResults');
     var origText = btn ? btn.textContent : '';
     if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
-    fetch((window.location.origin || '') + '/api/explain_results.php', {
+    window.rbExplainFetch((window.location.origin || '') + '/api/explain_results.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',

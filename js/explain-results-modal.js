@@ -77,7 +77,7 @@
     setFollowUpBusy(true);
     var requestOverlay = state.overlay;
 
-    fetch(apiUrl(), {
+    window.rbExplainFetch(apiUrl(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',

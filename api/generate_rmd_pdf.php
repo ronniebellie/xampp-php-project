@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../includes/api_resources.php';
+rb_api_errors();
 error_reporting(0);
 ini_set('display_errors', 0);
 ob_start(); // Prevent any stray output from corrupting the PDF
@@ -16,7 +18,9 @@ if (!has_premium_access()) {
 }
 
 // Get POST data
-$data = json_decode(file_get_contents('php://input'), true);
+$data = rb_read_api_json(8388608);
+try { $data=rb_pdf_data($data); } catch(Throwable $e) { rb_api_error(400, 'Invalid or oversized report data'); }
+if(session_status()===PHP_SESSION_ACTIVE) session_write_close();
 
 if (!$data) {
     header('Content-Type: application/json');
@@ -60,7 +64,8 @@ if (!isset($data['summary']['firstRMD']) || !is_array($data['projections'])) {
 }
 
 // Create PDF
-$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+require_once __DIR__ . '/../includes/report_pdf.php';
+$pdf = new RbReportPdf(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
 // Set document information
 $pdf->SetCreator('RonBelisle.com');
@@ -268,9 +273,8 @@ if (isset($data['chartImage']) && !empty($data['chartImage']) && $canEmbedPng) {
     $pdf->SetTextColor(0, 0, 0);
     $pdf->Ln(3);
     
-    $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $data['chartImage']));
-    $tempFile = tempnam(sys_get_temp_dir(), 'chart_') . '.png';
-    file_put_contents($tempFile, $imageData);
+    $imageData = rb_png_bytes($data['chartImage']);
+    $tempFile = rb_pdf_chart_file('data:image/png;base64,' . base64_encode($imageData));
     $pdf->Image($tempFile, 20, $pdf->GetY(), 170, 0, 'PNG');
     unlink($tempFile);
     $pdf->Ln(85);

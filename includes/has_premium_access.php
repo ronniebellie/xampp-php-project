@@ -12,6 +12,15 @@
 if (!defined('HAS_PREMIUM_ACCESS_LOADED')) {
     define('HAS_PREMIUM_ACCESS_LOADED', 1);
 
+    function rb_current_advisor_premium(): bool {
+        global $conn;
+        require_once __DIR__ . '/calcforadvisors_entitlement.php';
+        $id=(int)($_SESSION['calcforadvisors_subscriber_id']??0);
+        if($id<=0)return false;
+        try { return cfa_has_advisor_premium_entitlement($conn,$id); }
+        catch(Throwable $e){error_log('Advisor entitlement unavailable');return false;}
+    }
+
     function has_premium_access() {
         global $conn;
         if (!isset($conn)) {
@@ -33,14 +42,7 @@ if (!defined('HAS_PREMIUM_ACCESS_LOADED')) {
         }
 
         // 2. calcforadvisors paid subscriber (set by bridge)
-        if (!empty($_SESSION['calcforadvisors_subscriber_id']) && !empty($_SESSION['calcforadvisors_plan'])) {
-            $plan = $_SESSION['calcforadvisors_plan'];
-            if (in_array($plan, ['monthly', 'annual'], true)) {
-                return true;
-            }
-        }
-
-        return false;
+        return rb_current_advisor_premium();
     }
 
     /** Short pricing line for upsell banners (matches premium.html). */
@@ -78,7 +80,7 @@ if (!defined('HAS_PREMIUM_ACCESS_LOADED')) {
             }
             $stmt->close();
         }
-        if (!empty($_SESSION['calcforadvisors_subscriber_id']) && in_array($_SESSION['calcforadvisors_plan'] ?? '', ['monthly', 'annual'], true)) {
+        if (rb_current_advisor_premium()) {
             return ['type' => 'cfa', 'id' => (int) $_SESSION['calcforadvisors_subscriber_id']];
         }
         return null;

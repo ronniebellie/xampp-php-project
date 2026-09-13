@@ -293,7 +293,7 @@ function explainResults() {
     if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
 
     const explainUrl = (window.location.origin || '') + '/api/explain_results.php';
-    fetch(explainUrl, {
+    window.rbExplainFetch(explainUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

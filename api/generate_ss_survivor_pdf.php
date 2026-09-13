@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../includes/api_resources.php';
+rb_api_errors();
 error_reporting(0);
 ini_set('display_errors', 0);
 ob_start();
@@ -14,7 +16,9 @@ if (!has_premium_access()) {
     die(json_encode(['error' => 'Premium subscription required']));
 }
 
-$data = json_decode(file_get_contents('php://input'), true);
+$data = rb_read_api_json(8388608);
+try { $data=rb_pdf_data($data); } catch(Throwable $e) { rb_api_error(400, 'Invalid or oversized report data'); }
+if(session_status()===PHP_SESSION_ACTIVE) session_write_close();
 if (!$data || empty($data['result'])) {
     header('Content-Type: application/json');
     http_response_code(400);
@@ -41,7 +45,8 @@ function fmtPhase($phase) {
     return $labels[$phase] ?? $phase;
 }
 
-$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+require_once __DIR__ . '/../includes/report_pdf.php';
+$pdf = new RbReportPdf(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 $pdf->setPrintHeader(false);
 $pdf->setPrintFooter(false);
 $pdf->SetMargins(18, 18, 18);
@@ -105,10 +110,9 @@ $pdf->Ln(4);
 if (!empty($data['chartImage'])) {
     $canEmbed = extension_loaded('gd') || extension_loaded('imagick');
     if ($canEmbed) {
-        $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $data['chartImage']));
+        $imageData = rb_png_bytes($data['chartImage']);
         if ($imageData) {
-            $tempFile = tempnam(sys_get_temp_dir(), 'sssurv_') . '.png';
-            file_put_contents($tempFile, $imageData);
+            $tempFile = rb_pdf_chart_file('data:image/png;base64,' . base64_encode($imageData));
             $pdf->SetFont('helvetica', 'B', 12);
             $pdf->Cell(0, 6, 'Household income over time', 0, 1);
             $pdf->Ln(2);
