@@ -12,27 +12,42 @@
   var taxBrackets2026 = federalTax.brackets;
   var standardDeductions2026 = federalTax.deductions;
   function unsupported(reason){return {supported:false,reason:reason};}
-  function rmdStartAgeForBirthYear(birthYear){
-    var year=Number(birthYear);
-    if(!Number.isInteger(year)) return unsupported('A valid owner birth year is required.');
-    if(year>=1960) return {supported:true,age:75};
-    if(year>=1951) return {supported:true,age:73};
-    return unsupported('Required-beginning-age cohorts born before 1951 are not covered by the offline Phase 3 reference package.');
+  function validNumeric(value){return (typeof value==='number'||(typeof value==='string'&&value.trim()!==''))&&Number.isFinite(Number(value));}
+  function rmdStartAgeForBirthYear(birthYear,birthMonth,birthDay){
+    var year,month,day;
+    if(birthYear&&typeof birthYear==='object'&&(!validNumeric(birthYear.month)||!validNumeric(birthYear.day)))return unsupported('Valid calendar month and day are required.');
+    if((birthMonth!==undefined||birthDay!==undefined)&&(!validNumeric(birthMonth)||!validNumeric(birthDay)))return unsupported('Valid calendar month and day are required.');
+    if(typeof birthYear==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(birthYear)){var parts=birthYear.split('-');year=Number(parts[0]);month=Number(parts[1]);day=Number(parts[2]);}
+    else if(birthYear&&typeof birthYear==='object'){year=Number(birthYear.year);month=Number(birthYear.month);day=Number(birthYear.day);}
+    else {year=Number(birthYear);month=Number(birthMonth);day=Number(birthDay);}
+    if(!validNumeric(typeof birthYear==='object'&&birthYear?birthYear.year:typeof birthYear==='string'&&birthYear.includes('-')?birthYear.slice(0,4):birthYear)||!Number.isInteger(year)||year<1||year>9999) return unsupported('A valid owner birth year is required.');
+    var hasDate=(typeof birthYear==='string'&&birthYear.includes('-'))||(birthYear&&typeof birthYear==='object')||birthMonth!==undefined||birthDay!==undefined;
+    if(hasDate){var leap=year%4===0&&(year%100!==0||year%400===0),days=[31,leap?29:28,31,30,31,30,31,31,30,31,30,31];if(!Number.isInteger(month)||month<1||month>12||!Number.isInteger(day)||day<1||day>days[month-1])return unsupported('A valid calendar birth date is required; impossible or malformed dates are unsupported.');}
+    if(year>=1959)return {supported:true,age:75};
+    if(year>=1951)return {supported:true,age:73};
+    if(year===1950)return {supported:true,age:72};
+    if(year<=1948)return {supported:true,age:70.5};
+    if(!Number.isInteger(month)||!Number.isInteger(day))return unsupported('A complete 1949 birth date is required to distinguish the June 30 / July 1 RMD cohort boundary.');
+    return {supported:true,age:(month<7?70.5:72)};
   }
   function normalizeFilingStatus(status){if(status==='married'||status==='married_filing_jointly')return 'married';if(status==='hoh'||status==='head')return 'hoh';return 'single';}
   function getRMDDivisorResult(ownerAge,isSpouseSoleBeneficiary,spouseAge){
     var age=Number(ownerAge),spouse=Number(spouseAge);
-    var tableII=Boolean(isSpouseSoleBeneficiary)&&Number.isFinite(spouse)&&age-spouse>10;
-    if(tableII){var value=jointLifeExpectancy[age+'_'+spouse];return value==null?unsupported('IRS Table II divisor is unavailable for owner age '+age+' and spouse age '+spouse+'; Table III substitution is prohibited.'):{supported:true,divisor:value,table:'II'};}
+    if(!validNumeric(ownerAge)||!Number.isInteger(age)||age<0||typeof isSpouseSoleBeneficiary!=='boolean')return unsupported('Valid integer owner age and explicit spouse sole-beneficiary status are required.');
+    if(isSpouseSoleBeneficiary&&(!validNumeric(spouseAge)||!Number.isInteger(spouse)||spouse<0))return unsupported('A valid integer spouse age is required to select the RMD table; no table can be substituted.');
+    var tableII=isSpouseSoleBeneficiary&&age-spouse>10;
+    if(tableII){var value=jointLifeExpectancy[age+'_'+spouse];return value==null?unsupported('This special joint-life case is not supported: IRS Table II divisor is unavailable for owner age '+age+' and spouse age '+spouse+'; Table III substitution is prohibited.'):{supported:true,divisor:value,table:'II'};}
     if(rmdDivisors[age]==null)return unsupported('IRS Table III divisor is unavailable for owner age '+age+'.');
     return {supported:true,divisor:rmdDivisors[age],table:'III'};
   }
   function getRMDDivisor(ownerAge,isSpouseSoleBeneficiary,spouseAge){var result=getRMDDivisorResult(ownerAge,isSpouseSoleBeneficiary,spouseAge);return result.supported?result.divisor:null;}
-  function getSingleLifeExpectancy(age){var numeric=Number(age);if(Number.isInteger(numeric)&&numeric>=120)return 1.0;return singleLifeExpectancy[numeric]==null?null:singleLifeExpectancy[numeric];}
+  function getSingleLifeExpectancy(age){if(!validNumeric(age)||!Number.isInteger(Number(age)))return null;var numeric=Number(age);if(numeric>=120)return 1.0;return singleLifeExpectancy[numeric]==null?null:singleLifeExpectancy[numeric];}
   function resolveRMD(opts){
     opts=opts||{};var age=Number(opts.ownerAge),balance=Number(opts.priorYearEndBalance);
-    if(!Number.isFinite(age)||!Number.isFinite(balance)||balance<0)return unsupported('Valid owner age and nonnegative prior-year-end balance are required.');
-    var start=rmdStartAgeForBirthYear(Number(opts.birthYear));if(!start.supported)return start;
+    if(opts.birthDate!=null&&opts.birthDate!==''&&(typeof opts.birthDate!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(opts.birthDate)))return unsupported('A complete valid calendar birth date is required.');
+    if(opts.birthDate&&opts.birthYear!=null&&(!validNumeric(opts.birthYear)||Number(opts.birthDate.slice(0,4))!==Number(opts.birthYear)))return unsupported('Owner birth date and birth year must match.');
+    if(!validNumeric(opts.ownerAge)||!Number.isInteger(age)||age<0||!validNumeric(opts.priorYearEndBalance)||balance<0)return unsupported('Valid integer owner age and nonnegative prior-year-end balance are required.');
+    var start=rmdStartAgeForBirthYear(opts.birthDate||opts.birthYear,opts.birthMonth,opts.birthDay);if(!start.supported)return start;
     if(age<start.age||balance===0)return {supported:true,required:false,amount:0,divisor:null,table:null,rmdStartAge:start.age};
     var divisor=getRMDDivisorResult(age,opts.isSpouseSoleBeneficiary,opts.spouseAge);if(!divisor.supported)return divisor;
     return {supported:true,required:true,amount:balance/divisor.divisor,divisor:divisor.divisor,table:divisor.table,rmdStartAge:start.age};

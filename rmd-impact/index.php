@@ -83,6 +83,11 @@ $isPremium = has_premium_access();
                     <small style="color: #666;">Determines the statutory RMD commencement age</small>
                 </div>
                 <div>
+                    <label for="birthDate" style="display: block; margin-bottom: 5px; font-weight: 600;">Your Full Birth Date</label>
+                    <input type="date" id="birthDate" value="<?php echo (int)date('Y') - 68; ?>-07-01" required style="width:100%;">
+                    <small style="color:#666;">Required for exact RMD cohort boundaries</small>
+                </div>
+                <div>
                     <label for="accountBalance" style="display: block; margin-bottom: 5px; font-weight: 600;">Tax-Deferred Account Balance (as of 12/31 last year) ($)</label>
                     <input type="number" id="accountBalance" min="0" step="any" value="1100000" required style="width: 100%;">
                     <small style="color: #666;">Traditional IRA, 401(k), etc. - exclude Roth accounts</small>

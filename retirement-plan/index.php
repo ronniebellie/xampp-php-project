@@ -151,6 +151,11 @@ $defaultRetirementAge = 67;
           <input type="number" id="birthYear" min="1920" max="<?php echo date('Y'); ?>" value="<?php echo $defaultBirthYear; ?>" required>
           <small id="fraHint">Used to estimate your age today and Social Security Full Retirement Age.</small>
         </div>
+        <div>
+          <label class="field-label" for="birthDate">Full birth date</label>
+          <input type="date" id="birthDate" value="<?php echo $defaultBirthYear; ?>-07-01" required>
+          <small>Required for the June 30 / July 1, 1949 RMD boundary.</small>
+        </div>
         <div id="retirementAgeWrap">
           <label class="field-label" for="retirementAge">Planned retirement age</label>
           <input type="number" id="retirementAge" min="18" max="100" step="any" value="<?php echo $defaultRetirementAge; ?>" autocomplete="off" inputmode="numeric" required>

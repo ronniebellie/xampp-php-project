@@ -59,6 +59,10 @@ $rb_includes = dirname(__DIR__, 2) . '/includes';
                     <input type="number" id="birthYear" value="<?php echo (int)date('Y') - 68; ?>" min="1900" max="<?php echo (int)date('Y'); ?>" required style="width: 100%; padding: 8px;">
                 </div>
                 <div>
+                    <label for="birthDate" style="display: block; margin-bottom: 4px; font-weight: 600;">Your full birth date</label>
+                    <input type="date" id="birthDate" value="<?php echo (int)date('Y') - 68; ?>-07-01" required style="width:100%;padding:8px;">
+                </div>
+                <div>
                     <label for="deathAge" style="display: block; margin-bottom: 4px; font-weight: 600;">Assumed age at death</label>
                     <input type="number" id="deathAge" value="90" min="70" max="105" required style="width: 100%; padding: 8px;">
                     <small style="color: #666;">Used to project balances at inheritance</small>
@@ -105,11 +109,11 @@ $rb_includes = dirname(__DIR__, 2) . '/includes';
             </div>
 
             <h3 style="margin-top: 28px;">Heirs (inherited IRA <a href="https://www.irs.gov/retirement-plans/plan-participant-employee/retirement-topics-beneficiary" target="_blank" rel="noopener">10-year rule</a>)</h3>
-            <p class="sub" style="margin-bottom: 12px;">Enter up to 4 heirs. Share % should total 100. Each heir&apos;s &ldquo;other income&rdquo; is their existing taxable income when they take distributions.</p>
+            <p class="sub" style="margin-bottom: 12px;">Enter up to 4 heirs. Ages are current ages and are projected to inheritance. Share % should total 100. Each heir&apos;s &ldquo;other income&rdquo; is their existing taxable income when they take distributions.</p>
             <div id="heirsContainer">
                 <div class="heir-row">
                     <label style="font-weight: 600;">Name</label>
-                    <label style="font-weight: 600;">Age</label>
+                    <label style="font-weight: 600;">Current age</label>
                     <label style="font-weight: 600;">Share %</label>
                     <label style="font-weight: 600;">Other income ($)</label>
                     <label style="font-weight: 600;">Filing</label>
@@ -142,9 +146,11 @@ $rb_includes = dirname(__DIR__, 2) . '/includes';
                 <div>
                     <label for="diedBeforeRbd" style="display: block; margin-bottom: 4px; font-weight: 600;">Owner died before required beginning date?</label>
                     <select id="diedBeforeRbd" style="width: 100%; padding: 8px;">
+                        <option value="" selected>Unknown — choose a verified RBD status</option>
                         <option value="yes">Yes</option>
-                        <option value="no" selected>No / not sure (unsupported)</option>
+                        <option value="no">No — death on or after the required beginning date</option>
                     </select>
+                    <p class="small">Unknown status is unsupported. Confirm the actual required beginning date, not just the owner's RMD age. Owner projections here use Table III only; qualifying spouse joint-life cases are not supported.</p>
                 </div>
                 <div>
                     <label for="payoutStrategy" style="display: block; margin-bottom: 4px; font-weight: 600;">Withdrawal strategy</label>
@@ -158,7 +164,8 @@ $rb_includes = dirname(__DIR__, 2) . '/includes';
                     <input type="number" id="inheritedReturnRate" value="5" min="0" max="15" step="any" style="width: 100%; padding: 8px;">
                 </div>
             </div>
-            <p style="font-size:13px;color:#666;">These withdrawal paths are optional scenarios only for the supported pre-required-beginning-date branch; they are not presented as universal annual distribution requirements.</p>
+            <p style="font-size:13px;color:#666;">Before the owner's required beginning date, these are optional withdrawal scenarios and no annual distribution is required before year 10. After the required beginning date, supported noneligible designated beneficiaries receive annual Table I minimums in years 1–9 and must empty the account by the end of year 10. Trusts, estates, and unlisted beneficiary classes remain unsupported.</p>
+            <p style="font-size:13px;color:#666;">Projection timing assumes beginning-of-year withdrawals and growth of the remaining balance into the next year; year 10 fully distributes the remaining balance. Statutory deadlines do not require this particular withdrawal date.</p>
 
             <div style="text-align: center; margin: 28px 0;">
                 <button type="submit" class="button" style="font-size: 1.1em; padding: 12px 28px;">Calculate legacy tax impact</button>

@@ -79,12 +79,12 @@ $isPremium = has_premium_access();
         <div class="info-box-blue" style="margin-bottom: 24px;">
             <h2>Three rules couples often miss</h2>
             <ol style="margin: 0; padding-left: 20px; line-height: 1.7;">
-                <li><strong>One check after death.</strong> Supported age-60 survivor claims use 71.5% of the deceased worker benefit basis and are compared with the survivor's own benefit — no stacking.</li>
+                <li><strong>One check after death.</strong> Regular survivor claims from age 60 through survivor FRA use the exact monthly reduction formula and are compared with the survivor's own benefit — no stacking.</li>
                 <li><strong>The higher earner's delay usually matters most.</strong> Delayed credits pass through to the survivor benefit.</li>
                 <li><strong>The lower earner's delay often doesn't.</strong> Years of forgone checks may buy nothing if the survivor benefit replaces their own.</li>
                 <li><strong>Longevity is the hidden variable.</strong> Wives often outlive husbands by several years — which is a key reason planners recommend the higher earner delay to 70. The larger check may fund the survivor's remaining lifetime.</li>
             </ol>
-            <p style="margin: 12px 0 0 0; font-size: 14px; color: #4b5563;">Statutory scope is limited to regular aged-survivor claims beginning at age 60 (71.5%). Later early-claim ages, survivor-FRA claims, disabled survivors age 50–59, child-care cases, remarriage and other eligibility details are explicitly unsupported. Survivor benefits must be applied for separately.</p>
+            <p style="margin: 12px 0 0 0; font-size: 14px; color: #4b5563;">Statutory scope covers regular aged-survivor claims from age 60 (71.5%) through survivor FRA (100%). Disabled survivors age 50–59, child-care cases, remarriage, family maximums and other specialized rules remain unsupported. This is a planning estimate, not an SSA determination.</p>
         </div>
 
         <div class="cross-link">
@@ -122,6 +122,8 @@ $isPremium = has_premium_access();
 <?php endif; ?>
 
         <form id="survivorForm">
+            <p>Timing convention: each annual row represents the age attained in the labeled year and its next 12 age-months, not a birth-month-accurate calendar ledger. Death is modeled at the end of the selected age-year. Survivor payments start in the later of the first surviving month and the selected claim month; first-year totals are prorated. Charts show annual-average monthly income. COLA increases on modeled benefit anniversaries. Special eligibility and actual SSA payment-processing dates are not modeled.</p>
+            <p>The deceased worker's benefit at the selected retirement claim age is a planning basis assumption, even if death is modeled before that age. It is not an SSA award determination or confirmation of entitlement to unearned delayed credits.</p>
             <div class="spouse-section higher">
                 <h3>Higher earner (benefit continues to survivor)</h3>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
@@ -134,6 +136,11 @@ $isPremium = has_premium_access();
                         </select>
                     </div>
                     <div>
+                        <label for="higherBirthDate" class="field-label">Full birth date</label>
+                        <input type="date" id="higherBirthDate" value="1958-07-01" required style="width:100%;padding:8px;">
+                        <small style="color:#666;">Required for the exact survivor-FRA band</small>
+                    </div>
+                    <div>
                         <label for="higherPIA" class="field-label">Monthly benefit at FRA ($)</label>
                         <input type="number" id="higherPIA" min="0" step="any" value="3890" required style="width: 100%; padding: 8px;">
                         <small id="higherFraHint" style="color: #666;">FRA: —</small>
@@ -141,6 +148,11 @@ $isPremium = has_premium_access();
                     <div>
                         <label for="higherClaimAge" class="field-label">Claiming age</label>
                         <input type="number" id="higherClaimAge" min="62" max="70" value="70" required style="width: 100%; padding: 8px;">
+                    </div>
+                    <div>
+                        <label for="higherSurvivorClaimAge" class="field-label">If widowed, survivor claim age</label>
+                        <input type="number" id="higherSurvivorClaimAge" min="60" max="67" step="any" value="60" required style="width:100%;padding:8px;">
+                        <small>Years in whole-month increments (60.5 = 60 years 6 months; 66.9166666667 = 66 years 11 months).</small>
                     </div>
                 </div>
             </div>
@@ -157,6 +169,11 @@ $isPremium = has_premium_access();
                         </select>
                     </div>
                     <div>
+                        <label for="lowerBirthDate" class="field-label">Full birth date</label>
+                        <input type="date" id="lowerBirthDate" value="1958-07-01" required style="width:100%;padding:8px;">
+                        <small style="color:#666;">Required for the exact survivor-FRA band</small>
+                    </div>
+                    <div>
                         <label for="lowerPIA" class="field-label">Monthly benefit at FRA ($)</label>
                         <input type="number" id="lowerPIA" min="0" step="any" value="2480" required style="width: 100%; padding: 8px;">
                         <small id="lowerFraHint" style="color: #666;">FRA: —</small>
@@ -164,6 +181,11 @@ $isPremium = has_premium_access();
                     <div>
                         <label for="lowerClaimAge" class="field-label">Claiming age</label>
                         <input type="number" id="lowerClaimAge" min="62" max="70" value="62" required style="width: 100%; padding: 8px;">
+                    </div>
+                    <div>
+                        <label for="lowerSurvivorClaimAge" class="field-label">If widowed, survivor claim age</label>
+                        <input type="number" id="lowerSurvivorClaimAge" min="60" max="67" step="any" value="60" required style="width:100%;padding:8px;">
+                        <small>Years in whole-month increments; other fractions are unsupported.</small>
                     </div>
                 </div>
             </div>
@@ -308,7 +330,7 @@ $isPremium = has_premium_access();
 
             <details class="ss-assumptions" style="margin: 24px 0; padding: 16px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
                 <summary style="cursor: pointer; font-weight: 600; color: #334155;">Model assumptions</summary>
-                <p style="margin: 12px 0 0; font-size: 14px; line-height: 1.65; color: #475569;">These comparisons support an age-60 survivor claim at 71.5% of the deceased worker benefit basis and compare it with the survivor's own benefit. Annual COLAs are applied. Other survivor claiming ages and eligibility branches are unsupported. Taxes, Medicare premiums, spousal benefits while both spouses are alive, and the earnings test are not modeled.</p>
+                <p style="margin: 12px 0 0; font-size: 14px; line-height: 1.65; color: #475569;">These comparisons apply the supplied SSA POMS monthly reduction formula from age 60 through survivor FRA and compare the result with the survivor's own benefit. Annual COLAs are applied. Specialized survivor eligibility branches, taxes, Medicare premiums, spousal benefits while both spouses are alive, and the earnings test are not modeled.</p>
             </details>
 
             <?php

@@ -126,7 +126,7 @@ function isWithdrawalActive(age, data, wc) {
 }
 
 function getProjectionStartAge(data) {
-    const start = RBTaxRmd.rmdStartAgeForBirthYear(data.birthYear);
+    const start = RBTaxRmd.rmdStartAgeForBirthYear(data.birthDate || data.birthYear);
     if (!start.supported) throw new RangeError(start.reason);
     if (isWithdrawalsEnabled(data)) {
         return Math.min(start.age, getWithdrawalConfig(data).startAge);
@@ -193,7 +193,7 @@ function calculateProjection(data) {
     let rothBalance = parseFloat(data.rothBalance) || 0;
     let taxableBalance = parseFloat(data.taxableBalance) || 0;
     const startAge = data.currentAge;
-    const startResult = RBTaxRmd.rmdStartAgeForBirthYear(data.birthYear);
+    const startResult = RBTaxRmd.rmdStartAgeForBirthYear(data.birthDate || data.birthYear);
     if (!startResult.supported) throw new RangeError(startResult.reason);
     const rmdStartAge = startResult.age;
     let currentSpouseAge = data.spouseAge;
@@ -219,7 +219,7 @@ function calculateProjection(data) {
         let rmdAmount = 0;
         if (age >= rmdStartAge && tradStart > 0) {
             const rmd = RBTaxRmd.resolveRMD({ownerAge: age, priorYearEndBalance: tradStart,
-                birthYear: data.birthYear, isSpouseSoleBeneficiary: data.isSpouseBeneficiary,
+                birthDate: data.birthDate, birthYear: data.birthYear, isSpouseSoleBeneficiary: data.isSpouseBeneficiary,
                 spouseAge: currentSpouseAge});
             if (!rmd.supported) throw new RangeError(rmd.reason);
             rmdAmount = rmd.amount;
@@ -667,6 +667,7 @@ function gatherRMDFormData() {
     const data = {
         currentAge: parseInt(document.getElementById('currentAge').value, 10),
         birthYear: parseInt(document.getElementById('birthYear').value, 10),
+        birthDate: document.getElementById('birthDate').value,
         accountBalance: parseFloat(document.getElementById('accountBalance').value),
         growthRate: parseFloat(document.getElementById('growthRate').value),
         socialSecurity: parseFloat(document.getElementById('socialSecurity').value) || 0,
@@ -682,7 +683,7 @@ function gatherRMDFormData() {
 }
 
 const RMD_FORM_COMPARE_KEYS = [
-    'currentAge', 'birthYear', 'accountBalance', 'growthRate', 'socialSecurity', 'pension', 'otherIncome',
+    'currentAge', 'birthYear', 'birthDate', 'accountBalance', 'growthRate', 'socialSecurity', 'pension', 'otherIncome',
     'filingStatus', 'useStandardDeduction', 'isSpouseBeneficiary', 'spouseAge',
     'enableWithdrawals', 'withdrawalAmount', 'withdrawalStartMode', 'withdrawalStartAge',
     'withdrawalStartMonth', 'withdrawalStartYear', 'planStartYear', 'withdrawalEndAge',
@@ -761,6 +762,10 @@ document.addEventListener('DOMContentLoaded', function() {
         alert('Please enter a valid age between 50 and 100');
         return;
     }
+    if (!data.birthDate || parseInt(data.birthDate.slice(0,4),10) !== data.birthYear) {
+        alert('Full birth date must match the entered birth year.');
+        return;
+    }
 
     if (data.accountBalance < 0) {
         alert('Please enter a valid account balance');
@@ -798,6 +803,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const params = new URLSearchParams();
         params.set('currentAge', String(data.currentAge));
         params.set('birthYear', String(data.birthYear));
+        params.set('birthDate', data.birthDate);
         params.set('accountBalance', String(data.accountBalance));
         params.set('growthRate', String(data.growthRate));
         params.set('socialSecurity', String(data.socialSecurity));
@@ -850,6 +856,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     setValue('currentAge', 'currentAge');
+    setValue('birthYear', 'birthYear');
+    if (!params.has('birthDate')) document.getElementById('birthDate').value = '';
+    setValue('birthDate', 'birthDate');
     setValue('accountBalance', 'accountBalance');
     setValue('growthRate', 'growthRate');
     setValue('socialSecurity', 'socialSecurity');

@@ -105,15 +105,15 @@ function syncCurrentAgeFromBirthYear(which) {
 
 function resolveDeathAgesFromData(data) {
     var override = data.overrideLongevity === true || data.overrideLongevity === 'true' || data.overrideLongevity === 'on';
-    var higherAge = parseInt(data.higherCurrentAge, 10);
-    var lowerAge = parseInt(data.lowerCurrentAge, 10);
+    var higherAge = data.higherCurrentAge;
+    var lowerAge = data.lowerCurrentAge;
     var higherSex = data.higherSex || 'male';
     var lowerSex = data.lowerSex || 'female';
 
     if (override) {
         return {
-            higherDeathAge: parseInt(data.higherDeathAge, 10),
-            lowerDeathAge: parseInt(data.lowerDeathAge, 10),
+            higherDeathAge: exactInputNumber(data.higherDeathAge),
+            lowerDeathAge: exactInputNumber(data.lowerDeathAge),
             source: 'custom'
         };
     }
@@ -124,24 +124,32 @@ function resolveDeathAgesFromData(data) {
     };
 }
 
+function exactInputNumber(value) {
+    return typeof value === 'number' || (typeof value === 'string' && value.trim() !== '') ? Number(value) : NaN;
+}
+
 function buildOptsFromSavedData(data) {
     var deaths = resolveDeathAgesFromData(data);
     return {
         higherEarner: {
             birthYear: parseInt(data.higherBirthYear, 10),
+            birthDate: data.higherBirthDate,
+            survivorClaimAge: exactInputNumber(data.higherSurvivorClaimAge),
             pia: parseFloat(data.higherPIA),
             claimAge: parseInt(data.higherClaimAge, 10),
             deathAge: deaths.higherDeathAge,
             sex: data.higherSex || 'male',
-            currentAge: parseInt(data.higherCurrentAge, 10)
+            currentAge: exactInputNumber(data.higherCurrentAge)
         },
         lowerEarner: {
             birthYear: parseInt(data.lowerBirthYear, 10),
+            birthDate: data.lowerBirthDate,
+            survivorClaimAge: exactInputNumber(data.lowerSurvivorClaimAge),
             pia: parseFloat(data.lowerPIA),
             claimAge: parseInt(data.lowerClaimAge, 10),
             deathAge: deaths.lowerDeathAge,
             sex: data.lowerSex || 'female',
-            currentAge: parseInt(data.lowerCurrentAge, 10)
+            currentAge: exactInputNumber(data.lowerCurrentAge)
         },
         colaRate: parseFloat(data.colaRate) || 0,
         discountRate: parseFloat(data.discountRate) || 0,
@@ -152,15 +160,15 @@ function buildOptsFromSavedData(data) {
 
 function resolveDeathAges() {
     var override = document.getElementById('overrideLongevity').checked;
-    var higherAge = parseInt(document.getElementById('higherCurrentAge').value, 10);
-    var lowerAge = parseInt(document.getElementById('lowerCurrentAge').value, 10);
+    var higherAge = document.getElementById('higherCurrentAge').value;
+    var lowerAge = document.getElementById('lowerCurrentAge').value;
     var higherSex = document.getElementById('higherSex').value;
     var lowerSex = document.getElementById('lowerSex').value;
 
     if (override) {
         return {
-            higherDeathAge: parseInt(document.getElementById('higherDeathAge').value, 10),
-            lowerDeathAge: parseInt(document.getElementById('lowerDeathAge').value, 10),
+            higherDeathAge: exactInputNumber(document.getElementById('higherDeathAge').value),
+            lowerDeathAge: exactInputNumber(document.getElementById('lowerDeathAge').value),
             source: 'custom'
         };
     }
@@ -173,8 +181,8 @@ function resolveDeathAges() {
 }
 
 function updateLongevityHints() {
-    var higherAge = parseInt(document.getElementById('higherCurrentAge').value, 10);
-    var lowerAge = parseInt(document.getElementById('lowerCurrentAge').value, 10);
+    var higherAge = document.getElementById('higherCurrentAge').value;
+    var lowerAge = document.getElementById('lowerCurrentAge').value;
     var higherSex = document.getElementById('higherSex').value;
     var lowerSex = document.getElementById('lowerSex').value;
     var override = document.getElementById('overrideLongevity').checked;
@@ -203,19 +211,23 @@ function getFormInputs() {
     return {
         higherEarner: {
             birthYear: parseInt(document.getElementById('higherBirthYear').value, 10),
+            birthDate: document.getElementById('higherBirthDate').value,
+            survivorClaimAge: exactInputNumber(document.getElementById('higherSurvivorClaimAge').value),
             pia: parseFloat(document.getElementById('higherPIA').value),
             claimAge: parseInt(document.getElementById('higherClaimAge').value, 10),
             deathAge: deaths.higherDeathAge,
             sex: document.getElementById('higherSex').value,
-            currentAge: parseInt(document.getElementById('higherCurrentAge').value, 10)
+            currentAge: exactInputNumber(document.getElementById('higherCurrentAge').value)
         },
         lowerEarner: {
             birthYear: parseInt(document.getElementById('lowerBirthYear').value, 10),
+            birthDate: document.getElementById('lowerBirthDate').value,
+            survivorClaimAge: exactInputNumber(document.getElementById('lowerSurvivorClaimAge').value),
             pia: parseFloat(document.getElementById('lowerPIA').value),
             claimAge: parseInt(document.getElementById('lowerClaimAge').value, 10),
             deathAge: deaths.lowerDeathAge,
             sex: document.getElementById('lowerSex').value,
-            currentAge: parseInt(document.getElementById('lowerCurrentAge').value, 10)
+            currentAge: exactInputNumber(document.getElementById('lowerCurrentAge').value)
         },
         colaRate: parseFloat(document.getElementById('colaRate').value) || 0,
         discountRate: parseFloat(document.getElementById('discountRate').value) || 0,
@@ -225,8 +237,8 @@ function getFormInputs() {
 }
 
 function applyPreset(name) {
-    var p = PRESETS[name];
-    if (!p) return;
+    if (!PRESETS[name]) return;
+    var p = Object.assign({higherBirthDate:'1958-07-01',lowerBirthDate:'1958-07-01',higherSurvivorClaimAge:60,lowerSurvivorClaimAge:60},PRESETS[name]);
     ageSyncedFromBirthYear.higher = true;
     ageSyncedFromBirthYear.lower = true;
     Object.keys(p).forEach(function (key) {
@@ -264,7 +276,7 @@ function buildLongevityNote(opts, result) {
     var l = opts.lowerEarner;
     var hRem = RBActuarial.getRemainingLifeExpectancy(h.sex, h.currentAge);
     var lRem = RBActuarial.getRemainingLifeExpectancy(l.sex, l.currentAge);
-    var gap = l.deathAge - h.deathAge;
+    var gap = l.birthYear + l.deathAge - h.birthYear - h.deathAge;
     var note = '';
 
     if (opts.longevitySource === 'actuarial') {
@@ -279,14 +291,14 @@ function buildLongevityNote(opts, result) {
     if (result.firstDeathWho === 'higher' && gap > 3) {
         note += '<li><strong>Survivor years matter:</strong> The lower earner is modeled to outlive the higher earner by about ' +
             gap + ' years. Household income after the first death (' + formatCurrency(result.afterFirstDeath) +
-            ' total) depends on the supported age-60 survivor payment derived from the higher earner\'s modeled benefit basis.</li>';
+            ' total) depends on the supported survivor payment derived from the higher earner\'s modeled benefit basis and the survivor\'s claiming age.</li>';
     } else if (result.firstDeathWho === 'higher' && gap <= 3) {
         note += '<li><strong>Short survivor period:</strong> The lower earner outlives the higher earner by only ~' +
             gap + ' year(s) in this scenario — less time for an enlarged survivor benefit to compound in value.</li>';
     }
 
     if (h.sex === 'male' && l.sex === 'female' && result.firstDeathWho === 'higher') {
-        note += '<li><strong>Modeled pattern:</strong> The lower earner may receive the supported reduced age-60 survivor payment when it exceeds their own benefit.</li>';
+        note += '<li><strong>Modeled pattern:</strong> The lower earner may receive the supported age-reduced survivor payment when it exceeds their own benefit.</li>';
     }
 
     return note;
@@ -297,14 +309,14 @@ function buildHeroSentence(result, opts) {
     var lower = result.lower;
     var higher = result.higher;
     var firstWho = result.firstDeathWho;
-    var survivorYears = Math.max(0, opts.lowerEarner.deathAge - opts.higherEarner.deathAge);
+    var survivorYears = Math.max(0, opts.lowerEarner.birthYear + opts.lowerEarner.deathAge - opts.higherEarner.birthYear - opts.higherEarner.deathAge);
 
     // Lower earner claims before the comparison age (e.g. 62 vs FRA 67) — common couples strategy
     if (lower.claimAge < d.earlyCompareAge) {
         var earlyHtml = 'The lower earner claims at <strong>age ' + lower.claimAge + '</strong> — before FRA (' + d.earlyCompareAge + ') — for <strong>' + formatCurrency(lower.startMonthly) + '/month</strong> starting early. ';
-        earlyHtml += 'The higher earner waits until <strong>age ' + higher.claimAge + '</strong>, raising the survivor benefit at first death to <strong>' + formatCurrency(d.higherAtDeath) + '/month</strong>. ';
-        if (firstWho === 'higher' && d.higherAtDeath > lower.startMonthly) {
-            earlyHtml += 'When the higher earner dies at age ' + higher.deathAge + ', the lower earner steps up from their own check to that larger survivor benefit of <strong>' + formatCurrency(d.higherAtDeath) + '/month</strong>';
+        earlyHtml += 'The modeled survivor-record payment at entitlement is <strong>' + formatCurrency(result.survivorFloor) + '/month</strong>, after the supported claiming-age reduction. ';
+        if (firstWho === 'higher' && result.survivorFloor > lower.startMonthly) {
+            earlyHtml += 'After death and the selected claiming month, the survivor-record payment is <strong>' + formatCurrency(result.survivorFloor) + '/month</strong> before later COLA; the monthly ledger pays the larger of it and the own-record benefit';
             if (survivorYears > 0) {
                 earlyHtml += ' for about <strong>' + survivorYears + ' year' + (survivorYears === 1 ? '' : 's') + '</strong>';
             }
@@ -316,7 +328,7 @@ function buildHeroSentence(result, opts) {
     }
 
     if (lower.claimAge === d.earlyCompareAge) {
-        return 'The lower earner claims at FRA (' + d.earlyCompareAge + '), so there is no extra wait on their own record to analyze. The key question is whether the higher earner\'s delay to age ' + higher.claimAge + ' raises the survivor benefit at first death to <strong>' + formatCurrency(d.higherAtDeath) + '/month</strong> — income that may last for the longer-lived spouse.';
+        return 'The lower earner claims at the comparison age (' + d.earlyCompareAge + '). The modeled survivor-record payment at entitlement is <strong>' + formatCurrency(result.survivorFloor) + '/month</strong>, after the claiming-age reduction. Annual income includes only entitled months and pays the larger of the survivor and own-record benefits.';
     }
 
     var delayYears = lower.claimAge - d.earlyCompareAge;
@@ -326,22 +338,22 @@ function buildHeroSentence(result, opts) {
     var html = 'The lower earner delayed receiving approximately <strong>' + formatCurrency(d.forgone) +
         '</strong> in benefits ' + delayPhrase + '. ';
 
-    if (firstWho === 'higher' && d.higherAtDeath > lower.startMonthly) {
-        html += 'Because survivor benefits replaced their own benefit when the higher earner died at age ' + higher.deathAge + ', ';
+    if (firstWho === 'higher' && result.survivorFloor > lower.startMonthly) {
+        html += 'The modeled survivor-record benefit starts only at entitlement; comparing own-record payments before death, ';
         if (d.recovered > 0 && d.netLoss > 0) {
             html += 'only <strong>' + formatCurrency(d.recovered) + '</strong> of that delay was recovered before the switch — a net loss of <strong>' + formatCurrency(d.netLoss) + '</strong> on their own record.';
         } else if (d.netLoss <= 0 && d.recovered > 0) {
             html += 'the delay recovered <strong>' + formatCurrency(d.recovered) + '</strong> in extra payments before the switch — roughly breaking even on the wait.';
         } else {
-            html += 'almost none of that waiting increased long-term household income — the survivor now receives <strong>' + formatCurrency(d.higherAtDeath) + '/month</strong> from the higher earner\'s record.';
+            html += 'the own-record delay recovered no extra payments before death. The survivor-record amount at entitlement is <strong>' + formatCurrency(result.survivorFloor) + '/month</strong>; actual payments start in the selected month.';
         }
-        if (opts.lowerEarner.deathAge - opts.higherEarner.deathAge >= 5) {
-            html += ' However, that survivor benefit may continue for ~' + (opts.lowerEarner.deathAge - opts.higherEarner.deathAge) +
+        if (survivorYears >= 5) {
+            html += ' However, the modeled survivor period is ~' + survivorYears +
                 ' more years — which is why the higher earner\'s delay (not the lower earner\'s) often drives the couples strategy.';
         }
     } else if (firstWho === 'lower') {
         html += 'The lower earner died first, so their own benefit (not the survivor benefit) determined what they received.';
-    } else if (firstWho === 'higher' && d.higherAtDeath <= lower.startMonthly) {
+    } else if (firstWho === 'higher' && result.survivorFloor <= lower.startMonthly) {
         html += 'The lower earner\'s own benefit was higher than the survivor benefit, so their delay continued to matter.';
     } else {
         html += 'Adjust longevity assumptions to see how survivor benefits affect the payoff from waiting.';
@@ -353,7 +365,7 @@ function buildHeroSentence(result, opts) {
 function buildTimeline(result) {
     var higher = result.higher;
     var lower = result.lower;
-    var minAge = 62;
+    var minAge = 60;
     var maxAge = Math.max(higher.deathAge, lower.deathAge + (higher.birthYear - lower.birthYear));
     var span = maxAge - minAge;
 
@@ -432,7 +444,7 @@ function buildStrategyInsight(strategies, result) {
     });
     var couplesRec = strategies.find(function (s) { return s.name === 'Lower early, higher at 70'; });
 
-    var html = 'The model compares the survivor\'s own benefit with the supported reduced age-60 survivor payment. It does not model later survivor claiming ages.';
+    var html = 'The model compares the survivor\'s own benefit with the regular survivor payment calculated for the selected survivor claiming age through survivor FRA.';
 
     if (best.name === 'Lower early, higher at 70') {
         html += ' In this scenario, <em>Lower early, higher at 70</em> leads the comparison.';
@@ -525,15 +537,14 @@ function createHouseholdChart(yearly) {
     }
 
     var maxLabels = 12;
-    var step = Math.max(1, Math.ceil(yearly.length / maxLabels));
-    var sampled = yearly.filter(function (_, i) { return i % step === 0; });
+    var sampled = yearly; // Preserve first-claim prorations; thin axis labels, not payment data.
 
     window.householdChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: sampled.map(function (y) { return String(y.calendarYear); }),
             datasets: [{
-                label: 'Household monthly SS',
+                label: 'Annual-average monthly household SS',
                 data: sampled.map(function (y) { return y.householdMonthly; }),
                 borderColor: 'rgb(37, 99, 235)',
                 backgroundColor: 'rgba(37, 99, 235, 0.1)',
@@ -556,7 +567,7 @@ function createHouseholdChart(yearly) {
             },
             scales: {
                 x: {
-                    title: { display: true, text: 'Calendar year' },
+                    title: { display: true, text: 'Modeled age-year' },
                     ticks: { maxRotation: 45, minRotation: 0, autoSkip: true, maxTicksLimit: maxLabels }
                 },
                 y: {
@@ -569,8 +580,15 @@ function createHouseholdChart(yearly) {
 }
 
 function runAnalysis() {
+    window.lastSurvivorImpactResult = null;
+    document.getElementById('results').style.display = 'none';
     updateLongevityHints();
     var opts = getFormInputs();
+    if (!opts.higherEarner.birthDate || parseInt(opts.higherEarner.birthDate.slice(0,4),10)!==opts.higherEarner.birthYear ||
+        !opts.lowerEarner.birthDate || parseInt(opts.lowerEarner.birthDate.slice(0,4),10)!==opts.lowerEarner.birthYear) {
+        alert('Each full birth date must match the selected birth year.');
+        return;
+    }
     if (opts.higherEarner.deathAge == null || opts.lowerEarner.deathAge == null) {
         alert('Unsupported longevity age: choose an age with an exact SSA 2021 fixture or enable the Advanced custom death-age override.');
         return;
@@ -594,7 +612,7 @@ function runAnalysis() {
         '<div class="summary-card"><div class="summary-label">After first death</div><div class="summary-value">' + formatCurrency(result.afterFirstDeath) + '</div></div>' +
         '<div class="summary-card"><div class="summary-label">' + longevityLabel + '</div><div class="summary-value">' + opts.higherEarner.deathAge + ' / ' + opts.lowerEarner.deathAge + '</div></div>' +
         '<div class="summary-card"><div class="summary-label">Supported survivor payment</div><div class="summary-value">' + formatCurrency(result.survivorFloor) + '</div></div>' +
-        '<div class="summary-card"><div class="summary-label">Survivor years (approx.)</div><div class="summary-value">' + Math.max(0, opts.lowerEarner.deathAge - opts.higherEarner.deathAge) + '</div></div>';
+        '<div class="summary-card"><div class="summary-label">Survivor years (approx.)</div><div class="summary-value">' + Math.abs(opts.lowerEarner.birthYear + opts.lowerEarner.deathAge - opts.higherEarner.birthYear - opts.higherEarner.deathAge) + '</div></div>';
 
     document.getElementById('timelineVisual').innerHTML = buildTimeline(result);
 
@@ -603,7 +621,7 @@ function runAnalysis() {
     interp += '<li><strong>Household lifetime Social Security:</strong> ' + formatCurrency(result.totalHousehold) + ' under your assumptions (COLA ' + opts.colaRate + '%).</li>';
 
     if (result.firstDeathWho === 'higher') {
-        interp += '<li><strong>When the higher earner dies at ' + result.higher.deathAge + ',</strong> the lower earner steps up to ' + formatCurrency(d.higherAtDeath) + '/month if that exceeds their own benefit — their own check stops.</li>';
+        interp += '<li><strong>Survivor entitlement:</strong> ' + formatCurrency(result.survivorFloor) + '/month at the modeled claiming month, after the age reduction. Each month pays the larger of the survivor-record and own-record amounts; first-year totals are prorated.</li>';
     }
 
     if (d.forgone > 0) {
@@ -638,8 +656,8 @@ function runAnalysis() {
 }
 
 function getFormDataForSave() {
-    var ids = ['higherBirthYear', 'higherPIA', 'higherClaimAge', 'higherSex', 'higherCurrentAge',
-        'lowerBirthYear', 'lowerPIA', 'lowerClaimAge', 'lowerSex', 'lowerCurrentAge',
+    var ids = ['higherBirthYear', 'higherBirthDate', 'higherPIA', 'higherClaimAge', 'higherSurvivorClaimAge', 'higherSex', 'higherCurrentAge',
+        'lowerBirthYear', 'lowerBirthDate', 'lowerPIA', 'lowerClaimAge', 'lowerSurvivorClaimAge', 'lowerSex', 'lowerCurrentAge',
         'overrideLongevity', 'higherDeathAge', 'lowerDeathAge',
         'lowerEarlyCompareAge', 'colaRate', 'discountRate'];
     var data = {};
@@ -678,6 +696,12 @@ function scenarioDisplayName(scenario) {
     return (scenario && (scenario.scenario_name || scenario.name)) || 'Untitled scenario';
 }
 
+function resetSavedStatutoryInputs(data) {
+    ['higherBirthDate','lowerBirthDate','higherSurvivorClaimAge','lowerSurvivorClaimAge'].forEach(function(id) {
+        document.getElementById(id).value = data[id] == null ? '' : data[id];
+    });
+}
+
 function loadScenario() {
     fetch(SSI_API_BASE + 'api/load_scenarios.php?calculator_type=ss-survivor-impact')
     .then(function (res) { return res.json(); })
@@ -696,6 +720,7 @@ function loadScenario() {
         if (index < 0 || index >= data.scenarios.length) return;
         ageSyncedFromBirthYear.higher = false;
         ageSyncedFromBirthYear.lower = false;
+        resetSavedStatutoryInputs(data.scenarios[index].data);
         Object.keys(data.scenarios[index].data).forEach(function (key) {
             var el = document.getElementById(key);
             if (!el) return;
@@ -884,9 +909,9 @@ function explainResults() {
     summary += 'Higher earner: ' + opts.higherEarner.sex + ', age ' + opts.higherEarner.currentAge + ', born ' + r.higher.birthYear + ', PIA ' + formatCurrency(r.higher.pia) + ', claims at ' + r.higher.claimAge + ', dies at ' + r.higher.deathAge + '.\n';
     summary += 'Lower earner: ' + opts.lowerEarner.sex + ', age ' + opts.lowerEarner.currentAge + ', born ' + r.lower.birthYear + ', PIA ' + formatCurrency(r.lower.pia) + ', claims at ' + r.lower.claimAge + ', dies at ' + r.lower.deathAge + '.\n\n';
     summary += 'Lifetime household SS: ' + formatCurrency(r.totalHousehold) + '. Before first death: ' + formatCurrency(r.beforeFirstDeath) + '. After: ' + formatCurrency(r.afterFirstDeath) + '.\n';
-    summary += 'Survivor years approx: ' + Math.max(0, opts.lowerEarner.deathAge - opts.higherEarner.deathAge) + '.\n';
+    summary += 'Survivor years approx: ' + Math.abs(opts.lowerEarner.birthYear + opts.lowerEarner.deathAge - opts.higherEarner.birthYear - opts.higherEarner.deathAge) + '.\n';
     summary += 'Lower earner delayed by waiting: ' + formatCurrency(d.forgone) + '. Recovered before survivor switch: ' + formatCurrency(d.recovered) + '. Net loss on own record: ' + formatCurrency(d.netLoss) + '.\n';
-    summary += 'Survivor benefit at first death: ' + formatCurrency(d.higherAtDeath) + '/month.';
+    summary += 'Survivor-record benefit at entitlement: ' + formatCurrency(r.survivorFloor) + '/month. Annual totals sum actual entitled age-months, not twelve payments in every claiming year.';
 
     var btn = document.getElementById('explainResultsBtn');
     if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
@@ -920,11 +945,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     document.getElementById('higherBirthYear').addEventListener('change', function () {
+        document.getElementById('higherBirthDate').value = '';
         syncCurrentAgeFromBirthYear('higher');
         syncFraHints();
         updateLongevityHints();
     });
     document.getElementById('lowerBirthYear').addEventListener('change', function () {
+        document.getElementById('lowerBirthDate').value = '';
         syncCurrentAgeFromBirthYear('lower');
         syncFraHints();
         updateLongevityHints();

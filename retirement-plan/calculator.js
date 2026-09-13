@@ -192,6 +192,7 @@
       retirementAge: retirementAge,
       planEndAge: FC.clamp(readNumber('planEndAge', 95), Math.max(currentAge + 1, 80), 100),
       birthYear: birthYear,
+      birthDate: el('birthDate') ? el('birthDate').value : '',
       balance: readNumber('balance'),
       portfolioWithdrawalStartAge: (function () {
         var v = readNumber('portfolioWithdrawalStartAge', NaN);
@@ -237,6 +238,7 @@
     if (inputs.balance < 0) errors.push('retirement savings');
     if (inputs.baseAnnualSpending <= 0) errors.push('retirement spending');
     if (inputs.birthYear < 1900 || inputs.birthYear > new Date().getFullYear()) errors.push('birth year');
+    if (!inputs.birthDate || parseInt(inputs.birthDate.slice(0,4),10) !== inputs.birthYear) errors.push('full birth date matching birth year');
     if (inputs.portfolioWithdrawalStartAge < inputs.currentAge) {
       errors.push('portfolio withdrawal start age (must be at or after your current age)');
     }
@@ -559,6 +561,7 @@
   function getFormDataForSave() {
     return {
       birthYear: readNumber('birthYear'),
+      birthDate: el('birthDate') ? el('birthDate').value : '',
       retirementAge: readNumber('retirementAge'),
       balance: readNumber('balance'),
       portfolioWithdrawalStartAge: readNumber('portfolioWithdrawalStartAge'),
@@ -594,6 +597,7 @@
 
   function applyFormData(data) {
     if (!data) return;
+    if (el('birthDate')) el('birthDate').value = data.birthDate == null ? '' : data.birthDate;
     if (data.currentAge && el('birthYear') && !data.birthYear) {
       el('birthYear').value = currentCalendarYear() - data.currentAge;
     }
@@ -602,7 +606,7 @@
       var node = el(key);
       if (!node) return;
       if (node.type === 'checkbox') node.checked = !!data[key];
-      else if (node.tagName === 'SELECT' || node.type === 'number' || node.type === 'text') node.value = data[key];
+      else if (node.tagName === 'SELECT' || node.type === 'number' || node.type === 'text' || node.type === 'date') node.value = data[key];
     });
     if (data.spendingMethod) {
       var radio = document.querySelector('input[name="spendingMethod"][value="' + data.spendingMethod + '"]');
@@ -910,6 +914,7 @@
     ['birthYear'].forEach(function (id) {
       var node = el(id);
       if (node) node.addEventListener('change', function () {
+        if (el('birthDate') && parseInt(el('birthDate').value.slice(0,4),10) !== readNumber('birthYear')) el('birthDate').value = '';
         syncBirthYearDerived();
         syncRetiredState();
       });

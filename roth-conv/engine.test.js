@@ -42,6 +42,11 @@ close(rmdResult.withoutConversion.yearlyData[0].rmd,1180000/26.5,.01);
 const youngerRmd=engine.runRothAnalysis({...base,currentAge:66,spouseAge:66,lifeExpectancy:75,survivorLifeExpectancy:75,returnRate:0,conversionAmount:0,conversionYears:1,targetAfterTaxSpending:0});
 assert.strictEqual(youngerRmd.withoutConversion.yearlyData.find(r=>r.age===74).rmd,0);
 assert.ok(youngerRmd.withoutConversion.yearlyData.find(r=>r.age===75).rmd>0);
+const transition1959=engine.runRothAnalysis({...base,currentAge:67,spouseAge:67,lifeExpectancy:75,survivorLifeExpectancy:75,returnRate:0,conversionAmount:0,conversionYears:1,targetAfterTaxSpending:0});
+assert.strictEqual(transition1959.withoutConversion.yearlyData.find(r=>r.age===74).rmd,0);
+assert.ok(transition1959.withoutConversion.yearlyData.find(r=>r.age===75).rmd>0);
+for (const currentAge of [null,undefined,'',NaN,73.5,-1,true]) assert.throws(()=>engine.runRothAnalysis({...base,currentAge}),/integer owner ages/);
+assert.throws(()=>engine.runRothAnalysis({...base,currentAge:121,spouseAge:121,lifeExpectancy:122,survivorLifeExpectancy:122}),/Unsupported Table III/);
 // The survivor switches to single in the year after death and receives one Social Security benefit.
 const widow=engine.runRothAnalysis({...base,deathAge:79});
 const deathRow=widow.withConversion.yearlyData.find(r=>r.age===79);

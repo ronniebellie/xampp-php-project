@@ -113,6 +113,8 @@
   }
 
   function normalize(data) {
+    const validAge = value => (typeof value === 'number' || (typeof value === 'string' && value.trim() !== '')) && Number.isInteger(Number(value)) && Number(value) >= 0;
+    if (!validAge(data.currentAge) || (data.spouseAge != null && data.spouseAge !== '' && !validAge(data.spouseAge))) throw new RangeError('Valid integer owner ages are required; missing or malformed ages cannot select an RMD cohort.');
     const currentAge = num(data.currentAge, 60), spouseAge = data.spouseAge === '' || data.spouseAge == null ? null : num(data.spouseAge);
     const socialSecuritySelf = num(data.socialSecuritySelf, 0), socialSecuritySpouse = num(data.socialSecuritySpouse, 0);
     const hasNewIncome = data.socialSecuritySelf != null || data.socialSecuritySpouse != null || data.otherOrdinaryIncome != null;
@@ -157,6 +159,7 @@
 
   function project(config, doConversion) {
     const c=config, state={traditional:c.traditionalIRA,roth:c.rothIRA,taxable:c.taxableAccount,basis:Math.min(c.taxableCostBasis,c.taxableAccount)};
+    if (!Number.isInteger(c.currentAge) || c.currentAge < 0 || (c.spouseAge != null && (!Number.isInteger(c.spouseAge) || c.spouseAge < 0))) throw new RangeError('RMD owner ages must be nonnegative integers.');
     const yearsPrimary=c.lifeExpectancy-c.currentAge;
     const yearsSurvivor=c.spouseAge==null ? yearsPrimary : c.survivorLifeExpectancy-c.spouseAge;
     const horizon=Math.max(0,c.deathAge>0 ? Math.max(c.deathAge-c.currentAge,yearsSurvivor) : yearsPrimary);
@@ -168,7 +171,9 @@
       const filingStatus=survivor?'single':c.filingStatus;
       const ownerAge=survivor && spouseAge!=null?spouseAge:primaryAge;
       const ownerBirthYear=BASE_YEAR-(survivor&&c.spouseAge!=null?c.spouseAge:c.currentAge);
-      const rmdStartAge=ownerBirthYear>=1960?75:73;
+      // This forward projection starts in 2026: every pre-1951 cohort has
+      // already commenced RMDs. Do not guess the 1949 birth-date boundary.
+      const rmdDue=ownerBirthYear<=1950 || ownerAge>=(ownerBirthYear>=1959?75:73);
       const ages=survivor?[ownerAge]:[primaryAge].concat(spouseAge==null?[]:[spouseAge]);
       const ssBase=survivor?Math.max(c.socialSecuritySelf,c.socialSecuritySpouse):c.socialSecuritySelf+c.socialSecuritySpouse;
       const ss=ssBase*inflationFactor(year,c.inflationRate);
@@ -178,7 +183,8 @@
       const taxExempt=c.taxExemptInterest*inflationFactor(year,c.inflationRate);
       const beginningAssets=state.traditional+state.roth+state.taxable;
       const beginningTraditional=state.traditional;
-      const rmd=ownerAge>=rmdStartAge && RMD[Math.min(120,Math.floor(ownerAge))]?Math.min(state.traditional,beginningTraditional/RMD[Math.min(120,Math.floor(ownerAge))]):0;
+      if (rmdDue && beginningTraditional > 0 && RMD[ownerAge] == null) throw new RangeError('Unsupported Table III owner age; RMD values cannot be substituted or extrapolated.');
+      const rmd=rmdDue && beginningTraditional>0?Math.min(state.traditional,beginningTraditional/RMD[ownerAge]):0;
       state.traditional-=rmd; totalRMDs+=rmd;
       const conversionActive=doConversion && !survivor && i<c.conversionYears;
       const conversion=conversionActive?Math.min(c.conversionAmount,state.traditional):0;

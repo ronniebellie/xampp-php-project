@@ -22,7 +22,7 @@ function calculateFederalTax(taxableIncome, filingStatus) {
 /** Project owner from currentAge to deathAge: growth, RMDs, optional conversions. Returns balances at death and owner lifetime tax. */
 function projectOwnerToDeath(params) {
   const {
-    currentAge, birthYear,
+    currentAge, birthYear, birthDate,
     deathAge,
     filingStatus,
     traditionalIRA,
@@ -46,7 +46,7 @@ function projectOwnerToDeath(params) {
     let conversion = 0;
 
     if (trad > 0) {
-      const resolved = RBTaxRmd.resolveRMD({ownerAge: age, priorYearEndBalance: trad, birthYear});
+      const resolved = RBTaxRmd.resolveRMD({ownerAge: age, priorYearEndBalance: trad, birthYear, birthDate, isSpouseSoleBeneficiary:false});
       if (!resolved.supported) throw new RangeError(resolved.reason);
       rmd = resolved.amount;
       trad -= rmd;
@@ -74,43 +74,41 @@ function projectOwnerToDeath(params) {
 
 /** Simulate one heir's 10-year inherited IRA: balance at inheritance, other income, filing status, strategy (level | year10), return rate. */
 function simulateHeirInheritedIRA(params) {
-  const { balance, otherIncome, filingStatus, strategy, returnRate } = params;
+  const { balance, otherIncome, filingStatus, strategy, returnRate, inheritedRule, initialPostRbdDivisor } = params;
+  if (!inheritedRule || inheritedRule.supported !== true || !['10-year-pre-rbd','10-year-post-rbd'].includes(inheritedRule.rule)) throw new RangeError('An explicitly supported inherited-IRA classification is required.');
+  if (![balance,otherIncome,returnRate].every(value => typeof value === 'number' && Number.isFinite(value)) || balance < 0 || returnRate < -1 || !['level','year10'].includes(strategy)) throw new RangeError('Valid inherited balance, income, return rate and withdrawal strategy are required.');
   const deduction = STANDARD_DEDUCTION_2026[filingStatus] || 15000;
   const years = 10;
   const yearlyData = [];
   let remaining = balance;
   let totalTax = 0;
 
-  let withdrawals;
-  if (strategy === 'year10') {
-    // Grow for 9 years, withdraw all in year 10
-    for (let y = 0; y < 9; y++) {
-      remaining *= (1 + returnRate);
-      yearlyData.push({ year: y + 1, balance: remaining, distribution: 0, income: otherIncome, tax: calculateFederalTax(Math.max(0, otherIncome - deduction), filingStatus) });
-      totalTax += yearlyData[yearlyData.length - 1].tax;
+  for (let y = 1; y <= years; y++) {
+    const priorYearEndBalance = remaining;
+    let planned = strategy === 'level' ? remaining / (years - y + 1) : 0;
+    let required = y === 10 ? remaining : 0;
+    let divisor = null;
+    if (inheritedRule.rule === '10-year-post-rbd' && y < 10) {
+      const requiredResult = RBInheritedIraRules.postRbdRequiredDistribution(priorYearEndBalance, initialPostRbdDivisor, y);
+      if (!requiredResult.supported) throw new RangeError(requiredResult.reason);
+      divisor = requiredResult.divisor;
+      required = requiredResult.amount;
     }
-    const finalBalance = remaining * (1 + returnRate);
-    const dist = finalBalance;
-    remaining = 0;
+    const dist = y === 10 ? remaining : Math.min(remaining, Math.max(planned, required));
+    remaining -= dist;
+    if (y < 10) remaining *= (1 + returnRate);
     const taxableIncome = Math.max(0, otherIncome + dist - deduction);
     const tax = calculateFederalTax(taxableIncome, filingStatus);
     totalTax += tax;
-    yearlyData.push({ year: 10, balance: 0, distribution: dist, income: otherIncome + dist, tax });
-  } else {
-    // Level: each year grow, then withdraw (balance / years remaining) so account empties in 10 years
-    for (let y = 0; y < years; y++) {
-      remaining *= (1 + returnRate);
-      const yearsLeft = years - y;
-      const dist = (yearsLeft > 0) ? remaining / yearsLeft : remaining;
-      remaining -= dist;
-      const taxableIncome = Math.max(0, otherIncome + dist - deduction);
-      const tax = calculateFederalTax(taxableIncome, filingStatus);
-      totalTax += tax;
-      yearlyData.push({ year: y + 1, balance: remaining, distribution: dist, income: otherIncome + dist, tax });
-    }
+    yearlyData.push({year:y,balance:remaining,priorYearEndBalance,distribution:dist,requiredDistribution:required,divisor,income:otherIncome+dist,tax});
   }
 
   return { yearlyData, totalHeirTax: totalTax };
+}
+
+function readInheritedNumber(id) {
+  const value = document.getElementById(id)?.value;
+  return typeof value === 'string' && value.trim() !== '' ? Number(value) : NaN;
 }
 
 function getFormData() {
@@ -121,7 +119,7 @@ function getFormData() {
     const name = (document.getElementById('heirName' + i)?.value || 'Heir ' + i).trim();
     heirs.push({
       name: name || 'Heir ' + i,
-      age: parseInt(document.getElementById('heirAge' + i)?.value, 10) || 40,
+      age: readInheritedNumber('heirAge' + i),
       sharePct: share,
       otherIncome: parseFloat(document.getElementById('heirIncome' + i)?.value) || 0,
       filingStatus: document.getElementById('heirFiling' + i)?.value || 'single'
@@ -134,26 +132,37 @@ function getFormData() {
   }
 
   return {
-    currentAge: parseInt(document.getElementById('currentAge')?.value, 10) || 68,
+    currentAge: readInheritedNumber('currentAge'),
     birthYear: parseInt(document.getElementById('birthYear')?.value, 10),
-    deathAge: parseInt(document.getElementById('deathAge')?.value, 10) || 90,
+    birthDate: document.getElementById('birthDate')?.value,
+    deathAge: readInheritedNumber('deathAge'),
     filingStatus: document.getElementById('filingStatus')?.value || 'married',
     traditionalIRA: parseFloat(document.getElementById('traditionalIRA')?.value) || 0,
     rothIRA: parseFloat(document.getElementById('rothIRA')?.value) || 0,
     retirementIncome: parseFloat(document.getElementById('retirementIncome')?.value) || 0,
-    returnRate: (parseFloat(document.getElementById('returnRate')?.value) || 5) / 100,
+    returnRate: readInheritedNumber('returnRate') / 100,
     conversionAmount: parseFloat(document.getElementById('conversionAmount')?.value) || 0,
     conversionYears: parseInt(document.getElementById('conversionYears')?.value, 10) || 10,
     heirs,
     payoutStrategy: document.getElementById('payoutStrategy')?.value || 'level',
     beneficiaryCategory: document.getElementById('beneficiaryCategory')?.value || 'other',
-    ownerDiedBeforeRequiredBeginningDate: document.getElementById('diedBeforeRbd')?.value === 'yes',
-    inheritedReturnRate: (parseFloat(document.getElementById('inheritedReturnRate')?.value) || 5) / 100
+    ownerDiedBeforeRequiredBeginningDate: ({yes:true,no:false})[document.getElementById('diedBeforeRbd')?.value],
+    inheritedReturnRate: readInheritedNumber('inheritedReturnRate') / 100
   };
 }
 
 function runAnalysis() {
+  window.lastInheritedIRAResult = null;
+  document.getElementById('results').style.display = 'none';
   const d = getFormData();
+  if (!d.birthDate || !RBTaxRmd.rmdStartAgeForBirthYear(d.birthDate).supported || parseInt(d.birthDate.slice(0, 4), 10) !== d.birthYear) {
+    alert('Full birth date must match the entered birth year.');
+    return null;
+  }
+  if (![d.currentAge,d.deathAge,...d.heirs.map(heir => heir.age)].every(age => Number.isInteger(age) && age >= 0) || d.deathAge < d.currentAge || !Number.isFinite(d.returnRate) || !Number.isFinite(d.inheritedReturnRate)) {
+    alert('Valid integer owner/heir ages, death age at or after current age, and explicit return rates are required.');
+    return null;
+  }
   if (d.heirs.length === 0) {
     alert('Please enter at least one heir with a share % greater than 0.');
     return null;
@@ -185,12 +194,24 @@ function runAnalysis() {
     const tradAtDeath = ownerResult.traditionalAtDeath;
     return d.heirs.map(heir => {
       const balance = (tradAtDeath * heir.sharePct) / 100;
+      let initialPostRbdDivisor = null;
+      if (inheritedRule.rule === '10-year-post-rbd') {
+        const divisorResult = RBInheritedIraRules.postRbdInitialDivisor({
+          beneficiaryAgeFirstDistributionYear: heir.age + (d.deathAge - d.currentAge) + 1,
+          ownerAgeAtDeath: d.deathAge,
+          getSingleLifeExpectancy: RBTaxRmd.getSingleLifeExpectancy
+        });
+        if (!divisorResult.supported) throw new RangeError(divisorResult.reason);
+        initialPostRbdDivisor = divisorResult.divisor;
+      }
       const sim = simulateHeirInheritedIRA({
         balance,
         otherIncome: heir.otherIncome,
         filingStatus: heir.filingStatus,
         strategy: d.payoutStrategy,
-        returnRate: d.inheritedReturnRate
+        returnRate: d.inheritedReturnRate,
+        inheritedRule,
+        initialPostRbdDivisor
       });
       return {
         name: heir.name,
@@ -202,8 +223,14 @@ function runAnalysis() {
     });
   }
 
-  const heirsNoConv = heirResults(noConv);
-  const heirsWithConv = heirResults(withConv);
+  let heirsNoConv, heirsWithConv;
+  try {
+    heirsNoConv = heirResults(noConv);
+    heirsWithConv = heirResults(withConv);
+  } catch (error) {
+    alert('Unsupported inherited-IRA divisor case: ' + error.message);
+    return null;
+  }
 
   const totalHeirsTaxNoConv = heirsNoConv.reduce((s, h) => s + h.totalHeirTax, 0);
   const totalHeirsTaxWithConv = heirsWithConv.reduce((s, h) => s + h.totalHeirTax, 0);
@@ -311,13 +338,16 @@ function displayResults(result) {
         <h3>Heir: ${heir.name} (${heir.sharePct.toFixed(0)}% share) — 10-year inherited IRA (with-conversion scenario)</h3>
         <div class="table-wrapper">
           <table class="data-table">
-            <thead><tr><th>Year</th><th>Balance after distribution</th><th>Distribution</th><th>Taxable income</th><th>Federal tax</th></tr></thead>
+            <thead><tr><th>Year</th><th>Prior year-end balance</th><th>Table I divisor</th><th>Required minimum</th><th>Actual distribution</th><th>Ending balance</th><th>Taxable income</th><th>Federal tax</th></tr></thead>
             <tbody>
               ${heir.yearlyData.map(row => `
                 <tr>
                   <td>${row.year}</td>
-                  <td>${formatCurrency(row.balance)}</td>
+                  <td>${formatCurrency(row.priorYearEndBalance)}</td>
+                  <td>${row.divisor == null ? '—' : row.divisor.toFixed(1)}</td>
+                  <td>${formatCurrency(row.requiredDistribution)}</td>
                   <td>${formatCurrency(row.distribution)}</td>
+                  <td>${formatCurrency(row.balance)}</td>
                   <td>${formatCurrency(row.income)}</td>
                   <td>${formatCurrency(row.tax)}</td>
                 </tr>

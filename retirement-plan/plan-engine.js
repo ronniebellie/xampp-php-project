@@ -10,7 +10,7 @@
   if (!TR) throw new Error('RBTaxRmd (rmd-tax-core.js) must load before plan-engine.js');
 
   function getRmdStartAge(inputs) {
-    var result = TR.rmdStartAgeForBirthYear(inputs.birthYear);
+    var result = TR.rmdStartAgeForBirthYear(inputs.birthDate || inputs.birthYear);
     if (!result.supported) throw new RangeError(result.reason);
     return result.age;
   }
@@ -179,8 +179,12 @@
       );
 
     var taxDeferredPct = FC.clamp(inputs.taxDeferredPct != null ? inputs.taxDeferredPct : 85, 0, 100) / 100;
-    var spouseAge = inputs.spouseAge || null;
-    var isSpouseBeneficiary = !!inputs.spouseIsBeneficiary;
+    var spouseAge = inputs.spouseAge == null ? null : inputs.spouseAge;
+    var isSpouseBeneficiary = inputs.spouseIsBeneficiary;
+    // Legacy single-person scenarios have no spouse; this is not an unknown
+    // joint-life classification. Married/ambiguous scenarios need the flag.
+    if (isSpouseBeneficiary === undefined && inputs.filingStatus === 'single' && spouseAge == null) isSpouseBeneficiary = false;
+    if (typeof isSpouseBeneficiary !== 'boolean') throw new RangeError('Explicit spouse sole-beneficiary status is required for RMD table selection.');
     var lifetimeFederalTax = 0;
 
     var years = [];
@@ -227,7 +231,7 @@
         });
       } else {
         var rmdResult = TR.resolveRMD({ownerAge: age, priorYearEndBalance: traditionalStart,
-          birthYear: inputs.birthYear, isSpouseSoleBeneficiary: isSpouseBeneficiary, spouseAge: spouseAge});
+          birthDate: inputs.birthDate, birthYear: inputs.birthYear, isSpouseSoleBeneficiary: isSpouseBeneficiary, spouseAge: spouseAge});
         if (!rmdResult.supported) throw new RangeError(rmdResult.reason);
         var rmd = Math.min(traditional, rmdResult.amount);
         var spending = annualSpendingAtAge(age, inputs);
@@ -294,7 +298,7 @@
         });
       }
 
-      if (spouseAge) spouseAge++;
+      if (spouseAge != null) spouseAge++;
     }
 
     var withdrawalStartAge = portfolioWithdrawalStartAge(inputs);
