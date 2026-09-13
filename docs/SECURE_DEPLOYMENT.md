@@ -154,6 +154,27 @@ tree, changes the `current` symlink atomically, and rolls the symlink back when
 health or exposure checks fail. Previous releases are retained; removal is a
 separate deliberate maintenance operation.
 
+### Artifact-only platform verification
+
+`composer check-platform-reqs` requires a project context before it can read
+installed vendor metadata. Do not run it directly in a release stripped of
+`composer.json`, and do not replace it with autoload alone: generated Composer
+platform checks may verify PHP but omit extension/version requirements.
+
+`scripts/check-release-platform.php RELEASE BASE64_COMMITTED_COMPOSER_JSON`
+creates a private temporary project containing only the committed `require`
+map and an absolute vendor-directory reference. Composer verifies the real
+runtime against the packaged `vendor/composer/installed.json` and root
+requirements. Plugins, scripts, network access, and platform overrides are
+disabled/omitted. The temporary context is removed; the public artifact is
+never modified. Failure stops activation. `deploy.sh` transfers the helper
+only to the private incoming directory and executes it before the symlink
+switch. Root `composer.json`/lock, scripts, tests and docs remain excluded.
+
+Regression: `php dev/test-release-platform.php` (installed Composer required).
+It covers manifest-free success, missing/version-incompatible extensions,
+incompatible PHP/root requirements, invalid metadata, and artifact immutability.
+
 ## 8. Secrets and history
 
 Before resuming feature deployment, scan the entire Git history with a secret

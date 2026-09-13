@@ -44,12 +44,15 @@ remote_incoming="/var/www/ronbelisle/incoming/$archive_name"
 ssh "$deploy_target" 'test -L /var/www/html && test -L /var/www/calcforadvisors && test -L /var/www/ronbelisle/current && mkdir -p /var/www/ronbelisle/incoming /var/www/ronbelisle/releases'
 scp "$archive" "$deploy_target:$remote_incoming"
 scp "$archive.sha256" "$deploy_target:$remote_incoming.sha256"
+scp "$repo_root/scripts/check-release-platform.php" "$deploy_target:/var/www/ronbelisle/incoming/$release_id.platform-check.php"
+root_requirements_b64="$(git show "$commit:composer.json" | base64 | tr -d '\n')"
 
-ssh "$deploy_target" bash -s -- "$release_id" "$archive_name" <<'REMOTE'
+ssh "$deploy_target" bash -s -- "$release_id" "$archive_name" "$root_requirements_b64" <<'REMOTE'
 set -euo pipefail
 
 release_id="$1"
 archive_name="$2"
+root_requirements_b64="$3"
 base="/var/www/ronbelisle"
 incoming="$base/incoming/$archive_name"
 release="$base/releases/$release_id"
@@ -84,6 +87,7 @@ if find "$release" -type d -name '.git' -print -quit | grep -q .; then
 fi
 
 find "$release" -type f -name '*.php' -exec php -l '{}' \; >/dev/null
+php "$base/incoming/$release_id.platform-check.php" "$release" "$root_requirements_b64"
 
 previous="$(readlink "$current")"
 next_link="$base/current.next"
