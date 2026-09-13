@@ -15,8 +15,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function parseDate(value) {
     if (!value) return null;
-    const d = new Date(value);
-    return isNaN(d.getTime()) ? null : d;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+    const [y,m,day] = value.split('-').map(Number);
+    const d = new Date(0);
+    d.setFullYear(y,m-1,day); d.setHours(12,0,0,0);
+    return y > 0 && d.getFullYear() === y && d.getMonth() === m-1 && d.getDate() === day ? d : null;
   }
 
   function formatDate(d) {
@@ -27,6 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
       day: 'numeric'
     });
   }
+  function calendarISO(date) {
+    return [String(date.getFullYear()).padStart(4,'0'), String(date.getMonth()+1).padStart(2,'0'), String(date.getDate()).padStart(2,'0')].join('-');
+  }
+  window.RBTimelineDates = {parseDate,formatDate,calendarISO,calculateAgeOn,addMonths};
 
   function calculateAgeOn(birth, onDate) {
     if (!birth || !onDate) return null;
@@ -264,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
         checkbox.type = 'checkbox';
         checkbox.style.marginTop = '3px';
 
-        const dateIso = retireDate.toISOString().slice(0, 10);
+        const dateIso = calendarISO(retireDate);
         const storageKey = taskStorageKey(task.id, dateIso);
         checkbox.checked = localStorage.getItem(storageKey) === '1';
 
@@ -400,5 +407,3 @@ function explainResults() {
     alert('Explain results: ' + err.message);
   });
 }
-
-

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . "/../../includes/numerical_math.php";
 // Future Value of an Annuity
 
 function h(string $v): string {
@@ -29,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $m = (float) $compoundNum;
         $t = $yearsNum;
         $n = $m * $t;
-        $result = $pmtNum * ( (pow(1 + ($r / $m), $n) - 1) / ($r / $m) );
+        try { $result = rb_math_annuity($pmtNum, $r/$m, $n); } catch (DomainException $e) { $errors[] = $e->getMessage(); $result = null; }
     }
 }
 ?>

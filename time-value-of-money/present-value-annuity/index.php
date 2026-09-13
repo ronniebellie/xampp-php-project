@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . "/../../includes/numerical_math.php";
 // Present Value of an Annuity
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
@@ -48,12 +49,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $periodRate = $r / $m;
 
         // Ordinary annuity (end-of-period payments)
-        $pvComputed = $pmtNum * (1 - pow(1 + $periodRate, -$n)) / $periodRate;
+        try {
+        $pvComputed = rb_math_annuity($pmtNum, $periodRate, $n, true);
 
         // Store result for one-time display, then redirect to clear POST and form fields.
         $_SESSION['pv_annuity_result'] = $pvComputed;
         header('Location: /time-value-of-money/present-value-annuity/');
         exit;
+        } catch (DomainException $e) { $errors[] = $e->getMessage(); $result = null; }
     }
 }
 ?>

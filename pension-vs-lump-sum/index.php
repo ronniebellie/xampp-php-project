@@ -12,9 +12,9 @@ $isPremium = has_premium_access();
   <?php include("../includes/analytics.php"); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Compare pension vs lump sum. See break-even age and how many years of payments match the lump sum if invested.">
+    <meta name="description" content="Compare pension payments and a lump sum on a common present-value basis using an annual discount rate.">
     <title>Pension vs. Lump Sum Calculator</title>
-    <?php $og_title = $ld_name = 'Pension vs. Lump Sum Calculator'; $og_description = $ld_description = 'Compare pension vs lump sum. See break-even age and how many years of payments match the lump sum if invested.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
+    <?php $og_title = $ld_name = 'Pension vs. Lump Sum Calculator'; $og_description = $ld_description = 'Compare pension payments and a lump sum on a common present-value basis using an annual discount rate.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
     <link rel="stylesheet" href="../css/styles.css">
     <style>
       .slider-row { margin-bottom: 18px; }
@@ -40,8 +40,8 @@ $isPremium = has_premium_access();
 
     <div class="info-box-blue" style="margin-bottom: 30px;">
       <h2>Understanding the Choice</h2>
-      <p>Many employers offer a choice: <strong>take a monthly pension for life</strong> or <strong>take a lump sum</strong> and invest or spend it. This calculator compares the two by showing how many years of pension payments it takes to match what the lump sum would grow to if invested at an assumed rate. If you live past that “break-even” age, the pension typically comes out ahead; if you don’t, the lump sum (or what’s left of it) may be worth more to you or your heirs.</p>
-      <p style="margin-top: 12px;"><strong>Tip:</strong> Use your plan’s official lump sum and monthly pension numbers. The growth rate should reflect how you’d invest the lump sum (e.g. 4–6% for a balanced portfolio).</p>
+      <p>Compare the present value of annual end-of-year pension payments with a lump sum available at your current age. Both alternatives use one valuation date and discount rate. Nominal payments are not compared with a compounded investment balance.</p>
+      <p>A first modeled crossover does not guarantee permanent superiority. Taxes, survivor benefits, longevity uncertainty, investment risk and legacy assets require separate review.</p>
     </div>
 
 <?php if ($isPremium): ?>
@@ -75,9 +75,9 @@ $isPremium = has_premium_access();
           <small style="color: #666;">Age when pension or lump sum starts</small>
         </div>
         <div class="slider-row">
-          <div class="slider-label"><span>Assumed Growth Rate on Lump Sum (%)</span><span class="value" id="growthRateLabel"></span></div>
+          <div class="slider-label"><span>Annual Discount Rate (%)</span><span class="value" id="growthRateLabel"></span></div>
           <input type="range" id="growthRate" min="0" max="15" step="0.25" value="5">
-          <small style="color: #666;">Annual return if you invest the lump sum</small>
+          <small style="color: #666;">Rate used to value pension payments at your current age</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Plan To Age (Life Expectancy)</span><span class="value" id="lifeExpectancyLabel"></span></div>
@@ -94,7 +94,7 @@ $isPremium = has_premium_access();
 
       <div class="chart-section">
         <h3>Pension vs. Lump Sum Over Time</h3>
-        <p style="color: #666; margin-bottom: 10px;">Cumulative pension received vs. what the lump sum would grow to if invested.</p>
+        <p style="color: #666; margin-bottom: 10px;">Both alternatives valued at the current-age valuation date.</p>
         <div class="chart-wrapper" style="height: 340px;">
           <canvas id="comparisonChart"></canvas>
         </div>
@@ -108,8 +108,8 @@ $isPremium = has_premium_access();
               <tr>
                 <th>Year</th>
                 <th>Age</th>
-                <th>Cumulative Pension Received</th>
-                <th>Lump Sum If Invested (FV)</th>
+                <th>Pension Present Value</th>
+                <th>Lump Sum at Valuation Date</th>
               </tr>
             </thead>
             <tbody id="resultsBody"></tbody>
@@ -128,7 +128,7 @@ $isPremium = has_premium_access();
         <h3 style="color: #92400e; margin-top: 0;">Disclaimer</h3>
         <p style="margin: 0; color: #78350f; line-height: 1.6;">This tool is for educational purposes only and does not constitute financial or tax advice. Pension and lump sum amounts vary by plan and assumptions. Investment returns are uncertain. Consider inflation, taxes, and your health and family situation. Consult a qualified professional before making this decision.</p>
       </div>
-      <?php $share_title = 'Pension vs. Lump Sum Calculator'; $share_text = 'Check out the Pension vs. Lump Sum Calculator at ronbelisle.com — compare pension income to lump sum growth over time.'; include(__DIR__ . '/../includes/share-results-block.php'); ?>
+      <?php $share_title = 'Pension vs. Lump Sum Calculator'; $share_text = 'Compare pension payments and a lump sum on a common present-value basis.'; include(__DIR__ . '/../includes/share-results-block.php'); ?>
     </div>
 
     <?php if (!$isPremium): ?>
@@ -146,6 +146,7 @@ $isPremium = has_premium_access();
   <script>
   const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
   </script>
+  <script src="../js/lib/numerical-core.js"></script>
   <script src="calculator.js"></script>
     <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/calculator-footer.php'; ?>
 </body>

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../includes/numerical_math.php';
 // Growing Annuity (PV or FV)
 
 
@@ -81,18 +82,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Ordinary growing annuity: payments occur at end of each period.
             // Payment in period 1 is PMT1.
 
-            $eps = 1e-12;
             $value = null;
+            try {
 
             if ($mode === 'pv') {
-                if (abs($i - $g) < $eps) {
-                    // PV when i == g: PV = PMT1 * n / (1 + i)
-                    $value = $pmt1Num * $n / (1 + $i);
-                } else {
-                    // PV = PMT1 * [1 - ((1+g)/(1+i))^n] / (i - g)
-                    $ratio = (1 + $g) / (1 + $i);
-                    $value = $pmt1Num * (1 - pow($ratio, $n)) / ($i - $g);
-                }
+                $value = rb_math_growing($pmt1Num, $i, $g, $n, true);
 
                 $_SESSION['growing_annuity_inputs'] = [
                     'pmt1' => $pmt1,
@@ -111,13 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if ($mode === 'fv') {
-                if (abs($i - $g) < $eps) {
-                    // FV when i == g: FV = PMT1 * n * (1 + i)^(n - 1)
-                    $value = $pmt1Num * $n * pow(1 + $i, $n - 1);
-                } else {
-                    // FV = PMT1 * [ (1+i)^n - (1+g)^n ] / (i - g)
-                    $value = $pmt1Num * (pow(1 + $i, $n) - pow(1 + $g, $n)) / ($i - $g);
-                }
+                $value = rb_math_growing($pmt1Num, $i, $g, $n, false);
 
                 $_SESSION['growing_annuity_inputs'] = [
                     'pmt1' => $pmt1,
@@ -134,6 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header('Location: /time-value-of-money/growing-annuity/');
                 exit;
             }
+            } catch (DomainException $e) { $errors[] = $e->getMessage(); }
         }
     }
 }

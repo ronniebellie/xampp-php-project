@@ -29,10 +29,12 @@
    * returns[] and inflation[] are decimals. If inflation is null, spending stays flat (real model).
    */
   function simulateRetirement(opts) {
+    if (!Number.isFinite(opts.startBalance) || opts.startBalance < 0 || !Number.isInteger(opts.years) || opts.years < 1 || opts.years > 120 || !Number.isFinite(opts.initialSpend) || opts.initialSpend < 0 || !Number.isFinite(opts.feeRate) || opts.feeRate < 0 || opts.feeRate > 1 || !Array.isArray(opts.returns) || opts.returns.length < opts.years || !opts.returns.every(r => Number.isFinite(r) && r >= -1)) throw new RangeError('Invalid illustrative retirement-model inputs.');
     const start = opts.startBalance;
     const years = opts.years;
     const returns = opts.returns;
     const inflation = opts.inflation; // array or null
+    if (inflation != null && (!Array.isArray(inflation) || inflation.length < years || !inflation.every(r => Number.isFinite(r) && r >= -1))) throw new RangeError('A complete finite inflation path is required.');
     const initialSpend = opts.initialSpend;
     const feeRate = opts.feeRate; // decimal
 
@@ -48,6 +50,7 @@
     for (let y = 1; y <= years; y++) {
       bal -= spend;
       if (bal <= 0) {
+        path.push({year:y,balance:0,spend:Math.max(0,bal+spend),fee:0});
         return {
           survived: false,
           yearsLasted: y,
@@ -66,6 +69,7 @@
       const fee = Math.max(0, bal * feeRate);
       bal -= fee;
       totalFees += fee;
+      if (![bal, fee, totalFees, spend].every(Number.isFinite)) throw new RangeError('Result exceeds the supported numerical range.');
       if (y === 1) year1Fee = fee;
       if (bal < minBal) {
         minBal = bal;
@@ -94,9 +98,12 @@
   }
 
   function maxSWR(startBalance, years, returns, inflation, feeRate) {
-    let lo = 0.005;
+    const succeeds = rate => simulateRetirement({startBalance,years,returns,inflation,feeRate,initialSpend:startBalance*rate}).survived;
+    if (!succeeds(0)) return null;
+    let lo = 0;
     let hi = 0.15;
-    let best = lo;
+    if (succeeds(hi)) return hi; // Search ceiling, not a mathematical maximum.
+    let best = 0;
     for (let i = 0; i < 42; i++) {
       const mid = (lo + hi) / 2;
       const sim = simulateRetirement({
@@ -116,6 +123,7 @@
     }
     return best;
   }
+  window.RBSwrMath = {maxSWR,simulateRetirement};
 
   function constantReturns(years, realReturn) {
     return Array(years).fill(realReturn);
@@ -264,6 +272,12 @@
 
     const swrLow = maxSWR(start, years, series.returns, series.inflation, feeLow);
     const swrHigh = maxSWR(start, years, series.returns, series.inflation, feeHigh);
+    if (swrLow == null || swrHigh == null || swrLow <= 0 || swrHigh <= 0) {
+      window.lastSwrFeeResults = null;
+      document.getElementById('results').style.display = 'none';
+      alert('No tested positive withdrawal rate succeeds for one or both modeled paths. No implied safe rate can be reported.');
+      return;
+    }
 
     // Scale the user's baseline by how fees compress this model's survival SWR.
     // Example: baseline 4%, model 4.03% → 3.55% with fees ⇒ implied ≈ 3.52%.
@@ -308,13 +322,14 @@
 
     const dropPts = (swrLow - swrHigh) * 100;
     let narrative =
-      'In this model, the highest ' + years + '-year survival withdrawal rate is about ' +
+      'Within the imposed 0–15% search interval, the highest tested ' + years + '-year survival withdrawal rate is about ' +
       formatPct(swrLow * 100) + ' with fund expenses only (' + formatPct(inp.fundErPct) +
       '), and about ' + formatPct(swrHigh * 100) + ' after adding a ' + formatPct(inp.aumPct) +
       ' AUM fee (a drop of roughly ' + dropPts.toFixed(2) + ' points, not a full ' +
       formatPct(inp.aumPct) + '). Applying that same compression to your ' +
       formatPct(inp.baselineSwrPct) + ' baseline implies about ' + formatPct(impliedPct) +
       ' for spendable withdrawals.';
+    if (swrLow === 0.15 || swrHigh === 0.15) narrative += ' A result of 15% reaches the imposed search ceiling; it is not a mathematically established maximum.';
 
     if (inp.aumPct >= 0.75 && inp.aumPct <= 1.25 && Math.abs(inp.baselineSwrPct - 4) < 0.15) {
       narrative +=
@@ -384,7 +399,7 @@
       (wealthNo.survived ? formatCurrency(wealthNo.endBal) : 'depleted') +
       '; with AUM ' + (wealthYes.survived ? formatCurrency(wealthYes.endBal) : 'depleted') + '.';
 
-    window.lastSwrFeeResults = { summary: summary };
+    window.lastSwrFeeResults = { summary: summary + ' Search interval 0–15%.' + (swrLow === .15 || swrHigh === .15 ? ' Search ceiling reached; not a mathematical maximum.' : '') };
   }
 
   function explainResults() {
@@ -431,11 +446,14 @@
   }
 
   function calculate(showAlerts) {
+    try {
     const inp = getInputs();
     updateLabels(inp);
     const errEl = document.getElementById('validationError');
     const errorMessage = validate(inp);
     if (errorMessage) {
+      window.lastSwrFeeResults = null;
+      document.getElementById('results').style.display = 'none';
       if (errEl) {
         errEl.textContent = errorMessage;
         errEl.style.display = 'block';
@@ -447,6 +465,13 @@
     if (errEl) errEl.style.display = 'none';
     const series = buildReturnSeries(inp);
     displayResults(inp, series);
+    } catch (error) {
+      window.lastSwrFeeResults = null;
+      document.getElementById('results').style.display = 'none';
+      const errEl = document.getElementById('validationError');
+      if (errEl) { errEl.textContent = error.message; errEl.style.display = 'block'; }
+      else if (showAlerts) alert(error.message);
+    }
   }
 
   function syncModeUI() {

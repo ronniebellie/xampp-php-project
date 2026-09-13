@@ -34,7 +34,7 @@ header('Cache-Control: private, max-age=0, must-revalidate');
 echo "\xEF\xBB\xBF";
 
 $out = fopen('php://output', 'w');
-fputcsv($out, ['Age', 'Scenario A (' . $a . ') Monthly', 'Scenario A Cumulative', 'Scenario B (' . $b . ') Monthly', 'Scenario B Cumulative', 'Scenario C (' . $c . ') Monthly', 'Scenario C Cumulative']);
+fputcsv($out, ['Age', 'Scenario A (' . $a . ') Monthly', 'Scenario A Cumulative PV at age 62', 'Scenario B (' . $b . ') Monthly', 'Scenario B Cumulative PV at age 62', 'Scenario C (' . $c . ') Monthly', 'Scenario C Cumulative PV at age 62']);
 
 $ages = [];
 foreach ($dataA as $r) $ages[$r['age']] = true;

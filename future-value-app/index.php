@@ -59,6 +59,7 @@ $isPremium = has_premium_access();
 
         <header>
             <h1>Future Value Calculator</h1>
+            <p>Single amounts use annual compounding and whole years. Monthly savings and required payments use the nominal annual rate divided by 12, with end-of-month deposits by default. The annuity tab also supports beginning-of-month deposits. Existing principal uses that same monthly rate. Zero rates are supported. Savings horizons must represent whole months (for example, 10/12 years entered as 0.8333333333333334).</p>
             <p class="sub">Calculate present value, future value, annuities, and required payments to reach your financial goals</p>
         </header>
 
@@ -167,7 +168,7 @@ $isPremium = has_premium_access();
                     </div>
                     <div>
                         <label for="targetYears" style="display: block; margin-bottom: 5px; font-weight: 600;">Number of Years</label>
-                        <input type="number" id="targetYears" value="10" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                        <input type="number" id="targetYears" step="any" value="10" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
                         <small style="color: #666;">Time to reach goal</small>
                     </div>
                 </div>
@@ -184,6 +185,8 @@ $isPremium = has_premium_access();
             <p>Calculate how much regular monthly contributions will grow to over time.</p>
             
             <form id="annuityForm">
+                <label for="annuityTiming">Contribution timing</label>
+                <select id="annuityTiming"><option value="end">End of month (ordinary annuity)</option><option value="begin">Beginning of month (annuity due)</option></select>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                     <div>
                         <label for="annuityPayment" style="display: block; margin-bottom: 5px; font-weight: 600;">Monthly Payment ($)</label>
@@ -197,7 +200,7 @@ $isPremium = has_premium_access();
                     </div>
                     <div>
                         <label for="annuityYears" style="display: block; margin-bottom: 5px; font-weight: 600;">Number of Years</label>
-                        <input type="number" id="annuityYears" value="10" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                        <input type="number" id="annuityYears" step="any" value="10" required style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px;">
                         <small style="color: #666;">How long you'll contribute</small>
                     </div>
                 </div>
@@ -225,7 +228,8 @@ $isPremium = has_premium_access();
     <script>
     const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
     </script>
-    <script src="calculator.js"></script>
+    <script src="../js/lib/numerical-core.js"></script>
+  <script src="calculator.js"></script>
     <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/calculator-footer.php'; ?>
 </body>
 </html>

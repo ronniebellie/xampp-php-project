@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../includes/numerical_math.php';
 // Loan Payment
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
@@ -52,16 +53,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($n <= 0) {
             $errors[] = 'Total number of payments must be greater than 0.';
         } else {
+            try {
+            rb_math_domain($i, $n, true);
             // Payment for an amortizing loan
-            if (abs($i) < 1e-12) {
+            if ($i == 0.0) {
                 $pmt = $pv / $n;
             } else {
-                $pmt = $pv * ($i) / (1 - pow(1 + $i, -$n));
+                $factor = rb_math_annuity(1, $i, $n, true);
+                if ($factor <= 0) throw new DomainException('Unsupported payment factor.');
+                $pmt = rb_math_finite($pv / $factor);
             }
 
             $_SESSION['loan_payment_result'] = $pmt;
             header('Location: /time-value-of-money/loan-payment/');
             exit;
+            } catch (DomainException $e) { $errors[] = $e->getMessage(); $result = null; }
         }
     }
 }

@@ -20,90 +20,17 @@ function getLoans() {
 }
 
 function runPayoff(loans, strategy, extraPayment) {
-  if (loans.length === 0) return { months: 0, totalInterest: 0, totalPaid: 0, schedule: [], payoffOrder: [], series: [], order: [], orderIndex: [] };
-
-  const order = strategy === 'avalanche'
-    ? [...loans].sort((a, b) => b.apr - a.apr)
-    : [...loans].sort((a, b) => a.balance - b.balance);
-
-  const n = loans.length;
-  const orderIndex = order.map(d => loans.indexOf(d));
-
-  let balances = loans.map(d => d.balance);
-  const aprs = loans.map(d => d.apr / 100 / 12);
-  const mins = loans.map(d => d.minPayment);
-  const names = loans.map(d => d.name);
-
-  const schedule = [];
-  const seriesData = order.map(d => [d.balance]);
-  let month = 0;
-  let totalInterest = 0;
-  let totalPaid = 0;
-
-  while (balances.some(b => b > 0.01)) {
-    month++;
-    let targetIndex = -1;
-    if (strategy === 'avalanche') {
-      let maxApr = -1;
-      for (let i = 0; i < n; i++) {
-        if (balances[i] > 0.01 && aprs[i] > maxApr) {
-          maxApr = aprs[i];
-          targetIndex = i;
-        }
-      }
-    } else {
-      let minBal = Infinity;
-      for (let i = 0; i < n; i++) {
-        if (balances[i] > 0.01 && balances[i] < minBal) {
-          minBal = balances[i];
-          targetIndex = i;
-        }
-      }
-    }
-    if (targetIndex < 0) break;
-
-    let interestThisMonth = 0;
-    const payments = [];
-    for (let i = 0; i < n; i++) {
-      const interest = balances[i] * aprs[i];
-      interestThisMonth += interest;
-      const pay = i === targetIndex ? mins[i] + extraPayment : mins[i];
-      const payAmount = Math.min(pay, balances[i] + interest);
-      payments.push(payAmount);
-      balances[i] = Math.max(0, balances[i] + interest - payAmount);
-      totalPaid += payAmount;
-    }
-    totalInterest += interestThisMonth;
-
-    for (let k = 0; k < order.length; k++) {
-      seriesData[k].push(balances[orderIndex[k]]);
-    }
-
-    schedule.push({
-      month,
-      targetDebt: names[targetIndex],
-      payment: payments[targetIndex],
-      interest: interestThisMonth,
-      balances: [...balances]
-    });
-  }
-
-  return {
-    months: month,
-    totalInterest,
-    totalPaid,
-    schedule,
-    payoffOrder: order.map(d => d.name),
-    series: seriesData,
-    order,
-    names: order.map(d => d.name),
-    orderIndex
-  };
+  return RBNumerical.debtPayoff(loans, strategy, extraPayment);
 }
 
 let balanceChart = null;
 
 function displayResults(result) {
+  if (result.status !== 'paid_off') {
+    alert(result.status === 'non_amortizing' ? 'Payment does not exceed monthly interest; this loan does not amortize.' : 'Balance remains beyond the 720-month modeled horizon; payoff is not necessarily impossible.');
+    document.getElementById('results').style.display = 'none';
+    return;
+  }
   if (result.months === 0) {
     alert('Please enter at least one loan with a balance greater than 0.');
     return;
@@ -131,11 +58,14 @@ function displayResults(result) {
 
 document.getElementById('loanForm').addEventListener('submit', function(e) {
   e.preventDefault();
+  try {
+  window.lastLoanResult = null;
   const loans = getLoans();
   const strategy = document.getElementById('strategy').value;
   const extra = parseFloat(document.getElementById('extra').value) || 0;
   const result = runPayoff(loans, strategy, extra);
   displayResults(result);
+  if (result.status !== 'paid_off' || result.months === 0) return;
 
   const labels = [];
   for (let m = 0; m <= result.months; m++) labels.push(m);
@@ -171,6 +101,7 @@ document.getElementById('loanForm').addEventListener('submit', function(e) {
   }
 
   window.lastLoanResult = result;
+  } catch (error) { document.getElementById('results').style.display = 'none'; alert(error.message); }
 });
 
 // Premium stubs

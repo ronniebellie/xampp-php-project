@@ -4,13 +4,15 @@ function formatCurrency(amount) {
 }
 
 function runProjection(currentBalance, annualContribution, annualReturnPct, years) {
-  const r = (annualReturnPct || 0) / 100;
+  if (![currentBalance, annualContribution, annualReturnPct, years].every(Number.isFinite) || annualReturnPct <= -100 || !Number.isInteger(years) || years < 0 || years > 120) throw new RangeError('Valid finite inputs, a return above -100%, and 0–120 whole years are required.');
+  const r = annualReturnPct / 100;
   const rows = [];
   let balance = currentBalance;
   for (let y = 1; y <= years; y++) {
     const growth = balance * r;
     const startBalance = balance;
     balance = balance + growth + annualContribution;
+    if (!Number.isFinite(balance)) throw new RangeError('Result exceeds the supported numerical range.');
     rows.push({
       year: y,
       startBalance,
@@ -30,11 +32,14 @@ function runProjection(currentBalance, annualContribution, annualReturnPct, year
 }
 
 function suggestedAnnualContribution(currentBalance, target, annualReturnPct, years) {
-  const r = (annualReturnPct || 0) / 100;
+  if (![currentBalance, target, annualReturnPct, years].every(Number.isFinite) || annualReturnPct <= -100 || !Number.isInteger(years) || years < 0 || years > 120) throw new RangeError('Valid finite inputs, a return above -100%, and 0–120 whole years are required.');
+  const r = annualReturnPct / 100;
   if (years <= 0) return null;
   const fvLump = currentBalance * Math.pow(1 + r, years);
+  if (!Number.isFinite(fvLump)) throw new RangeError('Result exceeds the supported numerical range.');
   if (fvLump >= target) return 0;
-  const factor = (Math.pow(1 + r, years) - 1) / (r || 1e-9);
+  const factor = r === 0 ? years : Math.expm1(years * Math.log1p(r)) / r;
+  if (!Number.isFinite(factor) || factor <= 0) throw new RangeError('Unsupported contribution factor.');
   return (target - fvLump) / factor;
 }
 
@@ -64,9 +69,9 @@ function buildShareUrlFromOnTrackForm() {
 
 document.getElementById('setTargetFromIncome').addEventListener('click', function() {
   const income = parseFloat(document.getElementById('desiredIncome').value) || 0;
-  const rate = parseFloat(document.getElementById('withdrawalRate').value) || 4;
-  if (income <= 0) {
-    alert('Enter a desired annual income first.');
+  const rate = parseFloat(document.getElementById('withdrawalRate').value);
+  if (!Number.isFinite(income) || !Number.isFinite(rate) || income <= 0 || rate <= 0) {
+    alert('Enter a positive annual income and withdrawal rate.');
     return;
   }
   const target = Math.round(income / (rate / 100));
@@ -75,6 +80,7 @@ document.getElementById('setTargetFromIncome').addEventListener('click', functio
 });
 
 function updateOnTrack() {
+  try {
   const currentAge = parseInt(document.getElementById('currentAge').value, 10) || 40;
   let years = parseInt(document.getElementById('yearsToRetirement').value, 10);
   if (isNaN(years) || years < 0) years = 0;
@@ -85,7 +91,8 @@ function updateOnTrack() {
   if (yearsLabelEl) yearsLabelEl.textContent = years + ' yrs (retire at ~' + retirementAge + ')';
   const currentBalance = parseFloat(document.getElementById('currentBalance').value) || 0;
   const annualContribution = parseFloat(document.getElementById('annualContribution').value) || 0;
-  const expectedReturn = parseFloat(document.getElementById('expectedReturn').value) || 6;
+  const expectedReturn = parseFloat(document.getElementById('expectedReturn').value);
+  if (!Number.isFinite(expectedReturn) || expectedReturn <= -100) throw new RangeError('Enter a valid return greater than -100%, including 0%.');
   let targetBalance = parseFloat(document.getElementById('targetBalance').value) || 0;
 
   const currentBalanceLabelEl = document.getElementById('currentBalanceLabel');
@@ -97,7 +104,8 @@ function updateOnTrack() {
   const targetBalanceLabelEl = document.getElementById('targetBalanceLabel');
   if (targetBalanceLabelEl) targetBalanceLabelEl.textContent = formatCurrency(targetBalance);
   const desiredIncome = parseFloat(document.getElementById('desiredIncome').value) || 0;
-  const withdrawalRate = parseFloat(document.getElementById('withdrawalRate').value) || 4;
+  const withdrawalRate = parseFloat(document.getElementById('withdrawalRate').value);
+  if (desiredIncome > 0 && (!Number.isFinite(withdrawalRate) || withdrawalRate <= 0)) throw new RangeError('A positive withdrawal rate is required to derive a target from income.');
   if (desiredIncome > 0 && withdrawalRate > 0) {
     targetBalance = Math.round(desiredIncome / (withdrawalRate / 100));
     document.getElementById('targetBalance').value = targetBalance;
@@ -224,6 +232,11 @@ function updateOnTrack() {
     const url = buildShareUrlFromOnTrackForm();
     shareEl.setAttribute('data-share-url', url);
   }
+  } catch (error) {
+    window.lastOnTrackResult = null;
+    document.getElementById('results').style.display = 'none';
+    alert(error.message);
+  }
 }
 
 ['currentAge', 'yearsToRetirement', 'currentBalance', 'annualContribution', 'expectedReturn', 'targetBalance'].forEach(function(id) {
@@ -321,4 +334,3 @@ function explainResults() {
     alert('Explain results: ' + err.message);
   });
 }
-

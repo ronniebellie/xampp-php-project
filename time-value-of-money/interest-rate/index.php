@@ -41,16 +41,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $m = (float) $compoundNum;
         $t = $yearsNum;
         $n = $m * $t;
-        if ($n <= 0) {
+        if (!is_finite($n) || $n <= 0) {
             $errors[] = 'Total number of periods must be greater than 0.';
-        } elseif (abs($fvNum - $pvNum) < 1e-12) {
+        } elseif ($fvNum == $pvNum) {
             $resultRatePct = 0.0;
         } else {
             $ratio = $fvNum / $pvNum;
             if ($ratio <= 0) {
                 $errors[] = 'Future Value / Present Value must be greater than 0.';
             } else {
-                $resultRatePct = $m * (pow($ratio, 1.0 / $n) - 1.0) * 100.0;
+                $resultRatePct = $m * expm1((log($fvNum) - log($pvNum)) / $n) * 100.0;
+                if (!is_finite($resultRatePct)) {
+                    $errors[] = 'Result exceeds the supported numerical range.';
+                    $resultRatePct = null;
+                }
             }
         }
     }

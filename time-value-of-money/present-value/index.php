@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . "/../../includes/numerical_math.php";
 // Present Value (Single Amount)
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
@@ -45,12 +46,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $m = (float) $compoundNum;
         $t = $yearsNum;
 
-        $pvComputed = $fvNum / pow(1 + ($r / $m), $m * $t);
+        try {
+        $pvComputed = rb_math_pv($fvNum, $r/$m, $m*$t);
 
         // Store result for one-time display, then redirect to clear POST and form fields.
         $_SESSION['pv_single_result'] = $pvComputed;
         header('Location: /time-value-of-money/present-value/');
         exit;
+        } catch (DomainException $e) { $errors[] = $e->getMessage(); $result = null; }
     }
 }
 ?>

@@ -9,32 +9,35 @@
   }
 
   function updatePension() {
+    try {
     const monthlyPension = parseFloat(document.getElementById('monthlyPension').value) || 0;
     const lumpSum = parseFloat(document.getElementById('lumpSum').value) || 0;
     const currentAge = parseInt(document.getElementById('currentAge').value, 10) || 65;
-    const growthRatePct = parseFloat(document.getElementById('growthRate').value) || 5;
+    const growthRatePct = parseFloat(document.getElementById('growthRate').value);
     const lifeExpectancy = parseInt(document.getElementById('lifeExpectancy').value, 10) || 90;
 
     document.getElementById('monthlyPensionLabel').textContent = formatCurrency(monthlyPension);
     document.getElementById('lumpSumLabel').textContent = formatCurrency(lumpSum);
     document.getElementById('currentAgeLabel').textContent = currentAge + ' yrs';
-    document.getElementById('growthRateLabel').textContent = growthRatePct.toFixed(2).replace(/\.?0+$/, '') + '%';
+    document.getElementById('growthRateLabel').textContent = Number.isFinite(growthRatePct) ? String(growthRatePct) + '%' : 'Invalid rate';
     document.getElementById('lifeExpectancyLabel').textContent = lifeExpectancy;
 
     const annualPension = 12 * monthlyPension;
     const r = growthRatePct / 100;
-    const maxYears = Math.max(lifeExpectancy - currentAge + 5, 30);
+    const maxYears = lifeExpectancy - currentAge;
+    if (![monthlyPension,lumpSum,r,maxYears].every(Number.isFinite) || monthlyPension < 0 || lumpSum < 0 || r <= -1 || maxYears < 1 || maxYears > 120) throw new RangeError('Enter valid nonnegative amounts, a discount rate above -100%, and a positive planning horizon.');
+    const valuation = RBNumerical.pensionPV(annualPension, r, maxYears);
 
     let breakEvenYear = null;
     let breakEvenAge = null;
     const rows = [];
 
     for (let t = 1; t <= maxYears; t++) {
-      const cumPension = annualPension * t;
-      const lumpSumFV = lumpSum * Math.pow(1 + r, t);
+      const pensionPV = valuation.rows[t - 1].pensionPV;
+      const lumpSumPV = lumpSum;
       const age = currentAge + t;
-      rows.push({ year: t, age, cumPension, lumpSumFV });
-      if (breakEvenYear === null && cumPension >= lumpSumFV) {
+      rows.push({ year: t, age, pensionPV, lumpSumPV });
+      if (breakEvenYear === null && pensionPV >= lumpSumPV) {
         breakEvenYear = t;
         breakEvenAge = age;
       }
@@ -44,18 +47,13 @@
     const tableYears = Math.min(Math.max(planYears, (breakEvenYear || 0) + 3), maxYears);
     const displayRows = rows.slice(0, tableYears);
 
-    let summaryHtml = '';
-    if (breakEvenAge !== null) {
-      summaryHtml = '<p><strong>Break-even:</strong> At age <strong>' + breakEvenAge + '</strong> (in ' + breakEvenYear + ' years), the total pension you will have received equals what the lump sum would have grown to at ' + growthRatePct + '% per year.</p>';
-      summaryHtml += '<p>If you live past age ' + breakEvenAge + ', the pension pays more in total than the lump sum would have grown to. If you die before then, the lump sum (or what you drew from it) could be worth more to you or your heirs.</p>';
-    } else {
-      summaryHtml = '<p>At your assumed growth rate (' + growthRatePct + '% per year), the lump sum\'s future value exceeds the total pension received at every age shown. The pension may still be valuable for <strong>guaranteed income</strong> and longevity protection.</p>';
-    }
+    let summaryHtml = '<p>At valuation age ' + currentAge + ', the present value of ' + maxYears + ' annual end-of-year pension payments is <strong>' + formatCurrency(valuation.value) + '</strong>, compared with <strong>' + formatCurrency(lumpSum) + '</strong> available now.</p>';
+    summaryHtml += '<p>Discount rate: ' + growthRatePct + '%. ' + (breakEvenAge === null ? 'No PV crossover within the modeled horizon.' : 'First modeled PV crossover: age ' + breakEvenAge + '.') + ' This is a comparison under fixed assumptions, not a guarantee of permanent superiority. Nominal pension payments total ' + formatCurrency(annualPension * maxYears) + '; this nominal total is not compared with an investment balance. Survivor benefits, taxes and residual legacy assets are not modeled.</p>';
     summaryBox.innerHTML = summaryHtml;
 
     resultsBody.innerHTML = displayRows.map(function (row) {
       const highlight = row.age === breakEvenAge ? ' style="background: #e0f2fe;"' : '';
-      return '<tr' + highlight + '><td>' + row.year + '</td><td>' + row.age + '</td><td>' + formatCurrency(row.cumPension) + '</td><td>' + formatCurrency(row.lumpSumFV) + '</td></tr>';
+      return '<tr' + highlight + '><td>' + row.year + '</td><td>' + row.age + '</td><td>' + formatCurrency(row.pensionPV) + '</td><td>' + formatCurrency(row.lumpSumPV) + '</td></tr>';
     }).join('');
 
     createComparisonChart(displayRows, breakEvenAge);
@@ -69,12 +67,19 @@
       breakEvenYear,
       breakEvenAge,
       annualPension,
-      summary: breakEvenAge !== null
-        ? 'Break-even at age ' + breakEvenAge + ' (in ' + breakEvenYear + ' years). Monthly pension $' + monthlyPension + ', lump sum $' + lumpSum + ', growth rate ' + growthRatePct + '%.'
-        : 'No break-even at assumed growth ' + growthRatePct + '%. Lump sum FV exceeds cumulative pension. Monthly pension $' + monthlyPension + ', lump sum $' + lumpSum + ', planned to age ' + lifeExpectancy + '.'
+      pensionPV: valuation.value,
+      valuationAge: currentAge,
+      rows: displayRows,
+      summary: 'Both alternatives valued at age ' + currentAge + ': pension PV ' + formatCurrency(valuation.value) + ', lump sum ' + formatCurrency(lumpSum) + ', annual end-of-year payments at discount rate ' + growthRatePct + '%.'
     };
 
     document.getElementById('results').style.display = 'block';
+    } catch (error) {
+      window.lastPensionResult = null;
+      resultsBody.innerHTML = '';
+      summaryBox.textContent = error.message;
+      if (window.pensionComparisonChart) window.pensionComparisonChart.destroy();
+    }
   }
 
   function createComparisonChart(displayRows, breakEvenAge) {
@@ -86,8 +91,8 @@
     }
 
     const labels = displayRows.map(function (r) { return 'Age ' + r.age; });
-    const pensionData = displayRows.map(function (r) { return r.cumPension; });
-    const lumpSumData = displayRows.map(function (r) { return r.lumpSumFV; });
+    const pensionData = displayRows.map(function (r) { return r.pensionPV; });
+    const lumpSumData = displayRows.map(function (r) { return r.lumpSumPV; });
 
     window.pensionComparisonChart = new Chart(ctx, {
       type: 'line',
@@ -95,7 +100,7 @@
         labels: labels,
         datasets: [
           {
-            label: 'Cumulative pension received',
+            label: 'Pension present value at valuation age',
             data: pensionData,
             borderColor: '#3182ce',
             backgroundColor: 'rgba(49, 130, 206, 0.1)',
@@ -106,7 +111,7 @@
             pointBackgroundColor: breakEvenAge ? displayRows.map(function (r) { return r.age === breakEvenAge ? '#1d4ed8' : '#3182ce'; }) : '#3182ce'
           },
           {
-            label: 'Lump sum if invested (FV)',
+            label: 'Lump sum at valuation age',
             data: lumpSumData,
             borderColor: '#38a169',
             backgroundColor: 'rgba(56, 161, 105, 0.1)',
@@ -161,7 +166,7 @@
     const monthlyPension = parseFloat(document.getElementById('monthlyPension').value) || 0;
     const lumpSum = parseFloat(document.getElementById('lumpSum').value) || 0;
     const currentAge = parseInt(document.getElementById('currentAge').value, 10) || 65;
-    const growthRatePct = parseFloat(document.getElementById('growthRate').value) || 5;
+    const growthRatePct = parseFloat(document.getElementById('growthRate').value);
     const lifeExpectancy = parseInt(document.getElementById('lifeExpectancy').value, 10) || 90;
     document.getElementById('monthlyPensionLabel').textContent = formatCurrency(monthlyPension);
     document.getElementById('lumpSumLabel').textContent = formatCurrency(lumpSum);
@@ -227,4 +232,3 @@ function explainResults() {
     alert('Explain results: ' + err.message);
   });
 }
-

@@ -96,7 +96,7 @@ $pdf->Cell(0, 8, 'Recommendation (to age ' . $life . ')', 0, 1);
 $pdf->SetTextColor(0, 0, 0);
 $pdf->SetFont('helvetica', '', 11);
 $pdf->SetFillColor(236, 254, 255);
-$pdf->Cell(0, 10, 'Best option: Claim at age ' . $bestAge . ' — Lifetime total: $' . number_format($best['total'] ?? 0, 0), 0, 1, 'L', true);
+$pdf->Cell(0, 10, 'Best option: Age ' . $bestAge . ' — Lifetime PV at age 62: $' . number_format($best['total'] ?? 0, 0), 0, 1, 'L', true);
 $pdf->Ln(8);
 
 $pdf->SetFont('helvetica', 'I', 8);

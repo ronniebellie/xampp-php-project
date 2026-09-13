@@ -27,6 +27,7 @@ $isPremium = has_premium_access();
 
         <header>
             <h1>Social Security Claiming Analyzer</h1>
+            <p>All strategies are valued at age 62. Annual payments occur at the end of each modeled age-year, including the selected final age. Totals, tables and charts use this common discount basis; monthly benefit amounts remain nominal.</p>
             <p class="sub">Compare different Social Security claiming ages and visualize how your lifetime benefits change based on when you start collecting</p>
         </header>
 

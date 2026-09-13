@@ -1,5 +1,5 @@
 // Debt Payoff Calculator - Avalanche vs Snowball
-const MAX_MONTHS = 720; // 60 years; used to detect debts that never pay off
+const MAX_MONTHS = 720; // Modeled horizon, not proof that payoff is mathematically impossible.
 
 function formatCurrency(amount) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
@@ -22,107 +22,22 @@ function getDebts() {
 }
 
 function runPayoff(debts, strategy, extraPayment) {
-  if (debts.length === 0) {
-    return { months: 0, totalInterest: 0, totalPaid: 0, schedule: [], payoffOrder: [], series: [], order: [], names: [], neverPaysOff: false };
-  }
-
-  const order = strategy === 'avalanche'
-    ? [...debts].sort((a, b) => b.apr - a.apr)
-    : [...debts].sort((a, b) => a.balance - b.balance);
-
-  const n = debts.length;
-  const orderIndex = order.map(d => debts.indexOf(d));
-
-  let balances = debts.map(d => d.balance);
-  const aprs = debts.map(d => d.apr / 100 / 12);
-  const mins = debts.map(d => d.minPayment);
-  const names = debts.map(d => d.name);
-
-  const schedule = [];
-  const seriesData = order.map(d => [d.balance]); // month 0 = initial balance per ordered debt
-  let month = 0;
-  let totalInterest = 0;
-  let totalPaid = 0;
-
-  while (balances.some(b => b > 0.01) && month < MAX_MONTHS) {
-    month++;
-    let targetIndex = -1;
-    if (strategy === 'avalanche') {
-      let maxApr = -1;
-      for (let i = 0; i < n; i++) {
-        if (balances[i] > 0.01 && aprs[i] > maxApr) {
-          maxApr = aprs[i];
-          targetIndex = i;
-        }
-      }
-    } else {
-      let minBal = Infinity;
-      for (let i = 0; i < n; i++) {
-        if (balances[i] > 0.01 && balances[i] < minBal) {
-          minBal = balances[i];
-          targetIndex = i;
-        }
-      }
-    }
-    if (targetIndex < 0) break;
-
-    let interestThisMonth = 0;
-    let paymentThisMonth = 0;
-    const payments = [];
-    for (let i = 0; i < n; i++) {
-      const interest = balances[i] * aprs[i];
-      interestThisMonth += interest;
-      const pay = i === targetIndex ? mins[i] + extraPayment : mins[i];
-      const payAmount = Math.min(pay, balances[i] + interest);
-      payments.push(payAmount);
-      balances[i] = Math.max(0, balances[i] + interest - payAmount);
-      totalPaid += payAmount;
-      paymentThisMonth += payAmount;
-    }
-    totalInterest += interestThisMonth;
-
-    for (let k = 0; k < order.length; k++) {
-      seriesData[k].push(balances[orderIndex[k]]);
-    }
-
-    schedule.push({
-      month,
-      targetDebt: names[targetIndex],
-      payment: paymentThisMonth,
-      targetPayment: payments[targetIndex],
-      interest: interestThisMonth,
-      balances: [...balances]
-    });
-  }
-
-  const neverPaysOff = balances.some(b => b > 0.01);
-
-  return {
-    months: month,
-    totalInterest,
-    totalPaid,
-    schedule,
-    payoffOrder: order.map(d => d.name),
-    series: seriesData,
-    order,
-    names: order.map(d => d.name),
-    neverPaysOff
-  };
+  return RBNumerical.debtPayoff(debts, strategy, extraPayment);
 }
 
 let balanceChart = null;
 
 function displayResults(result) {
-  if (result.months === 0) {
+  if (result.months === 0 && result.status === 'paid_off') {
     alert('Please enter at least one debt with a balance greater than 0.');
     return;
   }
 
   const warning = document.getElementById('payoffWarning');
   if (result.neverPaysOff) {
-    warning.textContent = 'With these minimum and extra payments, at least one debt never gets paid off — the payment does not cover the monthly interest. Increase a minimum payment or your extra monthly payment to see a payoff plan.';
+    warning.textContent = result.status === 'non_amortizing' ? 'Payment does not exceed monthly interest; this loan does not amortize.' : 'Debt remains after the 720-month modeled horizon. This does not mean payoff is mathematically impossible.';
     warning.style.display = 'block';
-    document.getElementById('resultMonths').textContent = 'Never';
+    document.getElementById('resultMonths').textContent = result.status === 'non_amortizing' ? 'Does not amortize' : 'Beyond 720 months';
     document.getElementById('resultInterest').textContent = '—';
     document.getElementById('resultTotal').textContent = '—';
   } else {
@@ -203,6 +118,10 @@ function showComparison(debts, chosenStrategy, extra) {
 
 document.getElementById('debtForm').addEventListener('submit', function(e) {
   e.preventDefault();
+  try {
+  window.lastDebtResult = null;
+  document.getElementById('strategyCompare').style.display = 'none';
+  if (balanceChart) { balanceChart.destroy(); balanceChart = null; }
   const debts = getDebts();
   const strategy = document.getElementById('strategy').value;
   const extra = parseFloat(document.getElementById('extra').value) || 0;
@@ -249,4 +168,5 @@ document.getElementById('debtForm').addEventListener('submit', function(e) {
   }
 
   window.lastDebtResult = result;
+  } catch (error) { document.getElementById('results').style.display = 'none'; alert(error.message); }
 });

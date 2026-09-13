@@ -1,5 +1,16 @@
 // Social Security Claiming Analyzer - Enhanced Calculator
 
+function birthYearFromDateOnly(value) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    if (!match) throw new RangeError('Enter a valid calendar birth date.');
+    const [year, month, day] = match.slice(1).map(Number);
+    const date = new Date(0);
+    date.setFullYear(year, month - 1, day);
+    date.setHours(12, 0, 0, 0);
+    if (year < 1 || date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) throw new RangeError('Enter a valid calendar birth date.');
+    return year;
+}
+
 // Full Retirement Age lookup table based on birth year
 function getFRA(birthYear) {
     if (birthYear <= 1937) return { years: 65, months: 0 };
@@ -57,6 +68,8 @@ function calculateMonthlyBenefit(pia, birthYear, claimAge) {
 
 // Calculate lifetime benefits for a claiming scenario
 function calculateLifetimeBenefits(monthlyBenefit, claimAge, endAge, colaRate, discountRate) {
+    if (![monthlyBenefit, claimAge, endAge, colaRate, discountRate].every(Number.isFinite) || monthlyBenefit < 0 || !Number.isInteger(claimAge) || claimAge < 62 || claimAge > 70 || !Number.isInteger(endAge) || endAge < 62 || endAge > 120 || colaRate <= -100 || discountRate <= -100) throw new RangeError('Enter valid amounts, whole ages 62–70 for claiming and 62–120 for the horizon, and rates greater than -100%.');
+    if (endAge < claimAge) return [{age: endAge, monthlyBenefit: 0, annualBenefit: 0, presentValueAnnual: 0, valuationAge: 62, cumulativeTotal: 0}];
     const yearlyData = [];
     let currentMonthly = monthlyBenefit;
     let cumulativeTotal = 0;
@@ -70,16 +83,19 @@ function calculateLifetimeBenefits(monthlyBenefit, claimAge, endAge, colaRate, d
         const annualBenefit = currentMonthly * 12;
         
         // Apply discount rate if specified
-        const yearsFromClaim = age - claimAge;
+        const yearsFromClaim = age - 62 + 1; // Common age-62 valuation; end-of-age-year payment.
         const discountFactor = Math.pow(1 + discountRate / 100, -yearsFromClaim);
         const presentValueAnnual = annualBenefit * discountFactor;
         
         cumulativeTotal += presentValueAnnual;
+        if (![currentMonthly, annualBenefit, presentValueAnnual, cumulativeTotal].every(Number.isFinite)) throw new RangeError('Result exceeds the supported numerical range.');
         
         yearlyData.push({
             age: age,
             monthlyBenefit: currentMonthly,
             annualBenefit: annualBenefit,
+            presentValueAnnual: presentValueAnnual,
+            valuationAge: 62,
             cumulativeTotal: cumulativeTotal
         });
     }
@@ -123,15 +139,15 @@ function formatCurrency(amount) {
 // Main calculation and display function
 document.getElementById('ssForm').addEventListener('submit', function(e) {
     e.preventDefault();
+    try {
     
     // Get inputs
-    const birthDate = new Date(document.getElementById('birthDate').value);
-    const birthYear = birthDate.getFullYear();
+    const birthYear = birthYearFromDateOnly(document.getElementById('birthDate').value);
     const monthlyPIA = parseFloat(document.getElementById('monthlyPIA').value);
-    const lifeExpectancy = parseInt(document.getElementById('lifeExpectancy').value);
-    const claimAgeA = parseInt(document.getElementById('claimAgeA').value);
-    const claimAgeB = parseInt(document.getElementById('claimAgeB').value);
-    const claimAgeC = parseInt(document.getElementById('claimAgeC').value);
+    const lifeExpectancy = parseFloat(document.getElementById('lifeExpectancy').value);
+    const claimAgeA = parseFloat(document.getElementById('claimAgeA').value);
+    const claimAgeB = parseFloat(document.getElementById('claimAgeB').value);
+    const claimAgeC = parseFloat(document.getElementById('claimAgeC').value);
     const colaRate = parseFloat(document.getElementById('colaRate').value);
     const discountRate = parseFloat(document.getElementById('discountRate').value);
     
@@ -199,7 +215,7 @@ document.getElementById('ssForm').addEventListener('submit', function(e) {
     const takeaway = document.getElementById('resultTakeaway');
     if (takeaway) {
         const increaseText = formatCurrency(monthlyC - monthlyA);
-        const percentText = ((monthlyC / monthlyA - 1) * 100).toFixed(0);
+        const percentText = monthlyA === 0 ? 'N/A' : ((monthlyC / monthlyA - 1) * 100).toFixed(0);
         takeaway.innerHTML = `<strong>Your claiming takeaway</strong><span>Using a life expectancy of ${lifeExpectancy}, the highest modeled lifetime total comes from claiming at age <strong>${bestScenario.age}</strong>. Waiting from age ${claimAgeA} to ${claimAgeC} increases the monthly estimate by <strong>${increaseText} (${percentText}%)</strong>; the break-even ages below show when that trade-off may pay off.</span>`;
     }
     
@@ -223,7 +239,7 @@ document.getElementById('ssForm').addEventListener('submit', function(e) {
     }
     
     const monthlyDiff = monthlyC - monthlyA;
-    const pctIncrease = ((monthlyC / monthlyA - 1) * 100).toFixed(0);
+    const pctIncrease = monthlyA === 0 ? 'N/A' : ((monthlyC / monthlyA - 1) * 100).toFixed(0);
     interpretationHTML += `<li><strong>Waiting from ${claimAgeA} to ${claimAgeC}</strong> increases your monthly benefit by `;
     interpretationHTML += `${formatCurrency(monthlyDiff)} (${pctIncrease}% more).</li>`;
     
@@ -231,7 +247,8 @@ document.getElementById('ssForm').addEventListener('submit', function(e) {
     document.getElementById('interpretation').innerHTML = interpretationHTML;
     
     // Create cumulative benefits chart
-    const ages = Array.from({length: lifeExpectancy - claimAgeA + 1}, (_, i) => claimAgeA + i);
+    const firstAge = Math.min(claimAgeA, claimAgeB, claimAgeC, lifeExpectancy);
+    const ages = Array.from({length: lifeExpectancy - firstAge + 1}, (_, i) => firstAge + i);
     
     const ctx1 = document.getElementById('lifetimeBenefitsChart');
     if (window.lifetimeBenefitsChart instanceof Chart) {
@@ -244,7 +261,7 @@ document.getElementById('ssForm').addEventListener('submit', function(e) {
             datasets: [
                 {
                     label: `Age ${claimAgeA}`,
-                    data: dataA.map(d => d.cumulativeTotal),
+                    data: ages.map(age => dataA.find(d => d.age === age)?.cumulativeTotal ?? 0),
                     borderColor: 'rgb(239, 68, 68)',
                     backgroundColor: 'rgba(239, 68, 68, 0.1)',
                     tension: 0.1,
@@ -381,7 +398,7 @@ document.getElementById('ssForm').addEventListener('submit', function(e) {
     document.getElementById('tableHeader').innerHTML = tableHeader;
     
     let tableBodyHTML = '';
-    for (let age = claimAgeA; age <= lifeExpectancy; age++) {
+    for (let age = firstAge; age <= lifeExpectancy; age++) {
         const rowA = dataA.find(d => d.age === age);
         const rowB = dataB.find(d => d.age === age);
         const rowC = dataC.find(d => d.age === age);
@@ -413,6 +430,11 @@ document.getElementById('ssForm').addEventListener('submit', function(e) {
     
     // Scroll to results
     document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (error) {
+        window.lastSSResult = null;
+        document.getElementById('results').style.display = 'none';
+        alert(error.message);
+    }
 });
 // API base path (works when app is in a subfolder, e.g. /social-security-claiming-analyzer/)
 const SS_API_BASE = (function() {
@@ -598,10 +620,10 @@ function compareScenarios() {
         }
         const s1 = data.scenarios[parts[0]], s2 = data.scenarios[parts[1]];
         const d1 = s1.data, d2 = s2.data;
-        const birthYear1 = d1.birthDate ? new Date(d1.birthDate).getFullYear() : 1960;
-        const birthYear2 = d2.birthDate ? new Date(d2.birthDate).getFullYear() : 1960;
+        const birthYear1 = birthYearFromDateOnly(d1.birthDate);
+        const birthYear2 = birthYearFromDateOnly(d2.birthDate);
         const fra1 = getFRA(birthYear1), fra2 = getFRA(birthYear2);
-        const pia1 = parseFloat(d1.monthlyPIA) || 3000, pia2 = parseFloat(d2.monthlyPIA) || 3000;
+        const pia1 = parseFloat(d1.monthlyPIA), pia2 = parseFloat(d2.monthlyPIA);
         const life1 = parseInt(d1.lifeExpectancy) || 85, life2 = parseInt(d2.lifeExpectancy) || 85;
         const a1 = parseInt(d1.claimAgeA) || 62, b1 = parseInt(d1.claimAgeB) || 67, c1 = parseInt(d1.claimAgeC) || 70;
         const a2 = parseInt(d2.claimAgeA) || 62, b2 = parseInt(d2.claimAgeB) || 67, c2 = parseInt(d2.claimAgeC) || 70;

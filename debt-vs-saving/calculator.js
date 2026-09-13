@@ -21,66 +21,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function clamp(num, min, max) {
-    return Math.min(Math.max(num, min), max);
-  }
-
-  function simulateInvestExtra(balance, rateAnnual, minPayment, extra, investReturnAnnual, years) {
-    const months = Math.max(1, Math.round(years * 12));
-    const rDebt = rateAnnual / 100 / 12;
-    const rInv = investReturnAnnual / 100 / 12;
-    let debt = balance;
-    let invest = 0;
-
-    for (let m = 0; m < months; m++) {
-      if (debt > 0) {
-        debt += debt * rDebt;
-        const payment = Math.min(minPayment, debt);
-        debt -= payment;
-      }
-
-      if (extra > 0) {
-        invest = invest * (1 + rInv) + extra;
-      } else {
-        invest = invest * (1 + rInv);
-      }
-    }
-
-    return { debt, invest };
-  }
-
-  function simulatePayDebtFirst(balance, rateAnnual, minPayment, extra, investReturnAnnual, years) {
-    const months = Math.max(1, Math.round(years * 12));
-    const rDebt = rateAnnual / 100 / 12;
-    const rInv = investReturnAnnual / 100 / 12;
-    let debt = balance;
-    let invest = 0;
-
-    for (let m = 0; m < months; m++) {
-      let investContribution = 0;
-
-      if (debt > 0) {
-        const totalPayment = minPayment + extra;
-        debt += debt * rDebt;
-        const payment = Math.min(totalPayment, debt);
-        debt -= payment;
-        const leftover = Math.max(totalPayment - payment, 0);
-        investContribution += leftover;
-      } else {
-        investContribution += minPayment + extra;
-      }
-
-      if (investContribution > 0) {
-        invest = invest * (1 + rInv) + investContribution;
-      } else {
-        invest = invest * (1 + rInv);
-      }
-    }
-
-    return { debt, invest };
-  }
+  function simulateInvestExtra(...args) { return RBNumerical.debtSaving(...args, false); }
+  function simulatePayDebtFirst(...args) { return RBNumerical.debtSaving(...args, true); }
 
   function updateDebtVsSaving(showAlerts) {
+    try {
     const debtBalance = Number(document.getElementById('debtBalance').value || 0);
     let debtRate = Number(document.getElementById('debtRate').value || 0);
     const minPayment = Number(document.getElementById('minPayment').value || 0);
@@ -102,18 +47,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (horizonYearsLabel) horizonYearsLabel.textContent = horizonYears.toFixed(0) + ' yrs';
 
     const errors = [];
+    if (![debtBalance,debtRate,minPayment,extraPerMonth,investReturn,horizonYears].every(Number.isFinite)) errors.push('finite numeric inputs');
+    if (debtRate < 0 || debtRate > 60 || investReturn < -100 || investReturn > 25) errors.push('supported rates: debt 0–60%, savings -100–25% nominal annual');
+    if (horizonYears > 1000 || Math.abs(horizonYears*12-Math.round(horizonYears*12)) > 1e-8) errors.push('at most 12000 whole monthly periods');
     if (debtBalance <= 0) errors.push('debt balance');
     if (minPayment <= 0) errors.push('minimum payment');
     if (extraPerMonth < 0) errors.push('extra amount (must be zero or positive)');
     if (horizonYears <= 0) errors.push('time horizon');
 
     if (errors.length) {
+      resultsEl.style.display = 'none';
       if (showAlerts) alert('Please check: ' + errors.join(', ') + '.');
       return;
     }
 
-    debtRate = clamp(debtRate, 0, 60);
-    investReturn = clamp(investReturn, 0, 25);
 
     const investExtra = simulateInvestExtra(
       debtBalance,
@@ -188,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const explanation = [];
     explanation.push(
-      'This comparison treats both debt and investments with simple monthly compounding and steady payments/returns.'
+      'Both strategies use the same household budget: minimum payment plus extra. Unused debt payments, including the final partial payment and all payments after payoff, go to savings in BOTH strategies. Interest accrues before end-of-month payments and contributions.'
     );
     explanation.push(
       'It ignores taxes, multiple debts, changes in income, and risk tolerance, so use it as a rough guide rather than a strict rule.'
@@ -199,6 +146,10 @@ document.addEventListener('DOMContentLoaded', () => {
     explanationText.textContent = explanation.join(' ');
 
     resultsEl.style.display = 'block';
+    } catch (error) {
+      resultsEl.style.display = 'none';
+      if (showAlerts) alert(error.message);
+    }
   }
 
   form.addEventListener('submit', (e) => {
@@ -213,4 +164,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
   updateDebtVsSaving(false);
 });
-

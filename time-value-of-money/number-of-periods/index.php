@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . "/../../includes/numerical_math.php";
 // Number of Periods (Single Amount)
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
@@ -44,48 +45,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $r = $rateNum / 100.0;
         $m = (float) $compoundNum;
 
-        if ($fvNum <= 0 || $pvNum <= 0) {
-            $errors[] = 'Present Value and Future Value must be greater than 0.';
-        } else {
-            // For a positive rate, FV must be greater than PV to produce a positive time.
-            if ($r > 0 && $fvNum <= $pvNum) {
-                $errors[] = 'For a positive rate, Future Value must be greater than Present Value.';
-            }
-
-            if ($errors) {
-                // Stop here; display errors without computing.
-            } else {
-                // FV = PV * (1 + r/m)^(m*t)  =>  t = ln(FV/PV) / (m * ln(1 + r/m))
-                if (abs($r) < 1e-12) {
-                    if (abs($fvNum - $pvNum) < 1e-9) {
-                        $years = 0.0;
-                    } else {
-                        $errors[] = 'With a 0% rate, Future Value must equal Present Value.';
-                        $years = null;
-                    }
-                } else {
-                    $base = 1 + ($r / $m);
-                    if ($base <= 0) {
-                        $errors[] = 'Rate and compounding result in an invalid growth base.';
-                        $years = null;
-                    } else {
-                        $ratio = $fvNum / $pvNum;
-                        if ($ratio <= 0) {
-                            $errors[] = 'Future Value / Present Value must be greater than 0.';
-                            $years = null;
-                        } else {
-                            $years = log($ratio) / ($m * log($base));
-                        }
-                    }
-                }
-            }
-
-            if (!$errors && $years !== null) {
-                $_SESSION['n_periods_years_result'] = $years;
-                header('Location: /time-value-of-money/number-of-periods/');
-                exit;
-            }
-        }
+        try {
+            $years = rb_math_periods($pvNum, $fvNum, $r, $m);
+            $_SESSION['n_periods_years_result'] = $years;
+            header('Location: /time-value-of-money/number-of-periods/');
+            exit;
+        } catch (DomainException $e) { $errors[] = $e->getMessage(); }
     }
 }
 ?>

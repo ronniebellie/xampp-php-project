@@ -68,7 +68,7 @@ $resultsHtml = '<table border="0" cellpadding="6"><tr style="background:#f0f9ff;
 $resultsHtml .= '<tr><td><b>Monthly at Age ' . $b . '</b></td><td>$' . number_format($data['monthlyB'] ?? 0, 0) . '</td></tr>';
 $resultsHtml .= '<tr style="background:#f0f9ff;"><td><b>Monthly at Age ' . $c . '</b></td><td>$' . number_format($data['monthlyC'] ?? 0, 0) . '</td></tr>';
 $resultsHtml .= '<tr><td><b>Best option to age ' . ($data['lifeExpectancy'] ?? 85) . '</b></td><td>Claim at age ' . $bestAge . '</td></tr>';
-$resultsHtml .= '<tr style="background:#f0f9ff;"><td><b>Lifetime total (best)</b></td><td>$' . number_format($best['total'] ?? 0, 0) . '</td></tr></table>';
+$resultsHtml .= '<tr style="background:#f0f9ff;"><td><b>Lifetime PV at age 62 (best)</b></td><td>$' . number_format($best['total'] ?? 0, 0) . '</td></tr></table>';
 $pdf->writeHTML($resultsHtml, true, false, true, false, '');
 $pdf->Ln(6);
 
@@ -92,7 +92,7 @@ if (!empty($data['chartImage'])) {
 $pdf->AddPage();
 $pdf->SetFont('helvetica', 'B', 14);
 $pdf->SetTextColor(59, 130, 246);
-$pdf->Cell(0, 8, 'Year-by-Year Comparison', 0, 1);
+$pdf->Cell(0, 8, 'Year-by-Year Comparison: cumulative PV at age 62', 0, 1);
 $pdf->SetTextColor(0, 0, 0);
 $pdf->Ln(3);
 
@@ -100,6 +100,9 @@ $dataA = $data['dataA']; $dataB = $data['dataB']; $dataC = $data['dataC'];
 $tableHtml = '<table border="1" cellpadding="4" style="font-size:8px;"><tr style="background:#3b82f6;color:white;font-weight:bold;"><th>Age</th><th>A(' . $a . ') Mo</th><th>A Cum</th><th>B(' . $b . ') Mo</th><th>B Cum</th><th>C(' . $c . ') Mo</th><th>C Cum</th></tr>';
 $ages = [];
 foreach ($dataA as $r) { $ages[$r['age']] = true; }
+foreach ($dataB as $r) { $ages[$r['age']] = true; }
+foreach ($dataC as $r) { $ages[$r['age']] = true; }
+ksort($ages);
 foreach (array_keys($ages) as $age) {
     $ra = null; $rb = null; $rc = null;
     foreach ($dataA as $r) { if ($r['age'] == $age) { $ra = $r; break; } }

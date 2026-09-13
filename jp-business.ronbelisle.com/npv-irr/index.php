@@ -348,6 +348,7 @@ if ($isBusinessSite) {
     </div>
   </div>
 
+  <script src="/js/lib/numerical-core.js"></script>
   <script>
     var npvNotes = {
       positive: <?php echo json_encode($s['result_npv_positive']); ?>,
@@ -371,34 +372,22 @@ if ($isBusinessSite) {
       return sum;
     }
 
-    function irr(cfs, guess) {
-      guess = guess || 0.1;
-      var r = guess;
-      for (var i = 0; i < 100; i++) {
-        var v = npv(r, cfs);
-        if (Math.abs(v) < 1) return r;
-        var dr = 0.0001;
-        var v2 = npv(r + dr, cfs);
-        var slope = (v2 - v) / dr;
-        r = r - v / slope;
-        if (r < -0.99) r = -0.99;
-        if (r > 10) r = 10;
-      }
-      return r;
-    }
+    function irr(cfs) { return RBNumerical.irr(cfs); }
 
     document.getElementById('npvForm').addEventListener('submit', function (e) {
       e.preventDefault();
       var symbol = document.getElementById('currencySymbol').value || '¥';
-      var initial = parseFloat(document.getElementById('initialInv').value) || 0;
-      var rate = parseFloat(document.getElementById('discountRate').value) / 100 || 0;
-      var cf1 = parseFloat(document.getElementById('cf1').value) || 0;
-      var cf2 = parseFloat(document.getElementById('cf2').value) || 0;
-      var cf3 = parseFloat(document.getElementById('cf3').value) || 0;
-      var cf4 = parseFloat(document.getElementById('cf4').value) || 0;
-      var cf5 = parseFloat(document.getElementById('cf5').value) || 0;
+      var initial = parseFloat(document.getElementById('initialInv').value);
+      var rate = parseFloat(document.getElementById('discountRate').value) / 100;
+      var cf1 = parseFloat(document.getElementById('cf1').value);
+      var cf2 = parseFloat(document.getElementById('cf2').value);
+      var cf3 = parseFloat(document.getElementById('cf3').value);
+      var cf4 = parseFloat(document.getElementById('cf4').value);
+      var cf5 = parseFloat(document.getElementById('cf5').value);
       var cfs = [initial, cf1, cf2, cf3, cf4, cf5];
+      if (!Number.isFinite(rate) || rate <= -1 || !cfs.every(Number.isFinite)) { alert('Invalid discount base or cash flow.'); return; }
       var npvVal = npv(rate, cfs);
+      if (!Number.isFinite(npvVal)) { alert('Result exceeds the supported numerical range.'); return; }
       var irrVal = null;
       try { irrVal = irr(cfs); } catch (err) { irrVal = null; }
 
@@ -406,11 +395,7 @@ if ($isBusinessSite) {
       var npvNoteEl = document.getElementById('resultNpvNote');
       npvNoteEl.textContent = npvVal > 0 ? npvNotes.positive : (npvVal < 0 ? npvNotes.negative : npvNotes.zero);
 
-      if (irrVal !== null && isFinite(irrVal) && irrVal >= -0.99 && irrVal <= 10) {
-        document.getElementById('resultIrr').textContent = (irrVal * 100).toFixed(2) + '%';
-      } else {
-        document.getElementById('resultIrr').textContent = '—';
-      }
+      document.getElementById('resultIrr').textContent = !irrVal ? 'Invalid inputs' : irrVal.status === 'unique' ? (irrVal.roots[0] * 100).toFixed(2) + '%' : irrVal.status === 'no_irr' ? 'No IRR (cash flows have only one sign)' : irrVal.status === 'multiple_irr' ? 'Multiple IRRs: ' + irrVal.roots.map(r => (r*100).toFixed(2)+'%').join(', ') : 'No unique validated IRR: ' + irrVal.status + '. Search bounded to rates with log(1+r) between -13.8 and 13.8.';
 
       var tbody = document.getElementById('cfTableBody');
       tbody.innerHTML = '';

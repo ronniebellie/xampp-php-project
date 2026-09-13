@@ -50,25 +50,35 @@ function formatCurrency(amount) {
 
 // Financial functions
 function futureValue(pv, rate, years) {
-    return pv * Math.pow(1 + rate, years);
+    if (![pv,rate,years].every(Number.isFinite) || rate <= -1 || years < 0 || years > 1000) throw new RangeError('Invalid compounding base or time horizon.');
+    const result = pv * Math.pow(1 + rate, years);
+    if (!Number.isFinite(result)) throw new RangeError('Result exceeds the numerical range.');
+    return result;
 }
 
 function presentValue(fv, rate, years) {
-    return fv / Math.pow(1 + rate, years);
+    if (![fv,rate,years].every(Number.isFinite) || rate <= -1 || years < 0 || years > 1000) throw new RangeError('Invalid compounding base or time horizon.');
+    const result = fv / Math.pow(1 + rate, years);
+    if (!Number.isFinite(result)) throw new RangeError('Result exceeds the numerical range.');
+    return result;
 }
 
-function futureValueAnnuity(payment, rate, years) {
-    const periods = years * 12;
+function monthlyPeriods(years) {
+    const count = Math.round(years * 12);
+    if (!Number.isFinite(years) || years < 0 || years > 1000 || Math.abs(years * 12 - count) > 1e-8) throw new RangeError('Enter 0–12000 whole monthly periods.');
+    return count;
+}
+
+function futureValueAnnuity(payment, rate, years, due = false) {
+    const periods = monthlyPeriods(years);
     const monthlyRate = rate / 12;
-    return payment * ((Math.pow(1 + monthlyRate, periods) - 1) / monthlyRate);
+    return RBNumerical.annuityFV(payment, monthlyRate, periods, due);
 }
 
 function requiredPayment(targetFV, rate, years, presentValue = 0) {
-    const fvOfPresent = presentValue * Math.pow(1 + rate, years);
-    const remaining = targetFV - fvOfPresent;
-    const periods = years * 12;
+    const periods = monthlyPeriods(years);
     const monthlyRate = rate / 12;
-    return remaining * monthlyRate / (Math.pow(1 + monthlyRate, periods) - 1);
+    return RBNumerical.requiredPayment(targetFV, presentValue, monthlyRate, periods);
 }
 
 // Generate year-by-year data for single amount
@@ -88,27 +98,11 @@ function generateSingleGrowthData(amount, rate, years, type) {
 }
 
 // Generate year-by-year data for annuity
-function generateAnnuityGrowthData(payment, rate, years) {
-    const data = [];
-    const monthlyRate = rate / 12;
-    let balance = 0;
-    let totalContributed = 0;
-    
-    data.push({ year: 0, value: 0, contributed: 0, interest: 0 });
-    
-    for (let year = 1; year <= years; year++) {
-        for (let month = 1; month <= 12; month++) {
-            balance = (balance + payment) * (1 + monthlyRate);
-            totalContributed += payment;
-        }
-        data.push({
-            year: year,
-            value: balance,
-            contributed: totalContributed,
-            interest: balance - totalContributed
-        });
-    }
-    return data;
+function generateAnnuityGrowthData(payment, rate, years, due = false) {
+    const months = monthlyPeriods(years);
+    return RBNumerical.annuityLedger(payment, rate / 12, months, due)
+      .filter(row => row.period % 12 === 0 || row.period === months)
+      .map(row => ({...row,year:row.period/12}));
 }
 
 // Create growth chart
@@ -164,11 +158,13 @@ function createGrowthChart(canvasId, labels, datasets) {
 // Single Amount Calculator
 document.getElementById('singleForm').addEventListener('submit', function(e) {
     e.preventDefault();
+    try {
     
     const type = document.getElementById('singleType').value;
     const amount = parseFloat(document.getElementById('singleAmount').value);
     const rate = parseFloat(document.getElementById('singleRate').value) / 100;
-    const years = parseInt(document.getElementById('singleYears').value);
+    const years = parseFloat(document.getElementById('singleYears').value);
+    if (!Number.isInteger(years)) throw new RangeError('The single-amount chart supports whole years.');
     
     let result, principal, future;
     
@@ -204,7 +200,7 @@ document.getElementById('singleForm').addEventListener('submit', function(e) {
         </div>
         <div class="summary-card">
             <div class="summary-label">Return Multiple</div>
-            <div class="summary-value">${(future / principal).toFixed(2)}x</div>
+            <div class="summary-value">${principal === 0 ? 'N/A' : (future / principal).toFixed(2) + 'x'}</div>
         </div>
     `;
     html += '</div>';
@@ -226,7 +222,7 @@ document.getElementById('singleForm').addEventListener('submit', function(e) {
     if (type === 'fv') {
         html += `<li>If you invest <strong>${formatCurrency(principal)}</strong> today at ${(rate * 100).toFixed(1)}% annual return...</li>`;
         html += `<li>In ${years} years, it will grow to <strong>${formatCurrency(future)}</strong></li>`;
-        html += `<li>That's a total gain of <strong>${formatCurrency(totalGrowth)}</strong> (${((totalGrowth / principal) * 100).toFixed(0)}% growth)</li>`;
+        html += `<li>That's a total gain of <strong>${formatCurrency(totalGrowth)}</strong> (${principal === 0 ? 'N/A' : ((totalGrowth / principal) * 100).toFixed(0) + '%'} growth)</li>`;
     } else {
         html += `<li>To have <strong>${formatCurrency(future)}</strong> in ${years} years...</li>`;
         html += `<li>You need to invest <strong>${formatCurrency(principal)}</strong> today at ${(rate * 100).toFixed(1)}% annual return</li>`;
@@ -280,31 +276,35 @@ document.getElementById('singleForm').addEventListener('submit', function(e) {
     );
     
     document.getElementById('singleResults').scrollIntoView({ behavior: 'smooth' });
+    } catch (error) { document.getElementById('singleResults').style.display='none'; alert(error.message); }
 });
 
 // Target Future Value Calculator
 document.getElementById('targetForm').addEventListener('submit', function(e) {
     e.preventDefault();
+    try {
     
     const targetGoal = parseFloat(document.getElementById('targetGoal').value);
     const presentValue = parseFloat(document.getElementById('targetPresent').value);
     const rate = parseFloat(document.getElementById('targetRate').value) / 100;
-    const years = parseInt(document.getElementById('targetYears').value);
+    const years = parseFloat(document.getElementById('targetYears').value);
+    if (targetGoal < 0 || presentValue < 0) throw new RangeError('Target and existing savings must be nonnegative.');
     
     const monthlyPayment = requiredPayment(targetGoal, rate, years, presentValue);
-    const totalContributed = monthlyPayment * years * 12 + presentValue;
-    const totalGrowth = targetGoal - totalContributed;
+    const totalContributed = monthlyPayment * monthlyPeriods(years) + presentValue;
     
     const growthData = generateAnnuityGrowthData(monthlyPayment, rate, years);
     
     // Adjust for initial present value
     if (presentValue > 0) {
         growthData.forEach(row => {
-            const pvGrowth = presentValue * Math.pow(1 + rate, row.year);
+            const pvGrowth = presentValue * Math.pow(1 + rate / 12, row.year * 12);
             row.value += pvGrowth;
-            row.contributed += (row.year === 0 ? presentValue : 0);
+            row.contributed += presentValue;
+            row.interest = row.value - row.contributed;
         });
     }
+    const totalGrowth = growthData[growthData.length - 1].value - totalContributed;
     
     let html = '<div class="results-container">';
     html += '<h2>Results</h2>';
@@ -347,7 +347,7 @@ document.getElementById('targetForm').addEventListener('submit', function(e) {
         html += `<li>Your starting balance of ${formatCurrency(presentValue)} will also grow during this time</li>`;
     }
     html += `<li>Your total contributions: <strong>${formatCurrency(totalContributed)}</strong></li>`;
-    html += `<li>Interest will add: <strong>${formatCurrency(totalGrowth)}</strong> (${((totalGrowth / totalContributed) * 100).toFixed(0)}% gain)</li>`;
+    html += `<li>Interest will add: <strong>${formatCurrency(totalGrowth)}</strong> (${totalContributed === 0 ? 'N/A' : ((totalGrowth / totalContributed) * 100).toFixed(0) + '%'} gain)</li>`;
     html += '</ul></div>';
     
     html += '</div>';
@@ -390,21 +390,26 @@ document.getElementById('targetForm').addEventListener('submit', function(e) {
     );
     
     document.getElementById('targetResults').scrollIntoView({ behavior: 'smooth' });
+    } catch (error) { document.getElementById('targetResults').style.display='none'; alert(error.message); }
 });
 
 // Annuity Future Value Calculator
 document.getElementById('annuityForm').addEventListener('submit', function(e) {
     e.preventDefault();
+    try {
     
     const payment = parseFloat(document.getElementById('annuityPayment').value);
     const rate = parseFloat(document.getElementById('annuityRate').value) / 100;
-    const years = parseInt(document.getElementById('annuityYears').value);
+    const years = parseFloat(document.getElementById('annuityYears').value);
+    const timing = document.getElementById('annuityTiming').value;
+    if (!['end','begin'].includes(timing)) throw new RangeError('Select a supported contribution timing.');
+    const due = timing === 'begin';
     
-    const finalValue = futureValueAnnuity(payment, rate, years);
-    const totalContributed = payment * years * 12;
+    const finalValue = futureValueAnnuity(payment, rate, years, due);
+    const totalContributed = payment * monthlyPeriods(years);
     const totalGrowth = finalValue - totalContributed;
     
-    const growthData = generateAnnuityGrowthData(payment, rate, years);
+    const growthData = generateAnnuityGrowthData(payment, rate, years, due);
     
     let html = '<div class="results-container">';
     html += '<h2>Results</h2>';
@@ -442,9 +447,10 @@ document.getElementById('annuityForm').addEventListener('submit', function(e) {
     html += '<div class="info-box-blue">';
     html += '<h3>What This Means</h3><ul>';
     html += `<li>If you save <strong>${formatCurrency(payment)}</strong> per month for ${years} years...</li>`;
+    html += `<li>Contributions occur at the ${due ? 'beginning' : 'end'} of each month; the summary, table and charts use this same convention.</li>`;
     html += `<li>At ${(rate * 100).toFixed(1)}% annual return, you'll accumulate <strong>${formatCurrency(finalValue)}</strong></li>`;
     html += `<li>You'll contribute a total of <strong>${formatCurrency(totalContributed)}</strong></li>`;
-    html += `<li>Interest will add <strong>${formatCurrency(totalGrowth)}</strong> (${((totalGrowth / totalContributed) * 100).toFixed(0)}% gain)</li>`;
+    html += `<li>Interest will add <strong>${formatCurrency(totalGrowth)}</strong> (${totalContributed === 0 ? 'N/A' : ((totalGrowth / totalContributed) * 100).toFixed(0) + '%'} gain)</li>`;
     html += '</ul></div>';
     
     html += '<div class="table-section">';
@@ -502,6 +508,7 @@ document.getElementById('annuityForm').addEventListener('submit', function(e) {
     );
     
     document.getElementById('annuityResults').scrollIntoView({ behavior: 'smooth' });
+    } catch (error) { document.getElementById('annuityResults').style.display='none'; alert(error.message); }
 });
 // Premium Save/Load/Compare/PDF/CSV
 document.addEventListener('DOMContentLoaded', function() {
@@ -532,7 +539,8 @@ function saveScenario() {
         targetYears: document.getElementById('targetYears')?.value,
         annuityPayment: document.getElementById('annuityPayment')?.value,
         annuityRate: document.getElementById('annuityRate')?.value,
-        annuityYears: document.getElementById('annuityYears')?.value
+        annuityYears: document.getElementById('annuityYears')?.value,
+        annuityTiming: document.getElementById('annuityTiming')?.value
     };
     
     rbScenarioFetch(FV_API_BASE + 'api/save_scenario.php', {
@@ -613,6 +621,7 @@ function loadScenario() {
                     const input = document.getElementById(key);
                     if (input) input.value = scenario.data[key];
                 });
+                document.getElementById('annuityTiming').value = scenario.data.annuityTiming ?? 'end';
                 alert('Scenario loaded! Click Calculate to see results.');
             }
         }
