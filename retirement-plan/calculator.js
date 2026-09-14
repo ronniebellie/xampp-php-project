@@ -27,7 +27,8 @@
   function readNumber(id, fallback) {
     var node = el(id);
     if (!node) return fallback || 0;
-    var n = parseFloat(String(node.value).replace(/[^0-9.-]/g, ''));
+    var raw = String(node.value).trim();
+    var n = raw === '' ? NaN : Number(raw);
     return isNaN(n) ? (fallback || 0) : n;
   }
 
@@ -211,15 +212,14 @@
       spouseSsMonthly: readNumber('spouseSsMonthly'),
       spouseSsClaimAge: parseInt(el('spouseSsClaimAge').value, 10) || parseInt(el('ssClaimAge').value, 10) || 67,
       otherGuaranteedAnnual: readNumber('otherGuaranteedAnnual'),
+      otherIncomeStartAge: el('otherIncomeStartAge') && el('otherIncomeStartAge').value !== '' ? readNumber('otherIncomeStartAge') : null,
       withdrawalRate: FC.clamp(readNumber('withdrawalRate', 4), 0.5, 10) / 100,
       inflation: FC.clamp(readNumber('inflation', 2.5), 0, 8),
       colaRate: FC.clamp(readNumber('colaRate', 2.5), 0, 8),
       filingStatus: el('filingStatus') ? el('filingStatus').value : 'married',
       taxDeferredPct: FC.clamp(readNumber('taxDeferredPct', 85), 0, 100),
       spouseIsBeneficiary: el('spouseBeneficiary') && el('spouseBeneficiary').value === 'yes',
-      spouseAge: (el('spouseBeneficiary') && el('spouseBeneficiary').value === 'yes')
-        ? readNumber('spouseAge', 0) || null
-        : null,
+      spouseAge: readNumber('spouseAge', 0) || null,
       useStandardDeduction: true,
       volatilityPct: FC.clamp(readNumber('volatility', 10), 0, 50),
       numSims: FC.clamp(readNumber('simulations', 1000), 100, 5000)
@@ -259,6 +259,16 @@
     return { bg: '#fef2f2', border: '#f87171', text: '#991b1b' };
   }
 
+  function incomeTimingText(summary) {
+    var t = summary.incomeTimeline;
+    return 'Social Security and other income available this planning year: ' + fmt(t.availableNow) + '/year. ' +
+      'At retirement start: ' + fmt(t.atRetirement) + '/year. ' +
+      (t.fullyStartedAnnual == null ? 'Some selected income starts after the plan ends. ' :
+      'All selected income has started by your age ' + t.fullyStartedAge + ': ' + fmt(t.fullyStartedAnnual) + '/year. The rule-of-thumb portfolio target then is ' + fmt(t.longRunTarget) + '. ') +
+      'Before that transition, modeled bridge withdrawals total ' + fmt(t.bridgeWithdrawals) + ', including portfolio-funded taxes; unfunded spending and taxes total ' + fmt(t.bridgeShortfalls) + '. ' +
+      'These are nominal amounts across different dates, not targets to add together. Future income does not fund earlier spending.';
+  }
+
   function renderSummary(result) {
     var s = result.summary;
     var card = el('statusCard');
@@ -271,14 +281,8 @@
 
     var projectedLabel = el('metricProjectedLabel');
     var withdrawalsFuture = s.portfolioWithdrawalStartAge > lastInputs.currentAge;
-    if (projectedLabel) {
-      projectedLabel.textContent = withdrawalsFuture
-        ? ('Portfolio at age ' + s.portfolioWithdrawalStartAge + ' (withdrawals start)')
-        : (lastInputs.currentAge === lastInputs.retirementAge ? 'Portfolio (current year)' : 'Projected at retirement');
-    }
-    el('metricProjected').textContent = withdrawalsFuture
-      ? fmt(s.balanceAtWithdrawalStart)
-      : fmt(s.balanceAtRetirement);
+    if (projectedLabel) projectedLabel.textContent = 'Portfolio at retirement start';
+    el('metricProjected').textContent = fmt(s.balanceAtRetirement);
 
     var portfolioNote = el('portfolioWithdrawalNote');
     if (portfolioNote) {
@@ -294,7 +298,8 @@
     }
 
     el('metricTarget').textContent = s.targetNestEgg > 0 ? fmt(s.targetNestEgg) : 'Not required';
-    el('metricIncome').textContent = fmt(s.retirementAnnualIncome);
+    el('metricIncome').textContent = fmt(s.incomeTimeline.atRetirement);
+    if (el('incomeTimingNote')) el('incomeTimingNote').textContent = incomeTimingText(s);
     el('metricLifetimeTax').textContent = fmt(s.lifetimeFederalTax);
 
     var takeaway = el('planTakeaway');
@@ -541,10 +546,13 @@
     renderDeepLinks(inputs, result);
     el('results').style.display = 'block';
     window.lastRetirementPlanResult = { summary: buildSummaryText(result) };
-    el('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    el('results').scrollIntoView({ behavior: 'auto', block: 'start' });
   }
 
   function runPlan() {
+    lastResult = lastInputs = lastMcResult = null;
+    window.lastRetirementPlanResult = null;
+    el('results').style.display = 'none';
     var inputs = collectInputs();
     var errors = validateInputs(inputs);
     if (errors.length) {
@@ -554,7 +562,7 @@
     try {
       displayResults(PE.runDeterministicPlan(inputs), inputs);
     } catch (error) {
-      alert('Unsupported statutory case: ' + error.message);
+      alert('Please check the planning inputs: ' + error.message);
     }
   }
 
@@ -581,6 +589,7 @@
       spouseSsMonthly: readNumber('spouseSsMonthly'),
       spouseSsClaimAge: el('spouseSsClaimAge').value,
       otherGuaranteedAnnual: readNumber('otherGuaranteedAnnual'),
+      otherIncomeStartAge: el('otherIncomeStartAge') && el('otherIncomeStartAge').value !== '' ? readNumber('otherIncomeStartAge') : null,
       planEndAge: readNumber('planEndAge', 95),
       withdrawalRate: readNumber('withdrawalRate'),
       inflation: readNumber('inflation'),
@@ -598,6 +607,8 @@
   function applyFormData(data) {
     if (!data) return;
     if (el('birthDate')) el('birthDate').value = data.birthDate == null ? '' : data.birthDate;
+    if (el('spouseAge')) el('spouseAge').value = data.spouseAge == null ? '' : data.spouseAge;
+    if (el('otherIncomeStartAge')) el('otherIncomeStartAge').value = data.otherIncomeStartAge == null ? '' : data.otherIncomeStartAge;
     if (data.currentAge && el('birthYear') && !data.birthYear) {
       el('birthYear').value = currentCalendarYear() - data.currentAge;
     }
@@ -714,7 +725,8 @@
   function exportCsv() {
     if (!lastResult || !lastInputs) return;
     var header = ['Age', 'Portfolio', 'Withdrawal', 'Social Security (household)', 'Other Income', 'RMD', 'Est Federal Tax', 'Total Income', 'Requested Spending', 'Funded Spending', 'Spending Shortfall', 'Taxes Paid', 'Unpaid Tax', 'Traditional Withdrawal', 'Other Withdrawal'];
-    var lines = [header.join(',')];
+    function csvCell(value) { return '"' + String(value).replace(/"/g, '""') + '"'; }
+    var lines = ['Retirement Plan Builder — RonBelisle.com', 'Generated UTC,' + new Date().toISOString(), 'Model,consumer-income-timing-2026-09; fixed 2026 tax rules; nominal USD; annual age-year buckets', 'Income timing,' + csvCell(incomeTimingText(lastResult.summary)), 'Inputs,' + csvCell(JSON.stringify(lastInputs)), header.join(',')];
     lastResult.years.forEach(function (y) {
       lines.push([
         y.age,
@@ -762,6 +774,13 @@
 
     var payload = {
       inputs: {
+        birthYear: lastInputs.birthYear,
+        birthDate: lastInputs.birthDate,
+        spouseAge: lastInputs.spouseAge,
+        otherIncomeStartAge: lastInputs.otherIncomeStartAge,
+        inflation: lastInputs.inflation,
+        colaRate: lastInputs.colaRate,
+        withdrawalRate: lastInputs.withdrawalRate,
         currentAge: lastInputs.currentAge,
         retirementAge: lastInputs.retirementAge,
         planEndAge: lastInputs.planEndAge,
@@ -784,6 +803,8 @@
         returnRetirement: lastInputs.returnRetirement
       },
       summary: {
+        incomeTimingText: incomeTimingText(lastResult.summary),
+        guaranteedIncomeAtRetirement: lastResult.summary.incomeTimeline.atRetirement,
         statusHeadline: lastResult.summary.status.headline,
         statusDetail: lastResult.summary.status.detail,
         balanceAtRetirement: lastResult.summary.balanceAtRetirement,

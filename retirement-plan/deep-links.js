@@ -39,10 +39,11 @@
     var taxDeferred = Math.round(inputs.balance * (inputs.taxDeferredPct / 100));
     var rothPortion = Math.round(inputs.balance - taxDeferred);
     var ssAnnual = Math.round(result.summary.ssAnnualAtClaim || 0);
-    var householdSsMonthly = Math.round(
-      result.summary.householdSsMonthlyAtClaim ||
-      (result.summary.ssMonthlyAtClaim || inputs.ssPiaMonthly || 0) + (inputs.spouseSsMonthly || 0)
-    );
+    // Never replace an explicit zero with future PIA or a spouse's unclaimed benefit.
+    var householdSsMonthly = Math.round(result.summary.incomeTimeline
+      ? (result.summary.incomeTimeline.availableNow - (inputs.currentAge >= (inputs.otherIncomeStartAge == null ? inputs.retirementAge : inputs.otherIncomeStartAge) ? inputs.otherGuaranteedAnnual : 0)) / 12
+      : (result.summary.householdSsMonthlyAtClaim || 0));
+    var availableOther = inputs.currentAge >= (inputs.otherIncomeStartAge == null ? inputs.retirementAge : inputs.otherIncomeStartAge) ? inputs.otherGuaranteedAnnual : 0;
     var householdSsAnnual = householdSsMonthly * 12;
     var withdrawStartAge = inputs.portfolioWithdrawalStartAge || inputs.retirementAge;
     var mcStartAge = withdrawStartAge > inputs.currentAge && inputs.currentAge >= inputs.retirementAge
@@ -56,7 +57,7 @@
       return y.age >= withdrawStartAge && (y.withdrawal || 0) > 0;
     }) || retireRow;
     var annualWithdrawal = withdrawRow ? Math.round(withdrawRow.withdrawal || 0) : 0;
-    var guaranteedMonthly = Math.round((inputs.otherGuaranteedAnnual || 0) / 12);
+    var guaranteedMonthly = Math.round((availableOther || 0) / 12);
     var ssMonthly = householdSsMonthly;
 
     var common = { fromPlan: 1 };
@@ -70,8 +71,8 @@
           colaRate: inputs.colaRate
         } : {
           birthDateYear: inputs.birthYear,
-          birthDateMonth: 1,
-          birthDateDay: 1,
+          birthDateMonth: inputs.birthDate ? Number(inputs.birthDate.slice(5,7)) : '',
+          birthDateDay: inputs.birthDate ? Number(inputs.birthDate.slice(8,10)) : '',
           monthlyPIA: Math.round(inputs.ssPiaMonthly),
           claimAgeB: inputs.ssClaimAge,
           lifeExpectancy: inputs.planEndAge,
@@ -94,7 +95,7 @@
         filingStatus: mapFilingForRoth(inputs.filingStatus),
         traditionalIRA: taxDeferred,
         rothIRA: rothPortion,
-        retirementIncome: householdSsAnnual + Math.round(inputs.otherGuaranteedAnnual || 0),
+        retirementIncome: householdSsAnnual + Math.round(availableOther || 0),
         annualPortfolioWithdrawalRate: (inputs.withdrawalRate * 100).toFixed(2),
         spouseAge: inputs.spouseIsBeneficiary && inputs.spouseAge ? inputs.spouseAge : ''
       })),
@@ -103,7 +104,7 @@
         accountBalance: taxDeferred,
         growthRate: inputs.returnRetirement,
         socialSecurity: householdSsAnnual,
-        pension: Math.round(inputs.otherGuaranteedAnnual || 0),
+        pension: Math.round(availableOther || 0),
         otherIncome: 0,
         filingStatus: inputs.filingStatus === 'hoh' ? 'hoh' : inputs.filingStatus,
         spouseBeneficiary: inputs.spouseIsBeneficiary ? 'yes' : 'no',
@@ -120,14 +121,14 @@
       deepLinkSsGap: UP.buildUrl('../ss-gap/', Object.assign({}, common, {
         targetSpending: clampRound(inputs.baseAnnualSpending / 12, 3000, 15000, 100),
         ssIncome: clampRound(ssMonthly, 0, 6000, 100),
-        otherIncome: clampRound((inputs.otherGuaranteedAnnual || 0) / 12, 0, 4000, 100),
+        otherIncome: clampRound((availableOther || 0) / 12, 0, 4000, 100),
         withdrawalRate: clampRound(inputs.withdrawalRate * 100, 2.5, 6.0, 0.1).toFixed(1),
         filingStatus: mapFilingForSsGap(inputs.filingStatus)
       })),
       deepLinkNestEgg: UP.buildUrl('../nest-egg-target/', Object.assign({}, common, {
         incomeMethod: 'direct',
         desiredAnnualIncome: clampRound(inputs.baseAnnualSpending, 20000, 200000, 5000),
-        guaranteedAnnualIncome: clampRound(householdSsAnnual + Math.round(inputs.otherGuaranteedAnnual || 0), 0, 120000, 5000),
+        guaranteedAnnualIncome: clampRound(householdSsAnnual + Math.round(availableOther || 0), 0, 120000, 5000),
         withdrawalRate: clampRound(inputs.withdrawalRate * 100, 2, 8, 0.25),
         currentSavings: Math.round(inputs.balance)
       }))

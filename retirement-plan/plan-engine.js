@@ -46,15 +46,55 @@
       }
       return spouseMonthly * 12;
     }
-    var monthly = inputs.spouseSsMonthly || 0;
-    if (monthly <= 0) return 0;
-    var startAge = inputs.spouseSsClaimAge || inputs.ssClaimAge;
-    if (age < startAge) return 0;
-    var yearsSinceClaim = age - startAge;
-    for (var i = 1; i <= yearsSinceClaim; i++) {
-      monthly *= 1 + inputs.colaRate / 100;
+    var pia = inputs.spouseSsMonthly || 0;
+    if (pia <= 0) return 0;
+    var spouseAge = inputs.spouseAge + age - inputs.currentAge;
+    var startAge = inputs.spouseSsClaimAge;
+    if (spouseAge < startAge) return 0;
+    // Ages are ages attained in the same planning year, so the birth cohort is
+    // determined without borrowing the primary earner's FRA or claim factor.
+    var birthYear = inputs.birthYear + inputs.currentAge - inputs.spouseAge;
+    var monthly = FC.calculateMonthlyBenefit(pia, birthYear, startAge);
+    return monthly * 12 * Math.pow(1 + inputs.colaRate / 100, spouseAge - startAge);
+  }
+
+  function otherIncomeStartAge(inputs) {
+    return inputs.otherIncomeStartAge == null ? inputs.retirementAge : inputs.otherIncomeStartAge;
+  }
+
+  function annualOtherIncome(age, inputs) {
+    return age >= otherIncomeStartAge(inputs) ? inputs.otherGuaranteedAnnual : 0;
+  }
+
+  function spouseClaimPrimaryAge(inputs) {
+    return inputs.spouseSsAlreadyReceiving || !(inputs.spouseSsMonthly > 0)
+      ? inputs.currentAge : inputs.currentAge + inputs.spouseSsClaimAge - inputs.spouseAge;
+  }
+
+  function validatePlan(inputs) {
+    ['currentAge','retirementAge','planEndAge','birthYear'].forEach(function (key) {
+      if (!Number.isInteger(inputs[key])) throw new RangeError('Whole planning ages and birth year are required.');
+    });
+    if (inputs.currentAge < 18 || inputs.currentAge > 100 || inputs.retirementAge < inputs.currentAge || inputs.retirementAge > inputs.planEndAge || inputs.planEndAge > 120) throw new RangeError('Use a retirement age within the 18–120 year planning timeline.');
+    ['balance','annualContribution','baseAnnualSpending','otherGuaranteedAnnual'].forEach(function (key) {
+      if (!Number.isFinite(inputs[key]) || inputs[key] < 0 || inputs[key] > 1e12) throw new RangeError('Enter finite nonnegative money amounts no greater than one trillion dollars.');
+    });
+    ['returnPreRetirement','returnRetirement','inflation','colaRate'].forEach(function (key) {
+      if (!Number.isFinite(inputs[key]) || inputs[key] <= -100 || inputs[key] > 100) throw new RangeError('Rates must be finite and greater than -100% through 100%.');
+    });
+    if (!Number.isFinite(inputs.withdrawalRate) || inputs.withdrawalRate <= 0 || inputs.withdrawalRate > 1) throw new RangeError('A positive withdrawal rate up to 100% is required.');
+    if (inputs.taxDeferredPct != null && (!Number.isFinite(inputs.taxDeferredPct) || inputs.taxDeferredPct < 0 || inputs.taxDeferredPct > 100)) throw new RangeError('Tax-deferred share must be 0–100%.');
+    var withdrawalAge = portfolioWithdrawalStartAge(inputs);
+    if (!Number.isInteger(withdrawalAge) || withdrawalAge < inputs.currentAge || withdrawalAge > inputs.planEndAge) throw new RangeError('Withdrawal start must be a whole age within the plan.');
+    if (!Number.isInteger(otherIncomeStartAge(inputs)) || otherIncomeStartAge(inputs) < 0 || otherIncomeStartAge(inputs) > 150) throw new RangeError('Other income start must be a whole age from 0–150.');
+    ['ssPiaMonthly','ssCurrentMonthly','spouseSsMonthly','spouseSsCurrentMonthly'].forEach(function (key) {
+      if (inputs[key] != null && (!Number.isFinite(inputs[key]) || inputs[key] < 0 || inputs[key] > 1e7)) throw new RangeError('Enter finite nonnegative monthly benefits.');
+    });
+    if (!inputs.ssAlreadyReceiving && (!Number.isInteger(inputs.ssClaimAge) || inputs.ssClaimAge < 62 || inputs.ssClaimAge > 70)) throw new RangeError('Primary claiming age must be a whole age from 62–70.');
+    if (!inputs.spouseSsAlreadyReceiving && inputs.spouseSsMonthly > 0) {
+      if (!Number.isInteger(inputs.spouseAge) || inputs.spouseAge < 18 || inputs.spouseAge > 100) throw new RangeError('Enter the spouse age attained this calendar year, independently of IRA beneficiary status.');
+      if (!Number.isInteger(inputs.spouseSsClaimAge) || inputs.spouseSsClaimAge < 62 || inputs.spouseSsClaimAge > 70) throw new RangeError('Spouse claiming age must be a whole age from 62–70.');
     }
-    return monthly * 12;
   }
 
   function householdSocialSecurityAnnual(age, inputs, ssMonthlyAtClaim) {
@@ -75,11 +115,11 @@
   }
 
   function targetNestEggAtRetirement(inputs, ssMonthlyBaseline) {
-    var startAge = Math.max(inputs.retirementAge, portfolioWithdrawalStartAge(inputs));
+    var startAge = Math.max(inputs.currentAge, inputs.retirementAge);
     var spending = annualSpendingAtAge(startAge, inputs);
     var ssAnnual = annualSocialSecurity(startAge, inputs, ssMonthlyBaseline);
     var spouseSsAnnual = annualSpouseSocialSecurity(startAge, inputs);
-    var guaranteed = ssAnnual + spouseSsAnnual + inputs.otherGuaranteedAnnual;
+    var guaranteed = ssAnnual + spouseSsAnnual + annualOtherIncome(startAge, inputs);
     var needed = Math.max(0, spending - guaranteed);
     if (needed <= 0 || inputs.withdrawalRate <= 0) return 0;
     return needed / inputs.withdrawalRate;
@@ -87,7 +127,7 @@
 
   function pickMilestoneAges(inputs) {
     var rmdStartAge = getRmdStartAge(inputs);
-    var ages = [inputs.currentAge, inputs.retirementAge];
+    var ages = [inputs.currentAge, inputs.retirementAge, spouseClaimPrimaryAge(inputs), otherIncomeStartAge(inputs)];
     if (inputs.ssClaimAge !== inputs.retirementAge) ages.push(inputs.ssClaimAge);
     if (inputs.currentAge < rmdStartAge && inputs.planEndAge >= rmdStartAge) ages.push(rmdStartAge);
     ages.push(inputs.planEndAge);
@@ -169,7 +209,9 @@
    * @returns {{ years: object[], summary: object, milestones: object[] }}
    */
   function runDeterministicPlan(inputs, retirementReturn) {
+    validatePlan(inputs);
     var rmdStartAge = getRmdStartAge(inputs);
+    if (inputs.retirementAge > Math.max(inputs.currentAge, rmdStartAge) && inputs.balance > 0 && (inputs.taxDeferredPct == null || inputs.taxDeferredPct > 0)) throw new RangeError('Pre-retirement RMDs are outside this snapshot model. Model the distribution years as retirement or use the RMD calculator.');
     var ssMonthlyBaseline = inputs.ssAlreadyReceiving
       ? (inputs.ssCurrentMonthly || 0)
       : FC.calculateMonthlyBenefit(
@@ -236,7 +278,7 @@
         var rmd = Math.min(traditional, rmdResult.amount);
         var spending = annualSpendingAtAge(age, inputs);
         var householdSsAnnual = householdSocialSecurityAnnual(age, inputs, ssMonthlyBaseline);
-        var otherIncome = inputs.otherGuaranteedAnnual;
+        var otherIncome = annualOtherIncome(age, inputs);
         var income = householdSsAnnual + otherIncome;
         var canWithdraw = age >= portfolioWithdrawalStartAge(inputs);
         // Keep the actual account split over time. Mandatory distributions come
@@ -304,13 +346,11 @@
     var withdrawalStartAge = portfolioWithdrawalStartAge(inputs);
     var retirementRow = years.find(function (y) { return y.age === inputs.retirementAge; });
     var withdrawalStartRow = years.find(function (y) { return y.age === withdrawalStartAge; });
-    var balanceAtRetirement = retirementRow ? retirementRow.balanceEnd : balance;
+    var balanceAtRetirement = retirementRow ? retirementRow.balanceStart : inputs.balance;
     var balanceAtWithdrawalStart = withdrawalStartRow
       ? withdrawalStartRow.balanceStart
       : (withdrawalStartAge > inputs.currentAge ? inputs.balance : balanceAtRetirement);
-    var compareBalance = withdrawalStartAge > inputs.currentAge
-      ? balanceAtWithdrawalStart
-      : balanceAtRetirement;
+    var compareBalance = balanceAtRetirement;
     var targetNestEgg = targetNestEggAtRetirement(inputs, ssMonthlyBaseline);
     var endingBalance = years.length ? years[years.length - 1].balanceEnd : balance;
     var status = describeStatus(compareBalance, targetNestEgg, {
@@ -330,9 +370,24 @@
       return years.find(function (y) { return y.age === a; }) || null;
     }).filter(Boolean);
 
-    var retirementIncomeRow = years.find(function (y) {
-      return y.age === Math.max(inputs.retirementAge, inputs.ssClaimAge, withdrawalStartAge);
-    }) || retirementRow;
+    var retirementIncomeRow = retirementRow;
+    var fullIncomeAge = Math.max(inputs.retirementAge,
+      inputs.ssAlreadyReceiving || !(inputs.ssPiaMonthly > 0) ? inputs.currentAge : inputs.ssClaimAge,
+      spouseClaimPrimaryAge(inputs), inputs.otherGuaranteedAnnual > 0 ? otherIncomeStartAge(inputs) : inputs.currentAge);
+    var fullIncomeRow = years.find(function (row) { return row.age === fullIncomeAge; });
+    var bridgeRows = years.filter(function (row) { return row.phase === 'retirement' && row.age < fullIncomeAge; });
+    var incomeTimeline = {
+      availableNow: householdSocialSecurityAnnual(inputs.currentAge, inputs, ssMonthlyBaseline) + annualOtherIncome(inputs.currentAge, inputs),
+      atRetirement: householdSocialSecurityAnnual(inputs.retirementAge, inputs, ssMonthlyBaseline) + annualOtherIncome(inputs.retirementAge, inputs),
+      fullyStartedAge: fullIncomeAge,
+      fullyStartedAnnual: fullIncomeRow ? fullIncomeRow.socialSecurity + fullIncomeRow.otherIncome : null,
+      longRunTarget: fullIncomeRow ? Math.max(0, fullIncomeRow.requestedSpending - fullIncomeRow.socialSecurity - fullIncomeRow.otherIncome) / inputs.withdrawalRate : null,
+      bridgeWithdrawals: bridgeRows.reduce(function (sum, row) { return sum + row.withdrawal; }, 0),
+      bridgeShortfalls: bridgeRows.reduce(function (sum, row) { return sum + row.spendingShortfall + row.taxShortfall; }, 0),
+      primaryClaimAge: inputs.ssAlreadyReceiving ? inputs.currentAge : inputs.ssClaimAge,
+      spouseClaimPrimaryAge: spouseClaimPrimaryAge(inputs),
+      otherIncomeStartAge: otherIncomeStartAge(inputs)
+    };
 
     var firstRmdRow = years.find(function (y) { return y.age === rmdStartAge; });
 
@@ -344,6 +399,8 @@
       years: years,
       milestones: milestones,
       summary: {
+        modelVersion: "consumer-income-timing-2026-09",
+        incomeTimeline: incomeTimeline,
         status: status,
         balanceAtRetirement: balanceAtRetirement,
         balanceAtWithdrawalStart: balanceAtWithdrawalStart,
@@ -352,9 +409,7 @@
         targetNestEgg: targetNestEgg,
         ssMonthlyAtClaim: summaryUserMonthly,
         ssAnnualAtClaim: summaryUserMonthly * 12,
-        spouseSsMonthly: inputs.spouseSsAlreadyReceiving
-          ? (inputs.spouseSsCurrentMonthly || 0)
-          : (inputs.spouseSsMonthly || 0),
+        spouseSsMonthly: summarySpouseMonthly,
         householdSsMonthlyAtClaim: summaryUserMonthly + summarySpouseMonthly,
         fraAge: FC.fraAgeFromBirthYear(inputs.birthYear),
         shortfallAge: shortfallAge,

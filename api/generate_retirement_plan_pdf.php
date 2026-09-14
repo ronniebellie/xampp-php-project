@@ -4,6 +4,11 @@ rb_api_errors();
 error_reporting(0);
 ini_set('display_errors', 0);
 ob_start();
+$rpCli = PHP_SAPI === 'cli' && getenv('RB_SNAPSHOT_QA_INPUT');
+if ($rpCli) {
+    $raw = file_get_contents(getenv('RB_SNAPSHOT_QA_INPUT'));
+    $data = rb_pdf_data(json_decode($raw, true, 64, JSON_THROW_ON_ERROR));
+} else {
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
 rb_session_start();
 require_once '../includes/db_config.php';
@@ -19,6 +24,7 @@ if (!has_premium_access()) {
 $data = rb_read_api_json(8388608);
 try { $data=rb_pdf_data($data); } catch(Throwable $e) { rb_api_error(400, 'Invalid or oversized report data'); }
 if(session_status()===PHP_SESSION_ACTIVE) session_write_close();
+ }
 if (!$data) {
     header('Content-Type: application/json');
     http_response_code(400);
@@ -97,7 +103,7 @@ $pdf->SetY(12);
 $pdf->Cell(0, 10, 'Retirement Plan Builder', 0, 1, 'C');
 $pdf->SetFont('helvetica', '', 11);
 $pdf->SetY(24);
-$pdf->Cell(0, 6, 'Your Personalized Retirement Plan Report', 0, 1, 'C');
+$pdf->Cell(0, 6, 'Your Retirement Planning Snapshot', 0, 1, 'C');
 $pdf->SetTextColor(100, 100, 100);
 $pdf->SetFont('helvetica', '', 9);
 $pdf->SetY(33);
@@ -122,12 +128,8 @@ $snapshotHtml = '<div style="background-color:#f8fafc;border-left:4px solid #667
 $withdrawalStartAge = isset($inputs['portfolioWithdrawalStartAge']) ? (int) $inputs['portfolioWithdrawalStartAge'] : null;
 $currentAge = isset($inputs['currentAge']) ? (int) $inputs['currentAge'] : null;
 $withdrawalsFuture = $withdrawalStartAge && $currentAge && $withdrawalStartAge > $currentAge;
-$compareBalance = $withdrawalsFuture
-    ? ($summary['balanceAtWithdrawalStart'] ?? $summary['compareBalanceForStatus'] ?? $summary['balanceAtRetirement'] ?? 0)
-    : ($summary['balanceAtRetirement'] ?? 0);
-$compareLabel = $withdrawalsFuture
-    ? 'Portfolio at age ' . $withdrawalStartAge . ' (withdrawals start)'
-    : 'Projected at retirement';
+$compareBalance = $summary['balanceAtRetirement'] ?? 0;
+$compareLabel = 'Portfolio at retirement start';
 
 $snapshotHtml .= '<table border="0" cellpadding="8"><tr>'
     . '<td width="50%" style="background-color:#f0f9ff;border:2px solid #667eea;"><div style="text-align:center;">'
@@ -140,24 +142,33 @@ $snapshotHtml .= '<table border="0" cellpadding="8"><tr>'
     . '</div></div></td>'
     . '</tr><tr>'
     . '<td style="background-color:#fffbeb;border:2px solid #f59e0b;"><div style="text-align:center;">'
-    . '<div style="font-size:10px;color:#666;">Retirement income (plan running)</div>'
-    . '<div style="font-size:18px;font-weight:bold;color:#f59e0b;">' . rp_money($summary['retirementAnnualIncome'] ?? 0) . '</div></div></td>'
+    . '<div style="font-size:10px;color:#666;">Guaranteed income at retirement start</div>'
+    . '<div style="font-size:18px;font-weight:bold;color:#f59e0b;">' . rp_money($summary['guaranteedIncomeAtRetirement'] ?? $summary['retirementAnnualIncome'] ?? 0) . '</div></div></td>'
     . '<td style="background-color:#fef2f2;border:2px solid #ef4444;"><div style="text-align:center;">'
     . '<div style="font-size:10px;color:#666;">Lifetime est. federal tax</div>'
     . '<div style="font-size:18px;font-weight:bold;color:#ef4444;">' . rp_money($summary['lifetimeFederalTax'] ?? 0) . '</div></div></td>'
     . '</tr></table>';
 
 $pdf->writeHTML($snapshotHtml, true, false, true, false, '');
+$pdf->SetFont('helvetica', '', 10);
+$pdf->MultiCell(0, 6, (string) ($summary['incomeTimingText'] ?? 'Review the year-by-year income start dates.'));
+$pdf->MultiCell(0, 6, 'Model: consumer-income-timing-2026-09. Nominal USD; fixed 2026 tax assumptions. Annual age-year buckets with 12 payments; exact calendar-month timing, spousal top-ups and survivor benefits are not modeled.');
 $pdf->Ln(6);
 
 $pdf->SetFont('helvetica', 'B', 16);
 $pdf->SetTextColor(102, 126, 234);
+$pdf->AddPage();
 $pdf->Cell(0, 8, 'Your Inputs', 0, 1);
 $pdf->SetTextColor(0, 0, 0);
 $pdf->Ln(2);
 
+$pdf->SetFont('helvetica', '', 10);
 $inputRows = [
     ['Current age', $inputs['currentAge'] ?? '—'],
+    ['Spouse age attained this year', $inputs['spouseAge'] ?? 'Not applicable'],
+    ['Inflation / Social Security COLA', ($inputs['inflation'] ?? 0) . '% / ' . ($inputs['colaRate'] ?? 0) . '%'],
+    ['Withdrawal-rate rule', (($inputs['withdrawalRate'] ?? 0) * 100) . '%'],
+    ['Other income begins at your age', $inputs['otherIncomeStartAge'] ?? $inputs['retirementAge'] ?? 'Not specified'],
     ['Retirement age', $inputs['retirementAge'] ?? '—'],
     ['Plan through age', $inputs['planEndAge'] ?? '90'],
     ['Retirement savings today', rp_money($inputs['balance'] ?? 0)],
@@ -273,6 +284,7 @@ $pdf->writeHTML($tableHtml, true, false, true, false, '');
 $pdf->Ln(8);
 $pdf->SetFont('helvetica', '', 9);
 $pdf->SetTextColor(80, 80, 80);
+$pdf->AddPage();
 $cashFlowHtml = '<h3>Spending funding</h3><table border="1" cellpadding="4"><thead><tr><th>Age</th><th>Requested</th><th>Funded</th><th>Spending shortfall</th><th>Unpaid tax</th></tr></thead><tbody>';
 foreach ($projections as $row) {
     $cashFlowHtml .= '<tr><td>' . (int)($row['age'] ?? 0) . '</td><td>' . rp_money($row['requestedSpending'] ?? 0) . '</td><td>' . rp_money($row['fundedSpending'] ?? 0) . '</td><td>' . rp_money($row['spendingShortfall'] ?? 0) . '</td><td>' . rp_money($row['taxShortfall'] ?? 0) . '</td></tr>';
@@ -291,6 +303,7 @@ require_once __DIR__ . '/../includes/report_context.php';
 rb_report_context($pdf);
 $pdfBytes = $pdf->Output('', 'S');
 ob_end_clean();
+if ($rpCli) { file_put_contents(getenv('RB_SNAPSHOT_QA_OUTPUT'), $pdfBytes); exit; }
 header('Content-Type: application/pdf');
 header('Content-Disposition: attachment; filename="Retirement_Plan_' . date('Y-m-d') . '.pdf"');
 header('Content-Length: ' . strlen($pdfBytes));

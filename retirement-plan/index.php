@@ -143,13 +143,14 @@ $defaultRetirementAge = 67;
 <?php endif; ?>
 
     <p class="sub">Federal estimates use fixed 2026 ordinary-income brackets and base standard deductions. Future calendar years reuse these values as a projection assumption, not future statutory law. Credits, itemized deductions and additional age-based deductions are not included.</p>
+        <p class="sub">This is a quick annual planning snapshot. Ages mean ages attained in each calendar year; retirement and claims begin at the start of the selected modeled age-year, with 12 monthly payments. Exact birthday-month, midyear retirement, payment lag, spousal top-ups and survivor benefits are not modeled. Spending is entered in retirement-start dollars and inflates after retirement. Before retirement, contributions represent your net saving after living costs and taxes. Use <a href="https://journey.ronbelisle.com/">Your Retirement Journey Matters</a> for the deeper six-phase process.</p>
         <form id="planForm">
       <h3>About you</h3>
       <div class="form-grid">
         <div>
           <label class="field-label" for="birthYear">Birth year</label>
           <input type="number" id="birthYear" min="1920" max="<?php echo date('Y'); ?>" value="<?php echo $defaultBirthYear; ?>" required>
-          <small id="fraHint">Used to estimate your age today and Social Security Full Retirement Age.</small>
+          <small id="fraHint">Uses the age you attain this calendar year and Social Security Full Retirement Age.</small>
         </div>
         <div>
           <label class="field-label" for="birthDate">Full birth date</label>
@@ -158,7 +159,7 @@ $defaultRetirementAge = 67;
         </div>
         <div id="retirementAgeWrap">
           <label class="field-label" for="retirementAge">Planned retirement age</label>
-          <input type="number" id="retirementAge" min="18" max="100" step="any" value="<?php echo $defaultRetirementAge; ?>" autocomplete="off" inputmode="numeric" required>
+          <input type="number" id="retirementAge" min="18" max="100" step="1" value="<?php echo $defaultRetirementAge; ?>" autocomplete="off" inputmode="numeric" required>
           <small>When you expect to stop working and start drawing from savings.</small>
         </div>
       </div>
@@ -287,7 +288,12 @@ $defaultRetirementAge = 67;
         <div>
           <label class="field-label" for="otherGuaranteedAnnual">Other guaranteed income ($/year)</label>
           <input type="number" id="otherGuaranteedAnnual" min="0" step="any" value="">
-          <small>Pension, annuity, rental, etc. — do not include Social Security here.</small>
+          <small>Level annual amount for pension, annuity, or other income. Do not include Social Security. Use the same start age only for income beginning together.</small>
+        </div>
+        <div>
+          <label class="field-label" for="otherIncomeStartAge">Your age when this other income begins</label>
+          <input type="number" id="otherIncomeStartAge" min="0" max="150" step="1" placeholder="Retirement age">
+          <small>Leave blank for retirement start. Future income is excluded until this age.</small>
         </div>
       </div>
 
@@ -313,11 +319,11 @@ $defaultRetirementAge = 67;
               <option value="no">No</option>
               <option value="yes" selected>Yes</option>
             </select>
-            <small>If yes and spouse is 10+ years younger, a lower RMD divisor may apply.</small>
+            <small>If your sole beneficiary spouse is more than 10 years younger, a joint-life divisor may apply; only verified table entries are supported.</small>
           </div>
           <div id="spouseAgeGroup">
-            <label class="field-label" for="spouseAge">Spouse's current age</label>
-            <input type="number" id="spouseAge" min="18" max="100" value="56">
+            <label class="field-label" for="spouseAge">Spouse's age attained this calendar year</label>
+            <input type="number" id="spouseAge" min="18" max="100" value="">
           </div>
         </div>
       </details>
@@ -327,7 +333,7 @@ $defaultRetirementAge = 67;
         <div class="form-grid" style="margin-top: 14px;">
           <div>
             <label class="field-label" for="planEndAge">Plan through age</label>
-            <input type="number" id="planEndAge" min="80" max="100" step="any" value="95">
+            <input type="number" id="planEndAge" min="80" max="100" step="1" value="95">
             <small>How far to project spending, RMDs, and Monte Carlo. Many planners use 90–95; Vanguard often uses 100.</small>
           </div>
           <div>
@@ -376,11 +382,11 @@ $defaultRetirementAge = 67;
             <div class="value" id="metricProjected">—</div>
           </div>
           <div class="metric-box">
-            <div class="label">Rule-of-thumb target</div>
+            <div class="label">Target for retirement-start income gap</div>
             <div class="value" id="metricTarget">—</div>
           </div>
           <div class="metric-box">
-            <div class="label">Income (when plan is fully running)</div>
+            <div class="label">Annual guaranteed income at retirement start</div>
             <div class="value" id="metricIncome">—</div>
           </div>
           <div class="metric-box">
@@ -389,6 +395,7 @@ $defaultRetirementAge = 67;
           </div>
         </div>
         <p id="portfolioWithdrawalNote" style="margin: 8px 0 0; font-size: 14px; color: #4b5563; display: none;"></p>
+        <p id="incomeTimingNote" role="status" aria-live="polite"></p>
         <p id="rmdNote" style="margin: 8px 0 0; font-size: 14px; color: #4b5563;"></p>
         <p id="depletedNote" style="margin: 12px 0 0; font-size: 14px; color: #4b5563;"></p>
       </div>
@@ -537,7 +544,7 @@ $defaultRetirementAge = 67;
     function toggleSpouseAgeField() {
       var sel = document.getElementById('spouseBeneficiary');
       var grp = document.getElementById('spouseAgeGroup');
-      if (grp && sel) grp.style.display = sel.value === 'yes' ? 'block' : 'none';
+      if (grp) grp.style.display = 'block';
     }
     const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
   </script>
