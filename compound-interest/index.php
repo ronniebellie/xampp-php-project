@@ -130,28 +130,28 @@ $isPremium = has_premium_access();
             <span>Initial investment</span>
             <span class="value" id="initialLabel"></span>
           </div>
-          <input type="range" id="initial" min="0" max="100000" step="1000" value="10000">
+          <input type="range" id="initial" aria-label="Initial investment in dollars" min="0" max="100000" step="1000" value="10000">
         </div>
         <div class="slider-row">
           <div class="slider-label">
             <span>Annual return</span>
             <span class="value" id="returnLabel"></span>
           </div>
-          <input type="range" id="rate" min="0" max="15" step="0.25" value="7">
+          <input type="range" id="rate" aria-label="Annual nominal return, percent" min="0" max="15" step="0.25" value="7">
         </div>
         <div class="slider-row">
           <div class="slider-label">
             <span>Years</span>
             <span class="value" id="yearsLabel"></span>
           </div>
-          <input type="range" id="years" min="1" max="40" step="1" value="30">
+          <input type="range" id="years" aria-label="Years to model" min="1" max="40" step="1" value="30">
         </div>
         <div class="slider-row">
           <div class="slider-label">
             <span>Monthly contributions</span>
             <span class="value" id="monthlyLabel"></span>
           </div>
-          <input type="range" id="monthly" min="0" max="3000" step="50" value="0">
+          <input type="range" id="monthly" aria-label="Monthly contribution in dollars" min="0" max="3000" step="50" value="0">
         </div>
       </div>
     </section>

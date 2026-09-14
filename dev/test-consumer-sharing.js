@@ -1,0 +1,14 @@
+'use strict';
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+let copied='',events=[];const nodes={};const node=id=>nodes[id]||=( {checked:false,textContent:'',getAttribute(k){return k==='data-share-url'?this.url:null;},addEventListener(k,fn){this[k]=fn;}} );
+const location={origin:'https://ronbelisle.com',pathname:'/retirement-plan/',href:'https://ronbelisle.com/retirement-plan/?balance=600000&email=private%40example.test&token=secret#name'};
+const ctx={window:null,document:{getElementById:node,title:'Snapshot'},navigator:{clipboard:{writeText(s){copied=s;return Promise.resolve();}}},URL,setTimeout(){},location,rbTrack:(...args)=>events.push(args)};ctx.window=ctx;
+vm.runInNewContext(fs.readFileSync(require('node:path').join(__dirname,'../js/share-results.js'),'utf8'),ctx);
+node('shareCopyLink').click();assert(!copied.includes('600000'));assert(!copied.includes('private'));assert(!copied.includes('secret'));
+node('shareIncludeInputs').checked=true;node('shareCopyLink').click();assert(copied.includes('balance=600000'));assert(!copied.includes('email=')&&!copied.includes('token=')&&!copied.includes('#'));
+node('shareResults').url='https://evil.test/?balance=600000';node('shareCopyLink').click();assert(!copied.includes('evil')&&!copied.includes('600000'));
+assert(!JSON.stringify(events).includes('600000'));assert(!JSON.stringify(events).includes('private'));assert(!JSON.stringify(events).includes('secret'));
+let announced,observed=[],callback;const region={setAttribute(){},hasAttribute(){return false;},getClientRects(){return [1];}};
+const a={document:{readyState:'complete',querySelectorAll(){return [region];},createElement(){return announced={setAttribute(){}};},body:{appendChild(){}}},MutationObserver:class{constructor(fn){callback=fn;}observe(r,options){observed.push(options);}},setTimeout(fn){fn();},clearTimeout(){}};
+vm.runInNewContext(fs.readFileSync(require('node:path').join(__dirname,'../js/calculator-results-accessibility.js'),'utf8'),a);callback();assert(announced.textContent.includes('results updated'));assert.equal(observed.length,1);
+console.log('Consumer sharing privacy and concise result announcements passed (13 checks).');

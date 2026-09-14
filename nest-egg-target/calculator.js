@@ -48,16 +48,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const guaranteedAnnual = Number(document.getElementById('guaranteedAnnualIncome').value || 0);
-    let withdrawalRatePct = Number(document.getElementById('withdrawalRate').value || 4);
+    let withdrawalRatePct = Number(document.getElementById('withdrawalRate').value);
     const currentSavings = Number(document.getElementById('currentSavings').value || 0);
 
     updateLabels(desiredAnnual, currentMonthly, pctRet, guaranteedAnnual, withdrawalRatePct);
 
     const errors = [];
     resultsEl.style.display='none';
+    window.lastNestEggResult=null;
     if (![desiredAnnual,guaranteedAnnual,currentSavings,withdrawalRatePct,currentMonthly,pctRet].every(Number.isFinite)||[desiredAnnual,guaranteedAnnual,currentSavings,withdrawalRatePct,currentMonthly,pctRet].some(v=>v<0)) errors.push('finite nonnegative values');
     if (desiredAnnual <= 0) errors.push('desired retirement income (or current spending to estimate it)');
-    if (withdrawalRatePct <= 0) errors.push('withdrawal rate');
+    if (withdrawalRatePct < 0.5 || withdrawalRatePct > 15) errors.push('withdrawal rate from 0.5% to 15%');
 
     if (errors.length) {
       if (showAlerts) alert('Please enter: ' + errors.join(', ') + '.');
@@ -65,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    withdrawalRatePct = clamp(withdrawalRatePct, 0.5, 15);
+
     const withdrawalRate = withdrawalRatePct / 100;
 
     let neededFromPortfolio = desiredAnnual - guaranteedAnnual;
@@ -151,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
       afterApply: function () {
         var desiredAnnual = Number(document.getElementById('desiredAnnualIncome').value || 0);
         var guaranteedAnnual = Number(document.getElementById('guaranteedAnnualIncome').value || 0);
-        var withdrawalRatePct = Number(document.getElementById('withdrawalRate').value || 4);
+        var withdrawalRatePct = Number(document.getElementById('withdrawalRate').value);
         updateLabels(desiredAnnual, 0, 80, guaranteedAnnual, withdrawalRatePct);
       }
     });

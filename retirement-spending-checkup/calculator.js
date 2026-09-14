@@ -60,10 +60,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const errors = [];
     resultsEl.style.display='none';
+    window.lastSpendingCheckupResult=null;
     if (![monthlyNow,retirePctRaw,guaranteedMonthly,currentSavings,withdrawalRatePct].every(Number.isFinite)||[monthlyNow,retirePctRaw,guaranteedMonthly,currentSavings,withdrawalRatePct].some(v=>v<0)) errors.push('finite nonnegative values');
     if (monthlyNow <= 0) errors.push('Current monthly living expenses');
     if (retirePctRaw <= 0) errors.push('Retirement spending %');
-    if (withdrawalRatePct <= 0) errors.push('Withdrawal rate %');
+    if (withdrawalRatePct < 0.5 || withdrawalRatePct > 15) errors.push('Withdrawal rate from 0.5% to 15%');
 
     if (errors.length) {
       alert('Please enter a positive value for: ' + errors.join(', ') + '.');
@@ -71,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const retirePct = retirePctRaw / 100;
-    withdrawalRatePct = clamp(withdrawalRatePct, 0.5, 15);
+
     const withdrawalRate = withdrawalRatePct / 100;
 
     const annualBudget = monthlyNow * 12 * retirePct;

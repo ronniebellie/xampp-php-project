@@ -94,15 +94,15 @@ $pdf->Cell(0, 8, 'Household results', 0, 1);
 $pdf->SetTextColor(0, 0, 0);
 $pdf->SetFont('helvetica', '', 10);
 $html = '<table border="0" cellpadding="5" cellspacing="0">';
-$html .= '<tr style="background:#eff6ff;"><td><b>Lifetime household SS</b></td><td>' . fmt0($r['totalHousehold'] ?? 0) . '</td></tr>';
+$html .= '<tr style="background-color:#eff6ff;"><td><b>Lifetime household SS</b></td><td>' . fmt0($r['totalHousehold'] ?? 0) . '</td></tr>';
 $html .= '<tr><td><b>Before first death</b></td><td>' . fmt0($r['beforeFirstDeath'] ?? 0) . '</td></tr>';
-$html .= '<tr style="background:#eff6ff;"><td><b>After first death</b></td><td>' . fmt0($r['afterFirstDeath'] ?? 0) . '</td></tr>';
+$html .= '<tr style="background-color:#eff6ff;"><td><b>After first death</b></td><td>' . fmt0($r['afterFirstDeath'] ?? 0) . '</td></tr>';
 $html .= '<tr><td><b>Higher earner monthly (at claim)</b></td><td>' . fmt0($h['startMonthly'] ?? 0) . '</td></tr>';
-$html .= '<tr style="background:#eff6ff;"><td><b>Lower earner monthly (at claim)</b></td><td>' . fmt0($l['startMonthly'] ?? 0) . '</td></tr>';
+$html .= '<tr style="background-color:#eff6ff;"><td><b>Lower earner monthly (at claim)</b></td><td>' . fmt0($l['startMonthly'] ?? 0) . '</td></tr>';
 $html .= '<tr><td><b>Survivor benefit at first death</b></td><td>' . fmt0($d['higherAtDeath'] ?? 0) . '/mo</td></tr>';
-$html .= '<tr style="background:#eff6ff;"><td><b>Lower earner benefits delayed by waiting</b></td><td>' . fmt0($d['forgone'] ?? 0) . '</td></tr>';
+$html .= '<tr style="background-color:#eff6ff;"><td><b>Lower earner benefits delayed by waiting</b></td><td>' . fmt0($d['forgone'] ?? 0) . '</td></tr>';
 $html .= '<tr><td><b>Delay premium recovered before survivor switch</b></td><td>' . fmt0($d['recovered'] ?? 0) . '</td></tr>';
-$html .= '<tr style="background:#eff6ff;"><td><b>Net loss on lower earner own record</b></td><td>' . fmt0($d['netLoss'] ?? 0) . '</td></tr>';
+$html .= '<tr style="background-color:#eff6ff;"><td><b>Net loss on lower earner own record</b></td><td>' . fmt0($d['netLoss'] ?? 0) . '</td></tr>';
 $html .= '</table>';
 $pdf->writeHTML($html, true, false, true, false, '');
 $pdf->Ln(4);
@@ -141,7 +141,7 @@ if (!empty($strategies)) {
     $pdf->SetTextColor(37, 99, 235);
     $pdf->Cell(0, 8, 'Strategy comparison', 0, 1);
     $pdf->SetTextColor(0, 0, 0);
-    $stHtml = '<table border="1" cellpadding="4" style="font-size:9px;"><tr style="background:#2563eb;color:#fff;"><th>Strategy</th><th>H claims</th><th>L claims</th><th>Lifetime SS</th></tr>';
+    $stHtml = '<table border="1" cellpadding="4" style="font-size:9px;"><tr style="background-color:#2563eb;color:#fff;"><th>Strategy</th><th>H claims</th><th>L claims</th><th>Lifetime SS</th></tr>';
     foreach ($strategies as $s) {
         $sr = $s['result'] ?? [];
         $stHtml .= '<tr><td>' . htmlspecialchars($s['name'] ?? '') . '</td><td>' . ($sr['higher']['claimAge'] ?? '') . '</td><td>' . ($sr['lower']['claimAge'] ?? '') . '</td><td>' . fmt0($sr['totalHousehold'] ?? 0) . '</td></tr>';
@@ -170,7 +170,7 @@ if (!empty($yearly)) {
     $pdf->SetTextColor(37, 99, 235);
     $pdf->Cell(0, 8, 'Year-by-year household income', 0, 1);
     $pdf->SetTextColor(0, 0, 0);
-    $tbl = '<table border="1" cellpadding="3" style="font-size:7px;"><tr style="background:#2563eb;color:#fff;"><th>Year</th><th>H age</th><th>L age</th><th>Phase</th><th>Household/mo</th><th>Cumulative</th></tr>';
+    $tbl = '<table border="1" cellpadding="3" style="font-size:7px;"><tr style="background-color:#2563eb;color:#fff;"><th>Year</th><th>H age</th><th>L age</th><th>Phase</th><th>Household/mo</th><th>Cumulative</th></tr>';
     foreach ($yearly as $row) {
         $tbl .= '<tr><td>' . ($row['calendarYear'] ?? '') . '</td><td>' . ($row['higherAge'] ?? '') . '</td><td>' . ($row['lowerAge'] ?? '') . '</td><td>' . htmlspecialchars(fmtPhase($row['phase'] ?? '')) . '</td><td>' . fmt0($row['householdMonthly'] ?? 0) . '</td><td>' . fmt0($row['cumulativeHousehold'] ?? 0) . '</td></tr>';
     }

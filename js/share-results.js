@@ -2,10 +2,8 @@
  * Share results bar: Copy link, Email, Facebook, Twitter, LinkedIn, and native Share when available.
  * Include this script on any calculator page that has the share block (id="shareResults").
  *
- * Behavior:
- * - If #shareResults has data-share-url, that URL is used for all share actions.
- * - Otherwise, window.location.href is used.
- * - This allows calculators to set data-share-url to a URL that encodes the current scenario/results.
+ * Financial assumptions are excluded by default. Explicit opt-in permits a
+ * same-origin scenario URL after removing sensitive identity/token fields.
  */
 (function () {
     const el = document.getElementById('shareResults');

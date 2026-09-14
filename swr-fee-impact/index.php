@@ -69,7 +69,7 @@ $isPremium = has_premium_access();
             <span>Baseline SWR (before AUM)</span>
             <span class="value" id="baselineSwrLabel"></span>
           </div>
-          <input type="range" id="baselineSwr" min="2.5" max="5.5" step="0.1" value="4.0">
+          <input type="range" id="baselineSwr" aria-label="Baseline safe withdrawal rate, percent" min="2.5" max="5.5" step="0.1" value="4.0">
           <small style="color: #666;">Common rule of thumb: 4%.</small>
         </div>
 
@@ -78,7 +78,7 @@ $isPremium = has_premium_access();
             <span>AUM / advisor fee</span>
             <span class="value" id="aumFeeLabel"></span>
           </div>
-          <input type="range" id="aumFee" min="0" max="2.5" step="0.05" value="1.0">
+          <input type="range" id="aumFee" aria-label="Annual advisor fee, percent" min="0" max="2.5" step="0.05" value="1.0">
           <small style="color: #666;">Typical advice: ~1%. Smaller balances may face higher % or minimum fees.</small>
         </div>
 
@@ -87,7 +87,7 @@ $isPremium = has_premium_access();
             <span>Fund expense ratio</span>
             <span class="value" id="fundErLabel"></span>
           </div>
-          <input type="range" id="fundEr" min="0" max="1.5" step="0.01" value="0.05">
+          <input type="range" id="fundEr" aria-label="Annual fund expense ratio, percent" min="0" max="1.5" step="0.01" value="0.05">
           <small style="color: #666;">Low-cost index funds are often ~0.03–0.10%; active funds can be much higher.</small>
         </div>
 
@@ -96,7 +96,7 @@ $isPremium = has_premium_access();
             <span>Retirement length</span>
             <span class="value" id="yearsLabel"></span>
           </div>
-          <input type="range" id="years" min="20" max="40" step="1" value="30">
+          <input type="range" id="years" aria-label="Years to model" min="20" max="40" step="1" value="30">
         </div>
       </div>
 
@@ -118,7 +118,7 @@ $isPremium = has_premium_access();
             <span>Expected real return (before fees)</span>
             <span class="value" id="realReturnLabel"></span>
           </div>
-          <input type="range" id="realReturn" min="2" max="7" step="0.25" value="4.5">
+          <input type="range" id="realReturn" aria-label="Annual real return, percent" min="2" max="7" step="0.25" value="4.5">
           <small style="color: #666;">Used only in Simple mode. Spending stays flat in real terms.</small>
         </div>
       </div>

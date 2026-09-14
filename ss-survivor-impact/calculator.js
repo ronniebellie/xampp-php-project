@@ -803,7 +803,7 @@ function downloadCSV() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ yearly: stored.result.yearly })
+        body: JSON.stringify({ opts: stored.opts, yearly: stored.result.yearly })
     })
     .then(function (r) {
         if (!r.ok) {

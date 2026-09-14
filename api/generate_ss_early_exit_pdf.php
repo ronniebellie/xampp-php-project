@@ -88,11 +88,11 @@ $pdf->SetTextColor(0, 0, 0);
 $pdf->SetFont('helvetica', '', 9);
 
 $resultsHtml = '<table border="0" cellpadding="6">'
-    . '<tr style="background:#f0f9ff;"><td><b>Monthly reduction</b></td><td>$' . number_format(abs($deltaMo), 0) . '/mo less if you stop at ' . htmlspecialchars((string) $actualStop) . '</td></tr>'
+    . '<tr style="background-color:#f0f9ff;"><td><b>Monthly reduction</b></td><td>$' . number_format(abs($deltaMo), 0) . '/mo less if you stop at ' . htmlspecialchars((string) $actualStop) . '</td></tr>'
     . '<tr><td><b>Lifetime hit (to ' . $life . ')</b></td><td>$' . number_format(abs($deltaLife), 0) . '</td></tr>'
-    . '<tr style="background:#f0f9ff;"><td><b>Extra nest egg @ ' . htmlspecialchars((string) $wdr) . '%</b></td><td>$' . number_format($nestEgg, 0) . '</td></tr>'
+    . '<tr style="background-color:#f0f9ff;"><td><b>Extra nest egg @ ' . htmlspecialchars((string) $wdr) . '%</b></td><td>$' . number_format($nestEgg, 0) . '</td></tr>'
     . '<tr><td><b>Benefit as planned (stop ' . htmlspecialchars((string) $planStop) . ')</b></td><td>$' . number_format($planMonthly, 0) . '/mo (PIA $' . number_format($planPia, 0) . ')</td></tr>'
-    . '<tr style="background:#fef2f2;"><td><b>Benefit if stop at ' . htmlspecialchars((string) $actualStop) . '</b></td><td>$' . number_format($actualMonthly, 0) . '/mo (PIA $' . number_format($actualPia, 0) . ')</td></tr>'
+    . '<tr style="background-color:#fef2f2;"><td><b>Benefit if stop at ' . htmlspecialchars((string) $actualStop) . '</b></td><td>$' . number_format($actualMonthly, 0) . '/mo (PIA $' . number_format($actualPia, 0) . ')</td></tr>'
     . '</table>';
 $pdf->writeHTML($resultsHtml, true, false, true, false, '');
 $pdf->Ln(4);
@@ -119,7 +119,7 @@ $pdf->Cell(0, 8, 'Scenario Comparison', 0, 1);
 $pdf->SetTextColor(0, 0, 0);
 
 $tableHtml = '<table border="1" cellpadding="4" style="font-size:9px;">'
-    . '<tr style="background:#2563eb;color:white;font-weight:bold;">'
+    . '<tr style="background-color:#2563eb;color:white;font-weight:bold;">'
     . '<th>Stop age</th><th>Label</th><th>PIA at FRA</th><th>Benefit at claim</th><th>vs Plan $/mo</th><th>Extra nest egg</th></tr>';
 
 foreach ($scenarios as $s) {
@@ -129,7 +129,7 @@ foreach ($scenarios as $s) {
     $monthly = (float) ($s['monthly'] ?? 0);
     $vs = (float) ($s['vsPlan'] ?? 0);
     $egg = (float) ($s['nestEgg'] ?? 0);
-    $bg = !empty($s['isActual']) ? 'background:#fef2f2;' : '';
+    $bg = !empty($s['isActual']) ? 'background-color:#fef2f2;' : '';
     $tableHtml .= '<tr style="' . $bg . '"><td>' . htmlspecialchars((string) $stop) . '</td><td>' . $label . '</td>'
         . '<td>$' . number_format($pia, 0) . '</td><td>$' . number_format($monthly, 0) . '</td>'
         . '<td>' . ($vs == 0 ? '—' : (($vs > 0 ? '−' : '+') . '$' . number_format(abs($vs), 0))) . '</td>'

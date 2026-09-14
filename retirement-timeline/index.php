@@ -55,12 +55,12 @@ $isPremium = has_premium_access();
               <option value="<?php echo $m; ?>"<?php echo $m === 1 ? ' selected' : ''; ?>><?php echo date('F', mktime(0, 0, 0, $m, 1)); ?></option>
               <?php endfor; ?>
             </select>
-            <select id="tlBirthDay" style="flex: 1; min-width: 60px; padding: 8px;">
+            <select id="tlBirthDay" aria-label="Birth day" style="flex: 1; min-width: 60px; padding: 8px;">
               <?php for ($d = 1; $d <= 31; $d++): ?>
               <option value="<?php echo $d; ?>"<?php echo $d === 1 ? ' selected' : ''; ?>><?php echo $d; ?></option>
               <?php endfor; ?>
             </select>
-            <select id="tlBirthYear" style="flex: 1; min-width: 80px; padding: 8px;">
+            <select id="tlBirthYear" aria-label="Birth year" style="flex: 1; min-width: 80px; padding: 8px;">
               <?php for ($y = (int)date('Y'); $y >= 1920; $y--): ?>
               <option value="<?php echo $y; ?>"<?php echo $y === 1960 ? ' selected' : ''; ?>><?php echo $y; ?></option>
               <?php endfor; ?>
@@ -80,12 +80,12 @@ $isPremium = has_premium_access();
               <option value="<?php echo $m; ?>"><?php echo date('F', mktime(0, 0, 0, $m, 1)); ?></option>
               <?php endfor; ?>
             </select>
-            <select id="tlRetireDay" style="flex: 1; min-width: 60px; padding: 8px;">
+            <select id="tlRetireDay" aria-label="Retirement day" style="flex: 1; min-width: 60px; padding: 8px;">
               <?php for ($d = 1; $d <= 31; $d++): ?>
               <option value="<?php echo $d; ?>"><?php echo $d; ?></option>
               <?php endfor; ?>
             </select>
-            <select id="tlRetireYear" style="flex: 1; min-width: 80px; padding: 8px;">
+            <select id="tlRetireYear" aria-label="Retirement year" style="flex: 1; min-width: 80px; padding: 8px;">
               <?php for ($y = (int)date('Y'); $y <= (int)date('Y') + 30; $y++): ?>
               <option value="<?php echo $y; ?>"<?php echo $y === ((int)date('Y') + 5) ? ' selected' : ''; ?>><?php echo $y; ?></option>
               <?php endfor; ?>

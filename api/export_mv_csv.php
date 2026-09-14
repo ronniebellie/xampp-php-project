@@ -4,6 +4,8 @@ ini_set('display_errors', 0);
 ob_start();
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
 rb_session_start();
+require_once __DIR__ . '/../includes/report_csv.php';
+rb_api_errors();
 require_once __DIR__ . '/../includes/db_config.php';
 
 require_once __DIR__ . '/../includes/has_premium_access.php';
@@ -13,7 +15,9 @@ if (!has_premium_access()) {
     die(json_encode(['error' => 'Premium subscription required']));
 }
 
-$data = json_decode(file_get_contents('php://input'), true);
+$data = rb_read_api_json(2097152);
+try { $data=rb_pdf_data($data); } catch(Throwable $e) { rb_api_error(400, 'Invalid or oversized CSV data'); }
+if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
 if (!$data || !isset($data['managedData'], $data['vanguardData']) || !is_array($data['managedData'])) {
     header('Content-Type: application/json');
     http_response_code(400);
@@ -26,14 +30,15 @@ $vRows = $data['vanguardData'];
 ob_end_clean();
 header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename="Managed_vs_Vanguard_' . date('Y-m-d') . '.csv"');
-header('Cache-Control: private, max-age=0, must-revalidate');
+header('Cache-Control: no-store');
 echo "\xEF\xBB\xBF";
 $out = fopen('php://output', 'w');
-fputcsv($out, ['Year', 'Contributions This Year', 'Cumulative Contributions', 'Managed Ending Balance', 'Managed Annual Fee', 'Managed Cumulative Fees', 'Vanguard Ending Balance', 'Vanguard Annual Fee', 'Vanguard Cumulative Fees', 'Portfolio Difference']);
+rb_csv_context($out, 'Managed vs Vanguard', $data);
+rb_csv_row($out, ['Year', 'Contributions This Year', 'Cumulative Contributions', 'Managed Ending Balance', 'Managed Annual Fee', 'Managed Cumulative Fees', 'Vanguard Ending Balance', 'Vanguard Annual Fee', 'Vanguard Cumulative Fees', 'Portfolio Difference']);
 for ($i = 0; $i < count($mRows) && $i < count($vRows); $i++) {
     $m = $mRows[$i];
     $v = $vRows[$i];
-    fputcsv($out, [
+    rb_csv_row($out, [
         $m['year'],
         number_format((float)($m['contributions'] ?? 0), 2),
         number_format((float)($m['cumulativeContributions'] ?? 0), 2),

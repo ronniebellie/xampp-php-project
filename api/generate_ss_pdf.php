@@ -69,11 +69,11 @@ $pdf->SetFont('helvetica', '', 9);
 $a = $data['claimAgeA'] ?? 62; $b = $data['claimAgeB'] ?? 67; $c = $data['claimAgeC'] ?? 70;
 $best = $data['bestScenario'] ?? [];
 $bestAge = $best['age'] ?? $b;
-$resultsHtml = '<table border="0" cellpadding="6"><tr style="background:#f0f9ff;"><td><b>Monthly at Age ' . $a . '</b></td><td>$' . number_format($data['monthlyA'] ?? 0, 0) . '</td></tr>';
+$resultsHtml = '<table border="0" cellpadding="6"><tr style="background-color:#f0f9ff;"><td><b>Monthly at Age ' . $a . '</b></td><td>$' . number_format($data['monthlyA'] ?? 0, 0) . '</td></tr>';
 $resultsHtml .= '<tr><td><b>Monthly at Age ' . $b . '</b></td><td>$' . number_format($data['monthlyB'] ?? 0, 0) . '</td></tr>';
-$resultsHtml .= '<tr style="background:#f0f9ff;"><td><b>Monthly at Age ' . $c . '</b></td><td>$' . number_format($data['monthlyC'] ?? 0, 0) . '</td></tr>';
+$resultsHtml .= '<tr style="background-color:#f0f9ff;"><td><b>Monthly at Age ' . $c . '</b></td><td>$' . number_format($data['monthlyC'] ?? 0, 0) . '</td></tr>';
 $resultsHtml .= '<tr><td><b>Best option to age ' . ($data['lifeExpectancy'] ?? 85) . '</b></td><td>Claim at age ' . $bestAge . '</td></tr>';
-$resultsHtml .= '<tr style="background:#f0f9ff;"><td><b>Lifetime PV at age 62 (best)</b></td><td>$' . number_format($best['total'] ?? 0, 0) . '</td></tr></table>';
+$resultsHtml .= '<tr style="background-color:#f0f9ff;"><td><b>Lifetime PV at age 62 (best)</b></td><td>$' . number_format($best['total'] ?? 0, 0) . '</td></tr></table>';
 $pdf->writeHTML($resultsHtml, true, false, true, false, '');
 $pdf->Ln(6);
 
@@ -101,7 +101,7 @@ $pdf->SetTextColor(0, 0, 0);
 $pdf->Ln(3);
 
 $dataA = $data['dataA']; $dataB = $data['dataB']; $dataC = $data['dataC'];
-$tableHtml = '<table border="1" cellpadding="4" style="font-size:8px;"><tr style="background:#3b82f6;color:white;font-weight:bold;"><th>Age</th><th>A(' . $a . ') Mo</th><th>A Cum</th><th>B(' . $b . ') Mo</th><th>B Cum</th><th>C(' . $c . ') Mo</th><th>C Cum</th></tr>';
+$tableHtml = '<table border="1" cellpadding="4" style="font-size:8px;"><tr style="background-color:#3b82f6;color:white;font-weight:bold;"><th>Age</th><th>A(' . $a . ') Mo</th><th>A Cum</th><th>B(' . $b . ') Mo</th><th>B Cum</th><th>C(' . $c . ') Mo</th><th>C Cum</th></tr>';
 $ages = [];
 foreach ($dataA as $r) { $ages[$r['age']] = true; }
 foreach ($dataB as $r) { $ages[$r['age']] = true; }

@@ -240,11 +240,11 @@ $isPremium = has_premium_access();
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">
                         <div class="slider-row">
                             <div class="slider-label"><span>Higher earner death age</span><span id="higherDeathAgeLabel">84</span></div>
-                            <input type="range" id="higherDeathAge" min="65" max="100" value="84">
+                            <input type="range" id="higherDeathAge" aria-label="Higher earner age at death" min="65" max="100" value="84">
                         </div>
                         <div class="slider-row">
                             <div class="slider-label"><span>Lower earner death age</span><span id="lowerDeathAgeLabel">86</span></div>
-                            <input type="range" id="lowerDeathAge" min="65" max="100" value="86">
+                            <input type="range" id="lowerDeathAge" aria-label="Lower earner age at death" min="65" max="100" value="86">
                         </div>
                     </div>
                     <p style="margin: 12px 0 0; font-size: 13px; color: #6b7280;">Use this for what-if scenarios (e.g., early death) or when you have a specific planning age from your advisor or family history.</p>

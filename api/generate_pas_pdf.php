@@ -59,7 +59,9 @@ $info .= '  |  Years: ' . ($data['years'] ?? 0) . '  |  Return: ' . ($data['retu
 if (!empty($data['withdrawalPct'])) {
     $info .= '  |  Withdrawal: ' . $data['withdrawalPct'] . '%';
 }
-$pdf->Cell(0, 6, $info, 0, 1);
+$info .= ' | Start year: ' . ($data['timelineStartYear'] ?? 'not supplied') . ' | Withdrawals start: ' . ($data['withdrawalsStartYear'] ?? 'not supplied');
+$pdf->MultiCell(0, 6, $info, 0, 'L');
+$pdf->MultiCell(0, 6, 'Nominal USD. Editable total annual fee assumptions, not current fee quotes. Growth precedes fees and withdrawals each year. Ending balances exclude withdrawals. The residual difference includes compounding and different withdrawals.', 0, 'L');
 $pdf->Ln(4);
 
 // Key results
@@ -71,11 +73,11 @@ $pdf->SetTextColor(220, 38, 38);
 $pdf->Cell(0, 8, 'Key Results', 0, 1);
 $pdf->SetTextColor(0, 0, 0);
 $pdf->SetFont('helvetica', '', 9);
-$resultsHtml = '<table border="0" cellpadding="6"><tr style="background:#fef2f2;"><td><b>Total Opportunity Cost</b></td><td>$' . number_format($oppCost, 0) . '</td></tr>';
-$resultsHtml .= '<tr><td><b>Direct Fee Difference (PAS vs Target Date)</b></td><td>$' . number_format($feeDiff, 0) . '</td></tr>';
-$resultsHtml .= '<tr style="background:#fef2f2;"><td><b>Lost Growth</b></td><td>$' . number_format($lostGrowth, 0) . '</td></tr>';
+$resultsHtml = '<table border="0" cellpadding="6"><tr style="background-color:#fef2f2;"><td><b>Total Opportunity Cost</b></td><td>$' . number_format($oppCost, 2) . '</td></tr>';
+$resultsHtml .= '<tr><td><b>Direct Fee Difference (PAS vs Target Date)</b></td><td>$' . number_format($feeDiff, 2) . '</td></tr>';
+$resultsHtml .= '<tr style="background-color:#fef2f2;"><td><b>Growth and withdrawal effects</b></td><td>$' . number_format($lostGrowth, 2) . '</td></tr>';
 $resultsHtml .= '<tr><td><b>Final Value (PAS)</b></td><td>$' . number_format((float)($data['pasFinal'] ?? 0), 0) . '</td></tr>';
-$resultsHtml .= '<tr style="background:#fef2f2;"><td><b>Final Value (Target Date)</b></td><td>$' . number_format((float)($data['targetFinal'] ?? 0), 0) . '</td></tr></table>';
+$resultsHtml .= '<tr style="background-color:#fef2f2;"><td><b>Final Value (Target Date)</b></td><td>$' . number_format((float)($data['targetFinal'] ?? 0), 0) . '</td></tr></table>';
 $pdf->writeHTML($resultsHtml, true, false, true, false, '');
 $pdf->Ln(6);
 
@@ -118,7 +120,7 @@ $pdf->Ln(3);
 
 $pRows = $data['pasData'];
 $tRows = $data['targetData'];
-$tableHtml = '<table border="1" cellpadding="4" style="font-size:8px;"><tr style="background:#dc2626;color:white;font-weight:bold;"><th>Year</th><th>PAS Balance</th><th>PAS Fee</th><th>Target Balance</th><th>Target Fee</th><th>Difference</th></tr>';
+$tableHtml = '<table border="1" cellpadding="4" style="font-size:8px;"><tr style="background-color:#dc2626;color:white;font-weight:bold;"><th>Year</th><th>PAS Balance</th><th>PAS Fee</th><th>Target Balance</th><th>Target Fee</th><th>Difference</th></tr>';
 for ($i = 0; $i < count($pRows) && $i < count($tRows); $i++) {
     $p = $pRows[$i];
     $t = $tRows[$i];

@@ -32,3 +32,23 @@ const links=urls.RBDeepLinks.buildDeepDiveLinks(base,p);eq(links.deepLinkRmd.dat
 console.log(`Consumer snapshot: ${checks} independent numeric checks plus domain, reload, MC and deep-link boundaries passed.`);
 
 if (process.env.RB_SNAPSHOT_QA_INPUT) fs.writeFileSync(process.env.RB_SNAPSHOT_QA_INPUT, JSON.stringify({inputs:base,summary:{...p.summary,statusHeadline:p.summary.status.headline,statusDetail:p.summary.status.detail,guaranteedIncomeAtRetirement:12000,incomeTimingText:'Available now: $0/year. At retirement start: $12,000/year. Spouse begins at primary age 77. Bridge-period income gap: $38,000/year before tax. Retirement-start target: $950,000; later target: $350,000. These are different-date targets, not additive.'},projections:p.years}));
+
+// Actual form save/load adapters: retired does not imply receiving either benefit.
+const formNodes={}, checkboxIds=['alreadyRetired','ssAlreadyReceiving','spouseSsAlreadyReceiving'];
+function node(id){return formNodes[id] ||= {value:'0',type:checkboxIds.includes(id)?'checkbox':'number',tagName:'INPUT',checked:false,dataset:{},style:{},classList:{add(){},remove(){},toggle(){}},closest(){return null;}};}
+const radio={value:'direct',checked:true};
+const formContext={window:null,Date,Number,console,document:{getElementById:node,querySelector(selector){return selector.includes('spendingMethod')?radio:null;},addEventListener(){},body:{classList:{toggle(){}}}}};
+formContext.window=formContext;formContext.location={pathname:'/retirement-plan/',origin:'https://offline.invalid'};
+for(const name of ['RBFinance','RBPlanEngine','RBMonteCarlo'])formContext[name]=c[name];
+vm.createContext(formContext);
+vm.runInContext(fs.readFileSync(path.join(root,'retirement-plan/calculator.js'),'utf8').replace("  document.addEventListener('DOMContentLoaded'", "  window.formTest={collect:collectInputs,save:getFormDataForSave,load:applyFormData};\n  document.addEventListener('DOMContentLoaded'"),formContext);
+const data={birthYear:new Date().getFullYear()-66,birthDate:(new Date().getFullYear()-66)+'-06-15',retirementAge:66,alreadyRetired:true,balance:1000000,portfolioWithdrawalStartAge:66,annualContribution:0,returnPreRetirement:0,returnRetirement:0,spendingMethod:'direct',annualSpendingDirect:50000,currentMonthlySpending:0,retirementSpendingPct:100,ssAlreadyReceiving:false,ssCurrentMonthly:0,ssPiaMonthly:1000,ssClaimAge:70,spouseSsAlreadyReceiving:false,spouseSsCurrentMonthly:0,spouseSsMonthly:2000,spouseSsClaimAge:70,spouseAge:56,spouseBeneficiary:'no',otherGuaranteedAnnual:24000,otherIncomeStartAge:73,planEndAge:85,withdrawalRate:4,inflation:0,colaRate:0,filingStatus:'married',taxDeferredPct:0,volatility:0,simulations:100};
+for(const id of ['ssClaimAge','spouseSsClaimAge','filingStatus','spouseBeneficiary'])node(id).tagName='SELECT';
+formContext.formTest.load(data);let collected=formContext.formTest.collect();
+assert.equal(collected.ssAlreadyReceiving,false);assert.equal(collected.spouseSsAlreadyReceiving,false);assert.equal(collected.otherIncomeStartAge,73);
+const first=c.RBPlanEngine.runDeterministicPlan(collected);eq(first.years[0].socialSecurity,0);eq(first.summary.targetNestEgg,1250000);
+const saved=JSON.parse(JSON.stringify(formContext.formTest.save()));node('spouseAge').value=90;node('spouseSsAlreadyReceiving').checked=true;formContext.formTest.load(saved);collected=formContext.formTest.collect();
+assert.deepEqual(JSON.parse(JSON.stringify(c.RBPlanEngine.runDeterministicPlan(collected))),JSON.parse(JSON.stringify(first)));
+node('withdrawalRate').value=0;assert.equal(formContext.formTest.collect().withdrawalRate,0);assert.throws(()=>c.RBPlanEngine.runDeterministicPlan(formContext.formTest.collect()));
+node('withdrawalRate').value=4;node('spouseSsClaimAge').value=67.5;assert.throws(()=>c.RBPlanEngine.runDeterministicPlan(formContext.formTest.collect()));
+console.log('Actual snapshot form retirement, save/reload, zero-rate and fractional-claim checks passed.');

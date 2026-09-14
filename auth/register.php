@@ -62,7 +62,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !rb_csrf_validate(is_string($_POST[
             $stmt = $conn->prepare("INSERT INTO users (email, password_hash, full_name) VALUES (?, ?, ?)");
             $stmt->bind_param("sss", $email, $password_hash, $full_name);
             
-            if ($stmt->execute()) {
+            try { $inserted = $stmt->execute(); }
+            catch (mysqli_sql_exception $e) { $inserted = false; $error = (int)$e->getCode() === 1062 ? 'Email already registered' : 'Registration failed. Please try again.'; }
+            if ($inserted) {
                 $user_id = (int) $conn->insert_id;
                 $stmt->close();
 
@@ -82,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !rb_csrf_validate(is_string($_POST[
 
                 rb_auth_redirect_after_auth();
             } else {
-                $error = 'Registration failed. Please try again.';
+                if ($error === '') $error = 'Registration failed. Please try again.';
             }
         }
 

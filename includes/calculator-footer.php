@@ -10,9 +10,12 @@ if (session_status() === PHP_SESSION_ACTIVE) {
 }
 ?>
 <script src="/js/dialog-accessibility.js"></script>
+<script src="/js/calculator-results-accessibility.js"></script>
 <style>
 :focus-visible { outline: 3px solid #1769aa; outline-offset: 3px; }
 .rb-print-context { display: none; }
+.rb-result-announcement { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
 @media print {
   nav, button, .premium-upsell-banner, #explainResultsModalOverlay, #compareScenariosModalOverlay { display: none !important; }
   .rb-print-context { display: block; border-top: 1px solid #999; margin-top: 1em; font-size: 10pt; }

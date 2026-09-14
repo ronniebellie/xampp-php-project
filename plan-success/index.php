@@ -102,7 +102,7 @@ $isPremium = has_premium_access();
         </div>
         <div class="slider-row" id="inflationRow">
           <div class="slider-label"><span>Inflation Rate for Withdrawals (%)</span><span class="value" id="inflationRateLabel">2.7%</span></div>
-          <input type="range" id="inflationRate" min="0" max="10" step="0.1" value="2.7">
+          <input type="range" id="inflationRate" aria-label="Annual inflation, percent" min="0" max="10" step="0.1" value="2.7">
           <small style="color: #666;">0–10%. Set to 0 for flat withdrawals. Typical U.S. ~3%.</small>
         </div>
         <div class="slider-row">
@@ -112,22 +112,22 @@ $isPremium = has_premium_access();
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Years to Model</span><span class="value" id="yearsLabel">27 yrs</span></div>
-          <input type="range" id="years" min="5" max="50" step="1" value="27">
+          <input type="range" id="years" aria-label="Years to model" min="5" max="50" step="1" value="27">
           <small style="color: #666;">Years of withdrawals after the start date (e.g. 30 for a 30-year retirement)</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Expected Annual Return (%)</span><span class="value" id="expectedReturnLabel">6%</span></div>
-          <input type="range" id="expectedReturn" min="0" max="20" step="0.25" value="6">
+          <input type="range" id="expectedReturn" aria-label="Expected annual return, percent" min="0" max="20" step="0.25" value="6">
           <small style="color: #666;">Long-term average return assumption</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Volatility / Std Dev (%)</span><span class="value" id="volatilityLabel">12%</span></div>
-          <input type="range" id="volatility" min="0" max="50" step="0.5" value="12">
+          <input type="range" id="volatility" aria-label="Annual return volatility, percent" min="0" max="50" step="0.5" value="12">
           <small style="color: #666;">Typical stock portfolio: ~10–15%</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Number of Simulations</span><span class="value" id="simulationsLabel">1,000 sims</span></div>
-          <input type="range" id="simulations" min="100" max="10000" step="100" value="1000">
+          <input type="range" id="simulations" aria-label="Number of simulations" min="100" max="10000" step="100" value="1000">
           <small style="color: #666;">More = smoother result, slower run</small>
         </div>
       </div>

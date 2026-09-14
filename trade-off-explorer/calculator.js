@@ -67,10 +67,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (![currentAge,retirementAge,currentSavings,annualContribution,expectedReturn,desiredIncome,guaranteedIncome,withdrawalRatePct,retireLater2,retireLater3,extraSavings,spendingCutPct,partTimeIncome].every(Number.isFinite)) errors.push('finite numeric inputs');
     if(![currentAge,retirementAge,retireLater2,retireLater3].every(Number.isInteger)||retirementAge+Math.max(retireLater2,retireLater3)>120) errors.push('whole ages through 120');
     if(currentSavings<0||annualContribution<0||guaranteedIncome<0||extraSavings<0||expectedReturn<=-100||expectedReturn>100)errors.push('nonnegative amounts and valid return');
+    if([currentSavings,annualContribution,desiredIncome,guaranteedIncome,extraSavings,partTimeIncome].some(v=>v<0||v>1e12)||retireLater2<0||retireLater3<0||spendingCutPct<0||spendingCutPct>100)errors.push('nonnegative amounts through $1 trillion, positive delay years, spending cuts 0–100%');
     if (currentAge <= 0) errors.push('current age');
     if (retirementAge <= currentAge) errors.push('retirement age (must be greater than current age)');
     if (desiredIncome <= 0) errors.push('desired annual income');
-    if (withdrawalRatePct <= 0) errors.push('withdrawal rate');
+    if (withdrawalRatePct < 0.5 || withdrawalRatePct > 15) errors.push('withdrawal rate from 0.5% to 15%');
 
     if (errors.length) {
       alert('Please check: ' + errors.join(', ') + '.');
@@ -78,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const yearsToRetire = retirementAge - currentAge;
-    withdrawalRatePct = clamp(withdrawalRatePct, 0.5, 15);
+
     const withdrawalRate = withdrawalRatePct / 100;
 
     const neededFromPortfolio = Math.max(desiredIncome - guaranteedIncome, 0);

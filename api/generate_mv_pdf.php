@@ -69,13 +69,13 @@ $pdf->SetTextColor(220, 38, 38);
 $pdf->Cell(0, 8, 'Key Results', 0, 1);
 $pdf->SetTextColor(0, 0, 0);
 $pdf->SetFont('helvetica', '', 9);
-$resultsHtml = '<table border="0" cellpadding="6"><tr style="background:#fef2f2;"><td><b>Total Opportunity Cost</b></td><td>$' . number_format($oppCost, 0) . '</td></tr>';
+$resultsHtml = '<table border="0" cellpadding="6"><tr style="background-color:#fef2f2;"><td><b>Total Opportunity Cost</b></td><td>$' . number_format($oppCost, 0) . '</td></tr>';
 $resultsHtml .= '<tr><td><b>Total Contributions</b></td><td>$' . number_format((float)($data['cumulativeContributions'] ?? 0), 0) . '</td></tr>';
-$resultsHtml .= '<tr style="background:#fef2f2;"><td><b>Total Invested Capital</b></td><td>$' . number_format((float)($data['totalInvestedCapital'] ?? 0), 0) . '</td></tr>';
+$resultsHtml .= '<tr style="background-color:#fef2f2;"><td><b>Total Invested Capital</b></td><td>$' . number_format((float)($data['totalInvestedCapital'] ?? 0), 0) . '</td></tr>';
 $resultsHtml .= '<tr><td><b>Direct Fee Difference</b></td><td>$' . number_format($feeDiff, 0) . '</td></tr>';
-$resultsHtml .= '<tr style="background:#fef2f2;"><td><b>Lost Growth</b></td><td>$' . number_format($lostGrowth, 0) . '</td></tr>';
+$resultsHtml .= '<tr style="background-color:#fef2f2;"><td><b>Lost Growth</b></td><td>$' . number_format($lostGrowth, 0) . '</td></tr>';
 $resultsHtml .= '<tr><td><b>Final Value (Managed)</b></td><td>$' . number_format((float)($data['managedFinal'] ?? 0), 0) . '</td></tr>';
-$resultsHtml .= '<tr style="background:#fef2f2;"><td><b>Final Value (Vanguard)</b></td><td>$' . number_format((float)($data['vanguardFinal'] ?? 0), 0) . '</td></tr></table>';
+$resultsHtml .= '<tr style="background-color:#fef2f2;"><td><b>Final Value (Vanguard)</b></td><td>$' . number_format((float)($data['vanguardFinal'] ?? 0), 0) . '</td></tr></table>';
 $pdf->writeHTML($resultsHtml, true, false, true, false, '');
 $pdf->Ln(6);
 
@@ -118,7 +118,7 @@ $pdf->Ln(3);
 
 $mRows = $data['managedData'];
 $vRows = $data['vanguardData'];
-$tableHtml = '<table border="1" cellpadding="4" style="font-size:8px;"><tr style="background:#dc2626;color:white;font-weight:bold;"><th>Year</th><th>Contributions</th><th>Managed Ending Balance</th><th>Managed Fees</th><th>Vanguard Ending Balance</th><th>Vanguard Fees</th><th>Difference</th></tr>';
+$tableHtml = '<table border="1" cellpadding="4" style="font-size:8px;"><tr style="background-color:#dc2626;color:white;font-weight:bold;"><th>Year</th><th>Contributions</th><th>Managed Ending Balance</th><th>Managed Fees</th><th>Vanguard Ending Balance</th><th>Vanguard Fees</th><th>Difference</th></tr>';
 for ($i = 0; $i < count($mRows) && $i < count($vRows); $i++) {
     $m = $mRows[$i];
     $v = $vRows[$i];

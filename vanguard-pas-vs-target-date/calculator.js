@@ -18,7 +18,7 @@
   }
 
   function calculatePortfolio(principal, annualReturnPct, feeRatePct, years, withdrawalPct, withdrawalStartYear) {
-    withdrawalPct = withdrawalPct || 0;
+    withdrawalPct = withdrawalPct == null ? 0 : withdrawalPct;
     withdrawalStartYear = withdrawalStartYear != null ? withdrawalStartYear : 1;
     if (![principal,annualReturnPct,feeRatePct,years,withdrawalPct,withdrawalStartYear].every(Number.isFinite)||principal<0||annualReturnPct < -100||annualReturnPct>100||feeRatePct<0||withdrawalPct<0||feeRatePct+withdrawalPct>100||!Number.isInteger(years)||years<1||years>120)throw new RangeError('Invalid portfolio projection inputs.');
     var yearlyData = [];
@@ -33,6 +33,7 @@
       totalFees += yearFee;
       totalWithdrawals += yearWithdrawal;
       balance = balance - yearFee - yearWithdrawal;
+      if(![balance,totalFees,totalWithdrawals].every(Number.isFinite))throw new RangeError('Projection exceeds the supported numerical range.');
       yearlyData.push({
         year: y,
         balance: balance,
@@ -63,7 +64,7 @@
     var portfolio = parseFloat(document.getElementById('portfolioValue').value);
     var years = Number(document.getElementById('years').value);
     var returnRate = parseFloat(document.getElementById('returnRate').value);
-    var withdrawalPct = parseFloat(document.getElementById('withdrawalPct').value) || 0;
+    var withdrawalPct = Number(document.getElementById('withdrawalPct').value);
     var cRaw = parseFloat(document.getElementById('pctConservative').value) || 0;
     var mRaw = parseFloat(document.getElementById('pctModerate').value) || 0;
     var aRaw = parseFloat(document.getElementById('pctAggressive').value) || 0;
@@ -112,9 +113,10 @@
     var targetDateFee = parseFloat(document.getElementById('targetDateFee').value);
     var years = Number(document.getElementById('years').value);
     var returnRate = parseFloat(document.getElementById('returnRate').value);
-    var withdrawalPct = parseFloat(document.getElementById('withdrawalPct').value) || 0;
-    var timelineStartYear = parseInt(document.getElementById('timelineStartYear').value, 10) || new Date().getFullYear();
-    var withdrawalsStartYear = parseInt(document.getElementById('withdrawalsStartYear').value, 10) || timelineStartYear;
+    var withdrawalPct = Number(document.getElementById('withdrawalPct').value);
+    var timelineStartYear = Number(document.getElementById('timelineStartYear').value);
+    var withdrawalsStartYear = Number(document.getElementById('withdrawalsStartYear').value);
+    if(![timelineStartYear,withdrawalsStartYear].every(v=>Number.isInteger(v)&&v>=1900&&v<=9999))throw new RangeError('Enter valid whole calendar years.');
     var withdrawalStartYear = Math.max(1, withdrawalsStartYear - timelineStartYear + 1);
 
     updateLabels();
@@ -172,7 +174,7 @@
     document.getElementById('totalFeesDiff').textContent = formatCurrency(directFeeDiff);
 
     var lostGrowth = opportunityCost - directFeeDiff;
-    var lostGrowthDisplay = Math.max(0, lostGrowth);
+    var lostGrowthDisplay = lostGrowth;
     document.getElementById('insightDirectFees').textContent = formatCurrency(directFeeDiff);
     document.getElementById('insightYears').textContent = years;
     document.getElementById('insightLostGrowth').textContent = formatCurrency(lostGrowthDisplay);
@@ -436,6 +438,8 @@
       years: r.years,
       returnRate: r.returnRate,
       withdrawalPct: r.withdrawalPct,
+      timelineStartYear: r.timelineStartYear,
+      withdrawalsStartYear: r.withdrawalsStartYear,
       opportunityCost: r.opportunityCost,
       directFeeDiff: r.directFeeDiff,
       lostGrowth: r.lostGrowth,
@@ -479,7 +483,7 @@
       alert('Please run Calculate first, then export CSV.');
       return;
     }
-    var payload = { pasData: r.pasData, targetData: r.targetData };
+    var payload = { context: r, pasData: r.pasData, targetData: r.targetData };
     fetch(PAS_API_BASE + 'api/export_pas_csv.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) })
     .then(function (res) {
       if (!res.ok) return res.text().then(function (t) { try { var j = JSON.parse(t); throw new Error(j.error || 'CSV failed'); } catch (e) { throw new Error(t || 'CSV failed'); } });
@@ -519,7 +523,7 @@ function explainPASResults() {
   }
   var totalOpportunityCost = Math.round(r.opportunityCost);
   var directFeeDiff = Math.round(r.directFeeDiff);
-  var lostGrowth = Math.round(Math.max(0, r.lostGrowth));
+  var lostGrowth = Math.round(r.lostGrowth);
 
   var summary = 'Vanguard Personal Advisor vs Target Date Funds. Portfolio $' + r.portfolioValue.toLocaleString() + ', PAS fee ' + r.pasFee + '%, Target Date fee ' + r.targetDateFee + '%. ';
   summary += 'Timeline ' + r.years + ' years, expected return ' + r.returnRate + '%. ';
@@ -528,8 +532,8 @@ function explainPASResults() {
   summary += 'OPPORTUNITY COST BREAKDOWN (do not double-count):\n';
   summary += '- Total Opportunity Cost (grand total): $' + totalOpportunityCost.toLocaleString() + '\n';
   summary += '- Direct Fee Difference (paid out of pocket): $' + directFeeDiff.toLocaleString() + '\n';
-  summary += '- Lost Growth (fees removed from market, could not compound): $' + lostGrowth.toLocaleString() + '\n';
-  summary += 'Relationship: Total Opportunity Cost = Direct Fee Difference + Lost Growth ($' +
+  summary += '- Growth and withdrawal effects: $' + lostGrowth.toLocaleString() + '\n';
+  summary += 'Relationship: Total Opportunity Cost = Direct Fee Difference + Growth and withdrawal effects ($' +
     directFeeDiff.toLocaleString() + ' + $' + lostGrowth.toLocaleString() + ' = $' +
     totalOpportunityCost.toLocaleString() + '). The total is NOT an additional separate cost on top of the two components.';
 

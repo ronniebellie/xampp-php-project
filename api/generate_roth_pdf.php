@@ -163,26 +163,26 @@ $pdf->SetTextColor(5, 150, 105);
 $pdf->Cell(0, 8, 'Key Results', 0, 1);
 $pdf->SetTextColor(0, 0, 0);
 $pdf->SetFont('helvetica', '', 9);
-$resultsHtml = '<table border="0" cellpadding="6"><tr style="background:#f0fdf4;"><td><b>Nominal lifetime tax savings (with conversion)</b></td><td>$' . number_format($taxSavings, 0) . '</td></tr>';
+$resultsHtml = '<table border="0" cellpadding="6"><tr style="background-color:#f0fdf4;"><td><b>Nominal lifetime tax savings (with conversion)</b></td><td>$' . number_format($taxSavings, 0) . '</td></tr>';
 if ($discountRate > 0 && $discountedTaxSavings !== null) {
     $resultsHtml .= '<tr><td><b>Discounted lifetime tax savings (' . number_format($discountRate, 1) . '%)</b></td><td>$' . number_format($discountedTaxSavings, 0) . '</td></tr>';
 }
-$resultsHtml .= '<tr style="background:#f0fdf4;"><td><b>Break-even age (nominal)</b></td><td>' . ($breakEven ? $breakEven : 'N/A') . '</td></tr>';
+$resultsHtml .= '<tr style="background-color:#f0fdf4;"><td><b>Break-even age (nominal)</b></td><td>' . ($breakEven ? $breakEven : 'N/A') . '</td></tr>';
 if ($discountRate > 0) {
     $resultsHtml .= '<tr><td><b>Break-even age (discounted)</b></td><td>' . ($breakEvenDiscounted ? $breakEvenDiscounted : 'N/A') . '</td></tr>';
 }
-$resultsHtml .= '<tr style="background:#f0fdf4;"><td><b>First-year conversion tax cost</b></td><td>$' . number_format($convCost, 0) . '</td></tr>';
+$resultsHtml .= '<tr style="background-color:#f0fdf4;"><td><b>First-year conversion tax cost</b></td><td>$' . number_format($convCost, 0) . '</td></tr>';
 $resultsHtml .= '<tr><td><b>Effective rate on conversion</b></td><td>' . number_format($effectiveRate, 2) . '%</td></tr>';
-$resultsHtml .= '<tr style="background:#f0fdf4;"><td><b>Ending after-tax wealth (no conversion)</b></td><td>$' . number_format($data['withoutConversion']['finalAfterTaxEstate'] ?? 0, 0) . '</td></tr>';
+$resultsHtml .= '<tr style="background-color:#f0fdf4;"><td><b>Ending after-tax wealth (no conversion)</b></td><td>$' . number_format($data['withoutConversion']['finalAfterTaxEstate'] ?? 0, 0) . '</td></tr>';
 $resultsHtml .= '<tr><td><b>Ending after-tax wealth (with conversion)</b></td><td>$' . number_format($data['withConversion']['finalAfterTaxEstate'] ?? 0, 0) . '</td></tr>';
 if ($includeIrmaa && isset($data['withConversion']['totalIrmaaPaid'], $data['withoutConversion']['totalIrmaaPaid'])) {
-    $resultsHtml .= '<tr style="background:#f0fdf4;"><td><b>Lifetime IRMAA paid (no conversion)</b></td><td>$' . number_format($data['withoutConversion']['totalIrmaaPaid'], 0) . '</td></tr>';
+    $resultsHtml .= '<tr style="background-color:#f0fdf4;"><td><b>Lifetime IRMAA paid (no conversion)</b></td><td>$' . number_format($data['withoutConversion']['totalIrmaaPaid'], 0) . '</td></tr>';
     $resultsHtml .= '<tr><td><b>Lifetime IRMAA paid (with conversion)</b></td><td>$' . number_format($data['withConversion']['totalIrmaaPaid'], 0) . '</td></tr>';
-    $resultsHtml .= '<tr style="background:#f0fdf4;"><td><b>IRMAA reduction</b></td><td>$' . number_format($data['irmaaReduction'] ?? 0, 0) . '</td></tr>';
+    $resultsHtml .= '<tr style="background-color:#f0fdf4;"><td><b>IRMAA reduction</b></td><td>$' . number_format($data['irmaaReduction'] ?? 0, 0) . '</td></tr>';
 }
 if ($includeNiit && isset($data['withConversion']['totalNiitPaid'], $data['withoutConversion']['totalNiitPaid'])) {
     $resultsHtml .= '<tr><td><b>Lifetime NIIT paid (no conversion)</b></td><td>$' . number_format($data['withoutConversion']['totalNiitPaid'], 0) . '</td></tr>';
-    $resultsHtml .= '<tr style="background:#f0fdf4;"><td><b>Lifetime NIIT paid (with conversion)</b></td><td>$' . number_format($data['withConversion']['totalNiitPaid'], 0) . '</td></tr>';
+    $resultsHtml .= '<tr style="background-color:#f0fdf4;"><td><b>Lifetime NIIT paid (with conversion)</b></td><td>$' . number_format($data['withConversion']['totalNiitPaid'], 0) . '</td></tr>';
     $resultsHtml .= '<tr><td><b>NIIT reduction</b></td><td>$' . number_format($data['niitReduction'] ?? 0, 0) . '</td></tr>';
 }
 $resultsHtml .= '</table>';
@@ -193,7 +193,7 @@ $pdf->SetFont('helvetica', 'B', 12);
 $pdf->SetTextColor(5, 150, 105);
 $pdf->Cell(0, 6, 'Lifetime Assessed Tax Breakdown', 0, 1);
 $pdf->SetTextColor(0, 0, 0);
-$breakdownHtml = '<table border="1" cellpadding="5" style="font-size:9px;"><tr style="background:#e5e7eb;font-weight:bold;"><th>Component</th><th>No Conversion</th><th>With Conversion</th><th>Difference</th></tr>';
+$breakdownHtml = '<table border="1" cellpadding="5" style="font-size:9px;"><tr style="background-color:#e5e7eb;font-weight:bold;"><th>Component</th><th>No Conversion</th><th>With Conversion</th><th>Difference</th></tr>';
 $components = [
     ['Federal income tax', 'federalTax'],
     ['Medicare IRMAA', 'irmaa', $includeIrmaa],
@@ -208,7 +208,7 @@ foreach ($components as $comp) {
     $noVal = rothSumField($withoutRows, $field);
     $withVal = rothSumField($withRows, $field);
     $diff = $noVal - $withVal;
-    $bold = !empty($comp[3]) ? 'font-weight:bold;background:#f9fafb;' : '';
+    $bold = !empty($comp[3]) ? 'font-weight:bold;background-color:#f9fafb;' : '';
     $breakdownHtml .= '<tr style="' . $bold . '"><td>' . $comp[0] . '</td><td>$' . number_format($noVal, 0) . '</td><td>$' . number_format($withVal, 0) . '</td><td>$' . number_format($diff, 0) . '</td></tr>';
 }
 $breakdownHtml .= '</table>';

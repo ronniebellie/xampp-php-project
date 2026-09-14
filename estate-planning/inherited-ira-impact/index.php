@@ -120,11 +120,11 @@ $rb_includes = dirname(__DIR__, 2) . '/includes';
                 </div>
                 <?php for ($i = 1; $i <= 4; $i++): ?>
                 <div class="heir-row" data-heir="<?php echo $i; ?>">
-                    <input type="text" id="heirName<?php echo $i; ?>" placeholder="Heir <?php echo $i; ?>" style="padding: 8px;">
-                    <input type="number" id="heirAge<?php echo $i; ?>" placeholder="Age" min="18" max="80" value="<?php echo $i === 1 ? 42 : ($i === 2 ? 40 : ($i === 3 ? 38 : 35)); ?>" style="padding: 8px;">
-                    <input type="number" id="heirShare<?php echo $i; ?>" placeholder="%" min="0" max="100" value="<?php echo $i <= 3 ? (int)(100/3) : 0; ?>" style="padding: 8px;">
-                    <input type="number" id="heirIncome<?php echo $i; ?>" placeholder="Income" min="0" step="any" value="<?php echo $i === 1 ? 300000 : 80000; ?>" style="padding: 8px;">
-                    <select id="heirFiling<?php echo $i; ?>" style="padding: 8px;">
+                    <input type="text" id="heirName<?php echo $i; ?>" aria-label="Heir name <?php echo $i; ?>" placeholder="Heir <?php echo $i; ?>" style="padding: 8px;">
+                    <input type="number" id="heirAge<?php echo $i; ?>" aria-label="Heir age <?php echo $i; ?>" placeholder="Age" min="18" max="80" value="<?php echo $i === 1 ? 42 : ($i === 2 ? 40 : ($i === 3 ? 38 : 35)); ?>" style="padding: 8px;">
+                    <input type="number" id="heirShare<?php echo $i; ?>" aria-label="Heir share, percent <?php echo $i; ?>" placeholder="%" min="0" max="100" value="<?php echo $i <= 3 ? (int)(100/3) : 0; ?>" style="padding: 8px;">
+                    <input type="number" id="heirIncome<?php echo $i; ?>" aria-label="Heir annual income in dollars <?php echo $i; ?>" placeholder="Income" min="0" step="any" value="<?php echo $i === 1 ? 300000 : 80000; ?>" style="padding: 8px;">
+                    <select id="heirFiling<?php echo $i; ?>" aria-label="Heir filing status <?php echo $i; ?>" style="padding: 8px;">
                         <option value="single" <?php echo $i === 1 ? 'selected' : ''; ?>>Single</option>
                         <option value="married" <?php echo $i !== 1 ? 'selected' : ''; ?>>Married</option>
                     </select>

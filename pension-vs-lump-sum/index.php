@@ -61,27 +61,27 @@ $isPremium = has_premium_access();
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px;">
         <div class="slider-row">
           <div class="slider-label"><span>Monthly Pension ($)</span><span class="value" id="monthlyPensionLabel"></span></div>
-          <input type="range" id="monthlyPension" min="500" max="5000" step="100" value="2500">
+          <input type="range" id="monthlyPension" aria-label="Monthly pension in dollars" min="500" max="5000" step="100" value="2500">
           <small style="color: #666;">Before tax; single-life or joint-life amount</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Lump Sum Offered ($)</span><span class="value" id="lumpSumLabel"></span></div>
-          <input type="range" id="lumpSum" min="100000" max="1000000" step="10000" value="500000">
+          <input type="range" id="lumpSum" aria-label="Lump sum in dollars" min="100000" max="1000000" step="10000" value="500000">
           <small style="color: #666;">One-time amount if you give up the pension</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Your Current Age</span><span class="value" id="currentAgeLabel"></span></div>
-          <input type="range" id="currentAge" min="50" max="95" step="1" value="65">
+          <input type="range" id="currentAge" aria-label="Current age in years" min="50" max="95" step="1" value="65">
           <small style="color: #666;">Age when pension or lump sum starts</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Annual Discount Rate (%)</span><span class="value" id="growthRateLabel"></span></div>
-          <input type="range" id="growthRate" min="0" max="15" step="0.25" value="5">
+          <input type="range" id="growthRate" aria-label="Annual discount rate, percent" min="0" max="15" step="0.25" value="5">
           <small style="color: #666;">Rate used to value pension payments at your current age</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Plan To Age (Life Expectancy)</span><span class="value" id="lifeExpectancyLabel"></span></div>
-          <input type="range" id="lifeExpectancy" min="70" max="105" step="1" value="90">
+          <input type="range" id="lifeExpectancy" aria-label="Plan through age" min="70" max="105" step="1" value="90">
           <small style="color: #666;">Used to show total received by end of plan</small>
         </div>
       </div>

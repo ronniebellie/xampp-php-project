@@ -79,7 +79,7 @@ $isPremium = has_premium_access();
           </div>
           <input
             type="range"
-            id="desiredAnnualIncome"
+            id="desiredAnnualIncome" aria-label="Desired annual income in retirement, dollars"
             min="20000"
             max="200000"
             step="5000"
@@ -97,7 +97,7 @@ $isPremium = has_premium_access();
           </div>
           <input
             type="range"
-            id="currentMonthlySpending"
+            id="currentMonthlySpending" aria-label="Current monthly spending in dollars"
             min="2000"
             max="12000"
             step="100"
@@ -112,7 +112,7 @@ $isPremium = has_premium_access();
           </div>
           <input
             type="range"
-            id="retirementSpendingPct"
+            id="retirementSpendingPct" aria-label="Retirement spending, percent of current spending"
             min="40"
             max="120"
             step="1"
@@ -130,7 +130,7 @@ $isPremium = has_premium_access();
           </div>
           <input
             type="range"
-            id="guaranteedAnnualIncome"
+            id="guaranteedAnnualIncome" aria-label="Guaranteed annual retirement income in dollars"
             min="0"
             max="120000"
             step="5000"
@@ -145,7 +145,7 @@ $isPremium = has_premium_access();
           </div>
           <input
             type="range"
-            id="withdrawalRate"
+            id="withdrawalRate" aria-label="Annual withdrawal rate, percent"
             min="2"
             max="8"
             step="0.25"

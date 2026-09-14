@@ -62,26 +62,26 @@ $isPremium = has_premium_access();
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px;">
         <div class="slider-row">
           <div class="slider-label"><span>Monthly essential expenses</span><span class="value" id="monthlyExpensesLabel"></span></div>
-          <input type="range" id="monthlyExpenses" min="500" max="10000" step="100" value="4000">
+          <input type="range" id="monthlyExpenses" aria-label="Monthly living expenses in dollars" min="500" max="10000" step="100" value="4000">
           <small style="color: #666;">Rent, utilities, food, insurance, minimum debt payments</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Target (months of expenses)</span><span class="value" id="targetMonthsLabel"></span></div>
-          <input type="range" id="targetMonths" min="3" max="12" step="1" value="6">
+          <input type="range" id="targetMonths" aria-label="Months of expenses to save" min="3" max="12" step="1" value="6">
           <small style="color: #666;">Common goal: 3–6 months</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Current emergency savings</span><span class="value" id="currentSavingsLabel"></span></div>
-          <input type="range" id="currentSavings" min="0" max="50000" step="500" value="2000">
+          <input type="range" id="currentSavings" aria-label="Current savings in dollars" min="0" max="50000" step="500" value="2000">
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Monthly contribution</span><span class="value" id="monthlyContributionLabel"></span></div>
-          <input type="range" id="monthlyContribution" min="0" max="2000" step="25" value="400">
+          <input type="range" id="monthlyContribution" aria-label="Monthly contribution in dollars" min="0" max="2000" step="25" value="400">
           <small style="color: #666;">Amount you can add each month</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Savings interest rate (% per year)</span><span class="value" id="interestRateLabel"></span></div>
-          <input type="range" id="interestRate" min="0" max="10" step="0.1" value="4.5">
+          <input type="range" id="interestRate" aria-label="Annual interest rate, percent" min="0" max="10" step="0.1" value="4.5">
           <small style="color: #666;">e.g. high-yield savings ~4–5%</small>
         </div>
       </div>

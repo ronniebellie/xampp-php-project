@@ -1,5 +1,7 @@
 # Secure release deployment
 
+> Current production status (verified September 14, 2026): the release-layout migration is complete. `/var/www/html` and `/var/www/calcforadvisors` resolve through `/var/www/ronbelisle/current`. Do not repeat the historical first-time migration below. The consumer audit builds committed artifacts with `scripts/build-release.sh`, stages them privately over SSH, verifies hashes/platforms/SQL fixtures and Apache, then atomically switches `current` with a rollback trap. This assignment expressly excludes HTTP/browser smoke checks. See `docs/CONSUMER_AUDIT.md` for the current verification scope. Statements below saying the migration has not run describe the earlier historical state.
+
 The production site must no longer be a Git checkout inside `/var/www/html`.
 The replacement deployment builds a clean artifact locally, stages it in a
 versioned private release directory, atomically changes one symlink, verifies

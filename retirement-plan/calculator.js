@@ -26,10 +26,9 @@
 
   function readNumber(id, fallback) {
     var node = el(id);
-    if (!node) return fallback || 0;
+    if (!node) return fallback === undefined ? NaN : fallback;
     var raw = String(node.value).trim();
-    var n = raw === '' ? NaN : Number(raw);
-    return isNaN(n) ? (fallback || 0) : n;
+    return raw === '' ? (fallback === undefined ? NaN : fallback) : Number(raw);
   }
 
   function currentCalendarYear() {
@@ -117,8 +116,7 @@
       }
       var ssReceiving = el('ssAlreadyReceiving');
       var spouseReceiving = el('spouseSsAlreadyReceiving');
-      if (ssReceiving && !ssReceiving.dataset.userTouched) ssReceiving.checked = true;
-      if (spouseReceiving && !spouseReceiving.dataset.userTouched) spouseReceiving.checked = true;
+      // Retirement does not imply that either spouse has started Social Security.
       syncSsReceivingMode();
     } else {
       if (retirementAgeWrap) retirementAgeWrap.style.display = '';
@@ -191,7 +189,7 @@
     return {
       currentAge: currentAge,
       retirementAge: retirementAge,
-      planEndAge: FC.clamp(readNumber('planEndAge', 95), Math.max(currentAge + 1, 80), 100),
+      planEndAge: readNumber('planEndAge'),
       birthYear: birthYear,
       birthDate: el('birthDate') ? el('birthDate').value : '',
       balance: readNumber('balance'),
@@ -199,35 +197,36 @@
         var v = readNumber('portfolioWithdrawalStartAge', NaN);
         return isNaN(v) || v <= 0 ? retirementAge : v;
       })(),
-      annualContribution: readNumber('annualContribution'),
-      returnPreRetirement: FC.clamp(readNumber('returnPreRetirement', 6), 0, 15),
-      returnRetirement: FC.clamp(readNumber('returnRetirement', 5), 0, 12),
+      annualContribution: readNumber('annualContribution', 0),
+      returnPreRetirement: readNumber('returnPreRetirement'),
+      returnRetirement: readNumber('returnRetirement'),
       baseAnnualSpending: baseAnnualSpending,
       ssAlreadyReceiving: !!(el('ssAlreadyReceiving') && el('ssAlreadyReceiving').checked),
-      ssCurrentMonthly: readNumber('ssCurrentMonthly'),
-      ssPiaMonthly: readNumber('ssPiaMonthly'),
-      ssClaimAge: parseInt(el('ssClaimAge').value, 10) || Math.round(FC.fraAgeFromBirthYear(birthYear)),
+      ssCurrentMonthly: readNumber('ssCurrentMonthly', 0),
+      ssPiaMonthly: readNumber('ssPiaMonthly', 0),
+      ssClaimAge: readNumber('ssClaimAge'),
       spouseSsAlreadyReceiving: !!(el('spouseSsAlreadyReceiving') && el('spouseSsAlreadyReceiving').checked),
-      spouseSsCurrentMonthly: readNumber('spouseSsCurrentMonthly'),
-      spouseSsMonthly: readNumber('spouseSsMonthly'),
-      spouseSsClaimAge: parseInt(el('spouseSsClaimAge').value, 10) || parseInt(el('ssClaimAge').value, 10) || 67,
-      otherGuaranteedAnnual: readNumber('otherGuaranteedAnnual'),
+      spouseSsCurrentMonthly: readNumber('spouseSsCurrentMonthly', 0),
+      spouseSsMonthly: readNumber('spouseSsMonthly', 0),
+      spouseSsClaimAge: readNumber('spouseSsClaimAge'),
+      otherGuaranteedAnnual: readNumber('otherGuaranteedAnnual', 0),
       otherIncomeStartAge: el('otherIncomeStartAge') && el('otherIncomeStartAge').value !== '' ? readNumber('otherIncomeStartAge') : null,
-      withdrawalRate: FC.clamp(readNumber('withdrawalRate', 4), 0.5, 10) / 100,
-      inflation: FC.clamp(readNumber('inflation', 2.5), 0, 8),
-      colaRate: FC.clamp(readNumber('colaRate', 2.5), 0, 8),
+      withdrawalRate: readNumber('withdrawalRate') / 100,
+      inflation: readNumber('inflation'),
+      colaRate: readNumber('colaRate'),
       filingStatus: el('filingStatus') ? el('filingStatus').value : 'married',
-      taxDeferredPct: FC.clamp(readNumber('taxDeferredPct', 85), 0, 100),
+      taxDeferredPct: readNumber('taxDeferredPct'),
       spouseIsBeneficiary: el('spouseBeneficiary') && el('spouseBeneficiary').value === 'yes',
       spouseAge: readNumber('spouseAge', 0) || null,
       useStandardDeduction: true,
-      volatilityPct: FC.clamp(readNumber('volatility', 10), 0, 50),
-      numSims: FC.clamp(readNumber('simulations', 1000), 100, 5000)
+      volatilityPct: readNumber('volatility'),
+      numSims: readNumber('simulations')
     };
   }
 
   function validateInputs(inputs) {
     var errors = [];
+    if(!Number.isFinite(inputs.volatilityPct)||inputs.volatilityPct<0||inputs.volatilityPct>50||!Number.isInteger(inputs.numSims)||inputs.numSims<100||inputs.numSims>5000)errors.push('volatility 0–50% and 100–5,000 whole simulations');
     if (inputs.currentAge < 18 || inputs.currentAge > 100) errors.push('birth year (implies age 18–100)');
     if (!isAlreadyRetired() && inputs.retirementAge < inputs.currentAge) {
       errors.push('planned retirement age (must be at or after your current age)');
@@ -247,7 +246,7 @@
     }
     if (inputs.ssAlreadyReceiving) {
       if (inputs.ssCurrentMonthly <= 0) errors.push('your current monthly Social Security benefit');
-    } else if (inputs.ssPiaMonthly <= 0) {
+    } else if (inputs.ssPiaMonthly < 0) {
       errors.push('your Social Security benefit at full retirement age');
     }
     return errors;
@@ -573,7 +572,7 @@
       retirementAge: readNumber('retirementAge'),
       balance: readNumber('balance'),
       portfolioWithdrawalStartAge: readNumber('portfolioWithdrawalStartAge'),
-      annualContribution: readNumber('annualContribution'),
+      annualContribution: readNumber('annualContribution', 0),
       returnPreRetirement: readNumber('returnPreRetirement'),
       returnRetirement: readNumber('returnRetirement'),
       spendingMethod: document.querySelector('input[name="spendingMethod"]:checked').value,
@@ -581,14 +580,14 @@
       currentMonthlySpending: readNumber('currentMonthlySpending'),
       retirementSpendingPct: readNumber('retirementSpendingPct'),
       ssAlreadyReceiving: !!(el('ssAlreadyReceiving') && el('ssAlreadyReceiving').checked),
-      ssCurrentMonthly: readNumber('ssCurrentMonthly'),
-      ssPiaMonthly: readNumber('ssPiaMonthly'),
+      ssCurrentMonthly: readNumber('ssCurrentMonthly', 0),
+      ssPiaMonthly: readNumber('ssPiaMonthly', 0),
       ssClaimAge: el('ssClaimAge').value,
       spouseSsAlreadyReceiving: !!(el('spouseSsAlreadyReceiving') && el('spouseSsAlreadyReceiving').checked),
-      spouseSsCurrentMonthly: readNumber('spouseSsCurrentMonthly'),
-      spouseSsMonthly: readNumber('spouseSsMonthly'),
+      spouseSsCurrentMonthly: readNumber('spouseSsCurrentMonthly', 0),
+      spouseSsMonthly: readNumber('spouseSsMonthly', 0),
       spouseSsClaimAge: el('spouseSsClaimAge').value,
-      otherGuaranteedAnnual: readNumber('otherGuaranteedAnnual'),
+      otherGuaranteedAnnual: readNumber('otherGuaranteedAnnual', 0),
       otherIncomeStartAge: el('otherIncomeStartAge') && el('otherIncomeStartAge').value !== '' ? readNumber('otherIncomeStartAge') : null,
       planEndAge: readNumber('planEndAge', 95),
       withdrawalRate: readNumber('withdrawalRate'),
@@ -630,10 +629,10 @@
     if (data.ssClaimAge && el('ssClaimAge')) {
       el('ssClaimAge').dataset.userTouched = '1';
     }
-    if (data.ssAlreadyReceiving && el('ssAlreadyReceiving')) {
+    if (Object.prototype.hasOwnProperty.call(data,'ssAlreadyReceiving') && el('ssAlreadyReceiving')) {
       el('ssAlreadyReceiving').dataset.userTouched = '1';
     }
-    if (data.spouseSsAlreadyReceiving && el('spouseSsAlreadyReceiving')) {
+    if (Object.prototype.hasOwnProperty.call(data,'spouseSsAlreadyReceiving') && el('spouseSsAlreadyReceiving')) {
       el('spouseSsAlreadyReceiving').dataset.userTouched = '1';
     }
     syncSpendingMode();

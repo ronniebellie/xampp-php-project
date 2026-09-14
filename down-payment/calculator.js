@@ -12,7 +12,7 @@ let progressChart = null;
 
 function updateDownPaymentUnsafe() {
   const housePrice = parseFloat(document.getElementById('housePrice').value) || 0;
-  const downPct = parseInt(document.getElementById('downPct').value, 10) || 20;
+  const downPct = Number(document.getElementById('downPct').value);
   const targetAmount = parseFloat(document.getElementById('targetAmount').value) || 0;
   const currentSavings = parseFloat(document.getElementById('currentSavings').value) || 0;
   const monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value) || 0;
@@ -134,6 +134,7 @@ function updateDownPaymentUnsafe() {
 function updateDownPayment() {
   try {
     ['housePrice', 'downPct', 'targetAmount', 'currentSavings', 'monthlyContribution', 'interestRate'].forEach(function(id) { const raw=document.getElementById(id).value; if(String(raw).trim()===''||!Number.isFinite(Number(raw)))throw new RangeError('Enter a valid number for every field.'); });
+    if(['housePrice','targetAmount','currentSavings','monthlyContribution','downPct'].some(id=>Number(document.getElementById(id).value)<0)||Number(document.getElementById('downPct').value)>100)throw new RangeError('Use nonnegative amounts and a down payment from 0% to 100%.');
     updateDownPaymentUnsafe();
   } catch(error) {
     document.getElementById('results').style.display='none';
@@ -149,7 +150,7 @@ function updateDownPayment() {
 
 function updateDownPaymentLabelsOnly() {
   const housePrice = parseFloat(document.getElementById('housePrice').value) || 0;
-  const downPct = parseInt(document.getElementById('downPct').value, 10) || 20;
+  const downPct = Number(document.getElementById('downPct').value);
   const targetAmount = parseFloat(document.getElementById('targetAmount').value) || 0;
   const currentSavings = parseFloat(document.getElementById('currentSavings').value) || 0;
   const monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value) || 0;

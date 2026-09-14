@@ -62,30 +62,30 @@ $isPremium = has_premium_access();
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-bottom: 25px;">
         <div class="slider-row">
           <div class="slider-label"><span>Current age</span><span class="value" id="currentAgeLabel"></span></div>
-          <input type="range" id="currentAge" min="25" max="70" step="1" value="40">
+          <input type="range" id="currentAge" aria-label="Current age in years" min="25" max="70" step="1" value="40">
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Years until retirement</span><span class="value" id="yearsToRetirementLabel"></span></div>
-          <input type="range" id="yearsToRetirement" min="0" max="40" step="1" value="25">
+          <input type="range" id="yearsToRetirement" aria-label="Years to retirement" min="0" max="40" step="1" value="25">
           <small style="color: #666;">Set to 0 if you’re already retired. We’ll show the implied retirement age below.</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Current 401(k) + IRA balance</span><span class="value" id="currentBalanceLabel"></span></div>
-          <input type="range" id="currentBalance" min="0" max="2000000" step="10000" value="150000">
+          <input type="range" id="currentBalance" aria-label="Current account balance in dollars" min="0" max="2000000" step="10000" value="150000">
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Annual contribution</span><span class="value" id="annualContributionLabel"></span></div>
-          <input type="range" id="annualContribution" min="0" max="60000" step="1000" value="12000">
+          <input type="range" id="annualContribution" aria-label="Annual contribution in dollars" min="0" max="60000" step="1000" value="12000">
           <small style="color: #666;">Total you add per year (employer match included)</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Expected annual return</span><span class="value" id="expectedReturnLabel"></span></div>
-          <input type="range" id="expectedReturn" min="0" max="12" step="0.25" value="6">
+          <input type="range" id="expectedReturn" aria-label="Expected annual return, percent" min="0" max="12" step="0.25" value="6">
           <small style="color: #666;">Long-term average; many use 5–7% real return</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Target balance at retirement</span><span class="value" id="targetBalanceLabel"></span></div>
-          <input type="range" id="targetBalance" min="250000" max="5000000" step="50000" value="1000000">
+          <input type="range" id="targetBalance" aria-label="Target retirement balance in dollars" min="250000" max="5000000" step="50000" value="1000000">
           <small style="color: #666;">Or set from income below</small>
         </div>
       </div>

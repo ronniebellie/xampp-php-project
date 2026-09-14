@@ -47,9 +47,9 @@
   function parseAmount(id) {
     var el = document.getElementById(id);
     if (!el) return NaN;
-    var raw = String(el.value).replace(/[^0-9.]/g, '');
+    var raw = String(el.value).replace(/[$,\s]/g, '');
     if (raw === '') return NaN;
-    return parseFloat(raw);
+    return /^-?(?:\d+(?:\.\d*)?|\.\d+)$/.test(raw) ? Number(raw) : NaN;
   }
 
   // Re-display a dollar field with thousands separators (whole dollars).
@@ -113,9 +113,9 @@
   function getRate() {
     var el = document.getElementById('withdrawalRate');
     if (!el) return NaN;
-    var raw = String(el.value).replace(/[^0-9.]/g, '');
+    var raw = String(el.value).replace(/[$,\s]/g, '');
     if (raw === '') return NaN;
-    return parseFloat(raw);
+    return /^-?(?:\d+(?:\.\d*)?|\.\d+)$/.test(raw) ? Number(raw) : NaN;
   }
 
   // Show the dollar-amount + inflation fields for fixed mode, or the rate field
@@ -320,7 +320,7 @@
     var startBalanceNote = delayYears > 0.02
       ? '<p><strong>Projected portfolio when withdrawals begin' + (startDateLabel ? ' (' + startDateLabel + ')' : '') + ':</strong> median ' + fmt(startMedian) + ' &mdash; 25th&ndash;75th: ' + fmt(startP25) + '&ndash;' + fmt(startP75) + '. Grown untouched from your ' + fmt(portfolio) + ' starting value.</p>'
       : '';
-    var timingNote = timing === 'annual' ? 'annually on January 1' : 'monthly';
+    var timingNote = timing === 'annual' ? 'at the start of each modeled year' : 'monthly';
     if (method === 'percent') {
       var rateLabel = withdrawalRatePct.toFixed(2).replace(/\.?0+$/, '') + '%';
       summaryBox.innerHTML =
@@ -329,14 +329,14 @@
         startBalanceNote +
         '<p><strong>Annual income across all simulated years:</strong> a typical year is about <strong>' + fmt(incMedian) + '</strong>; in lean years (10th percentile) it can drop to about <strong>' + fmt(incP10) + '</strong>, and in strong years (90th percentile) it can reach about ' + fmt(incP90) + '.</p>' +
         '<p><strong>Ending portfolio percentiles:</strong> 25th = ' + fmt(p25) + ', 50th (median) = ' + fmt(p50) + ', 75th = ' + fmt(p75) + '.</p>' +
-        '<p style="font-size: 13px; color: #4b5563;">Because withdrawals scale with your balance, the portfolio is very unlikely to be fully depleted — the trade-off is that your income rises and falls with the market. Figures are nominal (not inflation-adjusted).</p>';
+        '<p style="font-size: 13px; color: #4b5563;">Because withdrawals scale with your balance, income can shrink substantially or reach zero. Portfolio survival does not establish that spending needs are met. Figures are nominal (not inflation-adjusted).</p>';
     } else {
       summaryBox.innerHTML =
         '<p><strong>Success rate:</strong> Your plan lasted all ' + years + ' years of withdrawals' + delayNote + ' in <strong>' + successRate + '%</strong> of ' + numSims.toLocaleString() + ' simulations.</p>' +
         '<p style="font-size: 13px; color: #4b5563;">Withdrawals taken <strong>' + timingNote + '</strong>.</p>' +
         startBalanceNote +
         '<p><strong>Ending portfolio percentiles:</strong> 25th = ' + fmt(p25) + ', 50th (median) = ' + fmt(p50) + ', 75th = ' + fmt(p75) + '.</p>' +
-        '<p>Lower percentiles include runs that ran out of money (negative ending balance).</p>';
+        '<p>Lower percentiles include unfunded runs with a zero ending balance. Exact final depletion succeeds only when every requested withdrawal was funded.</p>';
     }
 
     // Histogram: bucket ending balances

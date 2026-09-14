@@ -733,6 +733,7 @@ function downloadCSV() {
         return;
     }
     const payload = {
+        context: res,
         claimAgeA: res.claimAgeA, claimAgeB: res.claimAgeB, claimAgeC: res.claimAgeC,
         lifeExpectancy: res.lifeExpectancy,
         dataA: res.dataA, dataB: res.dataB, dataC: res.dataC
@@ -753,6 +754,7 @@ function downloadClaimingSummary() {
         birthDate: document.getElementById('birthDate').value,
         monthlyPIA: res.monthlyPIA,
         lifeExpectancy: res.lifeExpectancy,
+        context: res,
         claimAgeA: res.claimAgeA, claimAgeB: res.claimAgeB, claimAgeC: res.claimAgeC,
         fra: res.fra,
         monthlyA: res.monthlyA, monthlyB: res.monthlyB, monthlyC: res.monthlyC,

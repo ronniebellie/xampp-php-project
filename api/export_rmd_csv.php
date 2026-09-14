@@ -4,6 +4,8 @@ ini_set('display_errors', 0);
 ob_start(); // Prevent any stray output from corrupting the CSV
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
 rb_session_start();
+require_once __DIR__ . '/../includes/report_csv.php';
+rb_api_errors();
 require_once '../includes/db_config.php';
 
 // Check Premium access (ronbelisle or calcforadvisors paid)
@@ -15,7 +17,9 @@ if (!has_premium_access()) {
 }
 
 // Get POST data
-$data = json_decode(file_get_contents('php://input'), true);
+$data = rb_read_api_json(2097152);
+try { $data=rb_pdf_data($data); } catch(Throwable $e) { rb_api_error(400, 'Invalid or oversized CSV data'); }
+if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
 
 if (!$data) {
     header('Content-Type: application/json');
@@ -41,16 +45,17 @@ if (!isset($data['summary']['firstRMD']) || !is_array($data['projections'])) {
 ob_end_clean();
 header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename="RMD_Analysis_' . date('Y-m-d') . '.csv"');
-header('Cache-Control: private, max-age=0, must-revalidate');
+header('Cache-Control: no-store');
 
 // Output BOM for Excel UTF-8 support
 echo "\xEF\xBB\xBF";
 
 // Open output stream
 $output = fopen('php://output', 'w');
+rb_csv_context($output, 'RMD Impact', $data);
 
 // Write header row
-fputcsv($output, [
+rb_csv_row($output, [
     'Age',
     'Traditional Balance (Start of Year)',
     'Planned Traditional Withdrawal',
@@ -68,7 +73,7 @@ fputcsv($output, [
 
 // Write data rows
 foreach ($data['projections'] as $row) {
-    fputcsv($output, [
+    rb_csv_row($output, [
         $row['age'],
         number_format($row['balance'], 2, '.', ''),
         number_format(isset($row['plannedTraditional']) ? $row['plannedTraditional'] : 0, 2, '.', ''),

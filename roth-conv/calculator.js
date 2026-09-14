@@ -1686,6 +1686,7 @@ function downloadCSV() {
         return;
     }
     const payload = {
+        context: res,
         withConversion: res.withConversion,
         withoutConversion: res.withoutConversion,
         includeIrmaa: res.includeIrmaa,

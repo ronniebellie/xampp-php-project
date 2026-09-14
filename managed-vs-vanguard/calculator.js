@@ -709,6 +709,7 @@ function downloadPDF() {
         contributionAmount: res.contributionAmount,
         contributionFrequency: res.contributionFrequency,
         cumulativeContributions: res.cumulativeContributions,
+        context: res,
         totalInvestedCapital: res.totalInvestedCapital,
         advisorFee: res.advisorFee,
         vanguardFee: res.vanguardFee,
@@ -754,6 +755,7 @@ function downloadCSV() {
         contributionAmount: res.contributionAmount,
         contributionFrequency: res.contributionFrequency,
         cumulativeContributions: res.cumulativeContributions,
+        context: res,
         managedData: res.managedData,
         vanguardData: res.vanguardData
     };

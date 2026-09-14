@@ -31,7 +31,8 @@ $isPremium = has_premium_access();
 
         <div class="info-box-blue" style="margin-bottom: 30px;">
             <h2>How This Works</h2>
-            <p><strong>Vanguard Personal Advisor Services (PAS)</strong> charges 0.30% of your portfolio per year for ongoing advice and management. You can instead self-manage using Vanguard’s <strong>Target Retirement</strong> funds (e.g. VTINX, VTWNX, VTTVX … VTTSX, VLXVX, VSVNX), which have expense ratios around 0.08%. This tool compares the two: same expected return, different fees—so you see the opportunity cost of staying with PAS.</p>
+            <p>Compare the same portfolio return under two editable annual fee assumptions. Enter the <strong>total cost of advice and underlying funds</strong> for PAS, and the total fund cost for your Target Date alternative. The starting values (0.30% and 0.08%) are illustrative assumptions, not verified current price quotes. Check your actual fees. Allocation percentages describe your blend; they do not change the entered return.</p>
+            <p>Figures are nominal dollars. Each modeled year applies growth first, then fees and any withdrawal to that grown balance. Ending balances exclude money already withdrawn; compare the income totals as well. Withdrawals begin in the selected calendar year.</p>
             <p style="margin-top: 12px;">You can allocate your self-managed portfolio across <strong>conservative</strong> (Income / 2020), <strong>moderate</strong> (2025–2035), and <strong>aggressive</strong> (2040–2070) Target Date funds. The math uses a blended expense ratio of about 0.08% for the self-managed side.</p>
         </div>
 
@@ -62,15 +63,15 @@ $isPremium = has_premium_access();
                 </div>
 
                 <div class="input-group">
-                    <label for="pasFee">Vanguard PAS Fee (%)</label>
-                    <input type="number" id="pasFee" value="0.30" min="0" max="1" step="any" readonly>
-                    <span class="help-text">Vanguard Personal Advisor Services: 0.30%</span>
+                    <label for="pasFee">PAS total annual fee assumption (%)</label>
+                    <input type="number" id="pasFee" value="0.30" min="0" max="1" step="any">
+                    <span class="help-text">Include advice and underlying fund expenses.</span>
                 </div>
 
                 <div class="input-group">
                     <label>Target Date Fund Blend Expense (%)</label>
-                    <input type="number" id="targetDateFee" value="0.08" min="0" max="0.5" step="any" readonly>
-                    <span class="help-text">Typical Vanguard Target Retirement fund expense ratio ~0.08%</span>
+                    <input type="number" id="targetDateFee" aria-label="Target date fund annual fee, percent" value="0.08" min="0" max="0.5" step="any">
+                    <span class="help-text">Enter your actual all-in fund expense assumption.</span>
                 </div>
 
                 <div class="input-group">
@@ -78,7 +79,7 @@ $isPremium = has_premium_access();
                         <span>Investment Timeline (Years)</span>
                         <span class="value" id="yearsLabel">20 yrs</span>
                     </div>
-                    <input type="range" id="years" value="20" min="1" max="50" step="1">
+                    <input type="range" id="years" aria-label="Years to model" value="20" min="1" max="50" step="1">
                 </div>
 
                 <div class="input-group">
@@ -86,7 +87,7 @@ $isPremium = has_premium_access();
                         <span>Expected Annual Return (Before Fees) (%)</span>
                         <span class="value" id="returnRateLabel">6%</span>
                     </div>
-                    <input type="range" id="returnRate" value="6" min="0" max="20" step="0.25">
+                    <input type="range" id="returnRate" aria-label="Expected annual return, percent" value="6" min="0" max="20" step="0.25">
                     <span class="help-text">Use a conservative assumption (e.g. 5–7%)</span>
                 </div>
 
@@ -100,7 +101,7 @@ $isPremium = has_premium_access();
                         <span>Annual Withdrawal (% of portfolio)</span>
                         <span class="value" id="withdrawalPctLabel">4.2%</span>
                     </div>
-                    <input type="range" id="withdrawalPct" value="4.2" min="0" max="10" step="0.1">
+                    <input type="range" id="withdrawalPct" aria-label="Annual portfolio withdrawal, percent" value="4.2" min="0" max="10" step="0.1">
                     <span class="help-text">Set to 0 for no withdrawal. Many retirees use ~4% (e.g. 4.2% starting in a given year).</span>
                 </div>
                 <div class="input-group">
@@ -117,7 +118,7 @@ $isPremium = has_premium_access();
                         <span>Conservative (Income / 2020)</span>
                         <span class="value" id="pctConservativeLabel">33.3%</span>
                     </div>
-                    <input type="range" id="pctConservative" value="20" min="0" max="100" step="5">
+                    <input type="range" id="pctConservative" aria-label="Conservative allocation, percent" value="20" min="0" max="100" step="5">
                     <span class="help-text">VTINX, VTWNX</span>
                 </div>
 
@@ -126,7 +127,7 @@ $isPremium = has_premium_access();
                         <span>Moderate (2025–2035)</span>
                         <span class="value" id="pctModerateLabel">33.3%</span>
                     </div>
-                    <input type="range" id="pctModerate" value="20" min="0" max="100" step="5">
+                    <input type="range" id="pctModerate" aria-label="Moderate allocation, percent" value="20" min="0" max="100" step="5">
                     <span class="help-text">VTTVX, VTHRX, VTTHX</span>
                 </div>
 
@@ -135,7 +136,7 @@ $isPremium = has_premium_access();
                         <span>Aggressive (2040–2070)</span>
                         <span class="value" id="pctAggressiveLabel">33.3%</span>
                     </div>
-                    <input type="range" id="pctAggressive" value="20" min="0" max="100" step="5">
+                    <input type="range" id="pctAggressive" aria-label="Aggressive allocation, percent" value="20" min="0" max="100" step="5">
                     <span class="help-text">VFORX, VTIVX, VFIFX, VFFVX, VTTSX, VLXVX, VSVNX</span>
                 </div>
 
@@ -154,11 +155,11 @@ $isPremium = has_premium_access();
                     <div class="cost-breakdown" id="costBreakdown">
                         <span class="cb-part"><span class="cb-num" id="breakdownFees">$0</span><span class="cb-desc">extra advisor fees</span></span>
                         <span class="cb-op">+</span>
-                        <span class="cb-part"><span class="cb-num" id="breakdownGrowth">$0</span><span class="cb-desc">lost investment growth</span></span>
+                        <span class="cb-part"><span class="cb-num" id="breakdownGrowth">$0</span><span class="cb-desc">growth / withdrawal effects</span></span>
                         <span class="cb-op">=</span>
                         <span class="cb-part cb-total"><span class="cb-num" id="breakdownTotal">$0</span><span class="cb-desc">total opportunity cost</span></span>
                     </div>
-                    <div class="cost-explanation">Extra amount you could have by self-managing with Target Date funds instead of PAS</div>
+                    <div class="cost-explanation">Signed ending-balance difference: Target Date minus PAS. Negative values favor PAS under these assumptions.</div>
                 </div>
 
                 <div class="comparison-section">
@@ -167,7 +168,7 @@ $isPremium = has_premium_access();
                         <div class="comparison-header">
                             <div class="col-label"></div>
                             <div class="col-managed">Vanguard PAS<br><span class="fee-label" id="pasFeeResultLabel"></span></div>
-                            <div class="col-vanguard">Target Date Blend<br><span class="fee-label">~0.08% fee</span></div>
+                            <div class="col-vanguard">Target Date Blend<br><span class="fee-label">Selected fund fee</span></div>
                             <div class="col-difference">You're Giving Up</div>
                         </div>
 
@@ -192,8 +193,8 @@ $isPremium = has_premium_access();
                     <div class="comparison-table">
                         <div class="comparison-header">
                             <div class="col-label"></div>
-                            <div class="col-managed">Vanguard PAS<br><span class="fee-label">0.30% fee</span></div>
-                            <div class="col-vanguard">Target Date Blend<br><span class="fee-label">~0.08% fee</span></div>
+                            <div class="col-managed">Vanguard PAS<br><span class="fee-label">Selected PAS fee</span></div>
+                            <div class="col-vanguard">Target Date Blend<br><span class="fee-label">Selected fund fee</span></div>
                             <div class="col-difference">You're Giving Up</div>
                         </div>
 
@@ -241,7 +242,7 @@ $isPremium = has_premium_access();
                     <div class="insight-box">
                         <div class="insight-icon">📈</div>
                         <div class="insight-content">
-                            <strong>Lost Growth:</strong> Beyond the fees themselves, you miss about <span id="insightLostGrowth"></span> of compounding those dollars could have earned in the market.
+                            <strong>Other balance effects:</strong> <span id="insightLostGrowth"></span> remains after the fee difference. It includes compounding and differences in portfolio withdrawals.
                         </div>
                     </div>
                     <div class="insight-box">

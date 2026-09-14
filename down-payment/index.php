@@ -62,31 +62,31 @@ $isPremium = has_premium_access();
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px;">
         <div class="slider-row">
           <div class="slider-label"><span>House price (optional)</span><span class="value" id="housePriceLabel"></span></div>
-          <input type="range" id="housePrice" min="0" max="600000" step="10000" value="0">
+          <input type="range" id="housePrice" aria-label="House price in dollars" min="0" max="600000" step="10000" value="0">
           <small style="color: #666;">Set to 0 to use target amount below; otherwise target = price × down %</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Down payment %</span><span class="value" id="downPctLabel"></span></div>
-          <input type="range" id="downPct" min="5" max="30" step="1" value="20">
+          <input type="range" id="downPct" aria-label="Down payment, percent of house price" min="5" max="30" step="1" value="20">
           <small style="color: #666;">Used when house price &gt; 0</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Target down payment</span><span class="value" id="targetAmountLabel"></span></div>
-          <input type="range" id="targetAmount" min="10000" max="200000" step="1000" value="60000">
+          <input type="range" id="targetAmount" aria-label="Target down payment in dollars" min="10000" max="200000" step="1000" value="60000">
           <small style="color: #666;">Used when house price is 0; otherwise computed from price × down %</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Current savings</span><span class="value" id="currentSavingsLabel"></span></div>
-          <input type="range" id="currentSavings" min="0" max="100000" step="1000" value="10000">
+          <input type="range" id="currentSavings" aria-label="Current savings in dollars" min="0" max="100000" step="1000" value="10000">
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Monthly contribution</span><span class="value" id="monthlyContributionLabel"></span></div>
-          <input type="range" id="monthlyContribution" min="0" max="3000" step="50" value="800">
+          <input type="range" id="monthlyContribution" aria-label="Monthly contribution in dollars" min="0" max="3000" step="50" value="800">
           <small style="color: #666;">Amount you can add each month</small>
         </div>
         <div class="slider-row">
           <div class="slider-label"><span>Savings interest rate (% per year)</span><span class="value" id="interestRateLabel"></span></div>
-          <input type="range" id="interestRate" min="0" max="10" step="0.1" value="4.5">
+          <input type="range" id="interestRate" aria-label="Annual interest rate, percent" min="0" max="10" step="0.1" value="4.5">
           <small style="color: #666;">e.g. high-yield savings ~4–5%</small>
         </div>
       </div>

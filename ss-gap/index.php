@@ -65,17 +65,17 @@ $isPremium = has_premium_access();
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                 <div class="slider-row">
                     <div class="slider-label"><span>Target Monthly Spending</span><span class="value" id="targetSpendingLabel"></span></div>
-                    <input type="range" id="targetSpending" min="3000" max="15000" step="100" value="8000">
+                    <input type="range" id="targetSpending" aria-label="Monthly target spending in dollars" min="3000" max="15000" step="100" value="8000">
                     <small style="color: #666;">Your desired monthly retirement budget</small>
                 </div>
                 <div class="slider-row">
                     <div class="slider-label"><span>Social Security Monthly Income</span><span class="value" id="ssIncomeLabel"></span></div>
-                    <input type="range" id="ssIncome" min="0" max="6000" step="100" value="3500">
+                    <input type="range" id="ssIncome" aria-label="Monthly Social Security income in dollars" min="0" max="6000" step="100" value="3500">
                     <small style="color: #666;">Combined household Social Security benefits</small>
                 </div>
                 <div class="slider-row">
                     <div class="slider-label"><span>Other Monthly Income</span><span class="value" id="otherIncomeLabel"></span></div>
-                    <input type="range" id="otherIncome" min="0" max="4000" step="100" value="0">
+                    <input type="range" id="otherIncome" aria-label="Other monthly income in dollars" min="0" max="4000" step="100" value="0">
                     <small style="color: #666;">Pension, rental income, part-time work, etc.</small>
                 </div>
             </div>
@@ -84,7 +84,7 @@ $isPremium = has_premium_access();
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
                 <div class="slider-row">
                     <div class="slider-label"><span>Starting Withdrawal Rate</span><span class="value" id="withdrawalRateLabel"></span></div>
-                    <input type="range" id="withdrawalRate" min="2.5" max="6.0" step="0.1" value="4.0">
+                    <input type="range" id="withdrawalRate" aria-label="Annual withdrawal rate, percent" min="2.5" max="6.0" step="0.1" value="4.0">
                     <small style="color: #666;">Common range: 3.5% - 5.0%</small>
                 </div>
                 <div>

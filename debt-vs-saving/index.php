@@ -69,7 +69,7 @@ $isPremium = has_premium_access();
           </div>
           <input
             type="range"
-            id="debtBalance"
+            id="debtBalance" aria-label="Debt balance in dollars"
             min="0"
             max="50000"
             step="500"
@@ -85,7 +85,7 @@ $isPremium = has_premium_access();
           </div>
           <input
             type="range"
-            id="debtRate"
+            id="debtRate" aria-label="Debt annual percentage rate"
             min="0"
             max="40"
             step="0.25"
@@ -101,7 +101,7 @@ $isPremium = has_premium_access();
           </div>
           <input
             type="range"
-            id="minPayment"
+            id="minPayment" aria-label="Minimum monthly payment in dollars"
             min="0"
             max="2000"
             step="25"
@@ -117,7 +117,7 @@ $isPremium = has_premium_access();
           </div>
           <input
             type="range"
-            id="extraPerMonth"
+            id="extraPerMonth" aria-label="Extra monthly budget in dollars"
             min="0"
             max="2000"
             step="25"
@@ -133,7 +133,7 @@ $isPremium = has_premium_access();
           </div>
           <input
             type="range"
-            id="investReturn"
+            id="investReturn" aria-label="Expected annual investment return, percent"
             min="0"
             max="20"
             step="0.5"
@@ -149,7 +149,7 @@ $isPremium = has_premium_access();
           </div>
           <input
             type="range"
-            id="horizonYears"
+            id="horizonYears" aria-label="Years to compare"
             min="1"
             max="40"
             step="1"
