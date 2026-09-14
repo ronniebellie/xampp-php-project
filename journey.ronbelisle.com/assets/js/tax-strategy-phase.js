@@ -72,7 +72,7 @@
     function readProgress() {
         try {
             var parsed = JSON.parse(localStorage.getItem(storageKey) || '{}');
-            return parsed && typeof parsed === 'object' ? parsed : {};
+            return window.rbJourneyRecords ? window.rbJourneyRecords.reconcileDependencies(parsed) : (parsed && typeof parsed === 'object' ? parsed : {});
         } catch (error) {
             return {};
         }
@@ -108,22 +108,7 @@
     }
 
     function phase3IsReady(record) {
-        if (!record || record.saved !== true) return false;
-        if (record.assessmentStatus !== 'complete') return false;
-        if (record.monthlyRetirementSpendingGoal === null || record.monthlyRetirementSpendingGoal === undefined) return false;
-        if (record.monthlySocialSecurityAssumption === null || record.monthlySocialSecurityAssumption === undefined) return false;
-        if (record.monthlyOtherDependableIncome === null || record.monthlyOtherDependableIncome === undefined) return false;
-        if (record.retirementSavingsBalance === null || record.retirementSavingsBalance === undefined) return false;
-        if (record.retirementSavingsBalance < 0) return false;
-        if (record.annualNeededFromRetirementSavings === null ||
-            record.annualNeededFromRetirementSavings === undefined) {
-            if (record.monthlyNeededFromRetirementSavings === null ||
-                record.monthlyNeededFromRetirementSavings === undefined) {
-                return false;
-            }
-        }
-        if (!record.baseCaseAssessment) return false;
-        return true;
+        return recordTools.validPlan(record);
     }
 
     function snapshotPhase3(record) {
@@ -308,7 +293,7 @@
 
         items.forEach(function (item) {
             var title = document.createElement('p');
-            title.innerHTML = '<strong>' + item.title + '</strong>';
+            title.innerHTML = '<strong>' + recordTools.escapeHtml(item.title) + '</strong>';
             var body = document.createElement('p');
             body.className = 'supporting-note';
             body.textContent = item.body;
@@ -455,20 +440,20 @@
             issueHtml = '<p class="eyebrow">' + heading + '</p>';
             ids.slice(0, 2).forEach(function (id) {
                 var item = issuePresentation(id, result);
-                issueHtml += '<p><strong>' + item.title + '</strong></p><p>' + item.body + '</p>';
+                issueHtml += '<p><strong>' + recordTools.escapeHtml(item.title) + '</strong></p><p>' + recordTools.escapeHtml(item.body) + '</p>';
             });
         } else {
             var noneItem = issuePresentation('none_dominant', result);
             issueHtml = '<p class="eyebrow">Main tax-planning priority</p>' +
-                '<p><strong>' + (result.mainIssueStatement || noneItem.title) + '</strong></p>' +
-                '<p>' + (result.whatThisMeans || noneItem.body) + '</p>';
+                '<p><strong>' + recordTools.escapeHtml((result.mainIssueStatement || noneItem.title)) + '</strong></p>' +
+                '<p>' + recordTools.escapeHtml((result.whatThisMeans || noneItem.body)) + '</p>';
         }
         var priority = record.nextPriorityLabel
-            ? ('<p><strong>Priority to revisit:</strong> ' + record.nextPriorityLabel + '</p>')
+            ? ('<p><strong>Priority to revisit:</strong> ' + recordTools.escapeHtml(record.nextPriorityLabel) + '</p>')
             : '';
         el.innerHTML = issueHtml +
-            '<p>' + (record.decisionStatement || '') + '</p>' +
-            '<p class="supporting-note">' + (record.companionExplanation || '') + '</p>' +
+            '<p>' + recordTools.escapeHtml((record.decisionStatement || '')) + '</p>' +
+            '<p class="supporting-note">' + recordTools.escapeHtml((record.companionExplanation || '')) + '</p>' +
             priority;
     }
 
@@ -523,7 +508,7 @@
         renderPhase4Context(state.phase4Context);
 
         if (state.savedRecord && state.savedRecord.phase3Snapshot) {
-            if (phase3ChangedSinceSnapshot(phase3, state.savedRecord.phase3Snapshot)) {
+            if (state.savedRecord.needsReview || phase3ChangedSinceSnapshot(phase3, state.savedRecord.phase3Snapshot)) {
                 $('phase3ChangedBanner').hidden = false;
             }
             if (state.savedRecord.assumptions) {

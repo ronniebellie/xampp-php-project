@@ -220,6 +220,12 @@ function journey_evaluate_subscription_entitlement(array $subscription, ?int $no
     );
 
     $accessAllowed = journey_entitlement_allows_premium_access($entitlementStatus);
+    $deadline = strtolower($stripeStatus) === 'trialing' ? ($trialEndTs ?? $periodEndTs) : $periodEndTs;
+    if ($accessAllowed && ($deadline === null || $deadline <= $now)) {
+        $entitlementStatus = 'expired';
+        $accessAllowed = false;
+    }
+
     $accessThroughTs = null;
     if ($accessAllowed) {
         if ($entitlementStatus === 'trialing' && $trialEndTs !== null) {
@@ -320,7 +326,7 @@ function journey_parse_time_value($value): ?int
  * - claimed            — new row; caller should process
  * - reclaimed          — prior failed row reset to processing; caller should process
  * - already_processed  — successfully handled before; no-op
- * - in_progress        — another worker holds received/processing; no-op (HTTP 200)
+ * - in_progress        — another worker holds received/processing; retry later (HTTP 503)
  * - duplicate          — alias of already_processed/in_progress for older callers
  * - error              — unexpected DB failure
  *
@@ -395,12 +401,12 @@ function journey_webhook_event_claim(
     if ($status === 'processed') {
         return 'already_processed';
     }
-    if ($status === 'failed') {
+    if (in_array($status, ['failed', 'received', 'processing'], true)) {
         try {
             $upd = $conn->prepare(
                 "UPDATE stripe_webhook_events
                  SET processing_status = 'processing', last_error = NULL, updated_at = CURRENT_TIMESTAMP
-                 WHERE stripe_event_id = ? AND processing_status = 'failed'"
+                 WHERE stripe_event_id = ? AND (processing_status = 'failed' OR (processing_status IN ('received','processing') AND updated_at < DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 10 MINUTE)))"
             );
             if (!$upd) {
                 return 'error';

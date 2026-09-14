@@ -105,7 +105,8 @@ function journey_feedback_sanitize_page_url(?string $url): ?string
     if (!in_array($host, ['journey.ronbelisle.com', 'ronbelisle.com', 'www.ronbelisle.com'], true)) {
         return null;
     }
-    return $url;
+    $path = parse_url($url, PHP_URL_PATH) ?: '/';
+    return 'https://' . $host . $path;
 }
 
 function journey_feedback_tables_ready(mysqli $conn): bool

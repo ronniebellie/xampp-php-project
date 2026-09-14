@@ -5,8 +5,8 @@
 $feedbackFrom = '';
 if (!empty($_SERVER['REQUEST_URI']) && is_string($_SERVER['REQUEST_URI'])) {
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'https';
-    $host = $_SERVER['HTTP_HOST'] ?? 'journey.ronbelisle.com';
-    $feedbackFrom = $scheme . '://' . $host . $_SERVER['REQUEST_URI'];
+    $host = 'journey.ronbelisle.com';
+    $feedbackFrom = $scheme . '://' . $host . (parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '/');
 }
 $feedbackHref = '/feedback.php';
 if ($feedbackFrom !== '') {

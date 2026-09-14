@@ -62,9 +62,7 @@ if (has_journey_premium_access($conn, $userId)) {
     exit;
 }
 
-$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-$host = $_SERVER['HTTP_HOST'] ?? 'ronbelisle.com';
-$baseUrl = $scheme . '://' . $host;
+$baseUrl = 'https://ronbelisle.com';
 
 $successUrl = $baseUrl . '/premium/journey-success.php?session_id={CHECKOUT_SESSION_ID}';
 $cancelUrl = $baseUrl . '/premium/journey.php?canceled=1&plan=' . rawurlencode($plan);
@@ -92,6 +90,11 @@ if (empty($built['ok']) || empty($built['params'])) {
 }
 
 try {
+    $http = new \Stripe\HttpClient\CurlClient();
+    $http->setConnectTimeout(5);
+    $http->setTimeout(20);
+    \Stripe\ApiRequestor::setHttpClient($http);
+    session_write_close();
     \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
     $session = \Stripe\Checkout\Session::create($built['params']);
     if (empty($session->url)) {
@@ -100,7 +103,7 @@ try {
     header('Location: ' . $session->url);
     exit;
 } catch (Throwable $e) {
-    error_log('journey-checkout: ' . $e->getMessage());
+    error_log('journey-checkout: request failed');
     header('Location: /premium/journey.php?error=stripe&plan=' . rawurlencode($plan));
     exit;
 }

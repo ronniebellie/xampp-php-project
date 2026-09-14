@@ -12,6 +12,64 @@
         difficult: 'Looks difficult'
     };
 
+    function invalidateDependents(progress, phaseId) {
+        var dependencies = {
+            'spending-goals': ['build-your-plan', 'stress-test', 'tax-strategy', 'survivor-planning'],
+            'social-security': ['build-your-plan', 'stress-test', 'tax-strategy', 'survivor-planning'],
+            'build-your-plan': ['stress-test', 'tax-strategy', 'survivor-planning']
+        };
+        (dependencies[phaseId] || []).forEach(function (key) {
+            progress[key] = false;
+            var record = progress.records && progress.records[key];
+            if (record) {
+                record.needsReview = true;
+                record.downstreamReady = false;
+                record.journeyCompletionStatus = 'incomplete';
+                record.planningRecordStatus = 'needs-review';
+            }
+        });
+    }
+
+    function reconcileDependencies(progress) {
+        if (!progress || typeof progress !== 'object' || Array.isArray(progress)) return {};
+        var records = progress.records || {};
+        var plan = records['build-your-plan'];
+        if (!plan || !plan.saved) return progress;
+        var handoff = window.rbJourneyPhase1 && window.rbJourneyPhase1.getHandoff();
+        var ss = records['social-security'];
+        var choice = ss && (ss.lastSavedPlanning || (!ss.hasUnsavedChanges && ss));
+        var changed = handoff && (!handoff.usable || handoff.monthlySpending !== plan.monthlyRetirementSpendingGoal || handoff.monthlyOther !== plan.monthlyOtherDependableIncome);
+        if (plan.socialSecuritySource === 'phase2') {
+            changed = changed || !choice || choice.decisionStatus !== 'provisional' ||
+                Number(choice.estimatedMonthlyBenefit) !== plan.monthlySocialSecurityAssumption;
+        }
+        if (changed) {
+            plan.needsReview = true;
+            plan.planningRecordStatus = 'needs-review';
+            plan.downstreamReady = false;
+            progress['build-your-plan'] = false;
+        }
+        if (changed || plan.hasUnsavedChanges || plan.needsReview) invalidateDependents(progress, 'build-your-plan');
+        return progress;
+    }
+
+    function validPlan(record) {
+        if (!record || !record.saved || record.hasUnsavedChanges || record.needsReview || record.assessmentStatus !== 'complete') return false;
+        var keys = ['monthlyRetirementSpendingGoal', 'monthlySocialSecurityAssumption',
+            'monthlyOtherDependableIncome', 'retirementSavingsBalance',
+            'monthlyNeededFromRetirementSavings', 'annualNeededFromRetirementSavings'];
+        if (!keys.every(function (key) { return typeof record[key] === 'number' && Number.isFinite(record[key]) && record[key] >= 0 && record[key] <= 1e12; })) return false;
+        var need = Math.max(0, record.monthlyRetirementSpendingGoal - record.monthlySocialSecurityAssumption - record.monthlyOtherDependableIncome);
+        return Math.abs(need - record.monthlyNeededFromRetirementSavings) < 0.001 &&
+            Math.abs(need * 12 - record.annualNeededFromRetirementSavings) < 0.001;
+    }
+
+    function escapeHtml(value) {
+        return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) {
+            return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[ch];
+        });
+    }
+
     function now() {
         return new Date().toISOString();
     }
@@ -399,6 +457,7 @@
         if (!progress || !progress.records || typeof progress.records !== 'object') return '';
         var record = progress.records[phaseId];
         if (!record || typeof record !== 'object' || record.saved !== true) return '';
+        if (record.needsReview || record.hasUnsavedChanges) return 'needs-review';
         if (record.planningRecordStatus) {
             if (phaseId === 'stress-test') {
                 return stressStatusLabels[record.planningRecordStatus] || record.planningRecordStatus;
@@ -432,6 +491,11 @@
     }
 
     window.rbJourneyRecords = {
+        invalidateDependents: invalidateDependents,
+        validPlan: validPlan,
+        reconcileDependencies: reconcileDependencies,
+        buildYourPlanResult: buildYourPlanResult,
+        escapeHtml: escapeHtml,
         schemaVersion: schemaVersion,
         statusLabels: statusLabels,
         statusLabel: function (status) {

@@ -14,20 +14,20 @@ $loginUrl = 'https://ronbelisle.com/auth/login.php?return=' . rawurlencode($jour
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260801-feedback">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260914-audit">
 </head>
 <body>
     <?php include __DIR__ . '/../includes/site-header.php'; ?>
 
-    <main>
+    <main id="journey-main" tabindex="-1">
         <section class="page-hero" aria-labelledby="transition-title">
             <div class="container phase-transition-layout">
                 <article class="planning-panel phase-transition-panel">
                     <p class="eyebrow">Before Phase 2</p>
-                    <h1 id="transition-title">Save your progress before continuing</h1>
+                    <h1 id="transition-title">Continue to Social Security</h1>
 
                     <div data-journey-anon-only>
-                        <p class="page-lede">You’ve created your retirement spending target. Create a free account to save your place and continue through the six free phases of the Retirement Planning Journey. After you complete your initial plan, you’ll have the option to start a 30-day Journey Premium trial to keep your plan current over time.</p>
+                        <p class="page-lede">You’ve created your retirement spending target. Continue in this browser through the six free phases of the Retirement Planning Journey. After you complete your initial plan, you’ll have the option to start a 30-day Journey Premium trial to keep your plan current over time.</p>
 
                         <div class="transition-honesty" role="note">
                             <p><strong>Important:</strong> Your Journey plan is saved in <em>this browser</em> right now. Creating a free account does not automatically copy that plan into your account or sync it across devices.</p>
@@ -46,7 +46,7 @@ $loginUrl = 'https://ronbelisle.com/auth/login.php?return=' . rawurlencode($jour
                     <div class="transition-options" data-journey-anon-only>
                         <section class="transition-option is-primary" aria-labelledby="free-account-title">
                             <h2 id="free-account-title">Create a free account</h2>
-                            <p>Create a free account so you can continue through all six free Journey phases and sign in later when you return.</p>
+                            <p>A free account lets you sign in to account services. All six phases are available without an account; free planning records remain in this browser.</p>
                             <ul class="coach-list">
                                 <li>Create your free Retirement Planning Journey account</li>
                                 <li>Continue through all six free Journey phases</li>
@@ -61,7 +61,7 @@ $loginUrl = 'https://ronbelisle.com/auth/login.php?return=' . rawurlencode($jour
                             <p>All six Journey phases are free. Journey Premium is an optional ongoing planning workspace you can choose <strong>after</strong> you complete your initial plan.</p>
                             <ul class="coach-list">
                                 <li>Revisit decisions and update assumptions over time</li>
-                                <li>Compare alternatives as your life changes</li>
+                                <li>Update your saved assumptions as your life changes</li>
                                 <li>Keep your plan current in an ongoing workspace</li>
                             </ul>
                             <p class="action-note">When your initial plan is complete, you can start a 30-day Journey Premium trial if you want that ongoing workspace. You do not need Premium to continue to Phase 2.</p>

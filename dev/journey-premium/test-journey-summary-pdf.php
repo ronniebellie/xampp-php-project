@@ -210,7 +210,7 @@ expectPdf('text has executive summary', stripos($text, 'Executive Summary') !== 
 expectPdf('text has report title', stripos($text, 'Your Retirement Plan') !== false || strpos($helper, 'Your Retirement Plan') !== false);
 expectPdf('helper includes recommended next steps', strpos($helper, 'Recommended Next Steps') !== false);
 expectPdf('helper includes keep-plan-current section', strpos($helper, 'Keep your plan current') !== false);
-expectPdf('helper defines incrementable report version', strpos($helper, "JOURNEY_SUMMARY_PDF_VERSION = '1'") !== false);
+expectPdf('helper defines incrementable report version', strpos($helper, "JOURNEY_SUMMARY_PDF_VERSION = '2'") !== false);
 expectPdf('text has phase 1', stripos($text, 'Phase 1') !== false || strpos($helper, 'Phase 1 — Spending') !== false);
 expectPdf('text has phase 2', stripos($text, 'Phase 2') !== false || strpos($helper, 'Phase 2 — Social Security') !== false);
 expectPdf('text has phase 3', stripos($text, 'Phase 3') !== false || strpos($helper, 'Phase 3 — Build Your Plan') !== false);
@@ -248,9 +248,9 @@ expectPdf(
         && strpos($helper, "'Version ' . JOURNEY_SUMMARY_PDF_VERSION") !== false
 );
 expectPdf(
-    'text or helper has Version 1',
-    stripos($text, 'Version 1') !== false
-        || strpos($helper, "JOURNEY_SUMMARY_PDF_VERSION = '1'") !== false
+    'text or helper has Version 2',
+    stripos($text, 'Version 2') !== false
+        || strpos($helper, "JOURNEY_SUMMARY_PDF_VERSION = '2'") !== false
 );
 expectPdf('no visible TCPDF branding text', stripos($text, 'Powered by TCPDF') === false);
 

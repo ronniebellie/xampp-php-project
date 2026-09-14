@@ -50,37 +50,18 @@ if (!has_journey_premium_access($conn, $userId)) {
 }
 
 $body = journey_plan_read_json_body();
-$clientProgress = [];
-if (is_array($body) && isset($body['progress']) && is_array($body['progress'])) {
-    $clientProgress = $body['progress'];
-}
-
-$progress = $clientProgress;
+if ($body === null) journey_plan_json_response(['success' => false, 'error' => 'invalid_json', 'message' => 'Invalid report request.'], 400);
+journey_plan_require_csrf($body);
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/api_resources.php';
+// Export exactly the account plan after a successful save, never a merged plan.
 $cloud = journey_plan_fetch($conn, $userId);
-if (is_array($cloud) && isset($cloud['payload'])) {
-    $payload = $cloud['payload'];
-    if (is_string($payload)) {
-        $decoded = json_decode($payload, true);
-        $payload = is_array($decoded) ? $decoded : [];
-    }
-    if (is_array($payload) && isset($payload['progress']) && is_array($payload['progress'])) {
-        // Prefer cloud as source of truth; fill missing phase records from client if needed.
-        $cloudProgress = $payload['progress'];
-        $cloudRecords = isset($cloudProgress['records']) && is_array($cloudProgress['records'])
-            ? $cloudProgress['records']
-            : [];
-        $clientRecords = isset($clientProgress['records']) && is_array($clientProgress['records'])
-            ? $clientProgress['records']
-            : [];
-        foreach ($clientRecords as $key => $record) {
-            if (!isset($cloudRecords[$key]) && is_array($record)) {
-                $cloudRecords[$key] = $record;
-            }
-        }
-        $cloudProgress['records'] = $cloudRecords;
-        $progress = $cloudProgress;
-    }
+$progress = $cloud['payload']['progress'] ?? [];
+if (!is_array($progress) || !journey_summary_pdf_ready($progress)) {
+    journey_plan_json_response(['success' => false, 'error' => 'plan_needs_review',
+        'message' => 'Review and save all six phases with current inputs before downloading your summary.'], 409);
 }
+try { $progress = rb_pdf_data($progress); }
+catch (Throwable $e) { journey_plan_json_response(['success' => false, 'message' => 'The report data is invalid or too large.'], 400); }
 
 if ($progress === [] || !isset($progress['records']) || !is_array($progress['records'])) {
     http_response_code(400);
@@ -94,13 +75,14 @@ if ($progress === [] || !isset($progress['records']) || !is_array($progress['rec
 }
 
 $displayName = trim((string) ($_SESSION['user_name'] ?? ''));
-if ($displayName === '' && is_array($body) && isset($body['displayName'])) {
-    $displayName = trim((string) $body['displayName']);
-}
 if ($displayName === '') {
     $displayName = null;
 }
 
+session_write_close();
+try { $reportLease = rb_ai_lease('user:' . $userId, sys_get_temp_dir() . '/rb-journey-reports'); }
+catch (Throwable $e) { journey_plan_json_response(['success' => false, 'message' => 'Report generation is temporarily unavailable.'], 503); }
+if ($reportLease === null) journey_plan_json_response(['success' => false, 'message' => 'Please wait a minute before generating another report.'], 429);
 try {
     $pdf = journey_summary_pdf_build($progress, $displayName);
     $filename = 'Retirement-Planning-Journey-Summary.pdf';

@@ -54,10 +54,11 @@ if (!is_array($payload)) {
 $clientUpdatedAt = isset($body['clientUpdatedAt']) && is_string($body['clientUpdatedAt'])
     ? $body['clientUpdatedAt']
     : null;
-$force = !empty($body['force']);
+$force = false;
+$baseRevision = is_string($body['baseRevision'] ?? null) ? $body['baseRevision'] : null;
 $reason = isset($body['reason']) && is_string($body['reason']) ? $body['reason'] : 'autosave';
 
-$result = journey_plan_save($conn, $userId, $payload, $clientUpdatedAt, $reason, $force);
+$result = journey_plan_save($conn, $userId, $payload, $clientUpdatedAt, $reason, $force, $baseRevision);
 if (empty($result['ok'])) {
     $error = (string) ($result['error'] ?? 'save_failed');
     $status = 400;

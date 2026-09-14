@@ -3,6 +3,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
 rb_session_start();
 require_once __DIR__ . '/../includes/db_config.php';
 require_once __DIR__ . '/../includes/auth_flow_helpers.php';
+require_once __DIR__ . '/../includes/auth_rate_limit.php';
 
 $error = '';
 $success = '';
@@ -17,19 +18,29 @@ if (!empty($_SESSION['trial_signup_email'])) {
     $prefillEmail = (string) $_SESSION['trial_signup_email'];
     unset($_SESSION['trial_signup_email']);
 }
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['email'])) {
-    $prefillEmail = (string) $_POST['email'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty((is_string($_POST['email'] ?? null) ? $_POST['email'] : ''))) {
+    $prefillEmail = (string) (is_string($_POST['email'] ?? null) ? $_POST['email'] : '');
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
-    $password = $_POST['password'];
-    $confirm_password = $_POST['confirm_password'];
-    $full_name = htmlspecialchars($_POST['full_name']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !rb_csrf_validate(is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : null)) {
+    http_response_code(403);
+    $error = 'Your session expired. Reload this page and try again.';
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = filter_var((is_string($_POST['email'] ?? null) ? $_POST['email'] : ''), FILTER_SANITIZE_EMAIL);
+    $password = (is_string($_POST['password'] ?? null) ? $_POST['password'] : '');
+    $confirm_password = (is_string($_POST['confirm_password'] ?? null) ? $_POST['confirm_password'] : '');
+    $full_name = trim(is_string($_POST['full_name'] ?? null) ? $_POST['full_name'] : '');
     
     // Validation
-    if (empty($email) || empty($password) || empty($full_name)) {
+    if (!rb_auth_rate_allow('register:ip:' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown')) || !rb_auth_rate_allow('register:email:' . strtolower($email))) {
+        http_response_code(429);
+        $error = 'Too many attempts. Please wait five minutes and try again.';
+    } elseif (strlen($email) > 254 || strlen($password) > 72) {
+        $error = 'Use an email up to 254 characters and a password up to 72 bytes.';
+    } elseif (empty($email) || empty($password) || empty($full_name)) {
         $error = 'All fields are required';
+    } elseif (strlen($full_name) > 100) {
+        $error = 'Please use a name of 100 characters or fewer.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Invalid email format';
     } elseif (strlen($password) < 8) {
@@ -270,6 +281,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
         
         <form method="POST" action="" data-rb-event="account_signup_submit" data-rb-param-intent="<?php echo ($trialIntent || $journeyTrialIntent) ? 'trial' : 'free'; ?>">
+            <?php echo rb_csrf_field(); ?>
             <div class="form-group">
                 <label for="full_name">Full Name</label>
                 <input type="text" id="full_name" name="full_name" required>

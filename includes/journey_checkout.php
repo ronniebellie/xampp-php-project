@@ -83,8 +83,7 @@ function has_journey_premium_access(mysqli $conn, int $userId, ?int $nowTs = nul
     $sql = "SELECT stripe_status, entitlement_status, cancel_at_period_end, current_period_end, trial_end
             FROM user_product_subscriptions
             WHERE user_id = ? AND product_key = ?
-            ORDER BY updated_at DESC, id DESC
-            LIMIT 1";
+            ORDER BY updated_at DESC, id DESC";
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
         return false;
@@ -93,26 +92,15 @@ function has_journey_premium_access(mysqli $conn, int $userId, ?int $nowTs = nul
     $stmt->bind_param('is', $userId, $product);
     $stmt->execute();
     $res = $stmt->get_result();
-    $row = $res ? $res->fetch_assoc() : null;
+    $rows = $res ? $res->fetch_all(MYSQLI_ASSOC) : [];
     $stmt->close();
-    if (!$row) {
-        return false;
+    foreach ($rows as $row) {
+        if (empty($row['entitlement_status'])) {
+            $row['entitlement_status'] = journey_normalize_entitlement_status((string)($row['stripe_status'] ?? ''), !empty($row['cancel_at_period_end']), journey_parse_time_value($row['current_period_end'] ?? null), $now);
+        }
+        if (journey_stored_entitlement_allows_access($row, $now)) return true;
     }
-
-    $entitlement = (string) ($row['entitlement_status'] ?? '');
-    if ($entitlement !== '') {
-        return journey_stored_entitlement_allows_access($row, $now);
-    }
-
-    $eval = journey_evaluate_subscription_entitlement([
-        'status' => (string) ($row['stripe_status'] ?? ''),
-        'cancel_at_period_end' => !empty($row['cancel_at_period_end']),
-        'current_period_end' => $row['current_period_end'] ?? null,
-        'trial_end' => $row['trial_end'] ?? null,
-        'product_key' => JOURNEY_PRODUCT_KEY,
-    ], $now);
-
-    return !empty($eval['accessAllowed']);
+    return false;
 }
 
 /**
@@ -120,17 +108,24 @@ function has_journey_premium_access(mysqli $conn, int $userId, ?int $nowTs = nul
  *
  * @param array<string,mixed> $row
  */
-function journey_stored_entitlement_allows_access(array $row, ?int $nowTs = null): bool
+function journey_stored_entitlement_status(array $row, ?int $nowTs = null): string
 {
     $now = $nowTs ?? time();
     $entitlement = strtolower(trim((string) ($row['entitlement_status'] ?? '')));
-    if ($entitlement === 'canceled_grace') {
+    if ($entitlement === '') $entitlement = journey_normalize_entitlement_status((string)($row['stripe_status'] ?? ''), !empty($row['cancel_at_period_end']), journey_parse_time_value($row['current_period_end'] ?? null), $now);
+    if (in_array($entitlement, ['active', 'trialing', 'canceled_grace'], true)) {
         $periodEnd = journey_parse_time_value($row['current_period_end'] ?? null);
-        if ($periodEnd === null || $periodEnd <= $now) {
-            return false;
-        }
+        $trialEnd = journey_parse_time_value($row['trial_end'] ?? null);
+        $deadline = $entitlement === 'trialing' ? ($trialEnd ?? $periodEnd) : $periodEnd;
+        if ($deadline === null || $deadline <= $now) return 'expired';
     }
-    return journey_entitlement_allows_premium_access($entitlement);
+
+    return $entitlement;
+}
+
+function journey_stored_entitlement_allows_access(array $row, ?int $nowTs = null): bool
+{
+    return journey_entitlement_allows_premium_access(journey_stored_entitlement_status($row, $nowTs));
 }
 
 /**

@@ -4,6 +4,7 @@
  */
 include __DIR__ . '/analytics.php';
 ?>
+<a class="journey-skip" href="#journey-main">Skip to main content</a>
 <header class="site-header">
     <div class="site-header-inner">
         <a class="site-brand" href="/" aria-label="Retirement Planning Journey home">
@@ -20,7 +21,8 @@ include __DIR__ . '/analytics.php';
         </div>
     </div>
 </header>
-<script src="/assets/js/journey-phase1-handoff.js?v=20260730-phase1-handoff" defer></script>
-<script src="/assets/js/journey-sync.js?v=20260730-phase1-handoff" defer></script>
-<script src="/assets/js/journey-auth-chrome.js?v=20260907-account-status-fix" defer></script>
-<script src="/assets/js/journey-analytics.js?v=20260804-ga4-journey" defer></script>
+<noscript><p class="container">Enable JavaScript to calculate and save your Journey plan. You can still browse the six phase descriptions below.</p></noscript>
+<script src="/assets/js/journey-phase1-handoff.js?v=20260914-audit" defer></script>
+<script src="/assets/js/journey-sync.js?v=20260914-audit" defer></script>
+<script src="/assets/js/journey-auth-chrome.js?v=20260914-audit" defer></script>
+<script src="/assets/js/journey-analytics.js?v=20260914-audit" defer></script>

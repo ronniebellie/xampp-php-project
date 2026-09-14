@@ -33,7 +33,7 @@ expectH('reconcileLocal exported', strpos($handoffJs, 'reconcileLocal:') !== fal
 expectH('preferUsablePhase1 keeps local over thin cloud', strpos($handoffJs, 'preferUsablePhase1') !== false && strpos($handoffJs, 'canonical') !== false);
 expectH('header loads handoff before sync', strpos($header, 'journey-phase1-handoff.js') !== false && strpos($header, 'journey-phase1-handoff.js') < strpos($header, 'journey-sync.js'));
 expectH('sync reconciles before build payload', strpos($syncJs, 'reconcilePhase1Local()') !== false);
-expectH('sync merge uses preferUsablePhase1', strpos($syncJs, 'preferUsablePhase1') !== false);
+expectH('sync does not mix cloud and local phase slices', strpos($syncJs, 'preferUsablePhase1') === false);
 expectH('landing uses getSummaryRecord/handoff', strpos($landingJs, 'getSummaryRecord') !== false || strpos($landingJs, 'getPhase1Handoff') !== false);
 expectH('phase3 uses shared handoff', strpos($phase3Js, 'getPhase1Handoff') !== false || strpos($phase3Js, 'rbJourneyPhase1') !== false);
 expectH('planner saveNow before redirect', strpos($plannerJs, "saveNow('calculator')") !== false);
@@ -45,7 +45,7 @@ if ($node !== '') {
     $script = <<<'JS'
 const fs = require('fs');
 const path = require('path');
-const root = process.argv[1];
+const root = process.argv[2];
 const store = {};
 global.localStorage = {
   getItem(k){ return Object.prototype.hasOwnProperty.call(store,k) ? store[k] : null; },

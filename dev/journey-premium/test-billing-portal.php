@@ -41,9 +41,9 @@ expectPortal('non-Journey Price rejected', !journey_portal_subscription_matches(
 $params = journey_build_portal_session_params('cus_owned', 'sub_owned');
 expectPortal('portal uses server-selected customer', ($params['customer'] ?? '') === 'cus_owned');
 expectPortal('portal returns to central account page', ($params['return_url'] ?? '') === 'https://ronbelisle.com/account.php');
-expectPortal('portal opens Stripe cancellation flow', ($params['flow_data']['type'] ?? '') === 'subscription_cancel');
-expectPortal('portal cancellation targets owned subscription', ($params['flow_data']['subscription_cancel']['subscription'] ?? '') === 'sub_owned');
-expectPortal('portal completion returns to account', ($params['flow_data']['after_completion']['redirect']['return_url'] ?? '') === 'https://ronbelisle.com/account.php');
+expectPortal('portal opens general recovery and management', !isset($params['flow_data']));
+expectPortal('portal targets owned customer', ($params['customer'] ?? '') === 'cus_owned');
+expectPortal('portal returns to account', ($params['return_url'] ?? '') === 'https://ronbelisle.com/account.php');
 
 $source = (string) file_get_contents($root . '/journey-billing-portal.php');
 expectPortal('endpoint is POST only', strpos($source, "REQUEST_METHOD") !== false && strpos($source, "!== 'POST'") !== false);

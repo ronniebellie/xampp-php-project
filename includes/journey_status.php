@@ -82,7 +82,7 @@ function journey_status_build_response(mysqli $conn): array
     $loginUrl = JOURNEY_STATUS_LOGIN_BASE . '?return=' . rawurlencode($homeReturn);
     $logoutUrl = JOURNEY_STATUS_LOGOUT_BASE;
 
-    $authenticated = isset($_SESSION['user_id']) && (int) $_SESSION['user_id'] > 0;
+    $authenticated = journey_plan_session_user_id() > 0;
     $base = [
         'authenticated' => false,
         'userId' => null,
@@ -123,25 +123,23 @@ function journey_status_build_response(mysqli $conn): array
     $entitlementStatus = 'none';
     $hadJourneySubscription = false;
 
-    $sql = "SELECT entitlement_status, stripe_status
+    $sql = "SELECT entitlement_status, stripe_status, current_period_end, trial_end, cancel_at_period_end
             FROM user_product_subscriptions
             WHERE user_id = ? AND product_key = ?
-            ORDER BY updated_at DESC, id DESC
-            LIMIT 1";
+            ORDER BY updated_at DESC, id DESC";
     $stmt = $conn->prepare($sql);
     if ($stmt) {
         $product = JOURNEY_PRODUCT_KEY;
         $stmt->bind_param('is', $userId, $product);
         $stmt->execute();
         $res = $stmt->get_result();
-        $row = $res ? $res->fetch_assoc() : null;
+        $rows = $res ? $res->fetch_all(MYSQLI_ASSOC) : [];
         $stmt->close();
-        if (is_array($row)) {
+        foreach ($rows as $row) {
+            $effective = journey_stored_entitlement_status($row);
+            if (!$hadJourneySubscription || journey_entitlement_allows_premium_access($effective)) $entitlementStatus = $effective;
             $hadJourneySubscription = true;
-            $entitlementStatus = trim((string) ($row['entitlement_status'] ?? ''));
-            if ($entitlementStatus === '') {
-                $entitlementStatus = strtolower(trim((string) ($row['stripe_status'] ?? 'none')));
-            }
+            if (journey_entitlement_allows_premium_access($effective)) break;
         }
     }
 

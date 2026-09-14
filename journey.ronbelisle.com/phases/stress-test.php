@@ -7,13 +7,15 @@ $page_title = 'Stress Test | Retirement Planning Journey';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex,nofollow">
+    <link rel="canonical" href="https://journey.ronbelisle.com/phases/stress-test.php">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260801-feedback">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260914-audit">
 </head>
 <body>
     <?php include __DIR__ . '/../includes/site-header.php'; ?>
 
-    <main>
+    <main id="journey-main" tabindex="-1">
         <section class="page-hero" aria-labelledby="phase-title">
             <div class="container phase-template-grid">
                 <div class="phase-main-column">
@@ -21,6 +23,7 @@ $page_title = 'Stress Test | Retirement Planning Journey';
                         <p class="eyebrow">Phase 4</p>
                         <h1 id="phase-title">Stress Test</h1>
                         <p class="page-lede">You’ve built a base-case retirement income plan. Now you’ll see how sensitive it may be to less favorable conditions.</p>
+                        <p class="supporting-note">This test holds your savings withdrawal need constant in today’s dollars. It does not model a pre-benefit income bridge, income interruptions, or pensions losing purchasing power.</p>
                         <p class="phase-reassurance">These tests are educational. They do not predict markets or guarantee outcomes.</p>
                     </div>
 
@@ -160,10 +163,10 @@ $page_title = 'Stress Test | Retirement Planning Journey';
         </section>
     </main>
 
-    <script src="/assets/js/phase4-config.js?v=20260725-phase4-open" defer></script>
-    <script src="/assets/js/phase4-stress-engine.js?v=20260725-phase4-open" defer></script>
-    <script src="/assets/js/phase4-adjustments.js?v=20260725-phase4-open" defer></script>
-    <script src="/assets/js/stress-test-phase.js?v=20260801-logged-in-polish" defer></script>
+    <script src="/assets/js/phase4-config.js?v=20260914-audit" defer></script>
+    <script src="/assets/js/phase4-stress-engine.js?v=20260914-audit" defer></script>
+    <script src="/assets/js/phase4-adjustments.js?v=20260914-audit" defer></script>
+    <script src="/assets/js/stress-test-phase.js?v=20260914-audit" defer></script>
     <?php include __DIR__ . '/../includes/site-footer.php'; ?>
 </body>
 </html>

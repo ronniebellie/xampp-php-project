@@ -34,12 +34,12 @@ $page_title = 'Your Retirement Planning Journey';
     <meta name="twitter:description" content="A free, guided six-phase process to help you build your initial retirement plan one decision at a time.">
     <meta name="twitter:image" content="https://journey.ronbelisle.com/assets/images/journey-social-preview.jpg">
     <meta name="twitter:image:alt" content="Your Retirement Planning Journey — six connected planning phases">
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260801-feedback">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260914-audit">
 </head>
 <body>
     <?php include __DIR__ . '/includes/site-header.php'; ?>
 
-    <main>
+    <main id="journey-main" tabindex="-1">
         <section class="hero-section" aria-labelledby="journey-title">
             <div class="container hero-grid">
                 <div class="hero-copy">
@@ -49,6 +49,7 @@ $page_title = 'Your Retirement Planning Journey';
                         <p data-journey-home-intro-lead>Retirement isn't one decision. It's a series of connected decisions about spending, Social Security, investments, taxes, and protecting your family.</p>
                         <p data-journey-home-intro-body>Your Retirement Planning Journey guides you through six phases to help you build your initial retirement plan—one decision at a time.</p>
                     </div>
+                    <p><strong>Journey is a guided six-phase process.</strong> For a quick retirement snapshot or an individual calculator, visit <a href="https://ronbelisle.com/">RonBelisle.com</a>. Here, work through one decision at a time. All six phases are free; Premium adds account saving across devices and a downloadable summary.</p>
                     <p class="audience-aside">Already retired? Many of the individual planning tools may still be useful, but this six-phase Journey is currently built around preparing for retirement.</p>
                     <a class="primary-action" href="/phases/spending-goals.php" data-journey-home-cta>Begin Your Journey</a>
                 </div>
@@ -107,42 +108,42 @@ $page_title = 'Your Retirement Planning Journey';
                 <div class="phase-grid">
                     <article class="phase-card is-available" id="spending-goals" data-journey-phase="spending-goals">
                         <span class="phase-number">1</span>
-                        <h3>Spending &amp; Goals</h3>
+                        <h3><a href="/phases/spending-goals.php">Spending &amp; Goals</a></h3>
                         <p>Start by clarifying the lifestyle, expenses, and priorities your plan needs to support.</p>
                         <span class="phase-status" data-journey-phase-status>Next step</span>
                     </article>
 
                     <article class="phase-card is-available" id="social-security" data-journey-phase="social-security">
                         <span class="phase-number">2</span>
-                        <h3>Social Security</h3>
+                        <h3><a href="/phases/social-security.php">Social Security</a></h3>
                         <p>Think through claiming age, household benefits, and how Social Security fits your income plan.</p>
                         <span class="phase-status" data-journey-phase-status hidden></span>
                     </article>
 
                     <article class="phase-card is-available" id="build-your-plan" data-journey-phase="build-your-plan">
                         <span class="phase-number">3</span>
-                        <h3>Build Your Plan</h3>
-                        <p>See whether your retirement savings can support the lifestyle you’ve planned under your current assumptions.</p>
+                        <h3><a href="/phases/build-your-plan.php">Build Your Plan</a></h3>
+                        <p>Estimate the initial amount needed from savings after your entered Social Security and other dependable income.</p>
                         <span class="phase-status" data-journey-phase-status hidden></span>
                     </article>
 
                     <article class="phase-card is-available" id="stress-test" data-journey-phase="stress-test">
                         <span class="phase-number">4</span>
-                        <h3>Stress Test</h3>
+                        <h3><a href="/phases/stress-test.php">Stress Test</a></h3>
                         <p>See how sensitive your base-case plan may be to weaker growth, an early market decline, and a longer retirement.</p>
                         <span class="phase-status" data-journey-phase-status hidden></span>
                     </article>
 
                     <article class="phase-card is-available" id="tax-strategy" data-journey-phase="tax-strategy">
                         <span class="phase-number">5</span>
-                        <h3>Tax Strategy</h3>
+                        <h3><a href="/phases/tax-strategy.php">Tax Strategy</a></h3>
                         <p>See how taxes may affect the retirement income plan you already built, then identify one issue to revisit.</p>
                         <span class="phase-status" data-journey-phase-status hidden></span>
                     </article>
 
                     <article class="phase-card is-available" id="survivor-planning" data-journey-phase="survivor-planning">
                         <span class="phase-number">6</span>
-                        <h3>Survivor Planning</h3>
+                        <h3><a href="/phases/survivor-planning.php">Survivor Planning</a></h3>
                         <p>See how the household income plan may change if one spouse dies, then identify one survivor-planning priority.</p>
                         <span class="phase-status" data-journey-phase-status hidden></span>
                     </article>

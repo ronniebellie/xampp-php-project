@@ -123,19 +123,7 @@ function journey_build_portal_session_params(string $customerId, string $subscri
     return [
         'customer' => $customerId,
         'return_url' => 'https://ronbelisle.com/account.php',
-        // Open Stripe's hosted cancellation management flow directly. Both
-        // identifiers come from the authenticated user's server-side row.
-        'flow_data' => [
-            'type' => 'subscription_cancel',
-            'subscription_cancel' => [
-                'subscription' => $subscriptionId,
-            ],
-            'after_completion' => [
-                'type' => 'redirect',
-                'redirect' => [
-                    'return_url' => 'https://ronbelisle.com/account.php',
-                ],
-            ],
-        ],
+        // General portal allows payment recovery as well as cancellation.
+
     ];
 }

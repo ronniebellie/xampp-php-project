@@ -31,7 +31,7 @@ expectP3('phase3 uses saveNow for premium confirmation', strpos($js, 'persistClo
 expectP3('premium success mentions Journey account', strpos($js, 'saved to your Journey account') !== false);
 expectP3('free/local success mentions this browser', strpos($js, 'saved in this browser') !== false);
 expectP3('hardcoded browser-only confirmation removed from php', strpos($php, 'saved in this browser.</strong>') === false);
-expectP3('cache bust updated', strpos($php, 'build-your-plan-phase.js?v=20260730-phase3-cloud') !== false);
+expectP3('cache bust updated', strpos($php, 'build-your-plan-phase.js?v=20260914-audit') !== false);
 expectP3('sync payload includes progress records', strpos($sync, 'progress: progress') !== false);
 
 echo "Phase 3 cloud-save tests\n";

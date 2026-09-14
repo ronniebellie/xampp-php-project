@@ -38,7 +38,7 @@
     }
 
     function extractFromCalculator(calc) {
-        if (!calc || typeof calc !== 'object') return null;
+        if (!calc || typeof calc !== 'object' || calc.completionStatus !== 'completed') return null;
         var outputs = calc.outputs && typeof calc.outputs === 'object' ? calc.outputs : {};
         var inputs = calc.inputs && typeof calc.inputs === 'object' ? calc.inputs : {};
         var data = calc.journeyResult && calc.journeyResult.dataForLaterPhases
@@ -59,9 +59,8 @@
                     : data.monthlyOtherRegularRetirementIncome
             ) || 0
         );
-        var annual = positiveNumber(outputs.annualRetirementSpendingTarget) ||
-            positiveNumber(data.annualRetirementSpendingTarget) ||
-            monthly * 12;
+        if (!Number.isFinite(other)) return null;
+        var annual = monthly * 12;
 
         var canonical = positiveNumber(outputs.monthlyRetirementSpendingTarget) > 0 ||
             positiveNumber(data.monthlyRetirementSpendingTarget) > 0;
@@ -79,7 +78,7 @@
     }
 
     function extractFromProgressRecord(record) {
-        if (!record || typeof record !== 'object') return null;
+        if (!record || typeof record !== 'object' || record.saved !== true) return null;
         var data = record.result && record.result.dataForLaterPhases
             ? record.result.dataForLaterPhases
             : {};
@@ -96,9 +95,8 @@
                     : record.monthlyOtherRegularRetirementIncome
             ) || 0
         );
-        var annual = positiveNumber(data.annualRetirementSpendingTarget) ||
-            positiveNumber(record.annualRetirementSpendingTarget) ||
-            monthly * 12;
+        if (!Number.isFinite(other)) return null;
+        var annual = monthly * 12;
         var canonical = positiveNumber(data.monthlyRetirementSpendingTarget) > 0;
 
         return {
@@ -204,7 +202,9 @@
         if (!calc || typeof calc !== 'object') return false;
         if (calc.completionStatus !== 'completed') return false;
         var outputs = calc.outputs || {};
-        return Number(outputs.monthlyRetirementSpendingTarget) === handoff.monthlySpending;
+        return Number(outputs.monthlyRetirementSpendingTarget) === handoff.monthlySpending &&
+            Number(outputs.monthlyOtherRegularRetirementIncome) === handoff.monthlyOther &&
+            Number(outputs.annualRetirementSpendingTarget) === handoff.annualSpending;
     }
 
     function progressRecordIsCanonical(record, handoff) {
@@ -212,7 +212,9 @@
         var data = record.result && record.result.dataForLaterPhases
             ? record.result.dataForLaterPhases
             : null;
-        return !!(data && Number(data.monthlyRetirementSpendingTarget) === handoff.monthlySpending);
+        return !!(data && Number(data.monthlyRetirementSpendingTarget) === handoff.monthlySpending &&
+            Number(data.monthlyOtherRegularRetirementIncome) === handoff.monthlyOther &&
+            Number(data.annualRetirementSpendingTarget) === handoff.annualSpending);
     }
 
     /**

@@ -58,7 +58,7 @@ expect3('empty-cloud local data triggers import', strpos($sync, "performFirstImp
 expect3('import refuses overwrite path handled', strpos($sync, "already_exists") !== false);
 expect3('header loads handoff before sync', strpos($header, 'journey-phase1-handoff.js') !== false && strpos($header, 'journey-phase1-handoff.js') < strpos($header, 'journey-sync.js'));
 expect3('header loads sync before chrome', strpos($header, 'journey-sync.js') !== false && strpos($header, 'journey-sync.js') < strpos($header, 'journey-auth-chrome.js'));
-expect3('header cache-bust includes phase1-handoff', strpos($header, 'journey-sync.js?v=20260730-phase1-handoff') !== false);
+expect3('header cache-bust includes phase1-handoff', strpos($header, 'journey-sync.js?v=20260914-audit') !== false);
 expect3('sync reconciles phase1 handoff', strpos($sync, 'reconcilePhase1Local') !== false);
 expect3('chrome listens for sync state', strpos($chrome, 'rb-journey-sync-state') !== false);
 expect3('chrome removed temporary P2-only note', strpos($chrome, 'Cloud plan saving will be connected in the next implementation step') === false);

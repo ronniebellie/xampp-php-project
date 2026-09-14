@@ -62,7 +62,7 @@
     function readProgress() {
         try {
             var parsed = JSON.parse(localStorage.getItem(progressKey) || '{}');
-            return parsed && typeof parsed === 'object' ? parsed : {};
+            return window.rbJourneyRecords ? window.rbJourneyRecords.reconcileDependencies(parsed) : (parsed && typeof parsed === 'object' ? parsed : {});
         } catch (error) {
             return {};
         }
@@ -78,7 +78,7 @@
     function readCalculatorRecord() {
         try {
             var parsed = JSON.parse(localStorage.getItem(calculatorKey) || '{}');
-            return parsed && typeof parsed === 'object' ? parsed : {};
+            return window.rbJourneyRecords ? window.rbJourneyRecords.reconcileDependencies(parsed) : (parsed && typeof parsed === 'object' ? parsed : {});
         } catch (error) {
             return {};
         }
@@ -146,8 +146,8 @@
             var section = element.closest('.calculator-section');
             if (section && section.hidden) return;
             var value = Number(element.value);
-            if (!Number.isFinite(value) || value < 0) {
-                errors.push('Enter zero or a positive number for ' + labelText(element) + '.');
+            if (!Number.isFinite(value) || value < 0 || value > 1e10) {
+                errors.push('Enter an amount from zero to 10 billion for ' + labelText(element) + '.');
             }
         });
 
@@ -362,6 +362,7 @@
 
     function markPhaseComplete(record) {
         var progress = readProgress();
+        if (window.rbJourneyRecords) window.rbJourneyRecords.invalidateDependents(progress, 'spending-goals');
         progress['spending-goals'] = true;
         progress.records = progress.records && typeof progress.records === 'object' ? progress.records : {};
         progress.records['spending-goals'] = {

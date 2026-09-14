@@ -101,16 +101,7 @@ function journey_resolve_user_id_for_subscription(
     $subscription,
     ?int $userIdHint = null
 ): ?int {
-    if ($userIdHint !== null && $userIdHint > 0) {
-        return $userIdHint;
-    }
-
     $arr = journey_stripe_object_to_array($subscription);
-    $metaUser = $arr['metadata']['user_id'] ?? null;
-    if (is_numeric($metaUser) && (int) $metaUser > 0) {
-        return (int) $metaUser;
-    }
-
     $subId = (string) ($arr['id'] ?? '');
     if ($subId !== '') {
         $stmt = $conn->prepare(
@@ -128,6 +119,9 @@ function journey_resolve_user_id_for_subscription(
         }
     }
 
+    if ($userIdHint !== null && $userIdHint > 0) return $userIdHint;
+    $metaUser = $arr['metadata']['user_id'] ?? null;
+    if (is_numeric($metaUser) && (int)$metaUser > 0) return (int)$metaUser;
     return null;
 }
 
@@ -239,22 +233,22 @@ function journey_sync_subscription_row(
             %s
         )
         ON DUPLICATE KEY UPDATE
-            user_id = VALUES(user_id),
-            product_key = VALUES(product_key),
-            stripe_customer_id = VALUES(stripe_customer_id),
-            stripe_price_id = VALUES(stripe_price_id),
-            stripe_product_id = VALUES(stripe_product_id),
-            stripe_status = VALUES(stripe_status),
-            entitlement_status = VALUES(entitlement_status),
-            trial_start = VALUES(trial_start),
-            trial_end = VALUES(trial_end),
-            current_period_start = VALUES(current_period_start),
-            current_period_end = VALUES(current_period_end),
-            cancel_at_period_end = VALUES(cancel_at_period_end),
-            canceled_at = VALUES(canceled_at),
-            ended_at = VALUES(ended_at),
-            latest_invoice_id = VALUES(latest_invoice_id),
-            last_stripe_event_created = VALUES(last_stripe_event_created),
+            user_id = user_id,
+            product_key = product_key,
+            stripe_customer_id = IF((last_stripe_event_created IS NULL OR VALUES(last_stripe_event_created) IS NULL OR VALUES(last_stripe_event_created) >= last_stripe_event_created), VALUES(stripe_customer_id), stripe_customer_id),
+            stripe_price_id = IF((last_stripe_event_created IS NULL OR VALUES(last_stripe_event_created) IS NULL OR VALUES(last_stripe_event_created) >= last_stripe_event_created), VALUES(stripe_price_id), stripe_price_id),
+            stripe_product_id = IF((last_stripe_event_created IS NULL OR VALUES(last_stripe_event_created) IS NULL OR VALUES(last_stripe_event_created) >= last_stripe_event_created), VALUES(stripe_product_id), stripe_product_id),
+            stripe_status = IF((last_stripe_event_created IS NULL OR VALUES(last_stripe_event_created) IS NULL OR VALUES(last_stripe_event_created) >= last_stripe_event_created), VALUES(stripe_status), stripe_status),
+            entitlement_status = IF((last_stripe_event_created IS NULL OR VALUES(last_stripe_event_created) IS NULL OR VALUES(last_stripe_event_created) >= last_stripe_event_created), VALUES(entitlement_status), entitlement_status),
+            trial_start = IF((last_stripe_event_created IS NULL OR VALUES(last_stripe_event_created) IS NULL OR VALUES(last_stripe_event_created) >= last_stripe_event_created), VALUES(trial_start), trial_start),
+            trial_end = IF((last_stripe_event_created IS NULL OR VALUES(last_stripe_event_created) IS NULL OR VALUES(last_stripe_event_created) >= last_stripe_event_created), VALUES(trial_end), trial_end),
+            current_period_start = IF((last_stripe_event_created IS NULL OR VALUES(last_stripe_event_created) IS NULL OR VALUES(last_stripe_event_created) >= last_stripe_event_created), VALUES(current_period_start), current_period_start),
+            current_period_end = IF((last_stripe_event_created IS NULL OR VALUES(last_stripe_event_created) IS NULL OR VALUES(last_stripe_event_created) >= last_stripe_event_created), VALUES(current_period_end), current_period_end),
+            cancel_at_period_end = IF((last_stripe_event_created IS NULL OR VALUES(last_stripe_event_created) IS NULL OR VALUES(last_stripe_event_created) >= last_stripe_event_created), VALUES(cancel_at_period_end), cancel_at_period_end),
+            canceled_at = IF((last_stripe_event_created IS NULL OR VALUES(last_stripe_event_created) IS NULL OR VALUES(last_stripe_event_created) >= last_stripe_event_created), VALUES(canceled_at), canceled_at),
+            ended_at = IF((last_stripe_event_created IS NULL OR VALUES(last_stripe_event_created) IS NULL OR VALUES(last_stripe_event_created) >= last_stripe_event_created), VALUES(ended_at), ended_at),
+            latest_invoice_id = IF((last_stripe_event_created IS NULL OR VALUES(last_stripe_event_created) IS NULL OR VALUES(last_stripe_event_created) >= last_stripe_event_created), VALUES(latest_invoice_id), latest_invoice_id),
+            last_stripe_event_created = GREATEST(COALESCE(last_stripe_event_created, 0), COALESCE(VALUES(last_stripe_event_created), 0)),
             updated_at = CURRENT_TIMESTAMP",
         $userId,
         $conn->real_escape_string($productKey),
@@ -355,7 +349,10 @@ function journey_process_verified_stripe_event(mysqli $conn, $event, array $opti
     }
 
     $claim = journey_webhook_event_claim($conn, $eventId, $type, $created, $livemode);
-    if ($claim === 'already_processed' || $claim === 'in_progress') {
+    if ($claim === 'in_progress') {
+        return ['http_status' => 503, 'result' => $claim, 'detail' => 'retry_after_inflight_worker'];
+    }
+    if ($claim === 'already_processed') {
         return ['http_status' => 200, 'result' => $claim, 'detail' => 'idempotent_skip'];
     }
     if ($claim === 'error') {

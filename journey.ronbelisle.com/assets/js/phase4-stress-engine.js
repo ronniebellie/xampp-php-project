@@ -93,6 +93,10 @@
      * Optional startingDeclinePct applied to starting balance before year 1.
      */
     function projectPath(balance, annualNeed, years, growthRate, startingDeclinePct) {
+        if (![balance, annualNeed, years, growthRate].every(function(n){ return typeof n === 'number' && Number.isFinite(n); }) ||
+            balance < 0 || annualNeed < 0 || balance > 1e12 || annualNeed > 1e12 || years < 0 || years > 120 || !Number.isInteger(years) || growthRate < -1 || growthRate > 1) {
+            throw new RangeError('Unsupported stress-test inputs');
+        }
         var b = Math.max(0, clampNumber(balance, 0));
         var w = Math.max(0, clampNumber(annualNeed, 0));
         var horizon = Math.max(0, Math.floor(clampNumber(years, 0)));
@@ -111,7 +115,8 @@
         for (var year = 1; year <= horizon; year += 1) {
             var startBal = b;
             if (b <= 1e-9) {
-                if (depletedYear === null) depletedYear = year;
+                if (w > 0 && depletedYear === null) depletedYear = year;
+                if (w === 0) yearsFunded += 1;
                 history.push({
                     year: year,
                     start: 0,
@@ -143,9 +148,8 @@
             });
 
             b = end;
-            if (b <= 1e-9 && depletedYear === null) {
-                depletedYear = year;
-            }
+            // A zero closing balance is not an unfunded payment.
+            // Mark depletion only when an actual withdrawal cannot be met.
         }
 
         var lastedFullHorizon = depletedYear === null && (w === 0 || yearsFunded >= horizon);
@@ -171,7 +175,7 @@
     function yearsOfWithdrawals(endingBalance, annualNeed) {
         var end = clampNumber(endingBalance, 0);
         var w = clampNumber(annualNeed, 0);
-        if (!(w > 0)) return end > 0 ? Number.POSITIVE_INFINITY : 0;
+        if (!(w > 0)) return null;
         return end / w;
     }
 
@@ -568,6 +572,9 @@
     }
 
     function normalizePlan(plan) {
+        if (!plan || !['monthlySpending','monthlySocialSecurity','monthlyOtherIncome','savingsBalance'].every(function(key){
+            return typeof plan[key] === 'number' && Number.isFinite(plan[key]) && plan[key] >= 0 && plan[key] <= 1e12;
+        })) throw new RangeError('A complete finite plan is required');
         var monthlySpending = clampNumber(plan.monthlySpending, 0);
         var monthlySs = clampNumber(plan.monthlySocialSecurity, 0);
         var monthlyOther = clampNumber(plan.monthlyOtherIncome, 0);
@@ -578,6 +585,8 @@
         } else {
             monthlyNeed = Math.max(0, clampNumber(monthlyNeed, 0));
         }
+        var expectedNeed = Math.max(0, monthlySpending - monthlySs - monthlyOther);
+        if (!Number.isFinite(monthlyNeed) || Math.abs(expectedNeed - monthlyNeed) > 0.001) throw new RangeError('Inconsistent savings need');
         var annualNeed = monthlyNeed * 12;
         var assessment = assessPhase3(annualNeed, balance);
 
@@ -659,7 +668,9 @@
             var compare = s.comparePath;
             var impact;
 
-            if (id === 'longerRetirement') {
+            if (W === 0) {
+                impact = { code: IMPACT.LITTLE, reason: 'No savings withdrawals are needed under the entered level-income assumptions. Income interruptions and inflation differences are not tested.', severityKind: 'no_withdrawal_need' };
+            } else if (id === 'longerRetirement') {
                 impact = classifyLongerRetirement(
                     basePath,
                     longerPath,

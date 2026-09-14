@@ -50,7 +50,7 @@
     function readProgress() {
         try {
             var parsed = JSON.parse(window.localStorage.getItem('rbJourneyProgressV1') || '{}');
-            return parsed && typeof parsed === 'object' ? parsed : {};
+            return window.rbJourneyRecords ? window.rbJourneyRecords.reconcileDependencies(parsed) : (parsed && typeof parsed === 'object' ? parsed : {});
         } catch (error) {
             return {};
         }

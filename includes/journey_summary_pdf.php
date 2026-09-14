@@ -13,9 +13,38 @@ if (defined('RB_JOURNEY_SUMMARY_PDF_LOADED')) {
 define('RB_JOURNEY_SUMMARY_PDF_LOADED', 1);
 
 /** Display version for the report cover/footer (increment when the report template changes). */
-const JOURNEY_SUMMARY_PDF_VERSION = '1';
+const JOURNEY_SUMMARY_PDF_VERSION = '2';
 const JOURNEY_SUMMARY_PDF_SITE = 'journey.ronbelisle.com';
 const JOURNEY_SUMMARY_PDF_SITE_URL = 'https://journey.ronbelisle.com/';
+
+/** Export only a coherent, deliberately saved six-phase plan. */
+function journey_summary_pdf_ready(array $progress): bool
+{
+    $keys = ['spending-goals', 'social-security', 'build-your-plan', 'stress-test', 'tax-strategy', 'survivor-planning'];
+    foreach ($keys as $key) {
+        $record = $progress['records'][$key] ?? null;
+        if (($progress[$key] ?? false) !== true || !is_array($record) || ($record['saved'] ?? false) !== true || !empty($record['needsReview']) || !empty($record['hasUnsavedChanges'])) return false;
+    }
+    $plan = $progress['records']['build-your-plan'];
+    foreach (['monthlyRetirementSpendingGoal','monthlySocialSecurityAssumption','monthlyOtherDependableIncome','monthlyNeededFromRetirementSavings','annualNeededFromRetirementSavings','retirementSavingsBalance'] as $key) {
+        if (!isset($plan[$key]) || !is_numeric($plan[$key]) || !is_finite((float)$plan[$key]) || $plan[$key] < 0 || $plan[$key] > 1e12) return false;
+    }
+    $need = max(0, $plan['monthlyRetirementSpendingGoal'] - $plan['monthlySocialSecurityAssumption'] - $plan['monthlyOtherDependableIncome']);
+    if (abs($need-$plan['monthlyNeededFromRetirementSavings']) > 0.001 || abs($need*12-$plan['annualNeededFromRetirementSavings']) > 0.001) return false;
+    $phase1 = $progress['records']['spending-goals']['result']['dataForLaterPhases'] ?? [];
+    if (($phase1['monthlyRetirementSpendingTarget'] ?? null) != $plan['monthlyRetirementSpendingGoal'] || ($phase1['monthlyOtherRegularRetirementIncome'] ?? null) != $plan['monthlyOtherDependableIncome']) return false;
+    if (($plan['socialSecuritySource'] ?? '') === 'phase2') {
+        $choice = $progress['records']['social-security']['lastSavedPlanning'] ?? $progress['records']['social-security'];
+        if (($choice['decisionStatus'] ?? '') !== 'provisional' || !isset($choice['estimatedMonthlyBenefit']) || $choice['estimatedMonthlyBenefit'] != $plan['monthlySocialSecurityAssumption']) return false;
+    }
+    foreach (['stress-test','tax-strategy','survivor-planning'] as $key) {
+        $snapshot = $progress['records'][$key]['phase3Snapshot'] ?? [];
+        foreach (['monthlyRetirementSpendingGoal','monthlySocialSecurityAssumption','monthlyOtherDependableIncome','retirementSavingsBalance','annualNeededFromRetirementSavings'] as $field) {
+            if (!array_key_exists($field,$snapshot) || $snapshot[$field] != $plan[$field]) return false;
+        }
+    }
+    return true;
+}
 
 /**
  * @param mixed $value
@@ -25,7 +54,7 @@ function journey_summary_pdf_money($value): string
     if ($value === null || $value === '') {
         return '—';
     }
-    if (!is_numeric($value)) {
+    if (!is_numeric($value) || !is_finite((float)$value)) {
         return '—';
     }
     return '$' . number_format((float) $value, 0);
@@ -36,7 +65,7 @@ function journey_summary_pdf_money($value): string
  */
 function journey_summary_pdf_pct_from_decimal($value): string
 {
-    if ($value === null || $value === '' || !is_numeric($value)) {
+    if ($value === null || $value === '' || !is_numeric($value) || !is_finite((float)$value)) {
         return '—';
     }
     $pct = ((float) $value) * 100;
@@ -49,7 +78,7 @@ function journey_summary_pdf_pct_from_decimal($value): string
  */
 function journey_summary_pdf_num($value): ?float
 {
-    if ($value === null || $value === '' || !is_numeric($value)) {
+    if ($value === null || $value === '' || !is_numeric($value) || !is_finite((float)$value)) {
         return null;
     }
     return (float) $value;
@@ -390,8 +419,8 @@ function journey_summary_pdf_chart_donut(array $slices, int $size = 640): ?strin
         imagedestroy($img);
         return null;
     }
-    $png = $path . '.png';
-    @unlink($path);
+    $png = $path;
+    register_shutdown_function(static function() use ($png): void { if (is_file($png)) @unlink($png); });
     imagepng($img, $png);
     imagedestroy($img);
     return $png;
@@ -476,8 +505,8 @@ function journey_summary_pdf_chart_bars(array $bars, int $width = 1400, int $hei
         imagedestroy($img);
         return null;
     }
-    $png = $path . '.png';
-    @unlink($path);
+    $png = $path;
+    register_shutdown_function(static function() use ($png): void { if (is_file($png)) @unlink($png); });
     imagepng($img, $png, 6);
     imagedestroy($img);
     return $png;
@@ -563,8 +592,8 @@ function journey_summary_pdf_chart_rate(?float $rate, string $assessmentLabel, i
         imagedestroy($img);
         return null;
     }
-    $png = $path . '.png';
-    @unlink($path);
+    $png = $path;
+    register_shutdown_function(static function() use ($png): void { if (is_file($png)) @unlink($png); });
     imagepng($img, $png, 6);
     imagedestroy($img);
     return $png;
@@ -680,6 +709,7 @@ function journey_summary_pdf_draw_rate_gauge(
  */
 class JourneySummaryPdfDocument extends TCPDF
 {
+    public function Error($msg) { throw new RuntimeException('Journey PDF rendering failed'); }
     /** @var string */
     public $journeyGeneratedLabel = '';
 
@@ -1253,7 +1283,7 @@ function journey_summary_pdf_build(array $progress, ?string $displayName = null)
     $pdf->MultiCell(
         0,
         4.8,
-        'Retirement planning isn\'t a one-time event. As markets, Social Security estimates, taxes, spending, investments, and family circumstances change, return to your Journey to update your plan, compare new scenarios, and generate an updated report that reflects your latest decisions.',
+        'Retirement planning isn\'t a one-time event. As markets, Social Security estimates, taxes, spending, investments, and family circumstances change, return to your Journey to update your plan, revisit assumptions, and generate an updated report that reflects your latest decisions.',
         0,
         'L'
     );
@@ -1287,6 +1317,16 @@ function journey_summary_pdf_build(array $progress, ?string $displayName = null)
         $pdf->SetY($boxY + 13);
     }
 
+    $pdf->AddPage();
+    journey_summary_pdf_section_heading($pdf, 'Assumptions and limitations');
+    $pdf->SetFont('helvetica', '', 10);
+    $pdf->MultiCell(0, 6, 'All planning amounts are in US dollars. Monthly and annual amounts use 12 months per year. The income snapshot assumes all entered income is already available at the same time; it does not fund a bridge before Social Security or pensions start. Keep spending, benefits and balances on the same date and dollar basis.', 0, 'L');
+    $pdf->Ln(3);
+    $pdf->MultiCell(0, 6, 'Phase 3 is an initial gross withdrawal-demand check, not a lifetime sustainability forecast or after-tax spending calculation. The 4% and 5% bands are educational signals, not recommended withdrawal rates. A zero savings requirement assumes dependable income continues.', 0, 'L');
+    $pdf->Ln(3);
+    $pdf->MultiCell(0, 6, 'Phase 4 uses today\'s dollars, fixed real annual withdrawals before investment growth, 28 years in the base and market tests, and 33 years in the longevity test. Assumptions: 2.75% base real growth, 1% weaker real growth, and a 15% decline before the first withdrawal. Real growth is after inflation; no additional inflation escalation is applied. Income interruptions, differing income inflation rates, taxes, fees and individual lifespan are not separately modeled. Model: hybrid_r2 cash-ledger correction, September 2026.', 0, 'L');
+    $pdf->Ln(3);
+    $pdf->MultiCell(0, 6, 'Phase 2 records a benefit estimate at the selected claiming age; it does not determine SSA eligibility or a household award. Phases 5 and 6 identify questions to review. They calculate no federal or state tax, RMD, Roth-conversion amount, survivor benefit, estate outcome or legal entitlement. No statutory tax year applies to these qualitative reviews. Use the detailed calculators and qualified advice for those decisions.', 0, 'L');
     journey_summary_pdf_cleanup_temps($tempFiles);
 
     return $pdf;

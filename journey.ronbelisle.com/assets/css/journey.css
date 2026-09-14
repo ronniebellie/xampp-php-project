@@ -2257,3 +2257,9 @@ h1 {
     color: #334155;
     line-height: 1.5;
 }
+
+.journey-skip { position: absolute; left: 1rem; top: -5rem; z-index: 100; background: white; padding: 1rem; color: #15355d; }
+.journey-skip:focus { top: 1rem; }
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
+}

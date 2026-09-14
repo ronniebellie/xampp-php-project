@@ -20,6 +20,10 @@
     }
 
     function clearJourneyLocalStorage() {
+        var extra = [];
+        for (var i = 0; i < localStorage.length; i++) { var key = localStorage.key(i); if (key && (key.indexOf('rbJourneyOwnerArchive:') === 0 || key === 'rbJourneyOwnerV1' || key === 'rbJourneyCloudRevisionV1')) extra.push(key); }
+        extra.forEach(function(key){localStorage.removeItem(key);});
+        sessionStorage.removeItem('rbJourneySyncPendingV1');
         journeyStorageKeys().forEach(function (key) {
             localStorage.removeItem(key);
         });
@@ -251,9 +255,9 @@
 
         if (context) {
             if (journeyComplete && browserOnly) {
-                context.textContent = 'Your retirement plan is ready in this browser. Review your decisions, update your assumptions, and keep your plan current as your life changes.';
+                context.textContent = 'Your initial planning review is saved in this browser. Review your decisions, update your assumptions, and keep your plan current as your life changes.';
             } else if (journeyComplete) {
-                context.textContent = 'Your retirement plan is ready. Use this dashboard to review your decisions, update your assumptions, and keep your plan current as your life changes.';
+                context.textContent = 'Your initial planning review is saved. Use this dashboard to review your decisions, update your assumptions, and keep your plan current as your life changes.';
             } else if (started && browserOnly) {
                 context.textContent = 'You’re building your retirement plan one decision at a time. Progress is saved in this browser.';
             } else {
@@ -267,7 +271,7 @@
         var phasesHeading = document.querySelector('[data-journey-phases-heading]');
         if (journeyComplete) {
             if (introLead) {
-                introLead.textContent = 'Your retirement plan is ready.';
+                introLead.textContent = 'Your initial planning review is saved.';
             }
             if (introBody) {
                 introBody.textContent = 'Use this dashboard to review your decisions, update your assumptions, and keep your plan current as your life changes.';
@@ -421,7 +425,7 @@
         if (resetTrigger) {
             var confirmed = window.confirm(
                 'Clear all Journey progress saved in this browser?\n\n' +
-                'This removes your saved phase progress and Retirement Spending Plan from this browser. This action cannot be undone.'
+                'This removes your saved phase progress, pending writes and account caches from this browser. Your saved cloud plan is retained. This action cannot be undone.'
             );
             if (!confirmed) {
                 return;

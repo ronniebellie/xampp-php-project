@@ -10,7 +10,7 @@
     function readProgress() {
         try {
             var parsed = JSON.parse(localStorage.getItem(storageKey) || '{}');
-            return parsed && typeof parsed === 'object' ? parsed : {};
+            return window.rbJourneyRecords ? window.rbJourneyRecords.reconcileDependencies(parsed) : (parsed && typeof parsed === 'object' ? parsed : {});
         } catch (error) {
             return {};
         }
@@ -49,19 +49,7 @@
 
     function fraFromBirthYear(birthYear) {
         if (birthYear === null || birthYear === undefined || !Number.isFinite(birthYear)) return null;
-        if (birthYear <= 1937) return { years: 65, months: 0 };
-        if (birthYear === 1938) return { years: 65, months: 2 };
-        if (birthYear === 1939) return { years: 65, months: 4 };
-        if (birthYear === 1940) return { years: 65, months: 6 };
-        if (birthYear === 1941) return { years: 65, months: 8 };
-        if (birthYear === 1942) return { years: 65, months: 10 };
-        if (birthYear >= 1943 && birthYear <= 1954) return { years: 66, months: 0 };
-        if (birthYear === 1955) return { years: 66, months: 2 };
-        if (birthYear === 1956) return { years: 66, months: 4 };
-        if (birthYear === 1957) return { years: 66, months: 6 };
-        if (birthYear === 1958) return { years: 66, months: 8 };
-        if (birthYear === 1959) return { years: 66, months: 10 };
-        return { years: 67, months: 0 };
+        return window.RBFinance.getFRA(birthYear);
     }
 
     function formatFraLabel(fra) {
@@ -176,6 +164,7 @@
         var record = buildRecord();
 
         if (saved === true) {
+            recordTools.invalidateDependents(progress, recordKey);
             if (
                 record.decisionStatus === 'provisional' &&
                 isClaimingAtFra(record.birthYear, record.claimAge) &&
@@ -551,20 +540,17 @@
 
         var summary = '';
         if (summaryRecord.decisionStatus === 'provisional') {
-            var sameAsFra = isClaimingAtFra(summaryRecord.birthYear, summaryRecord.claimAge) ||
-                (summaryRecord.estimatedMonthlyBenefit !== null &&
-                    summaryRecord.benefitAtFra !== null &&
-                    Number(summaryRecord.estimatedMonthlyBenefit) === Number(summaryRecord.benefitAtFra));
+            var sameAsFra = isClaimingAtFra(summaryRecord.birthYear, summaryRecord.claimAge);
             if (sameAsFra) {
                 summary =
                     '<p><strong>My current Social Security position</strong></p>' +
-                    '<p>I will test claiming at age <strong>' + summaryRecord.claimAge + '</strong>, my Full Retirement Age. My planning benefit is approximately <strong>' + currency(summaryRecord.benefitAtFra) + ' per month</strong>.</p>' +
+                    '<p>I will test claiming at age <strong>' + escapeHtml(summaryRecord.claimAge) + '</strong>, my Full Retirement Age. My planning benefit is approximately <strong>' + currency(summaryRecord.benefitAtFra) + ' per month</strong>.</p>' +
                     (summaryRecord.decisionNotes ? '<p>Notes: ' + escapeHtml(summaryRecord.decisionNotes) + '</p>' : '') +
                     '<p>This is a planning assumption, not advice to file. I can revisit and change it later.</p>';
             } else {
                 summary =
                     '<p><strong>My current Social Security position</strong></p>' +
-                    '<p>I will test claiming at age <strong>' + summaryRecord.claimAge + '</strong>. My benefit at full retirement age is approximately <strong>' + currency(summaryRecord.benefitAtFra) + ' per month</strong>, and the Claiming Analyzer amount I recorded for age <strong>' + summaryRecord.claimAge + '</strong> is approximately <strong>' + currency(summaryRecord.estimatedMonthlyBenefit) + ' per month</strong>.</p>' +
+                    '<p>I will test claiming at age <strong>' + escapeHtml(summaryRecord.claimAge) + '</strong>. My benefit at full retirement age is approximately <strong>' + currency(summaryRecord.benefitAtFra) + ' per month</strong>, and the Claiming Analyzer amount I recorded for age <strong>' + escapeHtml(summaryRecord.claimAge) + '</strong> is approximately <strong>' + currency(summaryRecord.estimatedMonthlyBenefit) + ' per month</strong>.</p>' +
                     (summaryRecord.decisionNotes ? '<p>Notes: ' + escapeHtml(summaryRecord.decisionNotes) + '</p>' : '') +
                     '<p>This is a planning assumption, not advice to file. I can revisit and change it later.</p>';
             }

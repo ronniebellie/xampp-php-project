@@ -52,7 +52,7 @@
     function readProgress() {
         try {
             var parsed = JSON.parse(localStorage.getItem(storageKey) || '{}');
-            return parsed && typeof parsed === 'object' ? parsed : {};
+            return window.rbJourneyRecords ? window.rbJourneyRecords.reconcileDependencies(parsed) : (parsed && typeof parsed === 'object' ? parsed : {});
         } catch (error) {
             return {};
         }
@@ -88,22 +88,7 @@
     }
 
     function phase3IsReady(record) {
-        if (!record || record.saved !== true) return false;
-        if (record.assessmentStatus !== 'complete') return false;
-        if (record.monthlyRetirementSpendingGoal === null || record.monthlyRetirementSpendingGoal === undefined) return false;
-        if (record.monthlySocialSecurityAssumption === null || record.monthlySocialSecurityAssumption === undefined) return false;
-        if (record.monthlyOtherDependableIncome === null || record.monthlyOtherDependableIncome === undefined) return false;
-        if (record.retirementSavingsBalance === null || record.retirementSavingsBalance === undefined) return false;
-        if (record.retirementSavingsBalance < 0) return false;
-        if (record.annualNeededFromRetirementSavings === null ||
-            record.annualNeededFromRetirementSavings === undefined) {
-            if (record.monthlyNeededFromRetirementSavings === null ||
-                record.monthlyNeededFromRetirementSavings === undefined) {
-                return false;
-            }
-        }
-        if (!record.baseCaseAssessment) return false;
-        return true;
+        return recordTools.validPlan(record);
     }
 
     function snapshotPhase3(record) {
@@ -261,7 +246,7 @@
         var explanations = result.issueExplanations || [];
         titles.forEach(function (title, index) {
             var titleEl = document.createElement('p');
-            titleEl.innerHTML = '<strong>' + title + '</strong>';
+            titleEl.innerHTML = '<strong>' + recordTools.escapeHtml(title) + '</strong>';
             var bodyEl = document.createElement('p');
             bodyEl.className = 'supporting-note';
             bodyEl.textContent = explanations[index] || '';
@@ -512,17 +497,19 @@
             statusEl.textContent = 'Preparing your Journey summary…';
         }
 
-        fetch(journeyPdfUrl, {
+        var sync = window.rbJourneySync;
+        Promise.resolve(sync && sync.saveNow('report')).then(function (saved) {
+            if (!saved || saved.success !== true) throw new Error('Save your current plan to your account before downloading a report.');
+            return fetch(journeyPdfUrl, {
             method: 'POST',
             credentials: 'include',
             headers: {
                 Accept: 'application/pdf, application/json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': sync.getCsrfToken() || ''
             },
-            body: JSON.stringify({
-                progress: progress,
-                displayName: displayName
-            })
+            body: JSON.stringify({})
+        });
         }).then(function (response) {
             var contentType = (response.headers.get('Content-Type') || '').toLowerCase();
             if (!response.ok) {
@@ -632,13 +619,13 @@
             (mode === 'tied' ? 'Main survivor-planning priorities' : 'Main survivor-planning priority') +
             '</p>';
         titles.forEach(function (title, index) {
-            html += '<p><strong>' + title + '</strong></p>';
-            html += '<p class="supporting-note">' + (explanations[index] || '') + '</p>';
+            html += '<p><strong>' + recordTools.escapeHtml(title) + '</strong></p>';
+            html += '<p class="supporting-note">' + recordTools.escapeHtml((explanations[index] || '')) + '</p>';
         });
-        html += '<p>' + (record.decisionStatement || '') + '</p>';
-        html += '<p class="supporting-note">' + (record.companionExplanation || '') + '</p>';
+        html += '<p>' + recordTools.escapeHtml((record.decisionStatement || '')) + '</p>';
+        html += '<p class="supporting-note">' + recordTools.escapeHtml((record.companionExplanation || '')) + '</p>';
         if (record.nextPriorityLabel) {
-            html += '<p><strong>Priority to revisit:</strong> ' + record.nextPriorityLabel + '</p>';
+            html += '<p><strong>Priority to revisit:</strong> ' + recordTools.escapeHtml(record.nextPriorityLabel) + '</p>';
         }
         el.innerHTML = html;
     }
@@ -672,7 +659,7 @@
         renderPriorContext();
 
         if (state.savedRecord && state.savedRecord.phase3Snapshot) {
-            if (phase3ChangedSinceSnapshot(phase3, state.savedRecord.phase3Snapshot)) {
+            if (state.savedRecord.needsReview || phase3ChangedSinceSnapshot(phase3, state.savedRecord.phase3Snapshot)) {
                 $('phase3ChangedBanner').hidden = false;
             }
             if (state.savedRecord.assumptions) {

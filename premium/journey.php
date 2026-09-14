@@ -195,7 +195,7 @@ if (isset($_GET['error'])) {
 <div class="jp-wrap">
     <p class="jp-welcome"><?php echo htmlspecialchars($welcomeGreeting, ENT_QUOTES, 'UTF-8'); ?></p>
     <h1>Retirement Planning Journey Premium</h1>
-    <p>Save your progress, revisit decisions, compare alternatives, and keep your retirement plan current.</p>
+    <p>Save your Journey plan across devices, revisit decisions, and download a summary. All six guided phases remain free.</p>
 
     <?php if ($canceled): ?>
         <div class="jp-cancel">

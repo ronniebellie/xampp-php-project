@@ -13,7 +13,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/journey_status.php';
 $origin = isset($_SERVER['HTTP_ORIGIN']) ? trim((string) $_SERVER['HTTP_ORIGIN']) : '';
 $allowedOrigins = [
     'https://journey.ronbelisle.com',
-    'http://journey.ronbelisle.com',
 ];
 if (in_array($origin, $allowedOrigins, true)) {
     header('Access-Control-Allow-Origin: ' . $origin);

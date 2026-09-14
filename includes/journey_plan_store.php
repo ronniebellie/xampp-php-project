@@ -44,7 +44,6 @@ function journey_plan_cors_allowed_origins(): array
 {
     return [
         'https://journey.ronbelisle.com',
-        'http://journey.ronbelisle.com',
     ];
 }
 
@@ -101,7 +100,15 @@ function journey_plan_session_user_id(): int
     if (!isset($_SESSION['user_id'])) {
         return 0;
     }
-    return (int) $_SESSION['user_id'];
+    $userId = (int) $_SESSION['user_id'];
+    $db = $GLOBALS['conn'] ?? null;
+    if (!$db instanceof mysqli || $userId <= 0) return 0;
+    $stmt = $db->prepare('SELECT id FROM users WHERE id = ? LIMIT 1');
+    $stmt->bind_param('i', $userId);
+    $stmt->execute();
+    $exists = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    return $exists ? $userId : 0;
 }
 
 function journey_plan_can_write(mysqli $conn, int $userId): bool
@@ -317,6 +324,7 @@ function journey_plan_fetch(mysqli $conn, int $userId): ?array
     }
 
     return [
+        'revision' => hash('sha256', (string) $row['payload']),
         'id' => (int) $row['id'],
         'userId' => (int) $row['user_id'],
         'schemaVersion' => (int) $row['schema_version'],
@@ -332,22 +340,18 @@ function journey_plan_fetch(mysqli $conn, int $userId): ?array
 
 function journey_plan_prune_versions(mysqli $conn, int $planId): void
 {
-    $keep = JOURNEY_PLAN_VERSION_RETENTION;
-    $sql = 'DELETE FROM journey_plan_versions
-            WHERE journey_plan_id = ?
-              AND id NOT IN (
-                SELECT id FROM (
-                  SELECT id FROM journey_plan_versions
-                  WHERE journey_plan_id = ?
-                  ORDER BY created_at DESC, id DESC
-                  LIMIT ?
-                ) retained
-              )';
-    $stmt = $conn->prepare($sql);
-    if (!$stmt) {
-        return;
-    }
-    $stmt->bind_param('iii', $planId, $planId, $keep);
+    // Version IDs are append-only. Find the oldest retained version, then prune
+    // under the per-owner transaction lock without reopening the same table.
+    $offset = JOURNEY_PLAN_VERSION_RETENTION - 1;
+    $stmt = $conn->prepare('SELECT id FROM journey_plan_versions WHERE journey_plan_id = ? ORDER BY id DESC LIMIT 1 OFFSET ?');
+    $stmt->bind_param('ii', $planId, $offset);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    if (!$row) return;
+    $oldest = (int)$row['id'];
+    $stmt = $conn->prepare('DELETE FROM journey_plan_versions WHERE journey_plan_id = ? AND id < ?');
+    $stmt->bind_param('ii', $planId, $oldest);
     $stmt->execute();
     $stmt->close();
 }
@@ -362,7 +366,8 @@ function journey_plan_save(
     array $payload,
     ?string $clientUpdatedAtIso,
     string $reason = 'autosave',
-    bool $force = false
+    bool $force = false,
+    ?string $baseRevision = null
 ): array {
     if (!journey_cloud_save_enabled()) {
         return [
@@ -407,24 +412,6 @@ function journey_plan_save(
     }
 
     $clientUpdatedAt = journey_plan_parse_client_updated_at($clientUpdatedAtIso);
-    $existing = journey_plan_fetch($conn, $userId);
-
-    if ($existing && !$force && $clientUpdatedAt !== null && !empty($existing['clientUpdatedAt'])) {
-        $incomingTs = strtotime($clientUpdatedAt . ' UTC') ?: 0;
-        $existingTs = strtotime((string) $existing['clientUpdatedAt']) ?: 0;
-        if ($existingTs > $incomingTs) {
-            return [
-                'ok' => false,
-                'error' => 'conflict',
-                'message' => 'A newer Journey plan is already saved to your account.',
-                'conflict' => [
-                    'serverUpdatedAt' => $existing['serverUpdatedAt'],
-                    'clientUpdatedAt' => $existing['clientUpdatedAt'],
-                ],
-            ];
-        }
-    }
-
     $schemaVersion = (int) ($cleanPayload['schemaVersion'] ?? JOURNEY_PLAN_PAYLOAD_SCHEMA_VERSION);
     $reason = preg_replace('/[^a-z_]/', '', strtolower($reason)) ?: 'autosave';
     if (strlen($reason) > 32) {
@@ -433,6 +420,24 @@ function journey_plan_save(
 
     $conn->begin_transaction();
     try {
+        // Serialize first creation/import and updates for this authenticated owner.
+        $ownerLock = $conn->prepare('SELECT id FROM users WHERE id = ? FOR UPDATE');
+        $ownerLock->bind_param('i', $userId);
+        $ownerLock->execute();
+        $ownerExists = $ownerLock->get_result()->fetch_assoc();
+        $ownerLock->close();
+        if (!$ownerExists) throw new RuntimeException('missing_owner');
+        $existing = journey_plan_fetch($conn, $userId);
+        if ($existing && ($reason === 'import' || $baseRevision === null || !hash_equals($existing['revision'], $baseRevision))) {
+            $conn->rollback();
+            return ['ok' => false, 'error' => $reason === 'import' ? 'already_exists' : 'conflict',
+                'message' => 'The account plan changed. Your browser copy has been retained. Reload the account plan before saving.',
+                'conflict' => ['serverUpdatedAt' => $existing['serverUpdatedAt'], 'revision' => $existing['revision']]];
+        }
+        if (!$existing && $baseRevision !== null) {
+            $conn->rollback();
+            return ['ok' => false, 'error' => 'conflict', 'message' => 'The account plan is no longer the version you loaded.'];
+        }
         if ($existing) {
             $planId = (int) $existing['id'];
             if ($clientUpdatedAt === null) {
@@ -504,6 +509,7 @@ function journey_plan_save(
         $versionStmt->close();
 
         journey_plan_prune_versions($conn, $planId);
+        $saved = journey_plan_fetch($conn, $userId);
         $conn->commit();
     } catch (Throwable $e) {
         $conn->rollback();
@@ -514,7 +520,6 @@ function journey_plan_save(
         ];
     }
 
-    $saved = journey_plan_fetch($conn, $userId);
     if (!$saved) {
         return [
             'ok' => false,

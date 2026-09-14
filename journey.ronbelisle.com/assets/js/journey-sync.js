@@ -18,6 +18,8 @@
     var PROGRESS_KEY = 'rbJourneyProgressV1';
     var CALCULATOR_KEY = 'rbJourneyCalculator:retirementSpendingPlan:v1';
     var PENDING_KEY = 'rbJourneySyncPendingV1';
+    var OWNER_KEY = 'rbJourneyOwnerV1';
+    var REVISION_KEY = 'rbJourneyCloudRevisionV1';
     var SCHEMA_VERSION = 1;
     var DEBOUNCE_MS = 900;
 
@@ -35,7 +37,9 @@
         saveMessage: '',
         planSavedAt: null,
         lastError: null,
-        clientUpdatedAt: null
+        clientUpdatedAt: null,
+        revision: null,
+        conflict: false
     };
 
     var saveTimer = null;
@@ -80,6 +84,32 @@
         state.saveState = code;
         state.saveMessage = message || '';
         emit();
+        if (code === 'conflict') showConflictActions();
+    }
+
+    function showConflictActions() {
+        if (document.getElementById('journey-sync-conflict')) return;
+        var panel = document.createElement('section');
+        panel.id = 'journey-sync-conflict';
+        panel.className = 'container coach-response';
+        panel.setAttribute('role', 'alert');
+        var text = document.createElement('p');
+        text.textContent = 'Your account has a different plan. Automatic saving is paused. Download your browser copy to preserve these changes, then reload the account plan. The download contains your financial information.';
+        var download = document.createElement('button');
+        download.type = 'button'; download.textContent = 'Download browser copy';
+        download.addEventListener('click', function () {
+            var url = URL.createObjectURL(new Blob([JSON.stringify(buildPayloadFromLocal(), null, 2)], {type: 'application/json'}));
+            var link = document.createElement('a');link.href = url;link.download = 'Journey-browser-backup.json';link.click();
+            window.setTimeout(function(){URL.revokeObjectURL(url);}, 1000);
+        });
+        var reload = document.createElement('button');reload.type = 'button';reload.textContent = 'Reload account plan';
+        reload.addEventListener('click', function () {
+            if (!window.confirm('Replace this browser copy with your account plan? Download the browser copy first if you want to keep its changes.')) return;
+            clearPending();state.conflict = false;
+            loadCloudPlan().then(function(body){if(body && body.success) window.location.reload();});
+        });
+        panel.appendChild(text);panel.appendChild(download);panel.appendChild(reload);
+        document.body.appendChild(panel);
     }
 
     function resolveReady() {
@@ -216,22 +246,6 @@
         var chosen = cloudProgress;
         var chosenCalc = cloudCalc;
 
-        if (window.rbJourneyPhase1 && typeof window.rbJourneyPhase1.preferUsablePhase1 === 'function') {
-            var preferred = window.rbJourneyPhase1.preferUsablePhase1(
-                cloudProgress,
-                cloudCalc,
-                localProgress,
-                localCalc
-            );
-            chosen = preferred.progress || cloudProgress;
-            chosenCalc = preferred.calc;
-            if (preferred.keptLocal && state.canWrite) {
-                // Local Phase 1 was richer than cloud — persist after hydrate settles.
-                window.setTimeout(function () {
-                    scheduleSave('phase1-reconcile');
-                }, 0);
-            }
-        }
 
         writeJson(PROGRESS_KEY, chosen || {});
         if (chosenCalc && typeof chosenCalc === 'object') {
@@ -252,6 +266,8 @@
     function storePending(payload, clientUpdatedAt, reason) {
         try {
             sessionStorage.setItem(PENDING_KEY, JSON.stringify({
+                ownerId: state.status && state.status.userId,
+                baseRevision: state.revision,
                 payload: payload,
                 clientUpdatedAt: clientUpdatedAt,
                 reason: reason || 'autosave',
@@ -280,7 +296,7 @@
     }
 
     function canAutosaveNow() {
-        if (!state.canWrite || state.readOnly) return false;
+        if (!state.canWrite || state.readOnly || state.conflict) return false;
         // Premium + existing browser data + empty cloud awaits explicit import (P4).
         if (state.needsImport) return false;
         // Otherwise allow create-or-update saves (fresh Premium users included).
@@ -288,6 +304,8 @@
     }
 
     function fetchJson(url, options) {
+        options = Object.assign({}, options);
+        if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) options.signal = AbortSignal.timeout(12000);
         return fetch(url, options).then(function (response) {
             return response.json().catch(function () {
                 return null;
@@ -300,6 +318,8 @@
     function hydrateFromPlan(plan) {
         if (!plan || !plan.payload) return false;
         applyPayloadToLocal(plan.payload);
+        state.revision = plan.revision || null;
+        localStorage.setItem(REVISION_KEY, state.revision || '');
         state.hydrated = true;
         state.cloudExists = true;
         state.clientUpdatedAt = plan.clientUpdatedAt || plan.serverUpdatedAt || nowIso();
@@ -329,6 +349,15 @@
             state.canWrite = body.canWrite === true;
             state.readOnly = body.readOnly === true;
             if (body.exists && body.plan) {
+                var pending = readPending();
+                if (pending && pending.ownerId === state.status.userId) {
+                    state.revision = pending.baseRevision || null;
+                    if (state.revision !== body.plan.revision) {
+                        state.conflict = true;
+                        setSaveState('conflict', 'Account plan changed. Browser changes are retained; download them before reloading the account plan.');
+                    }
+                    return body;
+                }
                 hydrateFromPlan(body.plan);
                 if (state.readOnly) {
                     setSaveState('readonly', 'Reviewing saved account plan');
@@ -356,6 +385,8 @@
 
     function markCloudPlanFromResponse(plan, clientUpdatedAt) {
         state.cloudExists = true;
+        state.revision = plan.revision || null;
+        localStorage.setItem(REVISION_KEY, state.revision || '');
         state.needsImport = false;
         state.planSavedAt = plan.serverUpdatedAt || plan.updatedAt || clientUpdatedAt || state.planSavedAt;
         state.clientUpdatedAt = plan.clientUpdatedAt || clientUpdatedAt || state.clientUpdatedAt;
@@ -491,7 +522,7 @@
             payload: payload,
             clientUpdatedAt: clientUpdatedAt,
             reason: reason || 'autosave',
-            force: force === true
+            baseRevision: state.revision
         };
 
         return fetchJson(SAVE_URL, {
@@ -523,7 +554,8 @@
 
             state.lastError = (data && data.error) || 'save_failed';
             if (result.response.status === 409 || state.lastError === 'conflict') {
-                // Conflict UI is P4 — keep local, do not force overwrite.
+                state.conflict = true;
+                // Retain browser changes; future autosaves must not overwrite the conflict.
                 setSaveState(
                     'conflict',
                     'Saved on this browser; account has a newer plan'
@@ -594,6 +626,28 @@
                 resolveReady();
                 return null;
             }
+            var oldOwner = localStorage.getItem(OWNER_KEY);
+            var nextOwner = status.authenticated ? String(status.userId) : '';
+            if (oldOwner && oldOwner !== nextOwner) {
+                // Keep an isolated recoverable cache for its owner, never hydrate/import it for another account.
+                localStorage.setItem('rbJourneyOwnerArchive:' + oldOwner, JSON.stringify({progress: readJson(PROGRESS_KEY), calculator: readJson(CALCULATOR_KEY), pending: readPending(), revision: localStorage.getItem(REVISION_KEY)}));
+                localStorage.removeItem(PROGRESS_KEY);
+                localStorage.removeItem(CALCULATOR_KEY);
+                localStorage.removeItem(REVISION_KEY);
+                clearPending();
+            }
+            if (nextOwner && !localHasMeaningfulData()) {
+                var archive = readJson('rbJourneyOwnerArchive:' + nextOwner);
+                if (archive) {
+                    if (archive.progress) writeJson(PROGRESS_KEY, archive.progress);
+                    if (archive.calculator) writeJson(CALCULATOR_KEY, archive.calculator);
+                    if (archive.pending) sessionStorage.setItem(PENDING_KEY, JSON.stringify(archive.pending));
+                    if (archive.revision) localStorage.setItem(REVISION_KEY, archive.revision);
+                    localStorage.removeItem('rbJourneyOwnerArchive:' + nextOwner);
+                }
+            }
+            if (nextOwner) localStorage.setItem(OWNER_KEY, nextOwner);
+            else localStorage.removeItem(OWNER_KEY);
             state.status = status;
             state.canWrite = status.canCloudWrite === true;
             state.canRead = status.canCloudRead === true;
@@ -645,6 +699,7 @@
         },
         getState: getPublicState,
         getStatus: function () { return state.status; },
+        getCsrfToken: function () { return state.csrfToken; },
         buildPayloadFromLocal: buildPayloadFromLocal,
         localHasMeaningfulData: localHasMeaningfulData,
         reconcilePhase1: reconcilePhase1Local,

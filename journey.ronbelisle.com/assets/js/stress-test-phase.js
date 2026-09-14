@@ -40,7 +40,7 @@
     function readProgress() {
         try {
             var parsed = JSON.parse(localStorage.getItem(storageKey) || '{}');
-            return parsed && typeof parsed === 'object' ? parsed : {};
+            return window.rbJourneyRecords ? window.rbJourneyRecords.reconcileDependencies(parsed) : (parsed && typeof parsed === 'object' ? parsed : {});
         } catch (error) {
             return {};
         }
@@ -80,22 +80,7 @@
     }
 
     function phase3IsReady(record) {
-        if (!record || record.saved !== true) return false;
-        if (record.assessmentStatus !== 'complete') return false;
-        if (record.monthlyRetirementSpendingGoal === null || record.monthlyRetirementSpendingGoal === undefined) return false;
-        if (record.monthlySocialSecurityAssumption === null || record.monthlySocialSecurityAssumption === undefined) return false;
-        if (record.monthlyOtherDependableIncome === null || record.monthlyOtherDependableIncome === undefined) return false;
-        if (record.retirementSavingsBalance === null || record.retirementSavingsBalance === undefined) return false;
-        if (record.retirementSavingsBalance < 0) return false;
-        if (record.annualNeededFromRetirementSavings === null ||
-            record.annualNeededFromRetirementSavings === undefined) {
-            if (record.monthlyNeededFromRetirementSavings === null ||
-                record.monthlyNeededFromRetirementSavings === undefined) {
-                return false;
-            }
-        }
-        if (!record.baseCaseAssessment) return false;
-        return true;
+        return recordTools.validPlan(record);
     }
 
     function snapshotPhase3(record) {
@@ -402,11 +387,11 @@
     function renderSavedSummary(record) {
         var el = $('savedReviewSummary');
         var adj = record.nextAdjustmentLabel
-            ? ('<p><strong>Your selected strategy:</strong> ' + record.nextAdjustmentLabel + '</p>')
+            ? ('<p><strong>Your selected strategy:</strong> ' + recordTools.escapeHtml(record.nextAdjustmentLabel) + '</p>')
             : '';
-        el.innerHTML = '<p><strong>' + (record.overallResilienceLabel || '') + '</strong></p>' +
-            '<p>' + (record.pressureSentence || record.dominantStressLabel || '') + '</p>' +
-            '<p>' + (record.decisionStatement || '') + '</p>' +
+        el.innerHTML = '<p><strong>' + recordTools.escapeHtml((record.overallResilienceLabel || '')) + '</strong></p>' +
+            '<p>' + recordTools.escapeHtml((record.pressureSentence || record.dominantStressLabel || '')) + '</p>' +
+            '<p>' + recordTools.escapeHtml((record.decisionStatement || '')) + '</p>' +
             adj;
     }
 
@@ -445,7 +430,7 @@
         renderRecap(phase3);
 
         if (state.savedRecord && state.savedRecord.phase3Snapshot) {
-            if (phase3ChangedSinceSnapshot(phase3, state.savedRecord.phase3Snapshot)) {
+            if (state.savedRecord.needsReview || phase3ChangedSinceSnapshot(phase3, state.savedRecord.phase3Snapshot)) {
                 $('phase3ChangedBanner').hidden = false;
             }
             renderSavedSummary(state.savedRecord);

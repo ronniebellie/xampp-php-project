@@ -3,6 +3,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
 rb_session_start();
 require_once __DIR__ . '/../includes/db_config.php';
 require_once __DIR__ . '/../includes/auth_flow_helpers.php';
+require_once __DIR__ . '/../includes/auth_rate_limit.php';
 
 $error = '';
 $success = '';
@@ -15,12 +16,20 @@ if (isset($_GET['msg']) && $_GET['msg'] === 'password_reset') {
     $success = 'Your password was updated. You can log in now.';
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
-    $password = $_POST['password'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !rb_csrf_validate(is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : null)) {
+    http_response_code(403);
+    $error = 'Your session expired. Reload this page and try again.';
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = filter_var((is_string($_POST['email'] ?? null) ? $_POST['email'] : ''), FILTER_SANITIZE_EMAIL);
+    $password = (is_string($_POST['password'] ?? null) ? $_POST['password'] : '');
     $remember = isset($_POST['remember']);
     
-    if (empty($email) || empty($password)) {
+    if (!rb_auth_rate_allow('login:ip:' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown')) || !rb_auth_rate_allow('login:email:' . strtolower($email))) {
+        http_response_code(429);
+        $error = 'Too many attempts. Please wait five minutes and try again.';
+    } elseif (strlen($email) > 254 || strlen($password) > 1024) {
+        $error = 'The email or password is too long.';
+    } elseif (empty($email) || empty($password)) {
         $error = 'Email and password are required';
     } else {
         $stmt = $conn->prepare("SELECT id, email, password_hash, full_name, subscription_status FROM users WHERE email = ?");
@@ -300,9 +309,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
         
         <form id="login-form" method="POST" action="">
+            <?php echo rb_csrf_field(); ?>
             <div class="form-group">
                 <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" required value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
+                <input type="email" id="email" name="email" required value="<?php echo htmlspecialchars((is_string($_POST['email'] ?? null) ? $_POST['email'] : '') ?? ''); ?>">
             </div>
             
             <div class="form-group">

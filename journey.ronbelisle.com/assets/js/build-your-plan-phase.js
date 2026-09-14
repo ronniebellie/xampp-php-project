@@ -23,7 +23,7 @@
     function readProgress() {
         try {
             var parsed = JSON.parse(localStorage.getItem(storageKey) || '{}');
-            return parsed && typeof parsed === 'object' ? parsed : {};
+            return window.rbJourneyRecords ? window.rbJourneyRecords.reconcileDependencies(parsed) : (parsed && typeof parsed === 'object' ? parsed : {});
         } catch (error) {
             return {};
         }
@@ -64,7 +64,7 @@
         var strong = confirmation.querySelector('strong');
         var span = confirmation.querySelector('span');
         var cloudOk = canCloudWrite() &&
-            cloudResult &&
+            cloudResult && cloudResult.success === true &&
             !cloudResult.localOnly &&
             !cloudResult.error &&
             !cloudResult.skipped &&
@@ -89,7 +89,7 @@
     function numberOrNull(value) {
         if (value === '' || value === null || value === undefined) return null;
         var number = Number(value);
-        return Number.isFinite(number) ? number : null;
+        return Number.isFinite(number) && number <= 1e12 ? number : null;
     }
 
     function currency(value) {
@@ -375,6 +375,8 @@
         var oldRecord = existingRecord(progress);
         var record = buildRecord(saved === true);
         record.saved = saved === true || oldRecord.saved === true;
+        if (saved !== true && oldRecord.saved === true) record.lastSavedPlanning = oldRecord.lastSavedPlanning || recordTools.buildYourPlanResult(oldRecord);
+        if (saved === true) recordTools.invalidateDependents(progress, recordKey);
         record.hasUnsavedChanges = saved === false
             ? true
             : (saved === true ? false : oldRecord.hasUnsavedChanges === true);
@@ -386,6 +388,7 @@
         });
         progress.records = progress.records && typeof progress.records === 'object' ? progress.records : {};
         progress.records[recordKey] = record;
+        if (saved === false) progress[recordKey] = false;
         writeProgress(progress);
         return record;
     }
@@ -414,6 +417,7 @@
         if (record.retirementSavingsBalance === null || record.retirementSavingsBalance < 0) {
             errors.push('Enter how much you have saved for retirement. Use zero only if you currently have no retirement savings.');
         }
+        if (record.needsReview) errors.push('Review and save this plan again after changing earlier inputs.');
         if (record.assessmentStatus !== 'complete') {
             errors.push('Complete the income picture before saving your retirement income plan.');
         }
@@ -591,7 +595,7 @@
             'other dependable income about <strong>' + currency(record.monthlyOtherDependableIncome) + '</strong>, ' +
             'and about <strong>' + currency(record.monthlyNeededFromRetirementSavings) + '</strong> from retirement savings.</p>' +
             '<p>Retirement savings balance: <strong>' + currency(record.retirementSavingsBalance) + '</strong>. ' +
-            'Base-case assessment: <strong>' + (assessmentLabels[record.baseCaseAssessment] || record.baseCaseAssessment) + '</strong>.' +
+            'Base-case assessment: <strong>' + recordTools.escapeHtml(assessmentLabels[record.baseCaseAssessment] || record.baseCaseAssessment) + '</strong>.' +
             rateText + '</p>' +
             temporaryNote +
             '<p>This is a base-case planning snapshot, not a stress test or guarantee.</p>';
@@ -707,7 +711,7 @@
         }
         persistCloudNow('phase').then(function (cloudResult) {
             var cloudOk = canCloudWrite() &&
-                cloudResult &&
+                cloudResult && cloudResult.success === true &&
                 !cloudResult.localOnly &&
                 !cloudResult.error &&
                 !cloudResult.skipped &&
@@ -790,11 +794,12 @@
         setPhase3CompletionUi(
             progressAtLoad[recordKey] === true &&
             record.saved === true &&
-            record.hasUnsavedChanges !== true
+            record.hasUnsavedChanges !== true && record.needsReview !== true
         );
 
         renderAll();
         renderSavedSummary(record);
+        if (record.needsReview || record.hasUnsavedChanges) showErrors(['Your earlier inputs or draft changed. Review and save Phase 3 again before using later phases.']);
     }
 
     if (window.rbJourneySync && typeof window.rbJourneySync.afterReady === 'function') {

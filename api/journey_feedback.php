@@ -39,8 +39,7 @@ if ($method !== 'POST') {
 $contentType = strtolower((string) ($_SERVER['CONTENT_TYPE'] ?? ''));
 $body = [];
 if (strpos($contentType, 'application/json') !== false) {
-    $raw = file_get_contents('php://input');
-    $decoded = is_string($raw) ? json_decode($raw, true) : null;
+    $decoded = journey_plan_read_json_body();
     if (!is_array($decoded)) {
         journey_plan_json_response([
             'success' => false,
@@ -64,6 +63,8 @@ if (!rb_csrf_validate($csrf)) {
     ], 403);
 }
 
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth_rate_limit.php';
+if (!rb_auth_rate_allow('journey-feedback:' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'), 6, 60)) journey_plan_json_response(['success' => false, 'message' => 'Please wait a minute before sending more feedback.'], 429);
 $ctx = journey_feedback_session_context($conn);
 $result = journey_feedback_store($conn, [
     'trying_to_do' => (string) ($body['trying_to_do'] ?? ''),

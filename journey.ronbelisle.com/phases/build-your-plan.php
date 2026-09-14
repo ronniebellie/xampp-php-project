@@ -9,18 +9,19 @@ $page_title = 'Build Your Plan | Retirement Planning Journey';
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo htmlspecialchars($page_title); ?></title>
-    <link rel="stylesheet" href="/assets/css/journey.css?v=20260801-feedback">
+    <link rel="stylesheet" href="/assets/css/journey.css?v=20260914-audit">
 </head>
 <body>
     <?php include __DIR__ . '/../includes/site-header.php'; ?>
 
-    <main>
+    <main id="journey-main" tabindex="-1">
         <section class="page-hero" aria-labelledby="phase-title">
             <div class="container phase-template-grid">
                 <div class="phase-main-column">
                     <div class="phase-intro">
                         <p class="eyebrow">Phase 3</p>
                         <h1 id="phase-title">Build Your Plan</h1>
+                        <p class="supporting-note">Use today’s dollars consistently. This gross-income snapshot assumes Social Security and other income are already available together; it does not calculate the bridge before benefits start, taxes, or future income changes. Household spending must be compared with income for the same household.</p>
                         <p class="page-lede">Connect your spending goal, dependable income, Social Security assumption, and retirement savings into one base-case income picture.</p>
                         <p class="phase-reassurance">This phase answers whether your retirement savings can support the lifestyle you’ve planned under your current assumptions. It is not a stress test.</p>
                     </div>
@@ -182,7 +183,7 @@ $page_title = 'Build Your Plan | Retirement Planning Journey';
         </section>
     </main>
 
-    <script src="/assets/js/build-your-plan-phase.js?v=20260801-logged-in-polish" defer></script>
+    <script src="/assets/js/build-your-plan-phase.js?v=20260914-audit" defer></script>
     <?php include __DIR__ . '/../includes/site-footer.php'; ?>
 </body>
 </html>
