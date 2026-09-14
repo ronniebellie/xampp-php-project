@@ -24,16 +24,18 @@ function getSuccessRate(rate) { return 'Not estimated'; }
 // Calculate portfolio needed for a given withdrawal rate
 function calculatePortfolioNeeded(annualGap, withdrawalRate) {
     if(!Number.isFinite(annualGap)||annualGap<0||!Number.isFinite(withdrawalRate)||withdrawalRate<=0)throw new RangeError('Use a nonnegative annual gap and a positive withdrawal rate.');
-    return annualGap / (withdrawalRate / 100);
+    const need=annualGap / (withdrawalRate / 100);
+    if(!Number.isFinite(need))throw new RangeError('Portfolio need exceeds the supported numerical range.');
+    return need;
 }
 
 function updateGap() {
-    const targetSpending = parseFloat(document.getElementById('targetSpending').value) || 0;
-    const ssIncome = parseFloat(document.getElementById('ssIncome').value) || 0;
-    const otherIncome = parseFloat(document.getElementById('otherIncome').value) || 0;
+    const targetSpending = Number(document.getElementById('targetSpending').value);
+    const ssIncome = Number(document.getElementById('ssIncome').value);
+    const otherIncome = Number(document.getElementById('otherIncome').value);
     const withdrawalRate = Number(document.getElementById('withdrawalRate').value);
     const filingStatus = document.getElementById('filingStatus').value;
-    if (![targetSpending,ssIncome,otherIncome,withdrawalRate].every(Number.isFinite)||Math.min(targetSpending,ssIncome,otherIncome)<0||withdrawalRate<=0) {document.getElementById('results').style.display='none'; window.lastSSGapResult=null; return;}
+    if (![targetSpending,ssIncome,otherIncome,withdrawalRate].every(Number.isFinite)||Math.min(targetSpending,ssIncome,otherIncome)<0||withdrawalRate<=0||withdrawalRate>100||Math.max(targetSpending,ssIncome,otherIncome)>1e12||!Number.isFinite(targetSpending*1200/withdrawalRate)) {document.getElementById('results').style.display='none'; window.lastSSGapResult=null; return;}
 
     const targetLabel = document.getElementById('targetSpendingLabel');
     if (targetLabel) targetLabel.textContent = formatCurrency(targetSpending) + '/mo';
@@ -387,9 +389,9 @@ function createAnnualWithdrawalChart(annualGap, rates, selectedRate) {
     });
 }
 function updateGapLabelsOnly() {
-    const targetSpending = parseFloat(document.getElementById('targetSpending').value) || 0;
-    const ssIncome = parseFloat(document.getElementById('ssIncome').value) || 0;
-    const otherIncome = parseFloat(document.getElementById('otherIncome').value) || 0;
+    const targetSpending = Number(document.getElementById('targetSpending').value);
+    const ssIncome = Number(document.getElementById('ssIncome').value);
+    const otherIncome = Number(document.getElementById('otherIncome').value);
     const withdrawalRate = Number(document.getElementById('withdrawalRate').value);
     const targetLabel = document.getElementById('targetSpendingLabel');
     if (targetLabel) targetLabel.textContent = formatCurrency(targetSpending) + '/mo';

@@ -24,6 +24,7 @@ $isPremium = has_premium_access();
 
     <header>
       <h1>Retirement Spending &amp; On-Track Checkup</h1>
+      <p>Income entered here is assumed available when retirement starts. Do not include a pension or Social Security benefit that begins later as income available earlier. Use the <a href="/retirement-plan/">retirement snapshot</a> to model staggered income start dates and the portfolio needed during the gap.</p>
       <p class="sub">
         Estimate what you might spend in retirement, apply a simple rule-of-thumb (like the 4% rule),
         and see whether your current savings put you close to “on track” for that spending level.

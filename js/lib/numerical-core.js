@@ -48,6 +48,13 @@
     for(let month=1;month<=n;month++){const interest=debt*debtRate/1200;debt+=interest;const payment=Math.min(debt,payDebtFirst?budget:minPayment);debt=checked(debt-payment);const contribution=budget-payment;invest=checked(invest*(1+investRate/1200)+contribution);rows.push({month,budget,payment,contribution,debt,invest});}
     return {debt,invest,rows};
   }
+  function withdrawalPeriod(balance,requested,rate){
+    finite(balance,requested,rate);
+    if(balance<0||requested<0||rate< -1)throw new RangeError('Nonnegative cash and a valid return are required.');
+    const funded=Math.min(balance,requested),shortfall=requested-funded;
+    const growth=checked((balance-funded)*rate),endingBalance=checked(balance-funded+growth);
+    return {startingBalance:balance,requested,funded,shortfall,growth,endingBalance};
+  }
   function irr(cfs){
     if(!Array.isArray(cfs)||cfs.length<2||cfs.length>1000)throw new RangeError('Between 2 and 1000 periodic cash flows required.');finite(...cfs);
     const scale=Math.max(...cfs.map(Math.abs));if(scale===0)return {status:'indeterminate',roots:[]};
@@ -67,6 +74,6 @@
     for(let k=1;k<=6000;k++){const right=-13.8+k*27.6/6000,fr=npv(right);if(Math.abs(fr)<1e-12)add(right);if(Number.isFinite(fl)&&Number.isFinite(fr)&&fl!==0&&fr!==0&&Math.sign(fl)!==Math.sign(fr)){let lo=left,hi=right,flo=fl;for(let j=0;j<100;j++){const mid=(lo+hi)/2,fm=npv(mid);if(Math.abs(fm)<1e-13){lo=hi=mid;break;}if(Math.sign(flo)===Math.sign(fm)){lo=mid;flo=fm;}else hi=mid;}add((lo+hi)/2);}left=right;fl=fr;}
     roots.sort((a,b)=>a-b);return {status:roots.length>1?'multiple_irr':changes>1?'ambiguous':roots.length===1?'unique':'outside_search_range',roots};
   }
-  const api={goalSavings,annuityFactor,annuityFV,requiredPayment,annuityLedger,pensionPV,debtPayoff,debtSaving,irr};
+  const api={withdrawalPeriod,goalSavings,annuityFactor,annuityFV,requiredPayment,annuityLedger,pensionPV,debtPayoff,debtSaving,irr};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.RBNumerical=api;
 })(typeof window!=='undefined'?window:this);

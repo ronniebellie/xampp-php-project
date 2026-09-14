@@ -1,0 +1,13 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path'),math=require('../js/lib/numerical-core.js');
+let checks=0;const eq=(a,b)=>{checks++;assert(Math.abs(a-b)<1e-7,`${a} != ${b}`);};
+for(const rate of [-1,-.1,0,.1])for(const draw of [0,500,1000,1500]){const r=math.withdrawalPeriod(1000,draw,rate);eq(r.startingBalance-r.funded+r.growth,r.endingBalance);eq(r.requested-r.funded,r.shortfall);eq(r.funded,Math.min(1000,draw));assert(r.endingBalance>=0);}
+const nodes={},charts={};const values={'required-annual':1000,'desired-annual':0,'ss-income':0,'current-age':65,'life-expectancy':105,'inflation-rate':0,'withdrawal-rate':4,'portfolio-return':0};
+const node=id=>nodes[id]||={value:String(values[id]??0),innerHTML:'',textContent:'',style:{},addEventListener(){},scrollIntoView(){},getContext(){return id;}};
+const ctx={window:null,console,Intl,Date,RBNumerical:math,isPremiumUser:true,document:{getElementById:node,addEventListener(){},querySelectorAll(){return[];}},Chart:class{constructor(el,config){charts[el.value||el]=config;}destroy(){}},location:{pathname:'/required-vs-desired/',origin:'offline'},alert(){}};ctx.window=ctx;
+const html=fs.readFileSync(path.join(__dirname,'../required-vs-desired/index.php'),'utf8');const source=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]).find(s=>s.includes('function calculate()')).replace(/<\?php[\s\S]*?\?>/g,'true');
+vm.runInNewContext(source,ctx);ctx.calculate();eq(ctx.lastRVDResult.essentialPortfolio,25000);assert(nodes['projection-tbody-free'].innerHTML.includes('$1,000 needed / $0 funded / $1,000 shortfall'));assert(!nodes['projection-tbody-free'].innerHTML.includes('-$'));
+ctx.generateChart(1000,0,0,65,40,0,0,25000,25000);const balance=Object.values(charts).find(c=>c.data.datasets[0].label==='Essential Needs Only');assert(balance);eq(balance.data.datasets[0].data[25],0);eq(balance.data.datasets[0].data.at(-1),0);
+node('current-age').value=65.5;ctx.calculate();assert.equal(ctx.lastRVDResult,null);assert.equal(nodes.results.style.display,'none');
+const gap={window:null,location:{pathname:'/ss-gap/',origin:'offline'},document:{getElementById:node,addEventListener(){}},Intl,Date};gap.window=gap;vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../ss-gap/calculator.js'),'utf8'),gap);eq(gap.calculatePortfolioNeeded((4500-2000-1000)*12,4),450000);eq(gap.calculatePortfolioNeeded(0,4),0);assert.throws(()=>gap.calculatePortfolioNeeded(1,0));assert.throws(()=>gap.calculatePortfolioNeeded(1e308,.01));assert.equal(gap.getSuccessRate(4),'Not estimated');
+console.log(`Consumer income ledgers: ${checks} independent cash, depletion and gap checks plus actual table/chart/domain cases passed.`);

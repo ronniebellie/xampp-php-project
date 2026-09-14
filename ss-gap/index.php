@@ -37,6 +37,7 @@ $isPremium = has_premium_access();
 
         <header>
             <h1>Social Security + Spending Gap Calculator</h1>
+      <p>Income entered here is assumed available when retirement starts. Do not include a pension or Social Security benefit that begins later as income available earlier. Use the <a href="/retirement-plan/">retirement snapshot</a> to model staggered income start dates and the portfolio needed during the gap.</p>
             <p class="sub">See how Social Security reduces the portfolio you need by identifying your real retirement spending gap</p>
         </header>
 

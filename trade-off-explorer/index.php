@@ -26,6 +26,7 @@ $isPremium = has_premium_access();
 
     <header>
       <h1>Retirement Trade-Off Explorer</h1>
+      <p>Income entered here is assumed available when retirement starts. Do not include a pension or Social Security benefit that begins later as income available earlier. Use the <a href="/retirement-plan/">retirement snapshot</a> to model staggered income start dates and the portfolio needed during the gap.</p>
       <p class="sub">
         Explore how three big levers—retiring later, saving more, or spending less (or adding part-time income)—
         change whether you look on track for your retirement income goal.

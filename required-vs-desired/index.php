@@ -151,7 +151,7 @@ $isPremium = has_premium_access();
             </div>
 
             <div class="chart-section">
-                <h3>Annual Withdrawals Over Time</h3>
+                <h3>Annual Portfolio Income Needed</h3><p>This chart shows spending needs, including any amount the portfolio cannot fund. The projection table separates funded withdrawals and shortfalls. Withdrawals occur before annual growth; Social Security is held flat. All income entered is assumed available at the starting age. Use the retirement snapshot for delayed income or differing spouse ages.</p>
                 <div class="chart-wrapper">
                     <canvas id="withdrawal-chart"></canvas>
                 </div>
@@ -171,9 +171,9 @@ $isPremium = has_premium_access();
                                 <th>Desired</th>
                                 <th>Total</th>
                                 <th>SS Income</th>
-                                <th>Withdrawal</th>
-                                <th>Essential Balance</th>
-                                <th>Full Balance</th>
+                                <th>Full lifestyle: needed / funded / shortfall</th>
+                                <th>Essential Balance (start)</th>
+                                <th>Full Balance (start)</th>
                             </tr>
                         </thead>
                         <tbody id="projection-tbody-free">
@@ -198,6 +198,7 @@ $isPremium = has_premium_access();
     </div>
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../js/lib/numerical-core.js"></script>
         <script src="../js/share-results.js"></script>
     <script src="../js/explain-results-modal.js"></script>
     <script>
@@ -225,14 +226,15 @@ $isPremium = has_premium_access();
             const requiredAnnual = parseFloat(document.getElementById('required-annual').value);
             const desiredAnnual = parseFloat(document.getElementById('desired-annual').value);
             const ssIncome = parseFloat(document.getElementById('ss-income').value);
-            const currentAge = parseInt(document.getElementById('current-age').value);
-            const lifeExpectancy = parseInt(document.getElementById('life-expectancy').value);
+            const currentAge = Number(document.getElementById('current-age').value);
+            const lifeExpectancy = Number(document.getElementById('life-expectancy').value);
             const inflationRate = parseFloat(document.getElementById('inflation-rate').value) / 100;
             const withdrawalRate = parseFloat(document.getElementById('withdrawal-rate').value) / 100;
             const portfolioReturn = parseFloat(document.getElementById('portfolio-return').value) / 100;
 
             document.getElementById('results').style.display='none';
-            if (![requiredAnnual,desiredAnnual,ssIncome,currentAge,lifeExpectancy,inflationRate,withdrawalRate,portfolioReturn].every(Number.isFinite)||Math.min(requiredAnnual,desiredAnnual,ssIncome)<0||withdrawalRate<=0||withdrawalRate>1||currentAge<18||lifeExpectancy<currentAge||lifeExpectancy>120||inflationRate<=-1||portfolioReturn<=-1) { alert('Enter valid nonnegative amounts, a positive withdrawal rate, and ages within 18–120.'); return; }
+            window.lastRVDResult=null;
+            if (![requiredAnnual,desiredAnnual,ssIncome,currentAge,lifeExpectancy,inflationRate,withdrawalRate,portfolioReturn].every(Number.isFinite)||Math.min(requiredAnnual,desiredAnnual,ssIncome)<0||withdrawalRate<0.02||withdrawalRate>0.06||!Number.isInteger(currentAge)||!Number.isInteger(lifeExpectancy)||currentAge<18||lifeExpectancy<currentAge||lifeExpectancy>120||inflationRate<=-1||inflationRate>1||portfolioReturn<=-1||portfolioReturn>1||Math.max(requiredAnnual,desiredAnnual,ssIncome)>1e12) { alert('Enter valid nonnegative amounts, a withdrawal rate from 2% to 6%, and whole ages within 18–120.'); return; }
             const years = lifeExpectancy - currentAge;
             const totalAnnual = requiredAnnual + desiredAnnual;
 
@@ -243,6 +245,7 @@ $isPremium = has_premium_access();
             // Calculate portfolio needed
             const essentialPortfolio = essentialGap / withdrawalRate;
             const fullPortfolio = fullGap / withdrawalRate;
+            if(!Number.isFinite(fullPortfolio)||!Number.isFinite(essentialPortfolio)){alert('Portfolio target exceeds the supported numerical range.');return;}
 
             // Update summary cards
             document.getElementById('essential-portfolio').textContent = formatCurrency(essentialPortfolio);
@@ -325,8 +328,8 @@ $isPremium = has_premium_access();
                 const fullBalanceStart = fullBalance;
                 
                 // Apply withdrawal and growth
-                essBalance = (essBalance - essWithdrawal) * (1 + portfolioReturn);
-                fullBalance = (fullBalance - fullWithdrawal) * (1 + portfolioReturn);
+                essBalance = RBNumerical.withdrawalPeriod(essBalance, essWithdrawal, portfolioReturn).endingBalance;
+                fullBalance = RBNumerical.withdrawalPeriod(fullBalance, fullWithdrawal, portfolioReturn).endingBalance;
                 
                 const row = `
                     <tr>
@@ -336,7 +339,7 @@ $isPremium = has_premium_access();
                         <td>${formatCurrency(inflatedDesired)}</td>
                         <td>${formatCurrency(totalExpenses)}</td>
                         <td>${formatCurrency(ssIncome)}</td>
-                        <td>${formatCurrency(fullWithdrawal)}</td>
+                        <td>${formatCurrency(fullWithdrawal)} needed / ${formatCurrency(Math.min(fullBalanceStart, fullWithdrawal))} funded / ${formatCurrency(Math.max(0, fullWithdrawal - fullBalanceStart))} shortfall</td>
                         <td>${formatCurrency(essBalanceStart)}</td>
                         <td>${formatCurrency(fullBalanceStart)}</td>
                     </tr>
@@ -405,8 +408,8 @@ $isPremium = has_premium_access();
                     const essWithdrawal = Math.max(0, inflatedRequired - ssIncome);
                     const fullWithdrawal = Math.max(0, inflatedTotal - ssIncome);
                     
-                    essBalance = (essBalance - essWithdrawal) * (1 + portfolioReturn);
-                    fullBalance = (fullBalance - fullWithdrawal) * (1 + portfolioReturn);
+                    essBalance = RBNumerical.withdrawalPeriod(essBalance, essWithdrawal, portfolioReturn).endingBalance;
+                    fullBalance = RBNumerical.withdrawalPeriod(fullBalance, fullWithdrawal, portfolioReturn).endingBalance;
                 }
             }
 
@@ -528,7 +531,7 @@ $isPremium = has_premium_access();
                             borderDash: [5, 5]
                         },
                         {
-                            label: 'Essential Withdrawals (Required - SS)',
+                            label: 'Essential Portfolio Income Needed (Required - SS)',
                             data: essentialWithdrawals,
                             borderColor: '#e53e3e',
                             backgroundColor: 'rgba(229, 62, 62, 0.1)',
@@ -546,7 +549,7 @@ $isPremium = has_premium_access();
                             borderDash: [5, 5]
                         },
                         {
-                            label: 'Full Withdrawals (Total - SS)',
+                            label: 'Full Portfolio Income Needed (Total - SS)',
                             data: fullWithdrawals,
                             borderColor: '#4c51bf',
                             backgroundColor: 'rgba(76, 81, 191, 0.1)',
