@@ -39,6 +39,34 @@ expectH('phase3 uses shared handoff', strpos($phase3Js, 'getPhase1Handoff') !== 
 expectH('planner saveNow before redirect', strpos($plannerJs, "saveNow('calculator')") !== false);
 expectH('planner no longer redirects immediately without save', strpos($plannerJs, "saveNow('calculator').then(returnToPhase1)") !== false);
 
+// Render the handoff locally; inspect the actual anonymous and signed-in markup.
+ob_start();
+include $root . '/journey.ronbelisle.com/phases/continue-to-phase-2.php';
+$handoffHtml = (string) ob_get_clean();
+$dom = new DOMDocument();
+$previousErrors = libxml_use_internal_errors(true);
+$dom->loadHTML($handoffHtml);
+libxml_clear_errors();
+libxml_use_internal_errors($previousErrors);
+$xpath = new DOMXPath($dom);
+$primary = $xpath->query('//main//a[contains(concat(" ", normalize-space(@class), " "), " primary-action ")]');
+expectH('both visitor states use browser continuation as their only primary action', $primary->length === 2);
+foreach ($primary as $link) {
+    expectH('primary action continues directly to Phase 2', trim($link->textContent) === 'Continue in This Browser to Phase 2' && $link->getAttribute('href') === '/phases/social-security.php');
+}
+$anon = $xpath->query('//div[@data-journey-anon-only]')->item(0);
+$firstLink = $xpath->query('.//a', $anon)->item(0);
+expectH('anonymous continuation immediately follows the browser storage explanation', $xpath->query('./div[contains(@class,"transition-honesty")]/following-sibling::*[1]/a[contains(@class,"primary-action")]', $anon)->length === 1);
+expectH('anonymous primary is initially visible', $firstLink !== null && $xpath->query('ancestor-or-self::*[@hidden]', $firstLink)->length === 0);
+$account = $xpath->query('//section[@aria-labelledby="free-account-title"]')->item(0);
+expectH('account card is optional and has no primary styling', $account !== null && strpos($account->textContent, 'Creating an account is optional.') !== false && strpos($account->getAttribute('class'), 'is-primary') === false);
+expectH('account follows browser continuation', $xpath->query('following::section[@aria-labelledby="free-account-title"]', $firstLink)->length === 1);
+expectH('account registration is retained as secondary action', $xpath->query('.//a[contains(@class,"secondary-action") and @data-journey-analytics-free-account-start]', $account)->length === 1);
+expectH('six phases explicitly free without registration', strpos($anon->textContent, 'All six Journey phases are free, and no account is required to complete them.') !== false);
+expectH('free account does not promise automatic syncing', strpos($anon->textContent, 'Creating a free account does not automatically copy that plan into your account or sync it across devices.') !== false);
+expectH('optional Premium remains after initial plan', $xpath->query('//section[@aria-labelledby="premium-later-title"]')->length === 1 && strpos($anon->textContent, 'After you complete your initial plan') !== false);
+expectH('existing sign-in option retained', $xpath->query('//section[@aria-labelledby="existing-account-title"]//a[contains(@href,"/auth/login.php?return=")]')->length === 1);
+
 // Node runtime simulation of the exact broken → fixed sequence.
 $node = trim((string) shell_exec('command -v node 2>/dev/null'));
 if ($node !== '') {
