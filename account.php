@@ -311,7 +311,6 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
                     <?php
                     unset($_SESSION['billing_portal_error']); ?>
                 <?php endif; ?>
-                <?php endif; ?>
             </div>
 
             <div class="account-section">
