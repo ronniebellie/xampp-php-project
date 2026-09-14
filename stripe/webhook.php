@@ -4,9 +4,9 @@
  *
  * Route: https://ronbelisle.com/stripe/webhook.php
  *
- * Authoritative entitlement sync for product_key = journey via
+ * Consumer lifecycle uses separate consumer storage; Journey uses
  * user_product_subscriptions. Does not modify users.subscription_status
- * or calcforadvisors_subscribers.
+ * or calcforadvisors_subscribers. Both configured signing secrets are accepted.
  *
  * CFA continues to use calcforadvisors/stripe-webhook.php until a future
  * consolidation milestone.
@@ -21,6 +21,7 @@ $root = dirname(__DIR__);
 require_once $root . '/includes/stripe_config.php';
 require_once $root . '/includes/db_config.php';
 require_once $root . '/includes/journey_stripe_sync.php';
+require_once $root . '/includes/consumer_checkout.php';
 require_once $root . '/vendor/autoload.php';
 
 header('Content-Type: text/plain; charset=UTF-8');
@@ -39,7 +40,7 @@ if ($contentLength > 1048576) { // 1 MiB
     exit;
 }
 
-$payload = file_get_contents('php://input');
+$payload = file_get_contents('php://input', false, null, 0, 1048577);
 if (!is_string($payload) || $payload === '') {
     http_response_code(400);
     echo 'Empty payload';
@@ -52,19 +53,11 @@ if (strlen($payload) > 1048576) {
 }
 
 $sig = $_SERVER['HTTP_STRIPE_SIGNATURE'] ?? '';
-$secret = '';
-if (defined('JOURNEY_STRIPE_WEBHOOK_SECRET') && JOURNEY_STRIPE_WEBHOOK_SECRET !== '' && JOURNEY_STRIPE_WEBHOOK_SECRET !== 'whsec_xxx') {
-    $secret = (string) JOURNEY_STRIPE_WEBHOOK_SECRET;
-} elseif (defined('STRIPE_WEBHOOK_SECRET') && STRIPE_WEBHOOK_SECRET !== '' && STRIPE_WEBHOOK_SECRET !== 'whsec_xxx') {
-    $secret = (string) STRIPE_WEBHOOK_SECRET;
+$secrets=[];
+foreach(['JOURNEY_STRIPE_WEBHOOK_SECRET','STRIPE_WEBHOOK_SECRET'] as $key) {
+    if(defined($key) && constant($key)!=='' && constant($key)!=='whsec_xxx')$secrets[]=(string)constant($key);
 }
-
-if ($secret === '') {
-    http_response_code(500);
-    error_log('stripe/webhook: webhook signing secret not configured');
-    echo 'Webhook not configured';
-    exit;
-}
+if(!$secrets){http_response_code(500);exit('Webhook not configured');}
 
 if (!defined('STRIPE_SECRET_KEY') || STRIPE_SECRET_KEY === '') {
     http_response_code(500);
@@ -75,19 +68,16 @@ if (!defined('STRIPE_SECRET_KEY') || STRIPE_SECRET_KEY === '') {
 
 \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
 
-try {
-    $event = \Stripe\Webhook::constructEvent($payload, $sig, $secret);
-} catch (\Stripe\Exception\SignatureVerificationException $e) {
-    http_response_code(400);
-    error_log('stripe/webhook: signature verification failed');
-    echo 'Invalid signature';
-    exit;
-} catch (\UnexpectedValueException $e) {
-    http_response_code(400);
-    error_log('stripe/webhook: invalid payload');
-    echo 'Invalid payload';
-    exit;
+$event=null;
+foreach(array_unique($secrets) as $secret) {
+    try{$event=\Stripe\Webhook::constructEvent($payload,$sig,$secret);break;}
+    catch(\Stripe\Exception\SignatureVerificationException | \UnexpectedValueException $e){}
 }
+if($event===null){http_response_code(400);exit('Invalid signature or payload');}
+try {
+    $api=rb_consumer_stripe_api();
+    cfa_process_subscription_event(new RbConsumerSubscriptionStore($conn),$event->toArray(),$api['subscription'],rb_consumer_prices());
+} catch(Throwable $e){error_log('Consumer lifecycle retry required');http_response_code(500);exit('retry');}
 
 $retrieveSubscription = static function (string $subscriptionId) {
     try {

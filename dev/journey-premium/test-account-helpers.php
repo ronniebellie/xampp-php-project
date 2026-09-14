@@ -10,7 +10,7 @@ declare(strict_types=1);
 $root = dirname(__DIR__, 2);
 require_once $root . '/includes/session_bootstrap.php';
 rb_session_start();
-require_once $root . '/includes/db_config.php';
+require_once __DIR__ . '/isolated-db.php';
 require_once $root . '/includes/account_helpers.php';
 
 $passed = [];
@@ -62,8 +62,8 @@ expectA('ghost secondary goes to journey checkout', $free['secondaryActionUrl'] 
 $product = JOURNEY_PRODUCT_KEY;
 $ins = $conn->prepare(
     "INSERT INTO user_product_subscriptions
-        (user_id, product_key, stripe_subscription_id, stripe_status, entitlement_status, updated_at)
-     VALUES (?, ?, ?, 'trialing', 'trialing', NOW())"
+        (user_id, product_key, stripe_subscription_id, stripe_status, entitlement_status, trial_end, current_period_end, updated_at)
+     VALUES (?, ?, ?, 'trialing', 'trialing', DATE_ADD(UTC_TIMESTAMP(),INTERVAL 1 DAY), DATE_ADD(UTC_TIMESTAMP(),INTERVAL 1 DAY), NOW())"
 );
 $subId = 'sub_test_account_helpers_' . $ghostId;
 expectA('insert journey trial fixture', (bool) $ins);

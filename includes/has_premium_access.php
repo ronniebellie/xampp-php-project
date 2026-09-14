@@ -4,7 +4,7 @@
  * Returns true if user has Premium features (save, export, AI explain, extended projections).
  *
  * Sources:
- * 1. ronbelisle.com users with subscription_status = 'premium'
+ * 1. verified consumer subscriptions or explicit unlinked manual grants
  * 2. calcforadvisors paid subscribers (plan = monthly or annual) via bridge session
  *
  * Requires: session_start() already called, db_config available.
@@ -27,19 +27,8 @@ if (!defined('HAS_PREMIUM_ACCESS_LOADED')) {
             require_once __DIR__ . '/db_config.php';
         }
 
-        // 1. ronbelisle.com Premium user
-        if (isset($_SESSION['user_id'])) {
-            $stmt = $conn->prepare("SELECT subscription_status FROM users WHERE id = ?");
-            $stmt->bind_param("i", $_SESSION['user_id']);
-            $stmt->execute();
-            $sub = null;
-            $stmt->bind_result($sub);
-            if ($stmt->fetch() && $sub === 'premium') {
-                $stmt->close();
-                return true;
-            }
-            $stmt->close();
-        }
+        require_once __DIR__ . '/consumer_subscription.php';
+        if (!empty($_SESSION['user_id']) && rb_consumer_has_premium($conn,(int)$_SESSION['user_id'])) return true;
 
         // 2. calcforadvisors paid subscriber (set by bridge)
         return rb_current_advisor_premium();
@@ -69,16 +58,8 @@ if (!defined('HAS_PREMIUM_ACCESS_LOADED')) {
         if (isset($_SESSION['user_id'])) {
             global $conn;
             if (!isset($conn)) require_once __DIR__ . '/db_config.php';
-            $stmt = $conn->prepare("SELECT subscription_status FROM users WHERE id = ?");
-            $stmt->bind_param("i", $_SESSION['user_id']);
-            $stmt->execute();
-            $sub = null;
-            $stmt->bind_result($sub);
-            if ($stmt->fetch() && $sub === 'premium') {
-                $stmt->close();
-                return ['type' => 'user', 'id' => (int) $_SESSION['user_id']];
-            }
-            $stmt->close();
+            require_once __DIR__ . '/consumer_subscription.php';
+            if(rb_consumer_has_premium($conn,(int)$_SESSION['user_id'])) return ['type'=>'user','id'=>(int)$_SESSION['user_id']];
         }
         if (rb_current_advisor_premium()) {
             return ['type' => 'cfa', 'id' => (int) $_SESSION['calcforadvisors_subscriber_id']];

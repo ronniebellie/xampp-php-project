@@ -186,6 +186,11 @@ function cfa_evaluate_advisor_entitlement(array $subscriber, ?DateTimeImmutable 
     }
 
     if ($stripeStatus === 'trialing') {
+        // Scheduled cancellation may end a trial before its original trial date.
+        if (!empty($subscriber['cancel_at_period_end']) && $accessEnds === null) {
+            return $result('trial_invalid', false, false, false, null, 'scheduled_trial_end_missing');
+        }
+        if ($trialEnds !== null && $accessEnds !== null && $accessEnds < $trialEnds) $trialEnds = $accessEnds;
         if ($trialEnds === null) {
             return $result('trial_invalid', false, false, false, null, 'stripe_trial_end_missing');
         }

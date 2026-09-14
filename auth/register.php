@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !rb_csrf_validate(is_string($_POST[
     http_response_code(403);
     $error = 'Your session expired. Reload this page and try again.';
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = filter_var((is_string($_POST['email'] ?? null) ? $_POST['email'] : ''), FILTER_SANITIZE_EMAIL);
+    $email = strtolower(trim(is_string($_POST['email'] ?? null) ? $_POST['email'] : ''));
     $password = (is_string($_POST['password'] ?? null) ? $_POST['password'] : '');
     $confirm_password = (is_string($_POST['confirm_password'] ?? null) ? $_POST['confirm_password'] : '');
     $full_name = trim(is_string($_POST['full_name'] ?? null) ? $_POST['full_name'] : '');
@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !rb_csrf_validate(is_string($_POST[
         $error = 'Passwords do not match';
     } else {
         // Check if email already exists ($conn from includes/db_config.php)
-        $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+        $stmt = $conn->prepare("SELECT id FROM users WHERE LOWER(TRIM(email)) = LOWER(TRIM(?))");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();

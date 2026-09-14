@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !rb_csrf_validate(is_string($_POST[
     http_response_code(403);
     $error = 'Your session expired. Reload this page and try again.';
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = filter_var((is_string($_POST['email'] ?? null) ? $_POST['email'] : ''), FILTER_SANITIZE_EMAIL);
+    $email = strtolower(trim(is_string($_POST['email'] ?? null) ? $_POST['email'] : ''));
     $password = (is_string($_POST['password'] ?? null) ? $_POST['password'] : '');
     $remember = isset($_POST['remember']);
     

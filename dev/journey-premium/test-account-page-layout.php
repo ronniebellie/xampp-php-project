@@ -39,7 +39,7 @@ expectLayout('full Calculator section only when subscribed', strpos($src, '<?php
 expectLayout('teaser only when not subscribed', strpos($src, '<?php if (!$is_calculator_premium): ?>') !== false);
 expectLayout('subscribed manage CTA retained', strpos($src, 'Manage Calculator Premium subscription') !== false);
 expectLayout('upgrade CTA removed for free calculator users', strpos($src, 'Upgrade Calculator Premium') === false);
-expectLayout('entitlement detection unchanged', strpos($src, "(\$user['subscription_status'] === 'premium')") !== false);
+expectLayout('consumer uses authoritative lifecycle', strpos($src, 'rb_consumer_status($conn,$user_id)') !== false);
 expectLayout('journey status helper unchanged', strpos($src, 'rb_account_journey_status($conn, $user_id)') !== false);
 
 echo "Account page layout tests\n";

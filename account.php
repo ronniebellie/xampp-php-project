@@ -4,6 +4,7 @@ rb_session_start();
 require_once __DIR__ . '/includes/db_config.php';
 require_once __DIR__ . '/includes/csrf.php';
 require_once __DIR__ . '/includes/account_helpers.php';
+header('Cache-Control: no-store');header('X-Robots-Tag: noindex, nofollow');
 
 if (!isset($_SESSION['user_id'])) {
     header('Location: auth/login.php');
@@ -72,8 +73,9 @@ if (!$user) {
     exit;
 }
 
-// Calculator Premium (legacy site-wide premium) — users.subscription_status.
-$is_calculator_premium = ($user['subscription_status'] === 'premium');
+require_once __DIR__.'/includes/consumer_subscription.php';
+try{$consumerStatus=rb_consumer_status($conn,$user_id);}catch(Throwable $e){$consumerStatus=['has_premium'=>false,'state'=>'unavailable','billing_customer'=>null,'access_until'=>null];}
+$is_calculator_premium=$consumerStatus['has_premium'];
 // Journey Premium — authoritative product entitlement (same as Journey chrome).
 $journeyStatus = rb_account_journey_status($conn, $user_id);
 $is_journey_premium = !empty($journeyStatus['hasAccess']);
@@ -307,11 +309,8 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
                 <?php elseif ($msg === 'error'): ?>
                     <p style="color: #dc2626; margin-top: 10px; font-size: 14px;">Could not open subscription management. Please try again or contact support.</p>
                     <?php
-                    $err = $_SESSION['billing_portal_error'] ?? '';
-                    unset($_SESSION['billing_portal_error']);
-                    if ($err): ?>
-                    <p style="color: #92400e; margin-top: 8px; font-size: 13px; background: #fef3c7; padding: 10px; border-radius: 6px;">Details: <?php echo htmlspecialchars($err); ?></p>
-                    <?php endif; ?>
+                    unset($_SESSION['billing_portal_error']); ?>
+                <?php endif; ?>
                 <?php endif; ?>
             </div>
 
@@ -371,6 +370,7 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
             <?php if ($is_calculator_premium): ?>
             <div class="account-section">
                 <h2>Calculator Premium</h2>
+                <p role="status">Status: <?php echo htmlspecialchars(str_replace("_"," ",$consumerStatus["state"]),ENT_QUOTES,"UTF-8");?><?php if(!empty($consumerStatus["access_until"]))echo " · Until ".htmlspecialchars($consumerStatus["access_until"],ENT_QUOTES,"UTF-8")." UTC";?></p>
                 <p class="status-detail" style="margin-top:0;">Scenario saving, exports, and advanced calculator features on ronbelisle.com. Separate from Journey Premium.</p>
                 <div class="info-row">
                     <span class="info-label">Status:</span>
@@ -386,9 +386,9 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
                     <li><strong>Advanced projections</strong> — See full year-by-year projections (e.g., ages 73–100) instead of limited previews.</li>
                     <li><strong>Ad-free experience</strong> — Use all tools without promotional interruptions.</li>
                 </ul>
-                <?php if (!empty($user['stripe_subscription_id'])): ?>
+                <?php if (!empty($consumerStatus['billing_customer'])): ?>
                 <p style="margin-top: 15px;">
-                    <a href="billing_portal.php" class="btn" style="background: #059669;">Manage Calculator Premium subscription</a>
+                    <form method="post" action="/billing_portal.php"><?php echo rb_csrf_field();?><button class="btn" type="submit">Manage Calculator Premium subscription</button></form>
                     <span style="font-size: 13px; color: #64748b; margin-left: 8px;">Cancel, update payment method, or view invoices</span>
                 </p>
                 <?php else: ?>
@@ -398,6 +398,10 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
                 <?php endif; ?>
             </div>
             <?php endif; ?>
+
+            <?php if(!$is_calculator_premium && !empty($consumerStatus['billing_customer'])): ?>
+            <div class="account-section"><h2>Calculator Premium billing recovery</h2><p>Update payment details, view invoices or manage a canceled subscription.</p><form method="post" action="/billing_portal.php"><?php echo rb_csrf_field();?><button type="submit" class="btn">Manage Calculator Premium billing</button></form></div>
+            <?php endif;?>
 
             <div class="account-section" id="change-password">
                 <h2>Change Password</h2>
@@ -430,6 +434,7 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'User';
             <?php if (!$is_calculator_premium): ?>
             <div class="account-section">
                 <h2>Calculator Premium</h2>
+                <p role="status">Status: <?php echo htmlspecialchars(str_replace("_"," ",$consumerStatus["state"]),ENT_QUOTES,"UTF-8");?><?php if(!empty($consumerStatus["access_until"]))echo " · Until ".htmlspecialchars($consumerStatus["access_until"],ENT_QUOTES,"UTF-8")." UTC";?></p>
                 <p class="status-detail" style="margin-top:0;">Advanced planning features for the retirement calculators. This is separate from Journey Premium.</p>
                 <div class="info-row">
                     <span class="info-label">Status:</span>

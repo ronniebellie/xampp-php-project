@@ -51,7 +51,8 @@ if ($isLoggedIn) {
     $stmt->bind_result($sub);
     $user = $stmt->fetch() ? ['subscription_status' => $sub] : null;
     $stmt->close();
-    $is_premium = ($user && $user['subscription_status'] === 'premium');
+    require_once __DIR__.'/includes/consumer_subscription.php';
+    $is_premium = rb_consumer_has_premium($conn,(int)$_SESSION['user_id']);
 }
 
 // Hide site header when embedded in calcforadvisors.com demos (white-label preview)

@@ -13,7 +13,7 @@ $root = dirname(__DIR__, 2);
 
 require_once $root . '/includes/session_bootstrap.php';
 rb_session_start();
-require_once $root . '/includes/db_config.php';
+require_once __DIR__ . '/isolated-db.php';
 require_once $root . '/includes/journey_status.php';
 
 $passed = [];

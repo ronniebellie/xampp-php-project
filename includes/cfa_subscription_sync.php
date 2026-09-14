@@ -22,7 +22,8 @@ interface CfaSubscriptionStore
 function cfa_stripe_id($value, string $prefix): string
 {
     if (is_array($value)) $value = $value['id'] ?? null;
-    if (!is_string($value) || !preg_match('/^' . preg_quote($prefix, '/') . '_[A-Za-z0-9]+$/D', $value)) {
+    $suffix = $prefix === 'cs' ? '(?:(?:live|test)_)?[A-Za-z0-9]+' : '[A-Za-z0-9]+';
+    if (!is_string($value) || !preg_match('/^' . preg_quote($prefix, '/') . '_' . $suffix . '$/D', $value)) {
         throw new RuntimeException('Invalid Stripe identity');
     }
     return $value;

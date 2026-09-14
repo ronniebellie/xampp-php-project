@@ -1,6 +1,7 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_bootstrap.php';
 rb_session_start();
+header('Cache-Control: no-store');header('X-Robots-Tag: noindex, nofollow');
 require_once 'includes/db_config.php';
 require_once 'includes/stripe_config.php';
 require_once 'includes/auth_flow_helpers.php';
@@ -19,7 +20,8 @@ $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 
 // If already premium, redirect to homepage
-if ($user['subscription_status'] === 'premium') {
+require_once __DIR__.'/includes/consumer_subscription.php';
+if (rb_consumer_has_premium($conn,(int)$_SESSION['user_id'])) {
     header('Location: index.php');
     exit;
 }
@@ -181,7 +183,7 @@ if ($user['subscription_status'] === 'premium') {
 
         <div class="trial-callout">
             <strong>7-day free trial</strong>
-            Try every premium feature free for 7 days. You’ll add a payment method at checkout so access can continue seamlessly—<em>you won’t be charged until the trial ends</em>. Cancel anytime before then and pay nothing.
+            Eligible accounts can try Premium free for 7 days, once per account. You’ll add a payment method at checkout so access can continue seamlessly—<em>you won’t be charged until the trial ends</em>. Cancel anytime before then and pay nothing.
         </div>
         
         <div class="pricing-cards">
