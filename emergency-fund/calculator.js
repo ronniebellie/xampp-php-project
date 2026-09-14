@@ -4,43 +4,15 @@ function formatCurrency(amount) {
 }
 
 function runProjection(monthlyExpenses, targetMonths, currentSavings, monthlyContribution, annualRatePercent) {
-  const target = monthlyExpenses * targetMonths;
-  const monthlyRate = (annualRatePercent || 0) / 100 / 12;
-  const months = [];
-  let balance = currentSavings;
-  let month = 0;
-  while (balance < target && month < 600) {
-    const interest = balance * monthlyRate;
-    balance += interest + monthlyContribution;
-    month++;
-    months.push({
-      month,
-      balance,
-      interest,
-      contribution: monthlyContribution,
-      pct: Math.min(100, (balance / target) * 100)
-    });
-  }
-  if (balance >= target && months.length > 0) {
-    months[months.length - 1].balance = Math.min(balance, target);
-    months[months.length - 1].pct = 100;
-  }
-  return {
-    target,
-    targetMonths,
-    monthsToGoal: balance >= target ? month : null,
-    reachedDate: balance >= target && month > 0 ? new Date(Date.now() + month * 30 * 24 * 60 * 60 * 1000) : null,
-    schedule: months,
-    finalBalance: balance
-  };
+  return Object.assign(RBNumerical.goalSavings(monthlyExpenses * targetMonths, currentSavings, monthlyContribution, annualRatePercent), {targetMonths});
 }
 
 let savingsChart = null;
 let progressChart = null;
 
-function updateEmergencyFund() {
+function updateEmergencyFundUnsafe() {
   const monthlyExpenses = parseFloat(document.getElementById('monthlyExpenses').value) || 0;
-  const targetMonths = parseInt(document.getElementById('targetMonths').value, 10) || 6;
+  const targetMonths = Number(document.getElementById('targetMonths').value);
   const currentSavings = parseFloat(document.getElementById('currentSavings').value) || 0;
   const monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value) || 0;
   const interestRate = parseFloat(document.getElementById('interestRate').value) || 0;
@@ -74,7 +46,7 @@ function updateEmergencyFund() {
     progressEl.textContent = 'You\'ve already reached your emergency fund goal. Great job! Consider increasing your target (e.g. 9–12 months) if you want a larger cushion.';
     progressEl.style.background = '#f0fdf4';
     progressEl.style.color = '#166534';
-  } else if (monthlyContribution <= 0) {
+  } else if (monthlyContribution <= 0 && result.monthsToGoal == null) {
     progressEl.textContent = 'Add a monthly contribution to see when you\'ll reach your goal.';
     progressEl.style.background = '#fef3c7';
     progressEl.style.color = '#92400e';
@@ -180,7 +152,7 @@ function updateEmergencyFund() {
 
 function updateEmergencyFundLabelsOnly() {
   const monthlyExpenses = parseFloat(document.getElementById('monthlyExpenses').value) || 0;
-  const targetMonths = parseInt(document.getElementById('targetMonths').value, 10) || 6;
+  const targetMonths = Number(document.getElementById('targetMonths').value);
   const currentSavings = parseFloat(document.getElementById('currentSavings').value) || 0;
   const monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value) || 0;
   const interestRate = parseFloat(document.getElementById('interestRate').value) || 0;
@@ -189,6 +161,19 @@ function updateEmergencyFundLabelsOnly() {
   document.getElementById('currentSavingsLabel').textContent = formatCurrency(currentSavings);
   document.getElementById('monthlyContributionLabel').textContent = formatCurrency(monthlyContribution) + '/mo';
   document.getElementById('interestRateLabel').textContent = interestRate.toFixed(1) + '%';
+}
+
+function updateEmergencyFund() {
+  try {
+    ['monthlyExpenses', 'targetMonths', 'currentSavings', 'monthlyContribution', 'interestRate'].forEach(function(id) { const raw=document.getElementById(id).value; if(String(raw).trim()===''||!Number.isFinite(Number(raw)))throw new RangeError('Enter a valid number for every field.'); });
+    const months=Number(document.getElementById('targetMonths').value);
+    if(!Number.isInteger(months)||months<0||months>120||Number(document.getElementById('monthlyExpenses').value)<0)throw new RangeError('Use nonnegative expenses and whole target months from 0 to 120.');
+    updateEmergencyFundUnsafe();
+  } catch(error) {
+    document.getElementById('results').style.display='none';
+    window.lastEFResult=null;
+    alert(error.message);
+  }
 }
 
 ['monthlyExpenses', 'targetMonths', 'currentSavings', 'monthlyContribution', 'interestRate'].forEach(function(id) {

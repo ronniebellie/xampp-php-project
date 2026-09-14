@@ -5,6 +5,7 @@ require_once __DIR__ . '/../includes/db_config.php';
 require_once __DIR__ . '/../includes/has_premium_access.php';
 
 header('Content-Type: application/json');
+header('Cache-Control: no-store');
 
 $owner = get_scenario_owner();
 if (!$owner) {
@@ -13,7 +14,7 @@ if (!$owner) {
 }
 
 $calculator_type = $_GET['calculator_type'] ?? '';
-if (empty($calculator_type)) {
+if (!is_string($calculator_type) || !preg_match('/^[a-z0-9_-]{1,64}$/D', $calculator_type)) {
     echo json_encode(['success' => false, 'error' => 'Calculator type required']);
     exit;
 }

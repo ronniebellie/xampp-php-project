@@ -13,3 +13,9 @@ The timing contract is deliberately annual: ages attained in the calendar year; 
 The actual snapshot PDF was generated without HTTP and rendered for inspection. Inputs, timing context, model version, nominal USD basis and generated date are retained. Table sections start on separate pages; shared report context now resets text contrast and avoids advisor-only wording.
 
 No statutory data changed. Consumer presentation remains distinct. No browser, live-site, AI-provider or Stripe request was made during verification.
+
+## Batch 2 — consumer adapters and private sharing
+
+Savings goals share a bounded monthly ledger, preserve final-month surplus, and use calendar month dates with end-of-month clipping. Compound interest shares the annuity ledger and preserves negative growth. Invalid/fractional horizons and malformed inputs are rejected; stale results are hidden. Monte Carlo succeeds when every requested withdrawal is funded, including exact final depletion, and clamps simulated return factors at zero rather than allowing negative assets. SS Gap no longer claims an unsupported probability of success. Future PAS withdrawals outside the horizon no longer get moved into the last modeled year.
+
+Sharing defaults to the canonical calculator route. Including assumptions requires explicit opt-in; sensitive token/name/email keys and fragments are removed. Scenario loads validate calculator type and disable response caching. Consumer savings regression exercises actual adapters, independent monthly cash calculations, dates and zero-volatility Monte Carlo outcomes.

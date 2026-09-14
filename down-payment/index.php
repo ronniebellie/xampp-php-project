@@ -153,6 +153,7 @@ $isPremium = has_premium_access();
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="../js/share-results.js"></script>
   <script>const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;</script>
+  <script src="../js/lib/numerical-core.js"></script>
   <script src="calculator.js"></script>
     <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/calculator-footer.php'; ?>
 </body>

@@ -73,12 +73,13 @@
     var el = document.getElementById('withdrawalStartDate');
     if (!el || !el.value) return 0;
     var p = el.value.split('-');
-    if (p.length !== 3) return 0;
+    if (p.length !== 3) return NaN;
     var start = new Date(+p[0], +p[1] - 1, +p[2]);
+    if (start.getFullYear()!==+p[0] || start.getMonth()!==+p[1]-1 || start.getDate()!==+p[2]) return NaN;
     var today = new Date();
     today.setHours(0, 0, 0, 0);
     var yrs = (start.getTime() - today.getTime()) / (365.25 * 24 * 3600 * 1000);
-    if (isNaN(yrs) || yrs < 0) return 0;
+    if (!Number.isFinite(yrs) || yrs < 0) return 0;
     return Math.min(yrs, LIMITS.delayYears.max);
   }
 
@@ -132,10 +133,10 @@
 
   function updateLabels() {
     var inflationRatePct = parseFloat(document.getElementById('inflationRate').value);
-    var years = parseInt(document.getElementById('years').value, 10);
+    var years = Number(document.getElementById('years').value);
     var expectedReturnPct = parseFloat(document.getElementById('expectedReturn').value);
     var volatilityPct = parseFloat(document.getElementById('volatility').value);
-    var numSims = parseInt(document.getElementById('simulations').value, 10);
+    var numSims = Number(document.getElementById('simulations').value);
     var inflationRateLabel = document.getElementById('inflationRateLabel');
     var yearsLabel = document.getElementById('yearsLabel');
     var delayYearsLabel = document.getElementById('delayYearsLabel');
@@ -153,24 +154,25 @@
   function validateInputs() {
     var portfolio = parseAmount('portfolio');
     var withdrawal = parseAmount('withdrawal');
-    var years = parseInt(document.getElementById('years').value, 10);
+    var years = Number(document.getElementById('years').value);
     var expectedReturnPct = parseFloat(document.getElementById('expectedReturn').value);
     var volatilityPct = parseFloat(document.getElementById('volatility').value);
-    var numSims = parseInt(document.getElementById('simulations').value, 10);
+    var numSims = Number(document.getElementById('simulations').value);
     var inflationRatePct = parseFloat(document.getElementById('inflationRate').value);
     var method = getMethod();
     var withdrawalRatePct = getRate();
     var err = [];
+    if (!Number.isFinite(getDelayYears())) err.push('Valid withdrawal start date');
     if (isNaN(portfolio) || portfolio < LIMITS.portfolio.min || portfolio > LIMITS.portfolio.max) err.push('Starting portfolio: $1,000 to $50,000,000');
     if (method === 'percent') {
       if (isNaN(withdrawalRatePct) || withdrawalRatePct < LIMITS.withdrawalRate.min || withdrawalRatePct > LIMITS.withdrawalRate.max) err.push('Withdrawal rate: 0% to 20%');
     } else {
       if (isNaN(withdrawal) || withdrawal < LIMITS.withdrawal.min || withdrawal > LIMITS.withdrawal.max) err.push('Annual withdrawal: $0 to $5,000,000');
     }
-    if (isNaN(years) || years < LIMITS.years.min || years > LIMITS.years.max) err.push('Years to model: 5 to 50');
+    if (!Number.isInteger(years) || years < LIMITS.years.min || years > LIMITS.years.max) err.push('Years to model: 5 to 50');
     if (isNaN(expectedReturnPct) || expectedReturnPct < LIMITS.expectedReturn.min || expectedReturnPct > LIMITS.expectedReturn.max) err.push('Expected return: 0% to 20%');
     if (isNaN(volatilityPct) || volatilityPct < LIMITS.volatility.min || volatilityPct > LIMITS.volatility.max) err.push('Volatility: 0% to 50%');
-    if (isNaN(numSims) || numSims < LIMITS.simulations.min || numSims > LIMITS.simulations.max) err.push('Simulations: 100 to 10,000');
+    if (!Number.isInteger(numSims) || numSims < LIMITS.simulations.min || numSims > LIMITS.simulations.max) err.push('Simulations: 100 to 10,000');
     if (isNaN(inflationRatePct) || inflationRatePct < LIMITS.inflationRate.min || inflationRatePct > LIMITS.inflationRate.max) err.push('Inflation rate: 0% to 10%');
     return { err: err, portfolio: portfolio, withdrawal: withdrawal, years: years, expectedReturnPct: expectedReturnPct, volatilityPct: volatilityPct, numSims: numSims, inflationRatePct: inflationRatePct, delayYears: getDelayYears(), timing: getTiming(), method: method, withdrawalRatePct: withdrawalRatePct };
   }
@@ -179,6 +181,8 @@
     var validationEl = document.getElementById('validationError');
     var v = validateInputs();
     if (v.err.length > 0) {
+      window.lastPlanSuccessResult=null;
+      var stale=document.getElementById('results');if(stale)stale.style.display='none';
       if (validationEl) {
         validationEl.style.display = 'block';
         validationEl.textContent = 'Please keep inputs in these ranges: ' + v.err.join('; ') + '.';
@@ -231,13 +235,11 @@
 
       // Growth-only phase: portfolio compounds untouched until withdrawals start.
       for (var g = 0; g < fullDelay && !failed; g++) {
-        bal = bal * (1 + delayRets[g]);
-        if (bal <= 0) { failed = true; endingBalances.push(bal); }
+        bal = bal * Math.max(0, 1 + delayRets[g]);
       }
       // Partial first year (e.g. ~6 months); drift/vol already scaled by sqrt(t).
       if (!failed && fracRet !== null) {
-        bal = bal * (1 + fracRet);
-        if (bal <= 0) { failed = true; endingBalances.push(bal); }
+        bal = bal * Math.max(0, 1 + fracRet);
       }
 
       // Portfolio value at the moment withdrawals begin (after any growth delay).
@@ -259,11 +261,8 @@
         }
         if (timing === 'annual') {
           // Full year's withdrawal taken on Jan 1, remainder grows all year.
-          bal = (bal - withdrawalThisYear) * (1 + ret);
-          if (bal <= 0) {
-            failed = true;
-            endingBalances.push(bal);
-          }
+          if (bal + 1e-7 < withdrawalThisYear) { failed = true; bal = 0; }
+          else bal = Math.max(0, bal - withdrawalThisYear) * Math.max(0, 1 + ret);
         } else {
           // Monthly: take 1/12 at the start of each month, grow by the
           // monthly-equivalent of the same annual return draw.
@@ -271,18 +270,13 @@
           var mFactor = oneplus <= 0 ? 0 : Math.pow(oneplus, 1 / 12);
           var monthlyW = withdrawalThisYear / 12;
           for (var m = 0; m < 12 && !failed; m++) {
-            bal = (bal - monthlyW) * mFactor;
-            if (bal <= 0) {
-              failed = true;
-              endingBalances.push(bal);
-            }
+            if (bal + 1e-7 < monthlyW) { failed = true; bal = 0; }
+            else bal = Math.max(0, bal - monthlyW) * mFactor;
           }
         }
       }
-      if (!failed) {
-        successCount++;
-        endingBalances.push(bal);
-      }
+      if (!failed) successCount++;
+      endingBalances.push(bal);
     }
 
     var successRate = (successCount / numSims * 100).toFixed(1);

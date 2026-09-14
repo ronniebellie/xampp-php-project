@@ -7,44 +7,15 @@ function formatCurrencyCI(amount) {
 }
 
 function runCompoundProjection(initial, monthly, annualRatePercent, years) {
-  const monthlyRate = annualRatePercent / 100 / 12;
-  const totalMonths = years * 12;
-  const labels = [];
-  const balances = [];
-  const invested = [];
-
-  let balance = initial;
-  let contributed = initial;
-
-  labels.push('Now');
-  balances.push(balance);
-  invested.push(contributed);
-
-  for (let m = 1; m <= totalMonths; m++) {
-    balance = balance * (1 + monthlyRate) + monthly;
-    contributed += monthly;
-
-    if (m % 12 === 0 || m === totalMonths) {
-      const year = m / 12;
-      labels.push('Yr ' + year);
-      balances.push(balance);
-      invested.push(contributed);
-    }
-  }
-
-  return {
-    labels,
-    balances,
-    invested,
-    finalBalance: balance,
-    totalInvested: contributed,
-    interestEarned: balance - contributed
-  };
+  if(![initial,monthly,annualRatePercent,years].every(Number.isFinite)||initial<0||monthly<0||annualRatePercent<=-100||annualRatePercent>100||!Number.isInteger(years)||years<0||years>120)throw new RangeError('Enter finite nonnegative savings, 0–120 whole years and a return above -100% through 100%.');
+  const rows=RBNumerical.annuityLedger(monthly,annualRatePercent/1200,years*12,false,initial);
+  const annual=rows.filter(row=>row.period%12===0),last=rows.at(-1);
+  return {labels:annual.map(row=>row.period?'Yr '+row.period/12:'Now'),balances:annual.map(row=>row.value),invested:annual.map(row=>row.contributed),finalBalance:last.value,totalInvested:last.contributed,interestEarned:last.interest};
 }
 
 let compoundChart = null;
 
-function updateCompoundCalculator() {
+function updateCompoundCalculatorUnsafe() {
   const initialEl = document.getElementById('initial');
   const rateEl = document.getElementById('rate');
   const yearsEl = document.getElementById('years');
@@ -52,7 +23,7 @@ function updateCompoundCalculator() {
 
   const initial = parseFloat(initialEl.value) || 0;
   const rate = parseFloat(rateEl.value) || 0;
-  const years = parseInt(yearsEl.value, 10) || 0;
+  const years = Number(yearsEl.value);
   const monthly = parseFloat(monthlyEl.value) || 0;
 
   document.getElementById('initialLabel').textContent = formatCurrencyCI(initial);
@@ -85,7 +56,7 @@ function updateCompoundCalculator() {
         },
         {
           label: 'Growth (interest)',
-          data: result.balances.map((b, i) => Math.max(0, b - result.invested[i])),
+          data: result.balances.map((b, i) => b - result.invested[i]),
           backgroundColor: '#34d399'
         }
       ]
@@ -118,6 +89,13 @@ function updateCompoundCalculator() {
 
   const resultsEl = document.getElementById('compoundResults');
   if (resultsEl) resultsEl.style.display = 'block';
+}
+
+function updateCompoundCalculator() {
+  try {
+    ['initial','rate','years','monthly'].forEach(id=>{const raw=document.getElementById(id).value;if(String(raw).trim()===''||!Number.isFinite(Number(raw)))throw new RangeError('Enter valid numeric inputs.');});
+    updateCompoundCalculatorUnsafe();
+  } catch(error) { document.getElementById('compoundResults').style.display='none'; alert(error.message); }
 }
 
 ['initial', 'rate', 'years', 'monthly'].forEach(function (id) {

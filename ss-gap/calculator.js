@@ -18,20 +18,12 @@ function formatCurrency(amount) {
     }).format(amount);
 }
 
-// Approximate historical success rates for different withdrawal rates
-function getSuccessRate(rate) {
-    if (rate <= 3.0) return '~100%';
-    if (rate <= 3.5) return '~98%';
-    if (rate <= 4.0) return '~95%';
-    if (rate <= 4.5) return '~85%';
-    if (rate <= 5.0) return '~75%';
-    if (rate <= 5.5) return '~65%';
-    if (rate <= 6.0) return '~50%';
-    return '<50%';
-}
+// No probability model or sourced historical dataset is run by this calculator.
+function getSuccessRate(rate) { return 'Not estimated'; }
 
 // Calculate portfolio needed for a given withdrawal rate
 function calculatePortfolioNeeded(annualGap, withdrawalRate) {
+    if(!Number.isFinite(annualGap)||annualGap<0||!Number.isFinite(withdrawalRate)||withdrawalRate<=0)throw new RangeError('Use a nonnegative annual gap and a positive withdrawal rate.');
     return annualGap / (withdrawalRate / 100);
 }
 
@@ -39,8 +31,9 @@ function updateGap() {
     const targetSpending = parseFloat(document.getElementById('targetSpending').value) || 0;
     const ssIncome = parseFloat(document.getElementById('ssIncome').value) || 0;
     const otherIncome = parseFloat(document.getElementById('otherIncome').value) || 0;
-    const withdrawalRate = parseFloat(document.getElementById('withdrawalRate').value) || 4;
+    const withdrawalRate = Number(document.getElementById('withdrawalRate').value);
     const filingStatus = document.getElementById('filingStatus').value;
+    if (![targetSpending,ssIncome,otherIncome,withdrawalRate].every(Number.isFinite)||Math.min(targetSpending,ssIncome,otherIncome)<0||withdrawalRate<=0) {document.getElementById('results').style.display='none'; window.lastSSGapResult=null; return;}
 
     const targetLabel = document.getElementById('targetSpendingLabel');
     if (targetLabel) targetLabel.textContent = formatCurrency(targetSpending) + '/mo';
@@ -397,7 +390,7 @@ function updateGapLabelsOnly() {
     const targetSpending = parseFloat(document.getElementById('targetSpending').value) || 0;
     const ssIncome = parseFloat(document.getElementById('ssIncome').value) || 0;
     const otherIncome = parseFloat(document.getElementById('otherIncome').value) || 0;
-    const withdrawalRate = parseFloat(document.getElementById('withdrawalRate').value) || 4;
+    const withdrawalRate = Number(document.getElementById('withdrawalRate').value);
     const targetLabel = document.getElementById('targetSpendingLabel');
     if (targetLabel) targetLabel.textContent = formatCurrency(targetSpending) + '/mo';
     const ssLabel = document.getElementById('ssIncomeLabel');
@@ -552,7 +545,7 @@ function showSSGapComparison(selected) {
     panel = document.createElement('div');
     panel.id = 'ssGapComparePanel';
     panel.style.cssText = 'background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 20px; margin-bottom: 30px;';
-    const labels = ['Target spending ($/yr)', 'SS income ($/yr)', 'Other income ($/yr)', 'Withdrawal rate (%)', 'Filing status'];
+    const labels = ['Target spending ($/month)', 'SS income ($/month)', 'Other income ($/month)', 'Withdrawal rate (%)', 'Filing status'];
     const keys = ['targetSpending', 'ssIncome', 'otherIncome', 'withdrawalRate', 'filingStatus'];
     let html = '<h2 style="margin:0 0 15px 0; color: #92400e;">⚖️ Scenario comparison</h2><table style="width:100%; border-collapse: collapse;"><thead><tr style="background: #f59e0b; color: white;"><th style="padding: 8px; text-align: left;">Input</th>';
     selected.forEach(function (s) { html += '<th style="padding: 8px; text-align: right;">' + scenarioDisplayName(s).replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</th>'; });

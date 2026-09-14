@@ -231,6 +231,8 @@ $isPremium = has_premium_access();
             const withdrawalRate = parseFloat(document.getElementById('withdrawal-rate').value) / 100;
             const portfolioReturn = parseFloat(document.getElementById('portfolio-return').value) / 100;
 
+            document.getElementById('results').style.display='none';
+            if (![requiredAnnual,desiredAnnual,ssIncome,currentAge,lifeExpectancy,inflationRate,withdrawalRate,portfolioReturn].every(Number.isFinite)||Math.min(requiredAnnual,desiredAnnual,ssIncome)<0||withdrawalRate<=0||withdrawalRate>1||currentAge<18||lifeExpectancy<currentAge||lifeExpectancy>120||inflationRate<=-1||portfolioReturn<=-1) { alert('Enter valid nonnegative amounts, a positive withdrawal rate, and ages within 18–120.'); return; }
             const years = lifeExpectancy - currentAge;
             const totalAnnual = requiredAnnual + desiredAnnual;
 

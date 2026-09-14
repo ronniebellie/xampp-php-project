@@ -133,13 +133,13 @@ $isPremium = has_premium_access();
                                 <th>Portfolio Needed</th>
                                 <th>Annual Withdrawal</th>
                                 <th>Monthly Withdrawal</th>
-                                <th>Success Rate*</th>
+                                <th>Success probability</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody"></tbody>
                     </table>
                 </div>
-                <p style="font-size: 0.9em; color: #666; margin-top: 10px;">*Historical success rate over 30 years based on historical data (approximate)</p>
+                <p style="font-size: 0.9em; color: #666; margin-top: 10px;">This calculator estimates the income gap and portfolio target; it does not estimate a success probability. Use the Monte Carlo calculator to explore a stated market model.</p>
             </div>
 
             <?php if ($isPremium): ?>

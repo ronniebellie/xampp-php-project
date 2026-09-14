@@ -54,6 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
     updateLabels(desiredAnnual, currentMonthly, pctRet, guaranteedAnnual, withdrawalRatePct);
 
     const errors = [];
+    resultsEl.style.display='none';
+    if (![desiredAnnual,guaranteedAnnual,currentSavings,withdrawalRatePct,currentMonthly,pctRet].every(Number.isFinite)||[desiredAnnual,guaranteedAnnual,currentSavings,withdrawalRatePct,currentMonthly,pctRet].some(v=>v<0)) errors.push('finite nonnegative values');
     if (desiredAnnual <= 0) errors.push('desired retirement income (or current spending to estimate it)');
     if (withdrawalRatePct <= 0) errors.push('withdrawal rate');
 

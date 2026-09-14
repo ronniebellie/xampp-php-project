@@ -15,9 +15,18 @@
     const shareText = el.getAttribute('data-share-text') || ('Check out ' + shareTitle + ' at ronbelisle.com.');
 
     function getShareUrl() {
-        const override = el.getAttribute('data-share-url');
-        if (override && override.trim() !== '') return override;
-        return window.location.href;
+        const clean = window.location.origin + window.location.pathname;
+        const consent = document.getElementById('shareIncludeInputs');
+        if (!consent || !consent.checked) return clean;
+        try {
+            const u = new URL(el.getAttribute('data-share-url') || window.location.href, clean);
+            if (u.origin !== window.location.origin || !/^https?:$/.test(u.protocol)) return clean;
+            u.hash = '';
+            Array.from(u.searchParams.keys()).forEach(key => {
+                if (/token|password|session|customer|email|name|secret|code/i.test(key)) u.searchParams.delete(key);
+            });
+            return u.toString();
+        } catch (_) { return clean; }
     }
 
     // Preserve source tags on shared links; parameterized pages suppress analytics.
@@ -38,7 +47,7 @@
         if (typeof window.rbTrack === 'function') {
             window.rbTrack('share_click', {
                 method: network,
-                item: shareTitle,
+                item: window.location.pathname,
                 page_location: window.location.origin + window.location.pathname
             });
         }
@@ -55,6 +64,7 @@
         copyBtn.addEventListener('click', function () {
             const shareUrl = withUtm(getShareUrl(), 'copy_link');
             trackShare('copy_link');
+            if (!navigator.clipboard || !navigator.clipboard.writeText) { if (copyFeedback) copyFeedback.textContent = 'Clipboard unavailable. Use Email or your browser sharing menu.'; return; }
             navigator.clipboard.writeText(shareUrl).then(function () {
                 if (copyFeedback) {
                     copyFeedback.textContent = 'Copied!';

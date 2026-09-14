@@ -4,39 +4,13 @@ function formatCurrency(amount) {
 }
 
 function runProjection(target, currentSavings, monthlyContribution, annualRatePercent) {
-  const monthlyRate = (annualRatePercent || 0) / 100 / 12;
-  const months = [];
-  let balance = currentSavings;
-  let month = 0;
-  while (balance < target && month < 600) {
-    const interest = balance * monthlyRate;
-    balance += interest + monthlyContribution;
-    month++;
-    months.push({
-      month,
-      balance,
-      interest,
-      contribution: monthlyContribution,
-      pct: Math.min(100, (balance / target) * 100)
-    });
-  }
-  if (balance >= target && months.length > 0) {
-    months[months.length - 1].balance = Math.min(balance, target);
-    months[months.length - 1].pct = 100;
-  }
-  return {
-    target,
-    monthsToGoal: balance >= target ? month : null,
-    reachedDate: balance >= target && month > 0 ? new Date(Date.now() + month * 30 * 24 * 60 * 60 * 1000) : null,
-    schedule: months,
-    finalBalance: balance
-  };
+  return RBNumerical.goalSavings(target, currentSavings, monthlyContribution, annualRatePercent);
 }
 
 let savingsChart = null;
 let progressChart = null;
 
-function updateDownPayment() {
+function updateDownPaymentUnsafe() {
   const housePrice = parseFloat(document.getElementById('housePrice').value) || 0;
   const downPct = parseInt(document.getElementById('downPct').value, 10) || 20;
   const targetAmount = parseFloat(document.getElementById('targetAmount').value) || 0;
@@ -86,7 +60,7 @@ function updateDownPayment() {
     progressEl.textContent = 'You\'ve already reached your down payment goal. You\'re ready to shop—or set a higher target for a larger down payment.';
     progressEl.style.background = '#f0fdf4';
     progressEl.style.color = '#166534';
-  } else if (monthlyContribution <= 0) {
+  } else if (monthlyContribution <= 0 && result.monthsToGoal == null) {
     progressEl.textContent = 'Add a monthly contribution to see when you\'ll reach your goal.';
     progressEl.style.background = '#fef3c7';
     progressEl.style.color = '#92400e';
@@ -155,6 +129,17 @@ function updateDownPayment() {
   window.lastDPResult = result;
 
   document.getElementById('results').style.display = 'block';
+}
+
+function updateDownPayment() {
+  try {
+    ['housePrice', 'downPct', 'targetAmount', 'currentSavings', 'monthlyContribution', 'interestRate'].forEach(function(id) { const raw=document.getElementById(id).value; if(String(raw).trim()===''||!Number.isFinite(Number(raw)))throw new RangeError('Enter a valid number for every field.'); });
+    updateDownPaymentUnsafe();
+  } catch(error) {
+    document.getElementById('results').style.display='none';
+    window.lastDPResult=null;
+    alert(error.message);
+  }
 }
 
 ['housePrice', 'downPct', 'targetAmount', 'currentSavings', 'monthlyContribution', 'interestRate'].forEach(function(id) {

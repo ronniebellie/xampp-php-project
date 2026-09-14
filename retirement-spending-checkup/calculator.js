@@ -59,6 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let withdrawalRatePct = Number(document.getElementById('withdrawalRate').value || 0);
 
     const errors = [];
+    resultsEl.style.display='none';
+    if (![monthlyNow,retirePctRaw,guaranteedMonthly,currentSavings,withdrawalRatePct].every(Number.isFinite)||[monthlyNow,retirePctRaw,guaranteedMonthly,currentSavings,withdrawalRatePct].some(v=>v<0)) errors.push('finite nonnegative values');
     if (monthlyNow <= 0) errors.push('Current monthly living expenses');
     if (retirePctRaw <= 0) errors.push('Retirement spending %');
     if (withdrawalRatePct <= 0) errors.push('Withdrawal rate %');

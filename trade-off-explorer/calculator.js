@@ -63,6 +63,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const partTimeIncome = Number(document.getElementById('partTimeIncome').value || 0);
 
     const errors = [];
+    resultsEl.style.display='none';
+    if (![currentAge,retirementAge,currentSavings,annualContribution,expectedReturn,desiredIncome,guaranteedIncome,withdrawalRatePct,retireLater2,retireLater3,extraSavings,spendingCutPct,partTimeIncome].every(Number.isFinite)) errors.push('finite numeric inputs');
+    if(![currentAge,retirementAge,retireLater2,retireLater3].every(Number.isInteger)||retirementAge+Math.max(retireLater2,retireLater3)>120) errors.push('whole ages through 120');
+    if(currentSavings<0||annualContribution<0||guaranteedIncome<0||extraSavings<0||expectedReturn<=-100||expectedReturn>100)errors.push('nonnegative amounts and valid return');
     if (currentAge <= 0) errors.push('current age');
     if (retirementAge <= currentAge) errors.push('retirement age (must be greater than current age)');
     if (desiredIncome <= 0) errors.push('desired annual income');

@@ -20,6 +20,7 @@
   function calculatePortfolio(principal, annualReturnPct, feeRatePct, years, withdrawalPct, withdrawalStartYear) {
     withdrawalPct = withdrawalPct || 0;
     withdrawalStartYear = withdrawalStartYear != null ? withdrawalStartYear : 1;
+    if (![principal,annualReturnPct,feeRatePct,years,withdrawalPct,withdrawalStartYear].every(Number.isFinite)||principal<0||annualReturnPct < -100||annualReturnPct>100||feeRatePct<0||withdrawalPct<0||feeRatePct+withdrawalPct>100||!Number.isInteger(years)||years<1||years>120)throw new RangeError('Invalid portfolio projection inputs.');
     var yearlyData = [];
     var balance = principal;
     var totalFees = 0;
@@ -60,7 +61,7 @@
 
   function updateLabels() {
     var portfolio = parseFloat(document.getElementById('portfolioValue').value);
-    var years = parseInt(document.getElementById('years').value, 10);
+    var years = Number(document.getElementById('years').value);
     var returnRate = parseFloat(document.getElementById('returnRate').value);
     var withdrawalPct = parseFloat(document.getElementById('withdrawalPct').value) || 0;
     var cRaw = parseFloat(document.getElementById('pctConservative').value) || 0;
@@ -98,21 +99,28 @@
   }
 
   function calculate(shouldScroll) {
+    try { calculateValidated(shouldScroll); } catch(error) {
+      window.lastPASvsTargetResult=null;
+      document.getElementById('results').style.display='none';
+      if(shouldScroll)alert(error.message);
+    }
+  }
+
+  function calculateValidated(shouldScroll) {
     var portfolioValue = parseFloat(document.getElementById('portfolioValue').value);
     var pasFee = parseFloat(document.getElementById('pasFee').value);
     var targetDateFee = parseFloat(document.getElementById('targetDateFee').value);
-    var years = parseInt(document.getElementById('years').value, 10);
+    var years = Number(document.getElementById('years').value);
     var returnRate = parseFloat(document.getElementById('returnRate').value);
     var withdrawalPct = parseFloat(document.getElementById('withdrawalPct').value) || 0;
     var timelineStartYear = parseInt(document.getElementById('timelineStartYear').value, 10) || new Date().getFullYear();
     var withdrawalsStartYear = parseInt(document.getElementById('withdrawalsStartYear').value, 10) || timelineStartYear;
-    var withdrawalStartYear = Math.max(1, Math.min(years, (withdrawalsStartYear - timelineStartYear + 1)));
+    var withdrawalStartYear = Math.max(1, withdrawalsStartYear - timelineStartYear + 1);
 
     updateLabels();
 
     if (isNaN(portfolioValue) || isNaN(pasFee) || isNaN(years) || isNaN(returnRate)) {
-      if (shouldScroll) alert('Please enter valid numbers for all fields.');
-      return;
+      throw new RangeError('Please enter valid numbers for all fields.');
     }
 
     var pasData = calculatePortfolio(portfolioValue, returnRate, pasFee, years, withdrawalPct, withdrawalStartYear);
