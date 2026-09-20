@@ -25,13 +25,13 @@ $isPremium = has_premium_access();
 
         <header>
             <h1>Vanguard Personal Advisor vs Target Date Funds</h1>
-            <p class="subtitle">Compare the cost of Vanguard PAS (0.30%) with a self-managed three-bucket Target Date strategy</p>
+            <p class="subtitle">Compare the cost of Vanguard PAS (advisory fee plus fund expenses) with a self-managed three-bucket Target Date strategy</p>
             <hr style="margin: 25px 0; border: 0; border-top: 1px solid #e2e8f0;">
         </header>
 
         <div class="info-box-blue" style="margin-bottom: 30px;">
             <h2>How This Works</h2>
-            <p>Compare the same portfolio return under two editable annual fee assumptions. Enter the <strong>total cost of advice and underlying funds</strong> for PAS, and the total fund cost for your Target Date alternative. The starting values (0.30% and 0.08%) are illustrative assumptions, not verified current price quotes. Check your actual fees. Allocation percentages set three separate starting balances; each uses the entered gross return.</p>
+            <p>Compare the same portfolio return under two cost structures. PAS costs include an editable advisory fee plus the weighted expense ratio of its underlying funds. The self-managed portfolio incurs only its Target Date fund expense. Defaults are planning assumptions; the 0.08% PAS fund expense is generic, not your verified actual expense. Enter the rates for your own holdings. <a href="https://investor.vanguard.com/advice/personal-financial-advisor" target="_blank" rel="noopener">Vanguard explains that investment expense ratios are separate from its advisory fee.</a></p>
             <p>Figures are nominal dollars. Each modeled year applies growth first, charges fees once on the grown balance, then funds the scheduled withdrawal from remaining assets. This annual approximation does not model monthly January cash-flow timing. Ending balances exclude money already withdrawn; compare the income totals as well. Withdrawals begin in the selected calendar year.</p>
             <p style="margin-top: 12px;">You can allocate your self-managed portfolio across <strong>conservative</strong> (Income / 2020), <strong>moderate</strong> (2025–2035), and <strong>aggressive</strong> (2040–2070) Target Date funds. The selected Target Date expense ratio is applied once to each bucket; no advisory fee is added.</p>
         </div>
@@ -63,15 +63,22 @@ $isPremium = has_premium_access();
                 </div>
 
                 <div class="input-group">
-                    <label for="pasFee">PAS total annual fee assumption (%)</label>
+                    <label for="pasFee">PAS Advisory Fee (%)</label>
                     <input type="number" id="pasFee" value="0.30" min="0" max="1" step="any">
-                    <span class="help-text">The modeled total annual PAS cost, including advice and underlying funds. This rate is charged once; no additional fee is added.</span>
+                    <span class="help-text">Annual Vanguard Personal Advisor advisory fee. Investment expense ratios are modeled separately below.</span>
                 </div>
 
                 <div class="input-group">
-                    <label>Target Date Fund Blend Expense (%)</label>
-                    <input type="number" id="targetDateFee" aria-label="Target date fund annual fee, percent" value="0.08" min="0" max="0.5" step="any">
-                    <span class="help-text">Enter your actual fund expense ratio. It applies once to each bucket, with no additional advisory charge.</span>
+                    <label for="pasFundExpense">PAS Underlying Fund Expense (%)</label>
+                    <input type="number" id="pasFundExpense" value="0.08" min="0" max="100" step="any">
+                    <span class="help-text">Weighted average expense ratio of the funds held inside the PAS-managed portfolio. This cost is separate from the PAS advisory fee. The 0.08% default is an editable generic planning assumption, not your verified actual PAS fund expense.</span>
+                </div>
+                <p class="help-text" style="margin-bottom:20px;"><strong>PAS Modeled All-In Annual Cost: <span id="pasAllInCost">0.38%</span></strong><br>Advisory fee plus underlying fund expense, based on the entered assumptions; not a universal Vanguard fee.</p>
+                <p id="pasCostMigration" class="help-text" role="status" hidden></p>
+                <div class="input-group">
+                    <label for="targetDateFee">Self-Managed Target Date Fund Expense (%)</label>
+                    <input type="number" id="targetDateFee" aria-label="Self-Managed Target Date Fund Expense (%)" value="0.08" min="0" max="0.5" step="any">
+                    <span class="help-text">Weighted average expense ratio of the Target Date funds in the self-managed three-bucket strategy. No advisory fee is added.</span>
                 </div>
 
                 <div class="input-group">
@@ -159,11 +166,11 @@ $isPremium = has_premium_access();
                 <h2>Vanguard PAS vs Self-Managed Three-Bucket</h2>
 
                 <div class="opportunity-cost-banner">
-                    <div class="fee-headlines"><div>PAS Total Fees<strong id="headlinePasFees"></strong></div><div>Three-Bucket Fund Expenses<strong id="headlineTargetFees"></strong></div></div>
-                    <div class="cost-label">Additional Cost of Vanguard PAS<br><small>Direct fees over <span id="resultYears"></span> years</small></div>
+                    <div class="fee-headlines"><div>PAS Total Costs<strong id="headlinePasFees"></strong></div><div>Three-Bucket Fund Expenses<strong id="headlineTargetFees"></strong></div></div>
+                    <div class="cost-label">Additional Cost of Vanguard PAS<br><small>Direct costs over <span id="resultYears"></span> years</small></div>
                     <div class="cost-amount" id="opportunityCost">$0</div>
-                    <div class="cost-average">≈ <span id="avgAnnualCost">$0</span> additional direct fees per year on average</div>
-                    <div class="cost-explanation">PAS total modeled fees minus Three-Bucket fund expenses. A negative difference means PAS costs less under the entered assumptions.</div>
+                    <div class="cost-average">≈ <span id="avgAnnualCost">$0</span> additional direct costs per year on average</div>
+                    <div class="cost-explanation">PAS total modeled costs minus Three-Bucket fund expenses. A negative difference means PAS costs less under the entered assumptions.</div>
                 </div>
 
                 <div class="comparison-section">
@@ -176,15 +183,19 @@ $isPremium = has_premium_access();
                             <div class="col-difference">Difference</div>
                         </div>
 
+                        <div class="comparison-row"><div class="row-label">Year 1 Advisory Fees</div><div class="col-managed" id="pasYear1Advisory"></div><div class="col-vanguard">$0</div><div class="col-difference">—</div></div>
+                        <div class="comparison-row"><div class="row-label">Year 1 Fund Expenses</div><div class="col-managed" id="pasYear1Fund"></div><div class="col-vanguard" id="targetYear1Fund"></div><div class="col-difference">—</div></div>
                         <div class="comparison-row">
-                            <div class="row-label">Year 1 Fee</div>
+                            <div class="row-label">Year 1 Total Cost</div>
                             <div class="col-managed" id="pasYear1Fee"></div>
                             <div class="col-vanguard" id="targetYear1Fee"></div>
                             <div class="col-difference negative" id="year1FeeDiff"></div>
                         </div>
 
+                        <div class="comparison-row"><div class="row-label">Cumulative Advisory Fees</div><div class="col-managed" id="pasCumulativeAdvisory"></div><div class="col-vanguard">$0</div><div class="col-difference">—</div></div>
+                        <div class="comparison-row"><div class="row-label">Cumulative Fund Expenses</div><div class="col-managed" id="pasCumulativeFund"></div><div class="col-vanguard" id="targetCumulativeFund"></div><div class="col-difference">—</div></div>
                         <div class="comparison-row">
-                            <div class="row-label">Total Fees / Fund Expenses</div>
+                            <div class="row-label">Total Costs / Fund Expenses</div>
                             <div class="col-managed" id="pasTotalFees"></div>
                             <div class="col-vanguard" id="targetTotalFees"></div>
                             <div class="col-difference negative" id="totalFeesDiff"></div>
@@ -197,7 +208,7 @@ $isPremium = has_premium_access();
                     <div class="comparison-table">
                         <div class="comparison-header">
                             <div class="col-label"></div>
-                            <div class="col-managed">Vanguard PAS<br><span class="fee-label">Selected PAS fee</span></div>
+                            <div class="col-managed">Vanguard PAS<br><span class="fee-label">Advisory + fund expenses</span></div>
                             <div class="col-vanguard">Three-Bucket<br><span class="fee-label">Fund expenses</span></div>
                             <div class="col-difference">Difference</div>
                         </div>
@@ -264,7 +275,7 @@ $isPremium = has_premium_access();
                 </div>
 
                 <div class="chart-container">
-                    <h3>Cumulative Fees Paid Over Time</h3>
+                    <h3>Cumulative Fees Paid Over Time</h3><p class="help-text">PAS total costs include advisory fees plus underlying fund expenses; self-managed costs include fund expenses only.</p>
                     <canvas id="feesChart"></canvas>
                 </div>
 
@@ -273,7 +284,7 @@ $isPremium = has_premium_access();
                     <div class="insight-box">
                         <div class="insight-icon">💰</div>
                         <div class="insight-content">
-                            <strong>Direct Fees:</strong> Additional modeled PAS fees: <span id="insightDirectFees"></span> over <span id="insightYears"></span> years.
+                            <strong>Direct Costs:</strong> Additional modeled PAS costs: <span id="insightDirectFees"></span> over <span id="insightYears"></span> years.
                         </div>
                     </div>
                     <div class="insight-box">
@@ -316,7 +327,7 @@ $isPremium = has_premium_access();
     <script>
     const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
     </script>
-    <script src="calculator.js?v=10"></script>
+    <script src="calculator.js?v=11"></script>
     <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/calculator-footer.php'; ?>
 </body>
 </html>

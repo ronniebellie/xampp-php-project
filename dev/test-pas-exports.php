@@ -24,11 +24,13 @@ $csvCode = substr($source, $start, $end - $start);
 ob_start(); ob_start(); eval($csvCode); $csv = ob_get_clean();
 if (!str_contains($csv, 'Conservative Balance') || !str_contains($csv, 'Bucket sequencing')) throw new RuntimeException('Missing CSV bucket details');
 $rows = array_map('str_getcsv', explode("\n", trim($csv)));
-$table = array_values(array_filter($rows, fn($row) => count($row) === 24 && is_numeric($row[0])));
+$table = array_values(array_filter($rows, fn($row) => count($row) === 29 && is_numeric($row[0])));
 if (count($table) !== count($data['targetData'])) throw new RuntimeException('CSV row count mismatch');
 foreach ($table as $i => $row) {
     foreach ([1=>'balance',2=>'fee',3=>'totalFees',9=>'withdrawal',20=>'requiredWithdrawal',22=>'shortfall'] as $col=>$key) { if ($row[$col] !== number_format($data['pasData'][$i][$key]??($key==='requiredWithdrawal'?($data['pasData'][$i]['withdrawal']??0):0),2)) throw new RuntimeException('CSV PAS ledger mismatch: '.$key); }
     foreach ([4=>'balance',5=>'fee',6=>'totalFees',10=>'withdrawal',21=>'requiredWithdrawal',23=>'shortfall'] as $col=>$key) { $expected=$data['targetData'][$i][$key]??($key==='requiredWithdrawal'?($data['targetData'][$i]['withdrawal']??0):0); if ($row[$col] !== number_format($expected,2)) throw new RuntimeException('CSV bucket ledger mismatch: '.$key); }
+    foreach ([24=>'advisoryFee',25=>'fundExpense',27=>'totalAdvisoryFees',28=>'totalFundExpenses'] as $col=>$key) { $expected=isset($data['pasData'][$i][$key])?number_format($data['pasData'][$i][$key],2):''; if($row[$col]!==$expected)throw new RuntimeException('CSV PAS component mismatch: '.$key); }
+    if($row[26]!==number_format(($data['pasData'][$i]['fee']??0)-($data['targetData'][$i]['fee']??0),2))throw new RuntimeException('CSV annual cost difference mismatch');
     foreach ([11 => 'conservative', 12 => 'moderate', 13 => 'aggressive'] as $col => $key) {
         if ($row[$col] !== number_format($data['targetData'][$i]['buckets'][$key], 2)) throw new RuntimeException('CSV bucket mismatch');
     }

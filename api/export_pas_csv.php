@@ -37,8 +37,8 @@ rb_csv_context($out, 'Vanguard PAS vs Target Date', $data);
 rb_csv_row($out, ['Withdrawal method', ($data['withdrawalModel'] ?? 'percentage') === 'dollar' ? 'Same scheduled dollars for both; inflation from withdrawal start year; growth, fees on grown assets, then spending; shortfalls reported.' : 'Legacy percentage of each current total after growth, before fees.']);
 rb_csv_row($out, ['Bucket sequencing', 'Conservative then Moderate then Aggressive; no replenishment.']);
 $lastP=end($pRows);$lastT=end($tRows);
-foreach (['PAS total fees'=>$lastP['totalFees']??0,'Three-Bucket fund expenses'=>$lastT['totalFees']??0,'Additional PAS fees'=>($lastP['totalFees']??0)-($lastT['totalFees']??0),'Projected ending portfolio difference'=>($lastT['balance']??0)-($lastP['balance']??0),'PAS total withdrawals paid'=>$lastP['totalWithdrawals']??0,'Three-Bucket total withdrawals paid'=>$lastT['totalWithdrawals']??0] as $label=>$value) rb_csv_row($out,[$label,$value]);
-rb_csv_row($out, ['Fee method', 'PAS entered total advisory/fund cost applied once; target fund expense applied once per bucket; same gross return.']);
+foreach (['PAS cumulative advisory fees'=>$lastP['totalAdvisoryFees']??'Not supplied (legacy)','PAS cumulative fund expenses'=>$lastP['totalFundExpenses']??'Not supplied (legacy)','Self-managed advisory fees'=>0,'PAS total costs'=>$lastP['totalFees']??0,'Three-Bucket fund expenses'=>$lastT['totalFees']??0,'Additional PAS fees'=>($lastP['totalFees']??0)-($lastT['totalFees']??0),'Projected ending portfolio difference'=>($lastT['balance']??0)-($lastP['balance']??0),'PAS total withdrawals paid'=>$lastP['totalWithdrawals']??0,'Three-Bucket total withdrawals paid'=>$lastT['totalWithdrawals']??0] as $label=>$value) rb_csv_row($out,[$label,$value]);
+rb_csv_row($out, ['Fee method', 'PAS advisory and fund expenses use the same grown balance, then sum once. Self-managed fund expense only, no advisory fee; same gross return.']);
 foreach (['conservative', 'moderate', 'aggressive'] as $key) {
     if (!isset($tRows[0]['buckets'][$key])) continue;
     $status = $tRows[0]['buckets'][$key] == 0 ? 'Not funded at start' : 'Not depleted during projection';
@@ -48,7 +48,7 @@ foreach (['conservative', 'moderate', 'aggressive'] as $key) {
     }
     rb_csv_row($out, [ucfirst($key), 'Initial allocation (%)', $data['allocation'][$key] ?? '', $status]);
 }
-rb_csv_row($out, ['Year', 'PAS Portfolio', 'PAS Annual Fee', 'PAS Cumulative Fees', 'Target Date Portfolio', 'Target Date Annual Fee', 'Target Date Cumulative Fees', 'Portfolio Difference', 'Calendar Point', 'PAS Withdrawal', 'Self-Managed Withdrawal', 'Conservative Balance', 'Moderate Balance', 'Aggressive Balance', 'Conservative Withdrawal', 'Moderate Withdrawal', 'Aggressive Withdrawal', 'Conservative Fee', 'Moderate Fee', 'Aggressive Fee', 'PAS Scheduled Withdrawal', 'Three-Bucket Scheduled Withdrawal', 'PAS Shortfall', 'Three-Bucket Shortfall']);
+rb_csv_row($out, ['Year', 'PAS Portfolio', 'PAS Total Annual Cost', 'PAS Cumulative Total Costs', 'Target Date Portfolio', 'Target Date Annual Fee', 'Target Date Cumulative Fees', 'Portfolio Difference', 'Calendar Point', 'PAS Withdrawal', 'Self-Managed Withdrawal', 'Conservative Balance', 'Moderate Balance', 'Aggressive Balance', 'Conservative Withdrawal', 'Moderate Withdrawal', 'Aggressive Withdrawal', 'Conservative Fee', 'Moderate Fee', 'Aggressive Fee', 'PAS Scheduled Withdrawal', 'Three-Bucket Scheduled Withdrawal', 'PAS Shortfall', 'Three-Bucket Shortfall', 'PAS Advisory Fee', 'PAS Underlying Fund Expense', 'Annual Cost Difference', 'PAS Cumulative Advisory Fees', 'PAS Cumulative Fund Expenses']);
 for ($i = 0; $i < count($pRows) && $i < count($tRows); $i++) {
     $p = $pRows[$i];
     $t = $tRows[$i];
@@ -77,6 +77,11 @@ for ($i = 0; $i < count($pRows) && $i < count($tRows); $i++) {
         number_format($t['requiredWithdrawal'] ?? $t['withdrawal'] ?? 0, 2),
         number_format($p['shortfall'] ?? 0, 2),
         number_format($t['shortfall'] ?? 0, 2),
+        isset($p['advisoryFee']) ? number_format($p['advisoryFee'],2) : '',
+        isset($p['fundExpense']) ? number_format($p['fundExpense'],2) : '',
+        number_format(($p['fee']??0)-($t['fee']??0),2),
+        isset($p['totalAdvisoryFees']) ? number_format($p['totalAdvisoryFees'],2) : '',
+        isset($p['totalFundExpenses']) ? number_format($p['totalFundExpenses'],2) : '',
     ]);
 }
 fclose($out);

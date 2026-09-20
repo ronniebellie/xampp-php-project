@@ -17,18 +17,22 @@
     }).format(amount);
   }
 
-  function calculatePortfolio(principal, annualReturnPct, feeRatePct, years, withdrawalPct, withdrawalStartYear, spendingModel) {
+  function calculatePortfolio(principal, annualReturnPct, feeRatePct, years, withdrawalPct, withdrawalStartYear, spendingModel, feeComponents) {
     withdrawalPct = withdrawalPct == null ? 0 : withdrawalPct;
     withdrawalStartYear = withdrawalStartYear != null ? withdrawalStartYear : 1;
     if (![principal,annualReturnPct,feeRatePct,years,withdrawalPct,withdrawalStartYear].every(Number.isFinite)||principal<0||annualReturnPct < -100||annualReturnPct>100||feeRatePct<0||withdrawalPct<0||feeRatePct+withdrawalPct>100||!Number.isInteger(years)||years<1||years>120)throw new RangeError('Invalid portfolio projection inputs.');
     var yearlyData = [];
     var balance = principal;
-    var totalFees = 0;
+    var totalFees = 0, totalAdvisoryFees = 0, totalFundExpenses = 0;
     var totalWithdrawals = 0;
-    yearlyData.push({ year: 0, balance: balance, fee: 0, totalFees: 0, withdrawal: 0, totalWithdrawals: 0 });
+    yearlyData.push({ year: 0, balance: balance, fee: 0, totalFees: 0, withdrawal: 0, totalWithdrawals: 0, advisoryFee: 0, fundExpense: 0, totalAdvisoryFees: 0, totalFundExpenses: 0 });
     for (var y = 1; y <= years; y++) {
       balance = balance * (1 + annualReturnPct / 100);
-      var yearFee = balance * (feeRatePct / 100);
+      // Each component uses the same post-growth base; neither is charged on top of the other.
+      var advisoryFee = balance * ((feeComponents ? feeComponents.advisory : feeRatePct) / 100);
+      var fundExpense = balance * ((feeComponents ? feeComponents.fund : 0) / 100);
+      var yearFee = advisoryFee + fundExpense;
+      totalAdvisoryFees += advisoryFee; totalFundExpenses += fundExpense;
       var required = spendingModel ? scheduledWithdrawal(spendingModel, y) : null;
       var yearWithdrawal = spendingModel ? Math.min(Math.max(0, balance - yearFee), required) : (withdrawalPct > 0 && y >= withdrawalStartYear) ? balance * (withdrawalPct / 100) : 0;
       totalFees += yearFee;
@@ -38,7 +42,8 @@
       yearlyData.push({
         year: y,
         balance: balance,
-        fee: yearFee,
+        fee: yearFee, advisoryFee: advisoryFee, fundExpense: fundExpense,
+        totalAdvisoryFees: totalAdvisoryFees, totalFundExpenses: totalFundExpenses,
         totalFees: totalFees,
         withdrawal: yearWithdrawal,
         totalWithdrawals: totalWithdrawals,
@@ -173,6 +178,9 @@
   }
 
   function updateLabels() {
+    var advisory = Number(document.getElementById('pasFee').value), fund = Number(document.getElementById('pasFundExpense').value);
+    var valid = ['pasFee','pasFundExpense'].every(function(id) {return document.getElementById(id).value.trim() !== '';}) && [advisory,fund].every(function(v) {return Number.isFinite(v) && v >= 0;}) && advisory + fund <= 100;
+    document.getElementById('pasAllInCost').textContent = valid ? (advisory + fund).toFixed(2) + '%' : 'Enter valid cost assumptions';
     var portfolio = parseFloat(document.getElementById('portfolioValue').value);
     var years = Number(document.getElementById('years').value);
     var returnRate = parseFloat(document.getElementById('returnRate').value);
@@ -221,7 +229,10 @@
 
   function calculateValidated(shouldScroll) {
     var portfolioValue = parseFloat(document.getElementById('portfolioValue').value);
-    var pasFee = parseFloat(document.getElementById('pasFee').value);
+    var pasAdvisoryFee = parseFloat(document.getElementById('pasFee').value);
+    var pasFundExpense = parseFloat(document.getElementById('pasFundExpense').value);
+    var pasFee = pasAdvisoryFee + pasFundExpense;
+    if (![pasAdvisoryFee,pasFundExpense].every(function(v) {return Number.isFinite(v) && v >= 0;})) throw new RangeError('Enter nonnegative PAS advisory and fund expense rates.');
     var targetDateFee = parseFloat(document.getElementById('targetDateFee').value);
     var years = Number(document.getElementById('years').value);
     var returnRate = parseFloat(document.getElementById('returnRate').value);
@@ -247,7 +258,7 @@
       throw new RangeError('Please enter valid numbers for all fields.');
     }
 
-    var pasData = calculatePortfolio(portfolioValue, returnRate, pasFee, years, withdrawalPct, withdrawalStartYear, spendingModel);
+    var pasData = calculatePortfolio(portfolioValue, returnRate, pasFee, years, withdrawalPct, withdrawalStartYear, spendingModel, {advisory:pasAdvisoryFee,fund:pasFundExpense});
     var alloc = getNormalizedAllocation();
     var targetData = calculateBuckets(portfolioValue,
       { conservative: returnRate, moderate: returnRate, aggressive: returnRate },
@@ -261,8 +272,14 @@
     document.getElementById('opportunityCost').textContent = formatCurrency(pasData[years].totalFees - targetData[years].totalFees);
     var avgAnnualEl = document.getElementById('avgAnnualCost');
     if (avgAnnualEl) avgAnnualEl.textContent = formatCurrency(years > 0 ? (pasData[years].totalFees - targetData[years].totalFees) / years : 0);
-    document.getElementById('pasFeeResultLabel').textContent = pasFee.toFixed(2) + '% fee';
+    document.getElementById('pasFeeResultLabel').textContent = pasFee.toFixed(2) + '% modeled all-in';
 
+    document.getElementById('pasYear1Advisory').textContent = formatCurrency(pasData[1].advisoryFee);
+    document.getElementById('targetYear1Fund').textContent = formatCurrency(targetData[1].fee);
+    document.getElementById('targetCumulativeFund').textContent = formatCurrency(targetData[years].totalFees);
+    document.getElementById('pasYear1Fund').textContent = formatCurrency(pasData[1].fundExpense);
+    document.getElementById('pasCumulativeAdvisory').textContent = formatCurrency(pasData[years].totalAdvisoryFees);
+    document.getElementById('pasCumulativeFund').textContent = formatCurrency(pasData[years].totalFundExpenses);
     document.getElementById('pasYear1Fee').textContent = formatCurrency(pasData[1].fee);
     document.getElementById('targetYear1Fee').textContent = formatCurrency(targetData[1].fee);
     document.getElementById('year1FeeDiff').textContent = formatCurrency(pasData[1].fee - targetData[1].fee);
@@ -323,7 +340,7 @@
       pasWithdrawalStatus: shortfallText(pasData, timelineStartYear), targetWithdrawalStatus: shortfallText(targetData, timelineStartYear),
       bucketDepletion: Object.fromEntries(bucketKeys.map(function(key) {return [key,depletionText(targetData,key)];})),
       portfolioValue: portfolioValue,
-      pasFee: pasFee,
+      pasFee: pasFee, pasAdvisoryFee: pasAdvisoryFee, pasFundExpense: pasFundExpense,
       targetDateFee: targetDateFee,
       years: years,
       returnRate: returnRate,
@@ -403,8 +420,8 @@
       data: {
         labels: labels,
         datasets: [
-          { label: 'PAS Fees', data: pasFees, borderColor: '#dc2626', backgroundColor: 'rgba(220, 38, 38, 0.1)', borderWidth: 3, tension: 0.4, fill: true },
-          { label: 'Target Date Fees', data: targetFees, borderColor: '#16a34a', backgroundColor: 'rgba(22, 163, 74, 0.1)', borderWidth: 3, tension: 0.4, fill: true }
+          { label: 'PAS Total Costs', data: pasFees, borderColor: '#dc2626', backgroundColor: 'rgba(220, 38, 38, 0.1)', borderWidth: 3, tension: 0.4, fill: true },
+          { label: 'Self-Managed Fund Expenses', data: targetFees, borderColor: '#16a34a', backgroundColor: 'rgba(22, 163, 74, 0.1)', borderWidth: 3, tension: 0.4, fill: true }
         ]
       },
       options: {
@@ -430,9 +447,9 @@
 
   document.getElementById('calculateBtn').addEventListener('click', function () { calculate(true); });
 
-  ['portfolioValue', 'years', 'returnRate', 'withdrawalPct', 'annualWithdrawal', 'inflation', 'pasFee', 'targetDateFee', 'timelineStartYear', 'withdrawalsStartYear', 'pctConservative', 'pctModerate', 'pctAggressive'].forEach(function (id) {
+  ['portfolioValue', 'years', 'returnRate', 'withdrawalPct', 'annualWithdrawal', 'inflation', 'pasFee', 'pasFundExpense', 'targetDateFee', 'timelineStartYear', 'withdrawalsStartYear', 'pctConservative', 'pctModerate', 'pctAggressive'].forEach(function (id) {
     var el = document.getElementById(id);
-    if (el) el.addEventListener('input', function () { calculate(false); });
+    if (el) el.addEventListener('input', function () { updateLabels(); calculate(false); });
   });
 
   document.getElementById('useDollarWithdrawals').addEventListener('click', function () {
@@ -462,7 +479,9 @@
       annualWithdrawal: document.getElementById('annualWithdrawal').value,
       inflation: document.getElementById('inflation').value,
       portfolioValue: document.getElementById('portfolioValue').value,
-      pasFee: document.getElementById('pasFee').value,
+      pasCostSchema: 2,
+      pasAdvisoryFee: document.getElementById('pasFee').value,
+      pasFundExpense: document.getElementById('pasFundExpense').value,
       targetDateFee: document.getElementById('targetDateFee').value,
       years: document.getElementById('years').value,
       returnRate: document.getElementById('returnRate').value,
@@ -557,6 +576,13 @@
           var el = document.getElementById(key);
           if (el && d[key] !== undefined) el.value = d[key];
         });
+        // Legacy pasFee was a single TOTAL rate. Preserve its cost; never add a default to it.
+        var splitCosts = d.pasAdvisoryFee !== undefined && d.pasFundExpense !== undefined;
+        document.getElementById('pasFee').value = splitCosts ? d.pasAdvisoryFee : (d.pasFee !== undefined ? d.pasFee : 0.30);
+        document.getElementById('pasFundExpense').value = String(splitCosts ? d.pasFundExpense : 0);
+        var notice = document.getElementById('pasCostMigration');
+        notice.hidden = splitCosts;
+        notice.textContent = splitCosts ? '' : 'Legacy scenario: the saved PAS total cost is preserved in the advisory field with fund expenses set to 0%. This is a compatibility placeholder, not a verified advisory/fund breakdown. Review both rates before using this as a current plan. Your saved record is unchanged.';
         updateLabels();
         alert('Scenario loaded! Click "Calculate True Cost" to see results.');
       }
@@ -570,6 +596,11 @@
       alert('Please run Calculate first, then download the PDF.');
       return;
     }
+    // Export completed data even when the user clicks during a Chart.js animation.
+    [chartInstance, feesChartInstance, bucketChartInstance].forEach(function(chart) {
+      if (chart && typeof chart.stop === 'function') chart.stop();
+      if (chart && typeof chart.update === 'function') chart.update('none');
+    });
     var chartImage1 = null;
     var chartImage2 = null;
     var chartImage3 = null;
@@ -588,7 +619,7 @@
       chartImage3: chartImage3,
       allocation: r.allocation,
       portfolioValue: r.portfolioValue,
-      pasFee: r.pasFee,
+      pasFee: r.pasFee, pasAdvisoryFee: r.pasAdvisoryFee, pasFundExpense: r.pasFundExpense,
       targetDateFee: r.targetDateFee,
       years: r.years,
       returnRate: r.returnRate,
@@ -676,9 +707,9 @@ function explainPASResults() {
     alert('Please run the calculation first to see results.');
     return;
   }
-  var summary = 'Deterministic Vanguard PAS vs self-managed three-bucket cost comparison. Same gross expected return ' + r.returnRate + '% for both alternatives and all three buckets; no assumed investment outperformance. Portfolio $' + r.portfolioValue + ', timeline ' + r.timelineStartYear + ' for ' + r.years + ' years. PAS total annual cost ' + r.pasFee + '%, fund expense ' + r.targetDateFee + '%. Annual order: growth, fee charged once on grown assets, then withdrawals. No taxes; nominal dollars.\n';
+  var summary = 'Deterministic Vanguard PAS vs self-managed three-bucket cost comparison. Same gross expected return ' + r.returnRate + '% for both alternatives and all three buckets; no assumed investment outperformance. Portfolio $' + r.portfolioValue + ', timeline ' + r.timelineStartYear + ' for ' + r.years + ' years. PAS advisory assumption ' + r.pasAdvisoryFee + '%, PAS fund expense assumption ' + r.pasFundExpense + '%, modeled all-in PAS cost ' + r.pasFee + '%, self-managed fund expense ' + r.targetDateFee + '% (no advisory fee). Annual order: growth, fee charged once on grown assets, then withdrawals. No taxes; nominal dollars.\n';
   summary += r.withdrawalModel === 'dollar' ? 'Both face starting annual spending $' + r.annualWithdrawal + ', beginning ' + r.withdrawalsStartYear + ', increasing ' + r.inflation + '% annually after that year. ' : 'Legacy percentage withdrawals: ' + r.withdrawalPct + '% of each post-growth pre-fee portfolio, beginning ' + r.withdrawalsStartYear + '. These amounts may differ. ';
-  summary += 'PAS total fees $' + r.pasData[r.years].totalFees + '; Three-Bucket expenses $' + r.targetData[r.years].totalFees + '; additional direct PAS cost $' + r.directFeeDiff + '. Ending PAS $' + r.pasFinal + '; Three-Bucket $' + r.targetFinal + '; ending difference $' + r.opportunityCost + '. Difference minus direct fees $' + r.lostGrowth + ' reflects compounding and, if withdrawals differ, withdrawal effects. It is not another fee.\n';
+  summary += 'PAS cumulative advisory fees $' + r.pasData[r.years].totalAdvisoryFees + '; PAS cumulative fund expenses $' + r.pasData[r.years].totalFundExpenses + '; PAS total costs $' + r.pasData[r.years].totalFees + '; Three-Bucket expenses $' + r.targetData[r.years].totalFees + '; additional direct PAS cost $' + r.directFeeDiff + '. Ending PAS $' + r.pasFinal + '; Three-Bucket $' + r.targetFinal + '; ending difference $' + r.opportunityCost + '. Difference minus direct fees $' + r.lostGrowth + ' reflects compounding and, if withdrawals differ, withdrawal effects. It is not another fee.\n';
   summary += 'Income paid: PAS $' + r.pasData[r.years].totalWithdrawals + ', Three-Bucket $' + r.targetData[r.years].totalWithdrawals + '. PAS: ' + r.pasWithdrawalStatus + ' Three-Bucket: ' + r.targetWithdrawalStatus + '\n';
   summary += 'Conservative then Moderate then Aggressive, no replenishment or rebalancing. Allocation ' + JSON.stringify(r.allocation) + '. ';
   summary += JSON.stringify(r.bucketDepletion);

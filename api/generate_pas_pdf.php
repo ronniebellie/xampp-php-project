@@ -54,7 +54,8 @@ $pdf->SetTextColor(220, 38, 38);
 $pdf->Cell(0, 8, 'Your Portfolio & Assumptions', 0, 1);
 $pdf->SetTextColor(0, 0, 0);
 $pdf->SetFont('helvetica', '', 9);
-$info = 'Portfolio: $' . number_format((float)($data['portfolioValue'] ?? 0), 0) . '  |  PAS Fee: ' . ($data['pasFee'] ?? 0.30) . '%  |  Target Date Fee: ' . ($data['targetDateFee'] ?? 0.08) . '%';
+$info = 'Portfolio: $' . number_format((float)($data['portfolioValue'] ?? 0), 0) . '  |  PAS modeled all-in: ' . ($data['pasFee'] ?? 0.30) . '%  |  Self-managed fund expense: ' . ($data['targetDateFee'] ?? 0.08) . '%';
+$info .= isset($data['pasAdvisoryFee'],$data['pasFundExpense']) ? ' | PAS advisory: '.(float)$data['pasAdvisoryFee'].'% | PAS underlying fund expense: '.(float)$data['pasFundExpense'].'%' : ' | Legacy total PAS rate; separate advisory/fund assumptions unavailable.';
 $info .= '  |  Years: ' . ($data['years'] ?? 0) . '  |  Return: ' . ($data['returnRate'] ?? 0) . '%';
 if (($data['withdrawalModel'] ?? '') === 'dollar') {
     $info .= ' | Starting annual withdrawal: $' . number_format((float)($data['annualWithdrawal'] ?? 0),2) . ' | Inflation: ' . (float)($data['inflation'] ?? 0) . '%';
@@ -63,7 +64,7 @@ if (($data['withdrawalModel'] ?? '') === 'dollar') {
 }
 $info .= ' | Start year: ' . ($data['timelineStartYear'] ?? 'not supplied') . ' | Withdrawals start: ' . ($data['withdrawalsStartYear'] ?? 'not supplied');
 $pdf->MultiCell(0, 6, $info, 0, 'L');
-$pdf->MultiCell(0, 6, 'Nominal USD. PAS uses the entered total advisory and underlying fund cost once; Target Date fund expenses apply once per bucket. These are assumptions, not current fee quotes. Growth is applied first, fees are charged on grown assets once, then withdrawals are funded. Dollar scenarios use identical inflation-adjusted spending from the selected start year; legacy scenarios retain percentage withdrawals. Same gross return for both alternatives and every bucket isolates costs. Ending balances exclude withdrawals; the residual difference includes compounding and any differing withdrawals.', 0, 'L');
+$pdf->MultiCell(0, 6, 'Nominal USD. PAS advisory and underlying fund costs are calculated separately on the same grown balance and summed once. Self-managed fund expenses apply once per bucket, with no advisory fee. Fund expense defaults are generic planning assumptions, not verified actual holdings expenses. Growth is applied first, fees are charged on grown assets once, then withdrawals are funded. Dollar scenarios use identical inflation-adjusted spending from the selected start year; legacy scenarios retain percentage withdrawals. Same gross return for both alternatives and every bucket isolates costs. Ending balances exclude withdrawals; the residual difference includes compounding and any differing withdrawals.', 0, 'L');
 $pdf->Ln(4);
 
 // Key results
@@ -78,16 +79,19 @@ $pdf->SetFont('helvetica', '', 9);
 $lastP=end($data['pasData']);$lastT=end($data['targetData']);
 $resultsHtml = '<table border="0" cellpadding="6">';
 foreach ([
-    'PAS Total Fees'=>$lastP['totalFees']??0,
+    'PAS Cumulative Advisory Fees'=>$lastP['totalAdvisoryFees']??null,
+    'PAS Cumulative Fund Expenses'=>$lastP['totalFundExpenses']??null,
+    'PAS Total Costs'=>$lastP['totalFees']??0,
     'Three-Bucket Fund Expenses'=>$lastT['totalFees']??0,
     'Additional Cost of Vanguard PAS (direct fees)'=>$feeDiff,
     'PAS Ending Portfolio'=>$data['pasFinal']??$lastP['balance']??0,
     'Three-Bucket Ending Portfolio'=>$data['targetFinal']??$lastT['balance']??0,
     'Projected Ending Portfolio Difference'=>$oppCost,
     'Compounding / Withdrawal Effects (not fees)'=>$lostGrowth,
+    'Self-Managed Advisory Fees'=>0,
     'PAS Total Withdrawals Paid'=>$lastP['totalWithdrawals']??0,
     'Three-Bucket Total Withdrawals Paid'=>$lastT['totalWithdrawals']??0
-] as $label=>$amount) $resultsHtml .= '<tr><td><b>'.$label.'</b></td><td>$'.number_format((float)$amount,2).'</td></tr>';
+] as $label=>$amount) $resultsHtml .= '<tr><td><b>'.$label.'</b></td><td>'.($amount===null?'Not supplied (legacy)':'$'.number_format((float)$amount,2)).'</td></tr>';
 $resultsHtml .= '</table>';
 $pdf->writeHTML($resultsHtml, true, false, true, false, '');
 $pdf->Ln(6);
@@ -146,7 +150,7 @@ $pdf->Ln(3);
 
 $pRows = $data['pasData'];
 $tRows = $data['targetData'];
-$tableHtml = '<table border="1" cellpadding="4" style="font-size:8px;"><tr style="background-color:#dc2626;color:white;font-weight:bold;"><th>Year</th><th>PAS Balance</th><th>PAS Fee</th><th>Target Balance</th><th>Target Fee</th><th>Difference</th><th>PAS Unmet</th><th>Bucket Unmet</th></tr>';
+$tableHtml = '<table border="1" cellpadding="4" style="font-size:8px;"><tr style="background-color:#dc2626;color:white;font-weight:bold;"><th>Year</th><th>PAS Balance</th><th>PAS Total Cost</th><th>Target Balance</th><th>Fund Expense</th><th>Difference</th><th>PAS Unmet</th><th>Bucket Unmet</th></tr>';
 for ($i = 0; $i < count($pRows) && $i < count($tRows); $i++) {
     $p = $pRows[$i];
     $t = $tRows[$i];
