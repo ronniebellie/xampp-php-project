@@ -33,7 +33,7 @@ for(const principal of [0,1000000.19])for(const ret of [-100,0,6,15])for(const a
  close(charts.feesChart.data.datasets[0].data.at(-1),advisorySum+fundSum);
 }
 let r=run({portfolioValue:1000000,years:1,withdrawalsStartYear:2027});assert.equal(nodes.pasAllInCost.textContent,'0.38%');close(r.pasData[1].advisoryFee,3180);close(r.pasData[1].fundExpense,848);close(r.pasData[1].fee,4028);close(r.targetData[1].fee,848);close(r.directFeeDiff,3180);
-for(const expense of [0,.08,.3]) {r=run({pasFee:0,pasFundExpense:expense,targetDateFee:expense});close(r.directFeeDiff,0);close(r.opportunityCost,0);r.pasData.forEach((p,i)=>close(p.balance,r.targetData[i].balance));}
+for(const expense of [0,.08,.3]) {r=run({pasFee:0,pasFundExpense:expense,targetDateFee:expense});close(r.directFeeDiff,0);close(r.opportunityCost,0);assert.equal(nodes.totalFeesDiff.textContent,'$0');assert.equal(nodes.finalValueDiff.textContent,'$0');r.pasData.forEach((p,i)=>close(p.balance,r.targetData[i].balance));}
 (async()=>{
  r=run({portfolioValue:1000000,years:26,withdrawalsStartYear:2027});nodes.downloadPdfBtn.events.click();nodes.downloadCsvBtn.events.click();assert.deepEqual(finishedCharts.sort(),['bucketChart','feesChart','growthChart']);
  for(const p of payloads) {assert.equal(p.pasAdvisoryFee,.3);assert.equal(p.pasFundExpense,.08);assert.equal(p.pasFee,.38);assert.equal(JSON.stringify(p.pasData),JSON.stringify(r.pasData));}

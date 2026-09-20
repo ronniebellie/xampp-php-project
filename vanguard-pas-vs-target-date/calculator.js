@@ -9,6 +9,8 @@
   })();
 
   function formatCurrency(amount) {
+    // Currency is displayed in whole dollars; suppress signed zero from roundoff.
+    if (Math.abs(amount) < 0.5) amount = 0;
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
