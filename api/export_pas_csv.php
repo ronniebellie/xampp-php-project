@@ -34,7 +34,18 @@ header('Cache-Control: no-store');
 echo "\xEF\xBB\xBF";
 $out = fopen('php://output', 'w');
 rb_csv_context($out, 'Vanguard PAS vs Target Date', $data);
-rb_csv_row($out, ['Year', 'PAS Portfolio', 'PAS Annual Fee', 'PAS Cumulative Fees', 'Target Date Portfolio', 'Target Date Annual Fee', 'Target Date Cumulative Fees', 'Portfolio Difference']);
+rb_csv_row($out, ['Withdrawal method', 'Percentage of each current total after growth, before fees; Conservative then Moderate then Aggressive; no replenishment.']);
+rb_csv_row($out, ['Fee method', 'PAS entered total advisory/fund cost applied once; target fund expense applied once per bucket; same gross return.']);
+foreach (['conservative', 'moderate', 'aggressive'] as $key) {
+    if (!isset($tRows[0]['buckets'][$key])) continue;
+    $status = $tRows[0]['buckets'][$key] == 0 ? 'Not funded at start' : 'Not depleted during simulation';
+    if ($tRows[0]['buckets'][$key] > 0) foreach (array_slice($tRows, 1) as $row) {
+        if (($row['buckets'][$key] ?? null) === null) continue;
+        if ($row['buckets'][$key] == 0) { $status = 'Depleted: ' . ($row['calendarYear'] ?? $row['year']); break; }
+    }
+    rb_csv_row($out, [ucfirst($key), 'Initial allocation (%)', $data['allocation'][$key] ?? '', $status]);
+}
+rb_csv_row($out, ['Year', 'PAS Portfolio', 'PAS Annual Fee', 'PAS Cumulative Fees', 'Target Date Portfolio', 'Target Date Annual Fee', 'Target Date Cumulative Fees', 'Portfolio Difference', 'Calendar Point', 'PAS Withdrawal', 'Self-Managed Withdrawal', 'Conservative Balance', 'Moderate Balance', 'Aggressive Balance', 'Conservative Withdrawal', 'Moderate Withdrawal', 'Aggressive Withdrawal', 'Conservative Fee', 'Moderate Fee', 'Aggressive Fee']);
 for ($i = 0; $i < count($pRows) && $i < count($tRows); $i++) {
     $p = $pRows[$i];
     $t = $tRows[$i];
@@ -46,7 +57,19 @@ for ($i = 0; $i < count($pRows) && $i < count($tRows); $i++) {
         number_format($t['balance'] ?? 0, 2),
         number_format($t['fee'] ?? 0, 2),
         number_format($t['totalFees'] ?? 0, 2),
-        number_format(($t['balance'] ?? 0) - ($p['balance'] ?? 0), 2)
+        number_format(($t['balance'] ?? 0) - ($p['balance'] ?? 0), 2),
+        isset($t['calendarYear']) ? (($i === 0 ? 'Start of ' : 'End of ') . $t['calendarYear']) : '',
+        number_format($p['withdrawal'] ?? 0, 2),
+        number_format($t['withdrawal'] ?? 0, 2),
+        isset($t['buckets']['conservative']) ? number_format($t['buckets']['conservative'], 2) : '',
+        isset($t['buckets']['moderate']) ? number_format($t['buckets']['moderate'], 2) : '',
+        isset($t['buckets']['aggressive']) ? number_format($t['buckets']['aggressive'], 2) : '',
+        isset($t['bucketWithdrawals']['conservative']) ? number_format($t['bucketWithdrawals']['conservative'], 2) : '',
+        isset($t['bucketWithdrawals']['moderate']) ? number_format($t['bucketWithdrawals']['moderate'], 2) : '',
+        isset($t['bucketWithdrawals']['aggressive']) ? number_format($t['bucketWithdrawals']['aggressive'], 2) : '',
+        isset($t['bucketFees']['conservative']) ? number_format($t['bucketFees']['conservative'], 2) : '',
+        isset($t['bucketFees']['moderate']) ? number_format($t['bucketFees']['moderate'], 2) : '',
+        isset($t['bucketFees']['aggressive']) ? number_format($t['bucketFees']['aggressive'], 2) : '',
     ]);
 }
 fclose($out);

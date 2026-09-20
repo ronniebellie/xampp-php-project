@@ -110,7 +110,7 @@ if ($is_follow_up) {
 $system_prompt = "You are a helpful financial planning assistant. Explain the user's calculator results in plain language. Be clear, educational, and supportive. Do not give specific investment or legal advice. Keep the tone friendly and professional. Do NOT say things like \"feel free to ask\" in your text—the interface provides a follow-up question box. End responses with a neutral closing sentence (e.g., \"This explanation is for educational purposes only.\").";
 
 if ($calculator_type === 'vanguard-pas-vs-target-date') {
-    $system_prompt .= " For this calculator, Total Opportunity Cost is the grand total over the timeline—the sum of Direct Fee Difference plus Lost Growth. Never describe Total Opportunity Cost as an extra cost in addition to those components (that would double-count). When you mention opportunity cost, clearly state that the total equals direct fees paid out of pocket plus lost compounding on those fee dollars.";
+    $system_prompt .= " For this calculator, Total Opportunity Cost is the grand total over the timeline—the sum of Direct Fee Difference plus compounding/withdrawal effects. Never describe Total Opportunity Cost as an extra cost in addition to those components (that would double-count). When you mention opportunity cost, clearly state that the total equals the modeled fee difference plus signed compounding/withdrawal effects. The latter are not fees and may be negative. Withdrawals use Conservative, Moderate, then Aggressive without replenishment; identical bucket returns do not create additional investment performance.";
 }
 
 $messages = [['role' => 'system', 'content' => $system_prompt]];
@@ -139,7 +139,7 @@ if ($is_follow_up) {
     $user_prompt = "A user ran the \"" . $calculator_type . "\" calculator. Here are their results:\n\n" . $results_summary . "\n\nExplain these results in plain language. Use 2–4 short paragraphs.";
 
     if ($calculator_type === 'vanguard-pas-vs-target-date') {
-        $user_prompt .= "\n\nWhen explaining opportunity cost, use wording like: \"The Total Opportunity Cost of [total] represents the grand total of what you give up over the timeline. This is the sum of two distinct factors: the Direct Fee Difference of [direct] that you pay out of pocket, and [lost growth] in Lost Growth because those fee dollars were removed from the market and couldn't compound.\" Do not imply the user loses the total plus the components separately.";
+        $user_prompt .= "\n\nExplain the signed ending-balance difference as the direct fee difference plus compounding and withdrawal effects. Do not call all of it fees or imply the total is additional to its components. Use the supplied bucket depletion and withdrawal assumptions.";
     }
 
     $messages[] = ['role' => 'user', 'content' => $user_prompt];

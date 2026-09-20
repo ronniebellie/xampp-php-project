@@ -61,7 +61,7 @@ if (!empty($data['withdrawalPct'])) {
 }
 $info .= ' | Start year: ' . ($data['timelineStartYear'] ?? 'not supplied') . ' | Withdrawals start: ' . ($data['withdrawalsStartYear'] ?? 'not supplied');
 $pdf->MultiCell(0, 6, $info, 0, 'L');
-$pdf->MultiCell(0, 6, 'Nominal USD. Editable total annual fee assumptions, not current fee quotes. Growth precedes fees and withdrawals each year. Ending balances exclude withdrawals. The residual difference includes compounding and different withdrawals.', 0, 'L');
+$pdf->MultiCell(0, 6, 'Nominal USD. PAS uses the entered total advisory and underlying fund cost once; Target Date fund expenses apply once per bucket. These are assumptions, not current fee quotes. Withdrawals equal the selected percentage of each current total after growth, before fees. Ending balances exclude withdrawals. The residual difference includes compounding and different withdrawals.', 0, 'L');
 $pdf->Ln(4);
 
 // Key results
@@ -108,6 +108,33 @@ if (!empty($data['chartImage2'])) {
         unlink($tempFile);
         $pdf->Ln(70);
     }
+}
+
+// Bucket report is optional for compatibility with older clients.
+if (isset($data['targetData'][0]['buckets'])) {
+    $pdf->AddPage();
+    $pdf->SetFont('helvetica', 'B', 14);
+    $pdf->Cell(0, 8, 'Self-Managed Three-Bucket Strategy', 0, 1);
+    $pdf->SetFont('helvetica', '', 9);
+    $pdf->MultiCell(0, 5, 'Withdrawals use Conservative, then Moderate, then Aggressive. No replenishment or rebalancing. With identical returns and expenses, sequencing alone does not increase the total portfolio value.', 0, 'L');
+    $bucketRows = $data['targetData'];
+    $pdf->Ln(3);
+    foreach (['conservative', 'moderate', 'aggressive'] as $key) {
+        $status = $bucketRows[0]['buckets'][$key] == 0 ? 'Not funded at start' : 'Not depleted during simulation';
+        if ($bucketRows[0]['buckets'][$key] > 0) foreach (array_slice($bucketRows, 1) as $row) {
+            if ($row['buckets'][$key] == 0) { $status = 'Depleted: ' . (int)($row['calendarYear'] ?? $row['year']); break; }
+        }
+        $pdf->MultiCell(0, 5, ucfirst($key) . ' (' . (float)($data['allocation'][$key] ?? 0) . '%): ' . $status, 0, 'L');
+    }
+    $pdf->Ln(3);
+    $bucketHtml = '<table border="1" cellpadding="4" style="font-size:8px;"><thead><tr style="background-color:#dc2626;color:white;"><th>Calendar point</th><th>Conservative</th><th>Moderate</th><th>Aggressive</th><th>Total</th><th>Withdrawal</th></tr></thead><tbody>';
+    foreach ($bucketRows as $row) {
+        $point = $row['year'] == 0 ? 'Start of ' : 'End of ';
+        $bucketHtml .= '<tr><td>' . $point . (int)($row['calendarYear'] ?? $row['year']) . '</td>';
+        foreach (['conservative', 'moderate', 'aggressive'] as $key) $bucketHtml .= '<td>$' . number_format($row['buckets'][$key], 0) . '</td>';
+        $bucketHtml .= '<td>$' . number_format($row['balance'], 0) . '</td><td>$' . number_format($row['withdrawal'], 0) . '</td></tr>';
+    }
+    $pdf->writeHTML($bucketHtml . '</tbody></table>', true, false, true, false, '');
 }
 
 // Year-by-year table

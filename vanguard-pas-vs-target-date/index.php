@@ -25,15 +25,15 @@ $isPremium = has_premium_access();
 
         <header>
             <h1>Vanguard Personal Advisor vs Target Date Funds</h1>
-            <p class="subtitle">Compare the cost of Vanguard PAS (0.30%) with a self-managed blend of Target Date funds</p>
+            <p class="subtitle">Compare the cost of Vanguard PAS (0.30%) with a self-managed three-bucket Target Date strategy</p>
             <hr style="margin: 25px 0; border: 0; border-top: 1px solid #e2e8f0;">
         </header>
 
         <div class="info-box-blue" style="margin-bottom: 30px;">
             <h2>How This Works</h2>
-            <p>Compare the same portfolio return under two editable annual fee assumptions. Enter the <strong>total cost of advice and underlying funds</strong> for PAS, and the total fund cost for your Target Date alternative. The starting values (0.30% and 0.08%) are illustrative assumptions, not verified current price quotes. Check your actual fees. Allocation percentages describe your blend; they do not change the entered return.</p>
+            <p>Compare the same portfolio return under two editable annual fee assumptions. Enter the <strong>total cost of advice and underlying funds</strong> for PAS, and the total fund cost for your Target Date alternative. The starting values (0.30% and 0.08%) are illustrative assumptions, not verified current price quotes. Check your actual fees. Allocation percentages set three separate starting balances; each uses the entered gross return.</p>
             <p>Figures are nominal dollars. Each modeled year applies growth first, then fees and any withdrawal to that grown balance. Ending balances exclude money already withdrawn; compare the income totals as well. Withdrawals begin in the selected calendar year.</p>
-            <p style="margin-top: 12px;">You can allocate your self-managed portfolio across <strong>conservative</strong> (Income / 2020), <strong>moderate</strong> (2025–2035), and <strong>aggressive</strong> (2040–2070) Target Date funds. The math uses a blended expense ratio of about 0.08% for the self-managed side.</p>
+            <p style="margin-top: 12px;">You can allocate your self-managed portfolio across <strong>conservative</strong> (Income / 2020), <strong>moderate</strong> (2025–2035), and <strong>aggressive</strong> (2040–2070) Target Date funds. The selected Target Date expense ratio is applied once to each bucket; no advisory fee is added.</p>
         </div>
 
 <?php if ($isPremium): ?>
@@ -71,7 +71,7 @@ $isPremium = has_premium_access();
                 <div class="input-group">
                     <label>Target Date Fund Blend Expense (%)</label>
                     <input type="number" id="targetDateFee" aria-label="Target date fund annual fee, percent" value="0.08" min="0" max="0.5" step="any">
-                    <span class="help-text">Enter your actual all-in fund expense assumption.</span>
+                    <span class="help-text">Enter your actual fund expense ratio. It applies once to each bucket, with no additional advisory charge.</span>
                 </div>
 
                 <div class="input-group">
@@ -102,7 +102,7 @@ $isPremium = has_premium_access();
                         <span class="value" id="withdrawalPctLabel">4.2%</span>
                     </div>
                     <input type="range" id="withdrawalPct" aria-label="Annual portfolio withdrawal, percent" value="4.2" min="0" max="10" step="0.1">
-                    <span class="help-text">Set to 0 for no withdrawal. Many retirees use ~4% (e.g. 4.2% starting in a given year).</span>
+                    <span class="help-text">Each year, withdrawals equal this percentage of that alternative’s current total balance after growth, before fees are deducted. For example, 4.5% of $1,060,000 is $47,700. Fees also use that same pre-withdrawal balance. Set to 0 for no withdrawals; this is not a fixed percentage of the original portfolio.</span>
                 </div>
                 <div class="input-group">
                     <label for="withdrawalsStartYear">Withdrawals start year</label>
@@ -111,8 +111,9 @@ $isPremium = has_premium_access();
                 </div>
 
                 <h3 style="margin: 24px 0 12px; font-size: 18px; color: #334155;">Self-Managed Allocation (Target Date funds)</h3>
-                <p style="margin-bottom: 16px; color: #64748b; font-size: 14px;">Allocate what share of your portfolio would go into conservative, moderate, and aggressive Target Date funds. Percentages are normalized to 100%.</p>
+                <p style="margin-bottom: 16px; color: #64748b; font-size: 14px;">Allocate what share of your portfolio would go into conservative, moderate, and aggressive Target Date funds. Percentages are normalized to 100%; the final percentages shown below are used in the calculation.</p>
 
+                <p class="help-text"><strong>Three-Bucket Strategy:</strong> Retirement withdrawals are taken from the Conservative bucket first, then Moderate, then Aggressive. This allows longer-term investments more time to remain invested. Buckets are not automatically replenished or rebalanced. All three currently use the same expected return and fund expense, so sequencing alone does not change the total portfolio value.</p>
                 <div class="input-group">
                     <div class="slider-label">
                         <span>Conservative (Income / 2020)</span>
@@ -145,7 +146,7 @@ $isPremium = has_premium_access();
                 <button id="calculateBtn" class="calculate-btn" type="button">Calculate True Cost</button>
             </div>
 
-            <div id="results" class="results-section" style="display: none;">
+            <div id="results" class="results-section" style="display: none; min-width: 0;">
                 <h2>The Cost of PAS vs Self-Managed Target Date</h2>
 
                 <div class="opportunity-cost-banner">
@@ -153,7 +154,7 @@ $isPremium = has_premium_access();
                     <div class="cost-amount" id="opportunityCost">$0</div>
                     <div class="cost-average">≈ <span id="avgAnnualCost">$0</span> per year on average</div>
                     <div class="cost-breakdown" id="costBreakdown">
-                        <span class="cb-part"><span class="cb-num" id="breakdownFees">$0</span><span class="cb-desc">extra advisor fees</span></span>
+                        <span class="cb-part"><span class="cb-num" id="breakdownFees">$0</span><span class="cb-desc">direct fee difference</span></span>
                         <span class="cb-op">+</span>
                         <span class="cb-part"><span class="cb-num" id="breakdownGrowth">$0</span><span class="cb-desc">growth / withdrawal effects</span></span>
                         <span class="cb-op">=</span>
@@ -168,7 +169,7 @@ $isPremium = has_premium_access();
                         <div class="comparison-header">
                             <div class="col-label"></div>
                             <div class="col-managed">Vanguard PAS<br><span class="fee-label" id="pasFeeResultLabel"></span></div>
-                            <div class="col-vanguard">Target Date Blend<br><span class="fee-label">Selected fund fee</span></div>
+                            <div class="col-vanguard">Three-Bucket Total<br><span class="fee-label">Selected fund fee</span></div>
                             <div class="col-difference">You're Giving Up</div>
                         </div>
 
@@ -194,7 +195,7 @@ $isPremium = has_premium_access();
                         <div class="comparison-header">
                             <div class="col-label"></div>
                             <div class="col-managed">Vanguard PAS<br><span class="fee-label">Selected PAS fee</span></div>
-                            <div class="col-vanguard">Target Date Blend<br><span class="fee-label">Selected fund fee</span></div>
+                            <div class="col-vanguard">Three-Bucket Total<br><span class="fee-label">Selected fund fee</span></div>
                             <div class="col-difference">You're Giving Up</div>
                         </div>
 
@@ -219,6 +220,21 @@ $isPremium = has_premium_access();
                             <div class="col-difference neutral" id="totalIncomeDiff"></div>
                         </div>
                     </div>
+                </div>
+
+                <div class="comparison-section">
+                    <h3 class="comparison-section-title">Your Three Buckets</h3>
+                    <p class="help-text">Starting balances, midpoint and ending balances after fees and withdrawals. Depletion refers to a zero balance, not a balance rounded to $0. Displayed amounts are rounded independently; totals use full precision.</p>
+                    <div style="overflow-x: auto;" tabindex="0" role="region" aria-label="Bucket balances">
+                        <table class="bucket-table" style="width: 100%; text-align: left; border-spacing: 12px;">
+                            <thead><tr><th scope="col">Bucket</th><th scope="col">Starting balance</th><th scope="col" id="bucketMidYear">Midpoint</th><th scope="col" id="bucketEndYear">Ending balance</th><th scope="col">Depletion</th></tr></thead>
+                            <tbody id="bucketSummary"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>Three-Bucket Balances Over Time</h3>
+                    <div style="position: relative; height: 300px;"><canvas id="bucketChart" role="img" aria-label="Conservative, Moderate and Aggressive bucket balances over time"></canvas></div>
                 </div>
 
                 <div class="chart-container">
@@ -248,7 +264,7 @@ $isPremium = has_premium_access();
                     <div class="insight-box">
                         <div class="insight-icon">🎯</div>
                         <div class="insight-content">
-                            <strong>Your self-managed blend:</strong> <span id="insightAllocation"></span> (conservative / moderate / aggressive).
+                            <strong>Your starting bucket allocation:</strong> <span id="insightAllocation"></span> (conservative / moderate / aggressive).
                         </div>
                     </div>
                 </div>
@@ -279,7 +295,7 @@ $isPremium = has_premium_access();
     <script>
     const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
     </script>
-    <script src="calculator.js?v=7"></script>
+    <script src="calculator.js?v=8"></script>
     <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/calculator-footer.php'; ?>
 </body>
 </html>

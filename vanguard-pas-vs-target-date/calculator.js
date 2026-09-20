@@ -46,18 +46,106 @@
     return yearlyData;
   }
 
+  var bucketKeys = ['conservative', 'moderate', 'aggressive'];
+  var bucketNames = ['Conservative', 'Moderate', 'Aggressive'];
+
   function getNormalizedAllocation() {
-    var c = parseFloat(document.getElementById('pctConservative').value) || 0;
-    var m = parseFloat(document.getElementById('pctModerate').value) || 0;
-    var a = parseFloat(document.getElementById('pctAggressive').value) || 0;
-    var total = c + m + a;
-    if (total <= 0) return { c: 33.33, m: 33.33, a: 33.34, sum: 0 };
-    return {
-      c: Math.round((c / total) * 1000) / 10,
-      m: Math.round((m / total) * 1000) / 10,
-      a: Math.round((a / total) * 1000) / 10,
-      sum: total
-    };
+    var raw = ['pctConservative', 'pctModerate', 'pctAggressive'].map(function (id) {
+      var value = Number(document.getElementById(id).value);
+      if (!Number.isFinite(value) || value < 0) throw new RangeError('Allocation percentages must be nonnegative numbers.');
+      return value;
+    });
+    var total = raw.reduce(function (sum, value) { return sum + value; }, 0);
+    if (!Number.isFinite(total)) throw new RangeError('Invalid allocation total.');
+    if (total === 0) return { c: 33.33, m: 33.33, a: 33.34, sum: 0 };
+    // Largest-remainder rounding makes displayed and modeled percentages sum to 100%.
+    var exact = raw.map(function (v) { return v / total * 10000; });
+    var units = exact.map(Math.floor);
+    var remainder = 10000 - units.reduce(function (sum, v) { return sum + v; }, 0);
+    [0, 1, 2].sort(function (a, b) { return (exact[b] - units[b]) - (exact[a] - units[a]); })
+      .slice(0, remainder).forEach(function (i) { units[i]++; });
+    return { c: units[0] / 100, m: units[1] / 100, a: units[2] / 100, sum: total };
+  }
+
+  function calculateBuckets(principal, returns, feeRatePct, years, withdrawalPct, withdrawalStartYear, alloc, startYear) {
+    // Reuse the established input contract without changing the PAS calculation.
+    calculatePortfolio(principal, returns.conservative, feeRatePct, years, withdrawalPct, withdrawalStartYear);
+    var weights = [alloc.c, alloc.m, alloc.a];
+    var balances = {}, allocated = 0;
+    var lastFunded = weights.reduce(function (last, weight, i) { return weight > 0 ? i : last; }, 0);
+    bucketKeys.forEach(function (key, i) {
+      balances[key] = i === lastFunded ? principal - allocated : principal * weights[i] / 100;
+      allocated += balances[key];
+    });
+    var totalFees = 0, totalWithdrawals = 0;
+    var rows = [{ year: 0, calendarYear: startYear, balance: principal, fee: 0, totalFees: 0,
+      withdrawal: 0, totalWithdrawals: 0, buckets: Object.assign({}, balances),
+      bucketFees: { conservative: 0, moderate: 0, aggressive: 0 },
+      bucketWithdrawals: { conservative: 0, moderate: 0, aggressive: 0 } }];
+    for (var y = 1; y <= years; y++) {
+      var grownTotal = 0, fees = {}, withdrawals = {};
+      bucketKeys.forEach(function (key) {
+        // Per-bucket return map is intentionally identical for now.
+        if (!Number.isFinite(returns[key]) || returns[key] < -100 || returns[key] > 100) throw new RangeError('Invalid bucket return.');
+        var grown = balances[key] * (1 + returns[key] / 100);
+        grownTotal += grown;
+        fees[key] = grown * feeRatePct / 100;
+        balances[key] = Math.max(0, grown - fees[key]);
+      });
+      // Both expenses and requested withdrawal use the post-growth, pre-fee base.
+      var requested = y >= withdrawalStartYear ? grownTotal * withdrawalPct / 100 : 0;
+      var remaining = requested;
+      bucketKeys.forEach(function (key) {
+        withdrawals[key] = Math.min(balances[key], remaining);
+        balances[key] -= withdrawals[key];
+        remaining = Math.max(0, remaining - withdrawals[key]);
+      });
+      var fee = bucketKeys.reduce(function (sum, key) { return sum + fees[key]; }, 0);
+      var withdrawal = bucketKeys.reduce(function (sum, key) { return sum + withdrawals[key]; }, 0);
+      var balance = bucketKeys.reduce(function (sum, key) { return sum + balances[key]; }, 0);
+      if (!Number.isFinite(balance)) throw new RangeError('Projection exceeds supported amounts.');
+      totalFees += fee;
+      totalWithdrawals += withdrawal;
+      rows.push({ year: y, calendarYear: startYear + y - 1, balance: balance, fee: fee,
+        totalFees: totalFees, withdrawal: withdrawal, totalWithdrawals: totalWithdrawals,
+        buckets: Object.assign({}, balances), bucketFees: fees, bucketWithdrawals: withdrawals });
+    }
+    return rows;
+  }
+
+  function depletionText(rows, key) {
+    if (rows[0].buckets[key] === 0) return 'Not funded at start';
+    var depleted = rows.slice(1).find(function (row) { return row.buckets[key] === 0; });
+    return depleted ? 'Depleted: ' + depleted.calendarYear : 'Not depleted during simulation';
+  }
+
+  var bucketChartInstance = null;
+  function renderBuckets(rows, startYear) {
+    var summary = document.getElementById('bucketSummary');
+    var mid = Math.floor((rows.length - 1) / 2);
+    if (summary) summary.innerHTML = bucketKeys.map(function (key, i) {
+      return '<tr><th scope="row">' + bucketNames[i] + '</th><td>' + formatCurrency(rows[0].buckets[key]) +
+        '</td><td>' + formatCurrency(rows[mid].buckets[key]) + '</td><td>' +
+        formatCurrency(rows[rows.length - 1].buckets[key]) + '</td><td>' + depletionText(rows, key) + '</td></tr>';
+    }).join('');
+    var midLabel = document.getElementById('bucketMidYear');
+    if (midLabel) midLabel.textContent = mid === 0 ? 'Start' : 'End of ' + rows[mid].calendarYear;
+    var endLabel = document.getElementById('bucketEndYear');
+    if (endLabel) endLabel.textContent = 'End of ' + rows[rows.length - 1].calendarYear;
+    var ctx = document.getElementById('bucketChart');
+    if (!ctx) return;
+    if (bucketChartInstance) bucketChartInstance.destroy();
+    bucketChartInstance = new Chart(ctx.getContext('2d'), {
+      type: 'line',
+      data: { labels: rows.map(function (row) { return row.year === 0 ? 'Start of ' + startYear : 'End of ' + row.calendarYear; }),
+        datasets: bucketKeys.map(function (key, i) { return { label: bucketNames[i],
+          data: rows.map(function (row) { return row.buckets[key]; }),
+          borderColor: ['#2563eb', '#d97706', '#16a34a'][i], borderWidth: 2, tension: 0, fill: false }; }) },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { tooltip: { mode: 'index', intersect: false,
+          callbacks: { label: function (c) { return c.dataset.label + ': ' + formatCurrency(c.parsed.y); } } } },
+        scales: { y: { beginAtZero: true, ticks: { callback: function (v) { return formatCurrency(v); } } } } }
+    });
   }
 
   function updateLabels() {
@@ -90,7 +178,7 @@
     if (sumEl) {
       var total = cRaw + mRaw + aRaw;
       if (total <= 0) {
-        sumEl.textContent = 'Set allocation percentages (they will be normalized to 100%).';
+        sumEl.textContent = 'All inputs are zero; using 33.33% Conservative / 33.33% Moderate / 33.34% Aggressive (100%).';
       } else if (Math.abs(total - 100) < 0.1) {
         sumEl.textContent = 'Allocation: ' + alloc.c + '% / ' + alloc.m + '% / ' + alloc.a + '% (sum = 100%).';
       } else {
@@ -126,9 +214,10 @@
     }
 
     var pasData = calculatePortfolio(portfolioValue, returnRate, pasFee, years, withdrawalPct, withdrawalStartYear);
-    var targetData = calculatePortfolio(portfolioValue, returnRate, targetDateFee, years, withdrawalPct, withdrawalStartYear);
-
     var alloc = getNormalizedAllocation();
+    var targetData = calculateBuckets(portfolioValue,
+      { conservative: returnRate, moderate: returnRate, aggressive: returnRate },
+      targetDateFee, years, withdrawalPct, withdrawalStartYear, alloc, timelineStartYear);
     var midYear = Math.floor(years / 2);
     var pasFinal = pasData[years].balance;
     var targetFinal = targetData[years].balance;
@@ -187,6 +276,7 @@
     if (breakdownGrowthEl) breakdownGrowthEl.textContent = formatCurrency(lostGrowthDisplay);
     if (breakdownTotalEl) breakdownTotalEl.textContent = formatCurrency(opportunityCost);
 
+    renderBuckets(targetData, timelineStartYear);
     createChart(pasData, targetData, years);
     createFeesChart(pasData, targetData, years);
 
@@ -233,7 +323,7 @@
         labels: labels,
         datasets: [
           { label: 'Vanguard PAS', data: pasValues, borderColor: '#dc2626', backgroundColor: 'rgba(220, 38, 38, 0.1)', borderWidth: 3, tension: 0.4, fill: false },
-          { label: 'Target Date Blend', data: targetValues, borderColor: '#16a34a', backgroundColor: 'rgba(22, 163, 74, 0.1)', borderWidth: 3, tension: 0.4, fill: false }
+          { label: 'Target Date Three-Bucket Total', data: targetValues, borderColor: '#16a34a', backgroundColor: 'rgba(22, 163, 74, 0.1)', borderWidth: 3, tension: 0.4, fill: false }
         ]
       },
       options: {
@@ -432,6 +522,7 @@
       /* charts optional; continue without */
     }
     var payload = {
+      allocation: r.allocation,
       portfolioValue: r.portfolioValue,
       pasFee: r.pasFee,
       targetDateFee: r.targetDateFee,
@@ -483,7 +574,7 @@
       alert('Please run Calculate first, then export CSV.');
       return;
     }
-    var payload = { context: r, pasData: r.pasData, targetData: r.targetData };
+    var payload = Object.assign({}, r);
     fetch(PAS_API_BASE + 'api/export_pas_csv.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) })
     .then(function (res) {
       if (!res.ok) return res.text().then(function (t) { try { var j = JSON.parse(t); throw new Error(j.error || 'CSV failed'); } catch (e) { throw new Error(t || 'CSV failed'); } });
@@ -527,8 +618,13 @@ function explainPASResults() {
 
   var summary = 'Vanguard Personal Advisor vs Target Date Funds. Portfolio $' + r.portfolioValue.toLocaleString() + ', PAS fee ' + r.pasFee + '%, Target Date fee ' + r.targetDateFee + '%. ';
   summary += 'Timeline ' + r.years + ' years, expected return ' + r.returnRate + '%. ';
-  if (r.withdrawalPct > 0) summary += 'Annual withdrawal ' + r.withdrawalPct + '% of portfolio, starting ' + (r.withdrawalsStartYear != null ? r.withdrawalsStartYear : 'year 1') + '. ';
+  if (r.withdrawalPct > 0) summary += 'Annual withdrawal ' + r.withdrawalPct + '% of each alternative’s current post-growth, pre-fee balance, starting ' + (r.withdrawalsStartYear != null ? r.withdrawalsStartYear : 'year 1') + '. ';
   summary += 'Allocation: ' + r.allocation.conservative + '% conservative, ' + r.allocation.moderate + '% moderate, ' + r.allocation.aggressive + '% aggressive.\n\n';
+  summary += 'Withdrawals use Conservative, then Moderate, then Aggressive, with no replenishment. All buckets use the same gross return and fund expense; sequencing alone does not change the total. PAS uses the entered total advisory and underlying fund cost, applied once.\n';
+  r.targetData[0] && Object.keys(r.targetData[0].buckets).forEach(function (key) {
+    var depleted = r.targetData.slice(1).find(function (row) { return row.buckets[key] === 0; });
+    summary += key + ' ending balance: $' + Math.round(r.targetData[r.years].buckets[key]) + '; ' + (r.targetData[0].buckets[key] === 0 ? 'not funded at start' : depleted ? 'depleted ' + depleted.calendarYear : 'not depleted during simulation') + '. ';
+  });
   summary += 'OPPORTUNITY COST BREAKDOWN (do not double-count):\n';
   summary += '- Total Opportunity Cost (grand total): $' + totalOpportunityCost.toLocaleString() + '\n';
   summary += '- Direct Fee Difference (paid out of pocket): $' + directFeeDiff.toLocaleString() + '\n';
