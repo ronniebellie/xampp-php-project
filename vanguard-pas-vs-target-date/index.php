@@ -16,7 +16,7 @@ $isPremium = has_premium_access();
     <title>Vanguard Personal Advisor vs Target Date Funds</title>
     <?php $og_title = $ld_name = 'Vanguard Personal Advisor vs Target Date Funds'; $og_description = $ld_description = 'Compare Vanguard PAS fees with a self-managed mix of Vanguard Target Date funds. See your opportunity cost.'; include(__DIR__ . '/../includes/og-twitter-meta.php'); include(__DIR__ . '/../includes/json-ld-softwareapp.php'); ?>
     <link rel="stylesheet" href="../css/styles.css">
-    <link rel="stylesheet" href="styles.css?v=3">
+    <link rel="stylesheet" href="styles.css?v=4">
 </head>
 <body>
     <?php include('../includes/premium-banner-include.php'); ?>
@@ -31,8 +31,8 @@ $isPremium = has_premium_access();
 
         <div class="info-box-blue" style="margin-bottom: 30px;">
             <h2>How This Works</h2>
-            <p>Compare the same portfolio return under two editable annual fee assumptions. Enter the <strong>total cost of advice and underlying funds</strong> for PAS, and the total fund cost for your Target Date alternative. The starting values (0.30% and 0.08%) are illustrative assumptions, not verified current price quotes. Check your actual fees. Allocation percentages set three separate starting balances; each uses the entered gross return.</p>
-            <p>Figures are nominal dollars. Each modeled year applies growth first, then fees and any withdrawal to that grown balance. Ending balances exclude money already withdrawn; compare the income totals as well. Withdrawals begin in the selected calendar year.</p>
+            <p><strong>Simple Projection:</strong> Compare the same portfolio return under two editable annual fee assumptions. Enter the <strong>total cost of advice and underlying funds</strong> for PAS, and the total fund cost for your Target Date alternative. The starting values (0.30% and 0.08%) are illustrative assumptions, not verified current price quotes. Check your actual fees. Allocation percentages set three separate starting balances; each uses the entered gross return.</p>
+            <p>Figures are nominal dollars. In Simple Projection, each modeled year applies growth first, then fees and any withdrawal to that grown balance. Ending balances exclude money already withdrawn; compare the income totals as well. Withdrawals begin in the selected calendar year.</p>
             <p style="margin-top: 12px;">You can allocate your self-managed portfolio across <strong>conservative</strong> (Income / 2020), <strong>moderate</strong> (2025–2035), and <strong>aggressive</strong> (2040–2070) Target Date funds. The selected Target Date expense ratio is applied once to each bucket; no advisory fee is added.</p>
         </div>
 
@@ -55,6 +55,11 @@ $isPremium = has_premium_access();
         <div class="calculator-wrapper">
             <div class="input-section">
                 <h2>Your Portfolio &amp; Assumptions</h2>
+                <div class="input-group">
+                    <label for="analysisMode">Analysis mode</label>
+                    <select id="analysisMode" style="width:100%;padding:12px;font:inherit;"><option value="simple">Simple Projection</option><option value="stress">Retirement Stress Test</option></select>
+                    <span class="help-text">Simple Projection keeps the existing deterministic fee comparison. Retirement Stress Test explores many hypothetical market sequences with different return assumptions.</span>
+                </div>
 
                 <div class="input-group">
                     <label for="portfolioValue">Current Portfolio Value ($)</label>
@@ -82,7 +87,7 @@ $isPremium = has_premium_access();
                     <input type="range" id="years" aria-label="Years to model" value="20" min="1" max="50" step="1">
                 </div>
 
-                <div class="input-group">
+                <div class="input-group" data-simple-only>
                     <div class="slider-label">
                         <span>Expected Annual Return (Before Fees) (%)</span>
                         <span class="value" id="returnRateLabel">6%</span>
@@ -96,7 +101,7 @@ $isPremium = has_premium_access();
                     <input type="number" id="timelineStartYear" value="<?php echo (int)date('Y'); ?>" min="2000" max="2100" step="any">
                     <span class="help-text">The real-world year when the simulation begins: year 1 in the results is this year, year 2 is the next calendar year, and so on.</span>
                 </div>
-                <div class="input-group">
+                <div class="input-group" data-simple-only>
                     <div class="slider-label">
                         <span>Annual Withdrawal (% of portfolio)</span>
                         <span class="value" id="withdrawalPctLabel">4.2%</span>
@@ -107,13 +112,36 @@ $isPremium = has_premium_access();
                 <div class="input-group">
                     <label for="withdrawalsStartYear">Withdrawals start year</label>
                     <input type="number" id="withdrawalsStartYear" value="2027" min="2000" max="2100" step="any">
-                    <span class="help-text">Calendar year when you begin taking the annual withdrawal % above. Example: 2027 if you won&rsquo;t withdraw until then.</span>
+                    <span class="help-text">Calendar year when withdrawals begin: the selected percentage in Simple Projection, or the starting dollar amount in Retirement Stress Test.</span>
                 </div>
 
+                <div id="stressInputs" hidden>
+                    <h3>Retirement Stress Test assumptions</h3>
+                    <p class="help-text">Generic planning assumptions, not Vanguard forecasts or historical guarantees. PAS assumptions are independent editable inputs; no outperformance is implied.</p>
+                    <p class="help-text">Expected Return is the assumed long-term arithmetic average annual return before fees. Volatility describes how much yearly returns may vary around that average; higher volatility means a wider range of possible gains and losses.</p>
+                    <div class="input-group"><label for="annualWithdrawal">Starting annual withdrawal ($)</label><input type="number" id="annualWithdrawal" value="60000" min="0" max="10000000000" step="any"></div>
+                    <p class="help-text">$60,000 is approximately $5,000 per month. Both strategies face the same dollar requirement, starting in the selected withdrawal year; inflation increases it only after withdrawals begin. If that year is before the timeline, spending starts at the entered amount in the first modeled year.</p>
+                    <div class="input-group"><label for="inflation">Inflation adjustment (%)</label><input type="number" id="inflation" value="2.5" min="-10" max="20" step="any"></div>
+                    <div class="input-group"><label for="conservativeReturn">Conservative expected annual return (%)</label><input type="number" id="conservativeReturn" value="4" min="-100" max="100" step="any"></div>
+                    <div class="input-group"><label for="conservativeVolatility">Conservative annual volatility (%)</label><input type="number" id="conservativeVolatility" value="6" min="0" max="100" step="any"></div>
+                    <div class="input-group"><label for="moderateReturn">Moderate expected annual return (%)</label><input type="number" id="moderateReturn" value="5.5" min="-100" max="100" step="any"></div>
+                    <div class="input-group"><label for="moderateVolatility">Moderate annual volatility (%)</label><input type="number" id="moderateVolatility" value="10" min="0" max="100" step="any"></div>
+                    <div class="input-group"><label for="aggressiveReturn">Aggressive expected annual return (%)</label><input type="number" id="aggressiveReturn" value="7" min="-100" max="100" step="any"></div>
+                    <div class="input-group"><label for="aggressiveVolatility">Aggressive annual volatility (%)</label><input type="number" id="aggressiveVolatility" value="16" min="0" max="100" step="any"></div>
+                    <div class="input-group"><label for="pasReturn">PAS expected annual return (%)</label><input type="number" id="pasReturn" value="6" min="-100" max="100" step="any"></div>
+                    <div class="input-group"><label for="pasVolatility">PAS annual volatility (%)</label><input type="number" id="pasVolatility" value="11" min="0" max="100" step="any"></div>
+                    <div class="input-group"><label for="simulations">Number of simulations</label><select id="simulations" style="width:100%;padding:12px;font:inherit;"><option value="1000">1,000</option><option value="5000">5,000</option><option value="10000" selected>10,000</option></select></div>
+                    <div class="input-group"><label for="simulationSeed">Simulation seed</label><input type="number" id="simulationSeed" min="0" max="4294967295" step="1"><span class="help-text">The same seed and inputs reproduce the results. Save/Load preserves this seed. Run New Simulation generates another seed.</span></div>
+                    <details><summary>Stress Test methodology and correlations</summary>
+                        <p class="help-text">Annual arithmetic returns follow a normal model, floored at −100%. Correlated shocks use Cholesky decomposition of a validated positive definite matrix; years are independent. Extreme assumptions and the loss floor can alter the modeled average, volatility and correlations. This simplified model omits fat tails, changing correlations, taxes, glide-path changes and market regimes.</p>
+                        <p class="help-text">Fixed correlations: Conservative/Moderate 0.65; Conservative/Aggressive 0.40; Moderate/Aggressive 0.80; PAS/Conservative 0.60; PAS/Moderate 0.85; PAS/Aggressive 0.90.</p>
+                        <p class="help-text">Stress Test timing: apply returns, fund the same inflation-adjusted withdrawal, then charge the entered annual expense on each remaining balance. PAS includes the entered total advisory/fund cost once. No bucket replenishment or rebalancing. Simple Projection retains its original pre-withdrawal fee base.</p>
+                    </details>
+                </div>
                 <h3 style="margin: 24px 0 12px; font-size: 18px; color: #334155;">Self-Managed Allocation (Target Date funds)</h3>
                 <p style="margin-bottom: 16px; color: #64748b; font-size: 14px;">Allocate what share of your portfolio would go into conservative, moderate, and aggressive Target Date funds. Percentages are normalized to 100%; the final percentages shown below are used in the calculation.</p>
 
-                <p class="help-text"><strong>Three-Bucket Strategy:</strong> Retirement withdrawals are taken from the Conservative bucket first, then Moderate, then Aggressive. This allows longer-term investments more time to remain invested. Buckets are not automatically replenished or rebalanced. All three currently use the same expected return and fund expense, so sequencing alone does not change the total portfolio value.</p>
+                <p class="help-text"><strong>Three-Bucket Strategy:</strong> Retirement withdrawals are taken from the Conservative bucket first, then Moderate, then Aggressive. This allows longer-term investments more time to remain invested. Buckets are not automatically replenished or rebalanced. In Simple Projection all three use the same expected return and expense, so sequencing alone does not change total value. Retirement Stress Test uses separate return and volatility assumptions.</p>
                 <div class="input-group">
                     <div class="slider-label">
                         <span>Conservative (Income / 2020)</span>
@@ -143,11 +171,14 @@ $isPremium = has_premium_access();
 
                 <div id="allocationSum" class="allocation-sum" style="margin-top: 8px; font-size: 13px; color: #64748b;"></div>
 
+                <p id="stressStatus" role="status" aria-live="polite"></p>
+                <button id="newSimulationBtn" type="button" class="btn-secondary" hidden>Run New Simulation</button>
                 <button id="calculateBtn" class="calculate-btn" type="button">Calculate True Cost</button>
             </div>
 
             <div id="results" class="results-section" style="display: none; min-width: 0;">
-                <h2>The Cost of PAS vs Self-Managed Target Date</h2>
+                <div id="simpleProjectionResults">
+                <h2>Simple Projection: PAS vs Self-Managed Target Date</h2>
 
                 <div class="opportunity-cost-banner">
                     <div class="cost-label">Total Opportunity Cost Over <span id="resultYears"></span> Years:</div>
@@ -269,6 +300,22 @@ $isPremium = has_premium_access();
                     </div>
                 </div>
 
+                </div>
+                <section id="stressResults" hidden aria-labelledby="stressHeading">
+                    <h2 id="stressHeading">Retirement Stress Test</h2>
+                    <p><strong>Monte Carlo results are hypothetical planning illustrations based on the assumptions entered. They are not predictions or guarantees of future investment performance.</strong></p>
+                    <p class="help-text">Expected returns, volatility, inflation, correlations and fees materially affect these illustrations. Compare income delivered, survival and the range of ending balances together; no single metric establishes a better strategy.</p>
+                    <p id="stressRunDetails"></p>
+                    <div style="overflow-x:auto;" role="region" aria-label="Stress Test comparison" tabindex="0"><table class="stress-table"><thead><tr><th>Metric</th><th>Vanguard PAS</th><th>Three-Bucket</th></tr></thead><tbody id="stressComparison"></tbody></table></div>
+                    <p class="help-text">Survival means all scheduled withdrawals were funded, including an exactly funded final withdrawal with a $0 balance. Failure is the first spending shortfall, not merely a low balance. Failure-year statistics include failed simulations only; the early failure year is their 10th percentile, rather than a single extreme outlier. With no scheduled spending, all paths meet the spending requirement.</p>
+                    <h3>Three-Bucket behavior</h3><div id="stressBucketDetails"></div>
+                    <p class="help-text">Depletion years include only simulations where a funded bucket depleted; the accompanying percentage shows how often that happened. Buckets empty at the start are labeled separately.</p>
+                    <div class="chart-container"><h3>Ending Balance Percentiles</h3><div class="stress-chart"><canvas id="stressEndingChart" role="img" aria-label="PAS and Three-Bucket ending balance percentiles"></canvas></div></div>
+                    <div class="chart-container"><h3>Portfolio Survival Over Time</h3><div class="stress-chart"><canvas id="stressSurvivalChart" role="img" aria-label="Percentage of paths funding all spending to each year"></canvas></div></div>
+                    <div class="chart-container"><h3>Median Bucket Balances Over Time</h3><div class="stress-chart"><canvas id="stressBucketChart" role="img" aria-label="Pointwise median Conservative Moderate and Aggressive balances"></canvas></div><p class="help-text">Each point is that bucket’s median across all paths, including depleted balances. These are not one representative simulation; individual bucket medians need not sum to the median total portfolio.</p></div>
+                    <p>Sequence-of-returns risk means that poor market returns early in retirement can be more damaging than the same poor returns occurring later, because withdrawals may force investments to be sold while values are depressed.</p>
+                    <p>The three-bucket strategy attempts to reduce this risk by spending conservative assets first while allowing longer-term assets more time to remain invested. It does not eliminate sequence risk.</p>
+                </section>
                 <?php if ($isPremium): ?>
                 <div class="explain-results-block" style="margin: 24px 0; padding: 24px; background: #f0fdf4; border: 2px solid #0d9488; border-radius: 12px;">
                     <button type="button" id="explainResultsBtnInResults" class="btn-primary" style="background: #0d9488; color: white; font-size: 16px; padding: 14px 28px; font-weight: 700;">🤖 Explain my results</button>
@@ -295,7 +342,9 @@ $isPremium = has_premium_access();
     <script>
     const isPremiumUser = <?php echo $isPremium ? 'true' : 'false'; ?>;
     </script>
-    <script src="calculator.js?v=8"></script>
+    <script src="stress-engine.js?v=1"></script>
+    <script src="calculator.js?v=9"></script>
+    <script src="stress-ui.js?v=1"></script>
     <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/calculator-footer.php'; ?>
 </body>
 </html>

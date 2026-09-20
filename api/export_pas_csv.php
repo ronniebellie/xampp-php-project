@@ -18,6 +18,11 @@ if (!has_premium_access()) {
 $data = rb_read_api_json(2097152);
 try { $data=rb_pdf_data($data); } catch(Throwable $e) { rb_api_error(400, 'Invalid or oversized CSV data'); }
 if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
+if (($data['analysisMode'] ?? '') === 'stress') {
+    require_once __DIR__ . '/../includes/pas_stress_report.php';
+    rb_pas_stress_export($data, 'csv');
+    exit;
+}
 if (!$data || !isset($data['pasData'], $data['targetData']) || !is_array($data['pasData'])) {
     header('Content-Type: application/json');
     http_response_code(400);
@@ -33,7 +38,7 @@ header('Content-Disposition: attachment; filename="Vanguard_PAS_vs_Target_Date_'
 header('Cache-Control: no-store');
 echo "\xEF\xBB\xBF";
 $out = fopen('php://output', 'w');
-rb_csv_context($out, 'Vanguard PAS vs Target Date', $data);
+rb_csv_context($out, 'Vanguard PAS vs Target Date - Simple Projection', $data);
 rb_csv_row($out, ['Withdrawal method', 'Percentage of each current total after growth, before fees; Conservative then Moderate then Aggressive; no replenishment.']);
 rb_csv_row($out, ['Fee method', 'PAS entered total advisory/fund cost applied once; target fund expense applied once per bucket; same gross return.']);
 foreach (['conservative', 'moderate', 'aggressive'] as $key) {

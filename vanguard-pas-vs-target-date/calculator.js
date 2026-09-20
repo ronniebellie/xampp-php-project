@@ -188,6 +188,11 @@
   }
 
   function calculate(shouldScroll) {
+    if (window.PASStressUI && window.PASStressUI.isStress()) {
+      try { updateLabels(); window.PASStressUI.calculate(shouldScroll, getNormalizedAllocation()); }
+      catch (error) { window.lastPASvsTargetResult = null; document.getElementById('stressStatus').textContent = error.message; }
+      return;
+    }
     try { calculateValidated(shouldScroll); } catch(error) {
       window.lastPASvsTargetResult=null;
       document.getElementById('results').style.display='none';
@@ -424,6 +429,7 @@
       pctModerate: document.getElementById('pctModerate').value,
       pctAggressive: document.getElementById('pctAggressive').value
     };
+    if (window.PASStressUI) Object.assign(formData, window.PASStressUI.saved());
     rbScenarioFetch(PAS_API_BASE + 'api/save_scenario.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -498,8 +504,9 @@
           var el = document.getElementById(key);
           if (el && d[key] !== undefined) el.value = d[key];
         });
+        if (window.PASStressUI) window.PASStressUI.load(d);
         updateLabels();
-        alert('Scenario loaded! Click "Calculate True Cost" to see results.');
+        alert('Scenario loaded! Click "' + document.getElementById('calculateBtn').textContent + '" to see results.');
       }
     })
     .catch(function (err) { alert('Load scenarios failed: ' + err.message); });
@@ -541,6 +548,8 @@
       chartImage1: chartImage1,
       chartImage2: chartImage2
     };
+    if (r.analysisMode === 'stress') payload = window.PASStressUI.pdfPayload(r);
+    else payload.analysisMode = 'simple';
     var url = PAS_API_BASE + 'api/generate_pas_pdf.php';
     fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) })
     .then(function (res) {
@@ -574,7 +583,7 @@
       alert('Please run Calculate first, then export CSV.');
       return;
     }
-    var payload = Object.assign({}, r);
+    var payload = Object.assign({ analysisMode: 'simple' }, r);
     fetch(PAS_API_BASE + 'api/export_pas_csv.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) })
     .then(function (res) {
       if (!res.ok) return res.text().then(function (t) { try { var j = JSON.parse(t); throw new Error(j.error || 'CSV failed'); } catch (e) { throw new Error(t || 'CSV failed'); } });
@@ -612,11 +621,14 @@ function explainPASResults() {
     alert('Please run the calculation first to see results.');
     return;
   }
+  var summary;
+  if (r.analysisMode === 'stress') summary = window.PASStressUI.explanation(r);
+  else {
   var totalOpportunityCost = Math.round(r.opportunityCost);
   var directFeeDiff = Math.round(r.directFeeDiff);
   var lostGrowth = Math.round(r.lostGrowth);
 
-  var summary = 'Vanguard Personal Advisor vs Target Date Funds. Portfolio $' + r.portfolioValue.toLocaleString() + ', PAS fee ' + r.pasFee + '%, Target Date fee ' + r.targetDateFee + '%. ';
+  summary = 'Simple Projection: Vanguard Personal Advisor vs Target Date Funds. Portfolio $' + r.portfolioValue.toLocaleString() + ', PAS fee ' + r.pasFee + '%, Target Date fee ' + r.targetDateFee + '%. ';
   summary += 'Timeline ' + r.years + ' years, expected return ' + r.returnRate + '%. ';
   if (r.withdrawalPct > 0) summary += 'Annual withdrawal ' + r.withdrawalPct + '% of each alternative’s current post-growth, pre-fee balance, starting ' + (r.withdrawalsStartYear != null ? r.withdrawalsStartYear : 'year 1') + '. ';
   summary += 'Allocation: ' + r.allocation.conservative + '% conservative, ' + r.allocation.moderate + '% moderate, ' + r.allocation.aggressive + '% aggressive.\n\n';
@@ -633,6 +645,8 @@ function explainPASResults() {
     directFeeDiff.toLocaleString() + ' + $' + lostGrowth.toLocaleString() + ' = $' +
     totalOpportunityCost.toLocaleString() + '). The total is NOT an additional separate cost on top of the two components.';
 
+  }
+
   var btn = document.getElementById('explainResultsBtnInResults');
   var origText = btn ? btn.textContent : '';
   if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
@@ -642,7 +656,7 @@ function explainPASResults() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify({ calculator_type: 'vanguard-pas-vs-target-date', results_summary: summary })
+    body: JSON.stringify({ calculator_type: 'vanguard-pas-vs-target-date', analysis_mode: r.analysisMode || 'simple', results_summary: summary })
   })
   .then(function (res) { return res.text(); })
   .then(function (text) {

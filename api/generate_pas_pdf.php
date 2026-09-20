@@ -19,6 +19,11 @@ if (!has_premium_access()) {
 $data = rb_read_api_json(8388608);
 try { $data=rb_pdf_data($data); } catch(Throwable $e) { rb_api_error(400, 'Invalid or oversized report data'); }
 if(session_status()===PHP_SESSION_ACTIVE) session_write_close();
+if (($data['analysisMode'] ?? '') === 'stress') {
+    require_once __DIR__ . '/../includes/pas_stress_report.php';
+    rb_pas_stress_export($data, 'pdf');
+    exit;
+}
 if (!$data || !isset($data['pasData'], $data['targetData']) || !is_array($data['pasData'])) {
     header('Content-Type: application/json');
     http_response_code(400);
@@ -54,7 +59,7 @@ $pdf->SetTextColor(220, 38, 38);
 $pdf->Cell(0, 8, 'Your Portfolio & Assumptions', 0, 1);
 $pdf->SetTextColor(0, 0, 0);
 $pdf->SetFont('helvetica', '', 9);
-$info = 'Portfolio: $' . number_format((float)($data['portfolioValue'] ?? 0), 0) . '  |  PAS Fee: ' . ($data['pasFee'] ?? 0.30) . '%  |  Target Date Fee: ' . ($data['targetDateFee'] ?? 0.08) . '%';
+$info = 'Simple Projection | Portfolio: $' . number_format((float)($data['portfolioValue'] ?? 0), 0) . '  |  PAS Fee: ' . ($data['pasFee'] ?? 0.30) . '%  |  Target Date Fee: ' . ($data['targetDateFee'] ?? 0.08) . '%';
 $info .= '  |  Years: ' . ($data['years'] ?? 0) . '  |  Return: ' . ($data['returnRate'] ?? 0) . '%';
 if (!empty($data['withdrawalPct'])) {
     $info .= '  |  Withdrawal: ' . $data['withdrawalPct'] . '%';
