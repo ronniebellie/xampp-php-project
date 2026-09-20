@@ -334,9 +334,10 @@ input[type="number"][readonly]::-webkit-inner-spin-button {
 .info-box-blue h2 { color: #2196F3; margin-top: 0; font-size: 20px; margin-bottom: 10px; }
 .info-box-blue p { margin-bottom: 0; color: #1e293b; line-height: 1.6; }
 
-/* Stress Test additions retain the existing calculator layout. */
 [hidden] { display: none !important; }
-.stress-chart { position: relative; height: 300px; }
-.stress-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
-.stress-table th, .stress-table td { padding: 12px 8px; border-bottom: 1px solid #e2e8f0; }
-#stressBucketDetails p, #stressResults > p { margin: 14px 0; line-height: 1.5; }
+.portfolio-decomposition { padding: 20px; background:#f8fafc; border-radius:8px; margin-bottom:24px; }
+.portfolio-decomposition .cost-breakdown { color:#334155; }
+
+.fee-headlines { display:flex; gap:20px; justify-content:center; margin-bottom:24px; flex-wrap:wrap; }
+.fee-headlines strong { display:block; font-size:28px; margin-top:8px; }
+.portfolio-decomposition .cb-total { background:#e2e8f0; }

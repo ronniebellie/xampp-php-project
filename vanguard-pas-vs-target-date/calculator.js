@@ -17,7 +17,7 @@
     }).format(amount);
   }
 
-  function calculatePortfolio(principal, annualReturnPct, feeRatePct, years, withdrawalPct, withdrawalStartYear) {
+  function calculatePortfolio(principal, annualReturnPct, feeRatePct, years, withdrawalPct, withdrawalStartYear, spendingModel) {
     withdrawalPct = withdrawalPct == null ? 0 : withdrawalPct;
     withdrawalStartYear = withdrawalStartYear != null ? withdrawalStartYear : 1;
     if (![principal,annualReturnPct,feeRatePct,years,withdrawalPct,withdrawalStartYear].every(Number.isFinite)||principal<0||annualReturnPct < -100||annualReturnPct>100||feeRatePct<0||withdrawalPct<0||feeRatePct+withdrawalPct>100||!Number.isInteger(years)||years<1||years>120)throw new RangeError('Invalid portfolio projection inputs.');
@@ -29,7 +29,8 @@
     for (var y = 1; y <= years; y++) {
       balance = balance * (1 + annualReturnPct / 100);
       var yearFee = balance * (feeRatePct / 100);
-      var yearWithdrawal = (withdrawalPct > 0 && y >= withdrawalStartYear) ? balance * (withdrawalPct / 100) : 0;
+      var required = spendingModel ? scheduledWithdrawal(spendingModel, y) : null;
+      var yearWithdrawal = spendingModel ? Math.min(Math.max(0, balance - yearFee), required) : (withdrawalPct > 0 && y >= withdrawalStartYear) ? balance * (withdrawalPct / 100) : 0;
       totalFees += yearFee;
       totalWithdrawals += yearWithdrawal;
       balance = balance - yearFee - yearWithdrawal;
@@ -40,10 +41,32 @@
         fee: yearFee,
         totalFees: totalFees,
         withdrawal: yearWithdrawal,
-        totalWithdrawals: totalWithdrawals
+        totalWithdrawals: totalWithdrawals,
+        requiredWithdrawal: required == null ? yearWithdrawal : required,
+        shortfall: required == null ? 0 : Math.max(0, required - yearWithdrawal)
       });
     }
     return yearlyData;
+  }
+
+  // Annual model: growth, fees on the grown balance, then spending. Both alternatives
+  // receive the same schedule; payments are capped by available assets and shortfalls reported.
+  function scheduledWithdrawal(model, year) {
+    var calendarYear = model.timelineStartYear + year - 1;
+    if (calendarYear < model.withdrawalsStartYear) return 0;
+    var amount = model.annualWithdrawal * Math.pow(1 + model.inflation / 100, calendarYear - model.withdrawalsStartYear);
+    if (!Number.isFinite(amount)) throw new RangeError('Withdrawal schedule exceeds supported amounts.');
+    return amount;
+  }
+  function withdrawalModel() { return document.getElementById('withdrawalModel').value === 'percentage' ? 'percentage' : 'dollar'; }
+  function showWithdrawalModel() {
+    document.getElementById('legacyWithdrawals').hidden = withdrawalModel() !== 'percentage';
+    document.getElementById('dollarWithdrawals').hidden = withdrawalModel() !== 'dollar';
+  }
+  function shortfallText(rows, startYear) {
+    var first = rows.find(function(row) { return row.shortfall > 1e-7; });
+    var total = rows.reduce(function(sum,row) { return sum + (row.shortfall || 0); },0);
+    return first ? 'First unfunded withdrawal: ' + (startYear + first.year - 1) + '. Total unmet spending: ' + formatCurrency(total) + '.' : 'All scheduled withdrawals funded.';
   }
 
   var bucketKeys = ['conservative', 'moderate', 'aggressive'];
@@ -67,7 +90,7 @@
     return { c: units[0] / 100, m: units[1] / 100, a: units[2] / 100, sum: total };
   }
 
-  function calculateBuckets(principal, returns, feeRatePct, years, withdrawalPct, withdrawalStartYear, alloc, startYear) {
+  function calculateBuckets(principal, returns, feeRatePct, years, withdrawalPct, withdrawalStartYear, alloc, startYear, spendingModel) {
     // Reuse the established input contract without changing the PAS calculation.
     calculatePortfolio(principal, returns.conservative, feeRatePct, years, withdrawalPct, withdrawalStartYear);
     var weights = [alloc.c, alloc.m, alloc.a];
@@ -93,7 +116,7 @@
         balances[key] = Math.max(0, grown - fees[key]);
       });
       // Both expenses and requested withdrawal use the post-growth, pre-fee base.
-      var requested = y >= withdrawalStartYear ? grownTotal * withdrawalPct / 100 : 0;
+      var requested = spendingModel ? scheduledWithdrawal(spendingModel, y) : y >= withdrawalStartYear ? grownTotal * withdrawalPct / 100 : 0;
       var remaining = requested;
       bucketKeys.forEach(function (key) {
         withdrawals[key] = Math.min(balances[key], remaining);
@@ -108,7 +131,8 @@
       totalWithdrawals += withdrawal;
       rows.push({ year: y, calendarYear: startYear + y - 1, balance: balance, fee: fee,
         totalFees: totalFees, withdrawal: withdrawal, totalWithdrawals: totalWithdrawals,
-        buckets: Object.assign({}, balances), bucketFees: fees, bucketWithdrawals: withdrawals });
+        buckets: Object.assign({}, balances), bucketFees: fees, bucketWithdrawals: withdrawals,
+        requiredWithdrawal: requested, shortfall: Math.max(0, requested - withdrawal) });
     }
     return rows;
   }
@@ -116,7 +140,7 @@
   function depletionText(rows, key) {
     if (rows[0].buckets[key] === 0) return 'Not funded at start';
     var depleted = rows.slice(1).find(function (row) { return row.buckets[key] === 0; });
-    return depleted ? 'Depleted: ' + depleted.calendarYear : 'Not depleted during simulation';
+    return depleted ? 'Depleted: ' + depleted.calendarYear : 'Not depleted during projection';
   }
 
   var bucketChartInstance = null;
@@ -188,11 +212,6 @@
   }
 
   function calculate(shouldScroll) {
-    if (window.PASStressUI && window.PASStressUI.isStress()) {
-      try { updateLabels(); window.PASStressUI.calculate(shouldScroll, getNormalizedAllocation()); }
-      catch (error) { window.lastPASvsTargetResult = null; document.getElementById('stressStatus').textContent = error.message; }
-      return;
-    }
     try { calculateValidated(shouldScroll); } catch(error) {
       window.lastPASvsTargetResult=null;
       document.getElementById('results').style.display='none';
@@ -211,6 +230,16 @@
     var withdrawalsStartYear = Number(document.getElementById('withdrawalsStartYear').value);
     if(![timelineStartYear,withdrawalsStartYear].every(v=>Number.isInteger(v)&&v>=1900&&v<=9999))throw new RangeError('Enter valid whole calendar years.');
     var withdrawalStartYear = Math.max(1, withdrawalsStartYear - timelineStartYear + 1);
+    var model = withdrawalModel();
+    var annualWithdrawal = Number(document.getElementById('annualWithdrawal').value);
+    var inflation = Number(document.getElementById('inflation').value);
+    var spendingModel = null;
+    if (model === 'dollar') {
+      if (document.getElementById('annualWithdrawal').value.trim() === '' || document.getElementById('inflation').value.trim() === '' || !Number.isFinite(annualWithdrawal) || annualWithdrawal < 0 || annualWithdrawal > 1e10 || !Number.isFinite(inflation) || inflation < -10 || inflation > 20) throw new RangeError('Enter a valid annual withdrawal and inflation adjustment (−10% to 20%).');
+      withdrawalPct = 0;
+      spendingModel = {annualWithdrawal:annualWithdrawal,inflation:inflation,timelineStartYear:timelineStartYear,withdrawalsStartYear:withdrawalsStartYear};
+    }
+    if (pasFee > 100 || targetDateFee > 100) throw new RangeError('Annual expenses must be between 0% and 100%.');
 
     updateLabels();
 
@@ -218,20 +247,20 @@
       throw new RangeError('Please enter valid numbers for all fields.');
     }
 
-    var pasData = calculatePortfolio(portfolioValue, returnRate, pasFee, years, withdrawalPct, withdrawalStartYear);
+    var pasData = calculatePortfolio(portfolioValue, returnRate, pasFee, years, withdrawalPct, withdrawalStartYear, spendingModel);
     var alloc = getNormalizedAllocation();
     var targetData = calculateBuckets(portfolioValue,
       { conservative: returnRate, moderate: returnRate, aggressive: returnRate },
-      targetDateFee, years, withdrawalPct, withdrawalStartYear, alloc, timelineStartYear);
+      targetDateFee, years, withdrawalPct, withdrawalStartYear, alloc, timelineStartYear, spendingModel);
     var midYear = Math.floor(years / 2);
     var pasFinal = pasData[years].balance;
     var targetFinal = targetData[years].balance;
     var opportunityCost = targetFinal - pasFinal;
 
     document.getElementById('resultYears').textContent = years;
-    document.getElementById('opportunityCost').textContent = formatCurrency(opportunityCost);
+    document.getElementById('opportunityCost').textContent = formatCurrency(pasData[years].totalFees - targetData[years].totalFees);
     var avgAnnualEl = document.getElementById('avgAnnualCost');
-    if (avgAnnualEl) avgAnnualEl.textContent = formatCurrency(years > 0 ? opportunityCost / years : 0);
+    if (avgAnnualEl) avgAnnualEl.textContent = formatCurrency(years > 0 ? (pasData[years].totalFees - targetData[years].totalFees) / years : 0);
     document.getElementById('pasFeeResultLabel').textContent = pasFee.toFixed(2) + '% fee';
 
     document.getElementById('pasYear1Fee').textContent = formatCurrency(pasData[1].fee);
@@ -251,7 +280,10 @@
     var pasIncome = pasData[years].totalWithdrawals;
     var targetIncome = targetData[years].totalWithdrawals;
     var incomeRow = document.getElementById('incomeRow');
-    if (incomeRow) incomeRow.style.display = withdrawalPct > 0 ? '' : 'none';
+    if (incomeRow) incomeRow.style.display = '';
+    document.getElementById('pasWithdrawalStatus').textContent = shortfallText(pasData, timelineStartYear);
+    document.getElementById('targetWithdrawalStatus').textContent = shortfallText(targetData, timelineStartYear);
+    document.getElementById('withdrawalMethodResult').textContent = model === 'dollar' ? 'Identical inflation-adjusted dollar spending is scheduled for both alternatives. Unpaid amounts are shown below.' : 'Legacy scenario: percentage withdrawals depend on each portfolio balance and may differ. No inflation adjustment applies.';
     var pasIncomeEl = document.getElementById('pasTotalIncome');
     var targetIncomeEl = document.getElementById('targetTotalIncome');
     var incomeDiffEl = document.getElementById('totalIncomeDiff');
@@ -266,6 +298,8 @@
     document.getElementById('pasTotalFees').textContent = formatCurrency(pasData[years].totalFees);
     document.getElementById('targetTotalFees').textContent = formatCurrency(targetData[years].totalFees);
     document.getElementById('totalFeesDiff').textContent = formatCurrency(directFeeDiff);
+    document.getElementById('headlinePasFees').textContent = formatCurrency(pasData[years].totalFees);
+    document.getElementById('headlineTargetFees').textContent = formatCurrency(targetData[years].totalFees);
 
     var lostGrowth = opportunityCost - directFeeDiff;
     var lostGrowthDisplay = lostGrowth;
@@ -286,12 +320,15 @@
     createFeesChart(pasData, targetData, years);
 
     window.lastPASvsTargetResult = {
+      pasWithdrawalStatus: shortfallText(pasData, timelineStartYear), targetWithdrawalStatus: shortfallText(targetData, timelineStartYear),
+      bucketDepletion: Object.fromEntries(bucketKeys.map(function(key) {return [key,depletionText(targetData,key)];})),
       portfolioValue: portfolioValue,
       pasFee: pasFee,
       targetDateFee: targetDateFee,
       years: years,
       returnRate: returnRate,
       withdrawalPct: withdrawalPct,
+      withdrawalModel: model, annualWithdrawal: annualWithdrawal, inflation: inflation,
       timelineStartYear: timelineStartYear,
       withdrawalsStartYear: withdrawalsStartYear,
       allocation: { conservative: alloc.c, moderate: alloc.m, aggressive: alloc.a },
@@ -393,12 +430,16 @@
 
   document.getElementById('calculateBtn').addEventListener('click', function () { calculate(true); });
 
-  ['portfolioValue', 'years', 'returnRate', 'withdrawalPct', 'timelineStartYear', 'withdrawalsStartYear', 'pctConservative', 'pctModerate', 'pctAggressive'].forEach(function (id) {
+  ['portfolioValue', 'years', 'returnRate', 'withdrawalPct', 'annualWithdrawal', 'inflation', 'pasFee', 'targetDateFee', 'timelineStartYear', 'withdrawalsStartYear', 'pctConservative', 'pctModerate', 'pctAggressive'].forEach(function (id) {
     var el = document.getElementById(id);
     if (el) el.addEventListener('input', function () { calculate(false); });
   });
 
+  document.getElementById('useDollarWithdrawals').addEventListener('click', function () {
+    document.getElementById('withdrawalModel').value = 'dollar'; showWithdrawalModel(); calculate(false);
+  });
   window.addEventListener('load', function () {
+    showWithdrawalModel();
     updateLabels();
   });
 
@@ -417,6 +458,9 @@
     var scenarioName = prompt('Enter a name for this scenario:', 'PAS vs Target Date');
     if (!scenarioName) return;
     var formData = {
+      withdrawalModel: withdrawalModel(),
+      annualWithdrawal: document.getElementById('annualWithdrawal').value,
+      inflation: document.getElementById('inflation').value,
       portfolioValue: document.getElementById('portfolioValue').value,
       pasFee: document.getElementById('pasFee').value,
       targetDateFee: document.getElementById('targetDateFee').value,
@@ -429,7 +473,6 @@
       pctModerate: document.getElementById('pctModerate').value,
       pctAggressive: document.getElementById('pctAggressive').value
     };
-    if (window.PASStressUI) Object.assign(formData, window.PASStressUI.saved());
     rbScenarioFetch(PAS_API_BASE + 'api/save_scenario.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -500,13 +543,22 @@
       if (index >= 0 && index < data.scenarios.length) {
         var scenario = data.scenarios[index];
         var d = scenario.data || {};
+        if (d.analysisMode === 'stress') {
+          alert('This saved Retirement Stress Test is no longer supported. Your saved data has not been changed. Create a new deterministic cost comparison.');
+          return;
+        }
+        document.getElementById('withdrawalModel').value = d.withdrawalModel === 'dollar' ? 'dollar' : 'percentage';
+        document.getElementById('annualWithdrawal').value = d.annualWithdrawal !== undefined ? d.annualWithdrawal : 60000;
+        document.getElementById('inflation').value = d.inflation !== undefined ? d.inflation : 2.5;
+        showWithdrawalModel();
+        window.lastPASvsTargetResult = null;
+        document.getElementById('results').style.display = 'none';
         ['portfolioValue', 'pasFee', 'targetDateFee', 'years', 'returnRate', 'withdrawalPct', 'timelineStartYear', 'withdrawalsStartYear', 'pctConservative', 'pctModerate', 'pctAggressive'].forEach(function (key) {
           var el = document.getElementById(key);
           if (el && d[key] !== undefined) el.value = d[key];
         });
-        if (window.PASStressUI) window.PASStressUI.load(d);
         updateLabels();
-        alert('Scenario loaded! Click "' + document.getElementById('calculateBtn').textContent + '" to see results.');
+        alert('Scenario loaded! Click "Calculate True Cost" to see results.');
       }
     })
     .catch(function (err) { alert('Load scenarios failed: ' + err.message); });
@@ -520,15 +572,20 @@
     }
     var chartImage1 = null;
     var chartImage2 = null;
+    var chartImage3 = null;
     try {
       var chartCanvas1 = document.getElementById('growthChart');
       var chartCanvas2 = document.getElementById('feesChart');
+      var chartCanvas3 = document.getElementById('bucketChart');
+      if (chartCanvas3 && typeof chartCanvas3.toDataURL === 'function') chartImage3 = chartCanvas3.toDataURL('image/png');
       if (chartCanvas1 && typeof chartCanvas1.toDataURL === 'function') chartImage1 = chartCanvas1.toDataURL('image/png');
       if (chartCanvas2 && typeof chartCanvas2.toDataURL === 'function') chartImage2 = chartCanvas2.toDataURL('image/png');
     } catch (e) {
       /* charts optional; continue without */
     }
     var payload = {
+      withdrawalModel: r.withdrawalModel, annualWithdrawal: r.annualWithdrawal, inflation: r.inflation,
+      chartImage3: chartImage3,
       allocation: r.allocation,
       portfolioValue: r.portfolioValue,
       pasFee: r.pasFee,
@@ -548,8 +605,6 @@
       chartImage1: chartImage1,
       chartImage2: chartImage2
     };
-    if (r.analysisMode === 'stress') payload = window.PASStressUI.pdfPayload(r);
-    else payload.analysisMode = 'simple';
     var url = PAS_API_BASE + 'api/generate_pas_pdf.php';
     fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) })
     .then(function (res) {
@@ -583,7 +638,7 @@
       alert('Please run Calculate first, then export CSV.');
       return;
     }
-    var payload = Object.assign({ analysisMode: 'simple' }, r);
+    var payload = Object.assign({}, r);
     fetch(PAS_API_BASE + 'api/export_pas_csv.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) })
     .then(function (res) {
       if (!res.ok) return res.text().then(function (t) { try { var j = JSON.parse(t); throw new Error(j.error || 'CSV failed'); } catch (e) { throw new Error(t || 'CSV failed'); } });
@@ -621,31 +676,12 @@ function explainPASResults() {
     alert('Please run the calculation first to see results.');
     return;
   }
-  var summary;
-  if (r.analysisMode === 'stress') summary = window.PASStressUI.explanation(r);
-  else {
-  var totalOpportunityCost = Math.round(r.opportunityCost);
-  var directFeeDiff = Math.round(r.directFeeDiff);
-  var lostGrowth = Math.round(r.lostGrowth);
-
-  summary = 'Simple Projection: Vanguard Personal Advisor vs Target Date Funds. Portfolio $' + r.portfolioValue.toLocaleString() + ', PAS fee ' + r.pasFee + '%, Target Date fee ' + r.targetDateFee + '%. ';
-  summary += 'Timeline ' + r.years + ' years, expected return ' + r.returnRate + '%. ';
-  if (r.withdrawalPct > 0) summary += 'Annual withdrawal ' + r.withdrawalPct + '% of each alternative’s current post-growth, pre-fee balance, starting ' + (r.withdrawalsStartYear != null ? r.withdrawalsStartYear : 'year 1') + '. ';
-  summary += 'Allocation: ' + r.allocation.conservative + '% conservative, ' + r.allocation.moderate + '% moderate, ' + r.allocation.aggressive + '% aggressive.\n\n';
-  summary += 'Withdrawals use Conservative, then Moderate, then Aggressive, with no replenishment. All buckets use the same gross return and fund expense; sequencing alone does not change the total. PAS uses the entered total advisory and underlying fund cost, applied once.\n';
-  r.targetData[0] && Object.keys(r.targetData[0].buckets).forEach(function (key) {
-    var depleted = r.targetData.slice(1).find(function (row) { return row.buckets[key] === 0; });
-    summary += key + ' ending balance: $' + Math.round(r.targetData[r.years].buckets[key]) + '; ' + (r.targetData[0].buckets[key] === 0 ? 'not funded at start' : depleted ? 'depleted ' + depleted.calendarYear : 'not depleted during simulation') + '. ';
-  });
-  summary += 'OPPORTUNITY COST BREAKDOWN (do not double-count):\n';
-  summary += '- Total Opportunity Cost (grand total): $' + totalOpportunityCost.toLocaleString() + '\n';
-  summary += '- Direct Fee Difference (paid out of pocket): $' + directFeeDiff.toLocaleString() + '\n';
-  summary += '- Growth and withdrawal effects: $' + lostGrowth.toLocaleString() + '\n';
-  summary += 'Relationship: Total Opportunity Cost = Direct Fee Difference + Growth and withdrawal effects ($' +
-    directFeeDiff.toLocaleString() + ' + $' + lostGrowth.toLocaleString() + ' = $' +
-    totalOpportunityCost.toLocaleString() + '). The total is NOT an additional separate cost on top of the two components.';
-
-  }
+  var summary = 'Deterministic Vanguard PAS vs self-managed three-bucket cost comparison. Same gross expected return ' + r.returnRate + '% for both alternatives and all three buckets; no assumed investment outperformance. Portfolio $' + r.portfolioValue + ', timeline ' + r.timelineStartYear + ' for ' + r.years + ' years. PAS total annual cost ' + r.pasFee + '%, fund expense ' + r.targetDateFee + '%. Annual order: growth, fee charged once on grown assets, then withdrawals. No taxes; nominal dollars.\n';
+  summary += r.withdrawalModel === 'dollar' ? 'Both face starting annual spending $' + r.annualWithdrawal + ', beginning ' + r.withdrawalsStartYear + ', increasing ' + r.inflation + '% annually after that year. ' : 'Legacy percentage withdrawals: ' + r.withdrawalPct + '% of each post-growth pre-fee portfolio, beginning ' + r.withdrawalsStartYear + '. These amounts may differ. ';
+  summary += 'PAS total fees $' + r.pasData[r.years].totalFees + '; Three-Bucket expenses $' + r.targetData[r.years].totalFees + '; additional direct PAS cost $' + r.directFeeDiff + '. Ending PAS $' + r.pasFinal + '; Three-Bucket $' + r.targetFinal + '; ending difference $' + r.opportunityCost + '. Difference minus direct fees $' + r.lostGrowth + ' reflects compounding and, if withdrawals differ, withdrawal effects. It is not another fee.\n';
+  summary += 'Income paid: PAS $' + r.pasData[r.years].totalWithdrawals + ', Three-Bucket $' + r.targetData[r.years].totalWithdrawals + '. PAS: ' + r.pasWithdrawalStatus + ' Three-Bucket: ' + r.targetWithdrawalStatus + '\n';
+  summary += 'Conservative then Moderate then Aggressive, no replenishment or rebalancing. Allocation ' + JSON.stringify(r.allocation) + '. ';
+  summary += JSON.stringify(r.bucketDepletion);
 
   var btn = document.getElementById('explainResultsBtnInResults');
   var origText = btn ? btn.textContent : '';
@@ -656,7 +692,7 @@ function explainPASResults() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify({ calculator_type: 'vanguard-pas-vs-target-date', analysis_mode: r.analysisMode || 'simple', results_summary: summary })
+    body: JSON.stringify({ calculator_type: 'vanguard-pas-vs-target-date', results_summary: summary })
   })
   .then(function (res) { return res.text(); })
   .then(function (text) {

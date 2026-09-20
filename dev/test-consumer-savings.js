@@ -26,7 +26,7 @@ for(const timing of ['annual','monthly']) {
  const fail=mc({portfolio:1000,withdrawal:250,years:5,expectedReturn:0,volatility:0,simulations:100,inflationRate:0,withdrawalTiming:timing,withdrawalMethod:'fixed',withdrawalRate:0});eq(Number(fail.successRate),0);eq(fail.p50,0);
 }
 console.log(`Consumer savings and actual Monte Carlo adapter: ${count} checks passed.`);
-const pasNodes={};const pv={portfolioValue:1000,pasFee:1,targetDateFee:.5,years:2,returnRate:10,withdrawalPct:10,timelineStartYear:2030,withdrawalsStartYear:2030,pctConservative:0,pctModerate:100,pctAggressive:0};
+const pasNodes={};const pv={withdrawalModel:"percentage",portfolioValue:1000,pasFee:1,targetDateFee:.5,years:2,returnRate:10,withdrawalPct:10,timelineStartYear:2030,withdrawalsStartYear:2030,pctConservative:0,pctModerate:100,pctAggressive:0};
 const pnode=id=>pasNodes[id]||={value:String(pv[id]??0),style:{},textContent:'',innerHTML:'',getContext(){return {};},addEventListener(){}};
 const pas={window:null,document:{getElementById:pnode,addEventListener(){},querySelectorAll(){return [];}},location:{pathname:'/vanguard-pas-vs-target-date/',origin:'offline'},Intl,Date,Chart:class{destroy(){}},alert(){},addEventListener(){}};pas.window=pas;
 vm.runInNewContext(fs.readFileSync(path.join(root,'vanguard-pas-vs-target-date/calculator.js'),'utf8').replace('  function calculatePortfolio(', '  window.pasTest={project:calculatePortfolio,calculate:calculate};\n  function calculatePortfolio('),pas);

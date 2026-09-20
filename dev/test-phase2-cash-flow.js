@@ -130,7 +130,7 @@ test('MC retains terminal balances after early shortfalls and caps losses at ava
 // Exercise PAS calculation, rendered summaries, chart datasets and export payloads in
 // a local DOM stub. fetch never performs I/O; it only captures the export payload.
 const nodes={},charts={},payloads=[];
-const values={portfolioValue:100000,pasFee:1,targetDateFee:0,years:1,returnRate:0,withdrawalPct:0,timelineStartYear:2026,withdrawalsStartYear:2026,pctConservative:0,pctModerate:100,pctAggressive:0};
+const values={withdrawalModel:"percentage",portfolioValue:100000,pasFee:1,targetDateFee:0,years:1,returnRate:0,withdrawalPct:0,timelineStartYear:2026,withdrawalsStartYear:2026,pctConservative:0,pctModerate:100,pctAggressive:0};
 const doc={getElementById(id){return nodes[id]||=( {value:String(values[id]??0),style:{},events:{},addEventListener(k,fn){this.events[k]=fn;},getContext(){return id;},scrollIntoView(){}});},addEventListener(k,fn){if(k==='DOMContentLoaded')fn();}};
 const stub={document:doc,Intl,Date,console,location:{pathname:'/vanguard-pas-vs-target-date/',origin:'http://local.test'},addEventListener(){},
  Chart:function(id,config){charts[id]=config;this.destroy=()=>{};},fetch(url,opts){payloads.push(JSON.parse(opts.body));return {then(){return this;},catch(){return this;},finally(){return this;}};}};

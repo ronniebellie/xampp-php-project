@@ -19,11 +19,6 @@ if (!has_premium_access()) {
 $data = rb_read_api_json(8388608);
 try { $data=rb_pdf_data($data); } catch(Throwable $e) { rb_api_error(400, 'Invalid or oversized report data'); }
 if(session_status()===PHP_SESSION_ACTIVE) session_write_close();
-if (($data['analysisMode'] ?? '') === 'stress') {
-    require_once __DIR__ . '/../includes/pas_stress_report.php';
-    rb_pas_stress_export($data, 'pdf');
-    exit;
-}
 if (!$data || !isset($data['pasData'], $data['targetData']) || !is_array($data['pasData'])) {
     header('Content-Type: application/json');
     http_response_code(400);
@@ -59,14 +54,16 @@ $pdf->SetTextColor(220, 38, 38);
 $pdf->Cell(0, 8, 'Your Portfolio & Assumptions', 0, 1);
 $pdf->SetTextColor(0, 0, 0);
 $pdf->SetFont('helvetica', '', 9);
-$info = 'Simple Projection | Portfolio: $' . number_format((float)($data['portfolioValue'] ?? 0), 0) . '  |  PAS Fee: ' . ($data['pasFee'] ?? 0.30) . '%  |  Target Date Fee: ' . ($data['targetDateFee'] ?? 0.08) . '%';
+$info = 'Portfolio: $' . number_format((float)($data['portfolioValue'] ?? 0), 0) . '  |  PAS Fee: ' . ($data['pasFee'] ?? 0.30) . '%  |  Target Date Fee: ' . ($data['targetDateFee'] ?? 0.08) . '%';
 $info .= '  |  Years: ' . ($data['years'] ?? 0) . '  |  Return: ' . ($data['returnRate'] ?? 0) . '%';
-if (!empty($data['withdrawalPct'])) {
+if (($data['withdrawalModel'] ?? '') === 'dollar') {
+    $info .= ' | Starting annual withdrawal: $' . number_format((float)($data['annualWithdrawal'] ?? 0),2) . ' | Inflation: ' . (float)($data['inflation'] ?? 0) . '%';
+} elseif (!empty($data['withdrawalPct'])) {
     $info .= '  |  Withdrawal: ' . $data['withdrawalPct'] . '%';
 }
 $info .= ' | Start year: ' . ($data['timelineStartYear'] ?? 'not supplied') . ' | Withdrawals start: ' . ($data['withdrawalsStartYear'] ?? 'not supplied');
 $pdf->MultiCell(0, 6, $info, 0, 'L');
-$pdf->MultiCell(0, 6, 'Nominal USD. PAS uses the entered total advisory and underlying fund cost once; Target Date fund expenses apply once per bucket. These are assumptions, not current fee quotes. Withdrawals equal the selected percentage of each current total after growth, before fees. Ending balances exclude withdrawals. The residual difference includes compounding and different withdrawals.', 0, 'L');
+$pdf->MultiCell(0, 6, 'Nominal USD. PAS uses the entered total advisory and underlying fund cost once; Target Date fund expenses apply once per bucket. These are assumptions, not current fee quotes. Growth is applied first, fees are charged on grown assets once, then withdrawals are funded. Dollar scenarios use identical inflation-adjusted spending from the selected start year; legacy scenarios retain percentage withdrawals. Same gross return for both alternatives and every bucket isolates costs. Ending balances exclude withdrawals; the residual difference includes compounding and any differing withdrawals.', 0, 'L');
 $pdf->Ln(4);
 
 // Key results
@@ -78,41 +75,38 @@ $pdf->SetTextColor(220, 38, 38);
 $pdf->Cell(0, 8, 'Key Results', 0, 1);
 $pdf->SetTextColor(0, 0, 0);
 $pdf->SetFont('helvetica', '', 9);
-$resultsHtml = '<table border="0" cellpadding="6"><tr style="background-color:#fef2f2;"><td><b>Total Opportunity Cost</b></td><td>$' . number_format($oppCost, 2) . '</td></tr>';
-$resultsHtml .= '<tr><td><b>Direct Fee Difference (PAS vs Target Date)</b></td><td>$' . number_format($feeDiff, 2) . '</td></tr>';
-$resultsHtml .= '<tr style="background-color:#fef2f2;"><td><b>Growth and withdrawal effects</b></td><td>$' . number_format($lostGrowth, 2) . '</td></tr>';
-$resultsHtml .= '<tr><td><b>Final Value (PAS)</b></td><td>$' . number_format((float)($data['pasFinal'] ?? 0), 0) . '</td></tr>';
-$resultsHtml .= '<tr style="background-color:#fef2f2;"><td><b>Final Value (Target Date)</b></td><td>$' . number_format((float)($data['targetFinal'] ?? 0), 0) . '</td></tr></table>';
+$lastP=end($data['pasData']);$lastT=end($data['targetData']);
+$resultsHtml = '<table border="0" cellpadding="6">';
+foreach ([
+    'PAS Total Fees'=>$lastP['totalFees']??0,
+    'Three-Bucket Fund Expenses'=>$lastT['totalFees']??0,
+    'Additional Cost of Vanguard PAS (direct fees)'=>$feeDiff,
+    'PAS Ending Portfolio'=>$data['pasFinal']??$lastP['balance']??0,
+    'Three-Bucket Ending Portfolio'=>$data['targetFinal']??$lastT['balance']??0,
+    'Projected Ending Portfolio Difference'=>$oppCost,
+    'Compounding / Withdrawal Effects (not fees)'=>$lostGrowth,
+    'PAS Total Withdrawals Paid'=>$lastP['totalWithdrawals']??0,
+    'Three-Bucket Total Withdrawals Paid'=>$lastT['totalWithdrawals']??0
+] as $label=>$amount) $resultsHtml .= '<tr><td><b>'.$label.'</b></td><td>$'.number_format((float)$amount,2).'</td></tr>';
+$resultsHtml .= '</table>';
 $pdf->writeHTML($resultsHtml, true, false, true, false, '');
 $pdf->Ln(6);
 
-// Charts
-if (!empty($data['chartImage1'])) {
-    $canEmbedPng = extension_loaded('gd') || extension_loaded('imagick');
-    if ($canEmbedPng) {
-        $imageData = rb_png_bytes($data['chartImage1']);
-        $tempFile = rb_pdf_chart_file('data:image/png;base64,' . base64_encode($imageData));
-        $pdf->SetFont('helvetica', 'B', 12);
-        $pdf->Cell(0, 6, 'Portfolio Growth Over Time', 0, 1);
-        $pdf->Ln(2);
-        $pdf->Image($tempFile, 15, $pdf->GetY(), 180, 0, 'PNG');
-        unlink($tempFile);
-        $pdf->Ln(70);
-    }
+foreach (['PAS'=>'pasData','Three-Bucket'=>'targetData'] as $name=>$key) {
+    $first=null;$unmet=0;
+    foreach($data[$key] as $row) {if(($row['shortfall']??0)>1e-7 && $first===null)$first=(int)($data['timelineStartYear']??0)+(int)$row['year']-1;$unmet+=(float)($row['shortfall']??0);}
+    $pdf->MultiCell(0,5,$name.': '.($first===null?'All scheduled withdrawals funded.':'First unfunded withdrawal: '.$first.'. Total unmet spending: $'.number_format($unmet,2).'.'),0,'L');
 }
-
-if (!empty($data['chartImage2'])) {
-    $canEmbedPng = extension_loaded('gd') || extension_loaded('imagick');
-    if ($canEmbedPng) {
-        $imageData = rb_png_bytes($data['chartImage2']);
-        $tempFile = rb_pdf_chart_file('data:image/png;base64,' . base64_encode($imageData));
-        $pdf->SetFont('helvetica', 'B', 12);
-        $pdf->Cell(0, 6, 'Cumulative Fees Paid Over Time', 0, 1);
-        $pdf->Ln(2);
-        $pdf->Image($tempFile, 15, $pdf->GetY(), 180, 0, 'PNG');
-        unlink($tempFile);
-        $pdf->Ln(70);
-    }
+// Render each supplied chart on a dedicated page, preserving its aspect ratio.
+foreach (['chartImage2'=>'Cumulative Fees Paid Over Time','chartImage1'=>'Portfolio Growth Over Time','chartImage3'=>'Three-Bucket Balances Over Time'] as $key=>$title) {
+    if (empty($data[$key])) continue;
+    $imageData=rb_png_bytes($data[$key]);$size=getimagesizefromstring($imageData);
+    $tempFile=rb_pdf_chart_file('data:image/png;base64,'.base64_encode($imageData));
+    try {
+        $pdf->AddPage();$pdf->SetFont('helvetica','B',14);$pdf->Cell(0,9,$title,0,1);
+        $width=min(180,220*$size[0]/$size[1]);$height=$width*$size[1]/$size[0];
+        if($pdf->Image($tempFile,15,$pdf->GetY()+4,$width,$height,'PNG')===false)throw new RuntimeException('Chart rendering failed');
+    } finally {unlink($tempFile);}
 }
 
 // Bucket report is optional for compatibility with older clients.
@@ -125,11 +119,11 @@ if (isset($data['targetData'][0]['buckets'])) {
     $bucketRows = $data['targetData'];
     $pdf->Ln(3);
     foreach (['conservative', 'moderate', 'aggressive'] as $key) {
-        $status = $bucketRows[0]['buckets'][$key] == 0 ? 'Not funded at start' : 'Not depleted during simulation';
+        $status = $bucketRows[0]['buckets'][$key] == 0 ? 'Not funded at start' : 'Not depleted during projection';
         if ($bucketRows[0]['buckets'][$key] > 0) foreach (array_slice($bucketRows, 1) as $row) {
             if ($row['buckets'][$key] == 0) { $status = 'Depleted: ' . (int)($row['calendarYear'] ?? $row['year']); break; }
         }
-        $pdf->MultiCell(0, 5, ucfirst($key) . ' (' . (float)($data['allocation'][$key] ?? 0) . '%): ' . $status, 0, 'L');
+        $pdf->MultiCell(0, 5, ucfirst($key) . ' (' . (float)($data['allocation'][$key] ?? 0) . '%), starting $' . number_format($bucketRows[0]['buckets'][$key],2) . ': ' . $status, 0, 'L');
     }
     $pdf->Ln(3);
     $bucketHtml = '<table border="1" cellpadding="4" style="font-size:8px;"><thead><tr style="background-color:#dc2626;color:white;"><th>Calendar point</th><th>Conservative</th><th>Moderate</th><th>Aggressive</th><th>Total</th><th>Withdrawal</th></tr></thead><tbody>';
@@ -152,12 +146,12 @@ $pdf->Ln(3);
 
 $pRows = $data['pasData'];
 $tRows = $data['targetData'];
-$tableHtml = '<table border="1" cellpadding="4" style="font-size:8px;"><tr style="background-color:#dc2626;color:white;font-weight:bold;"><th>Year</th><th>PAS Balance</th><th>PAS Fee</th><th>Target Balance</th><th>Target Fee</th><th>Difference</th></tr>';
+$tableHtml = '<table border="1" cellpadding="4" style="font-size:8px;"><tr style="background-color:#dc2626;color:white;font-weight:bold;"><th>Year</th><th>PAS Balance</th><th>PAS Fee</th><th>Target Balance</th><th>Target Fee</th><th>Difference</th><th>PAS Unmet</th><th>Bucket Unmet</th></tr>';
 for ($i = 0; $i < count($pRows) && $i < count($tRows); $i++) {
     $p = $pRows[$i];
     $t = $tRows[$i];
     $diff = ($t['balance'] ?? 0) - ($p['balance'] ?? 0);
-    $tableHtml .= '<tr><td>' . ($p['year'] ?? $i) . '</td><td>$' . number_format($p['balance'] ?? 0, 0) . '</td><td>$' . number_format($p['fee'] ?? 0, 0) . '</td><td>$' . number_format($t['balance'] ?? 0, 0) . '</td><td>$' . number_format($t['fee'] ?? 0, 0) . '</td><td>$' . number_format($diff, 0) . '</td></tr>';
+    $tableHtml .= '<tr><td>' . ($p['year'] ?? $i) . '</td><td>$' . number_format($p['balance'] ?? 0, 0) . '</td><td>$' . number_format($p['fee'] ?? 0, 0) . '</td><td>$' . number_format($t['balance'] ?? 0, 0) . '</td><td>$' . number_format($t['fee'] ?? 0, 0) . '</td><td>$' . number_format($diff, 0) . '</td><td>$' . number_format($p['shortfall']??0,0) . '</td><td>$' . number_format($t['shortfall']??0,0) . '</td></tr>';
 }
 $tableHtml .= '</table>';
 $pdf->SetFont('helvetica', '', 8);

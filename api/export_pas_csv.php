@@ -18,11 +18,6 @@ if (!has_premium_access()) {
 $data = rb_read_api_json(2097152);
 try { $data=rb_pdf_data($data); } catch(Throwable $e) { rb_api_error(400, 'Invalid or oversized CSV data'); }
 if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
-if (($data['analysisMode'] ?? '') === 'stress') {
-    require_once __DIR__ . '/../includes/pas_stress_report.php';
-    rb_pas_stress_export($data, 'csv');
-    exit;
-}
 if (!$data || !isset($data['pasData'], $data['targetData']) || !is_array($data['pasData'])) {
     header('Content-Type: application/json');
     http_response_code(400);
@@ -38,19 +33,22 @@ header('Content-Disposition: attachment; filename="Vanguard_PAS_vs_Target_Date_'
 header('Cache-Control: no-store');
 echo "\xEF\xBB\xBF";
 $out = fopen('php://output', 'w');
-rb_csv_context($out, 'Vanguard PAS vs Target Date - Simple Projection', $data);
-rb_csv_row($out, ['Withdrawal method', 'Percentage of each current total after growth, before fees; Conservative then Moderate then Aggressive; no replenishment.']);
+rb_csv_context($out, 'Vanguard PAS vs Target Date', $data);
+rb_csv_row($out, ['Withdrawal method', ($data['withdrawalModel'] ?? 'percentage') === 'dollar' ? 'Same scheduled dollars for both; inflation from withdrawal start year; growth, fees on grown assets, then spending; shortfalls reported.' : 'Legacy percentage of each current total after growth, before fees.']);
+rb_csv_row($out, ['Bucket sequencing', 'Conservative then Moderate then Aggressive; no replenishment.']);
+$lastP=end($pRows);$lastT=end($tRows);
+foreach (['PAS total fees'=>$lastP['totalFees']??0,'Three-Bucket fund expenses'=>$lastT['totalFees']??0,'Additional PAS fees'=>($lastP['totalFees']??0)-($lastT['totalFees']??0),'Projected ending portfolio difference'=>($lastT['balance']??0)-($lastP['balance']??0),'PAS total withdrawals paid'=>$lastP['totalWithdrawals']??0,'Three-Bucket total withdrawals paid'=>$lastT['totalWithdrawals']??0] as $label=>$value) rb_csv_row($out,[$label,$value]);
 rb_csv_row($out, ['Fee method', 'PAS entered total advisory/fund cost applied once; target fund expense applied once per bucket; same gross return.']);
 foreach (['conservative', 'moderate', 'aggressive'] as $key) {
     if (!isset($tRows[0]['buckets'][$key])) continue;
-    $status = $tRows[0]['buckets'][$key] == 0 ? 'Not funded at start' : 'Not depleted during simulation';
+    $status = $tRows[0]['buckets'][$key] == 0 ? 'Not funded at start' : 'Not depleted during projection';
     if ($tRows[0]['buckets'][$key] > 0) foreach (array_slice($tRows, 1) as $row) {
         if (($row['buckets'][$key] ?? null) === null) continue;
         if ($row['buckets'][$key] == 0) { $status = 'Depleted: ' . ($row['calendarYear'] ?? $row['year']); break; }
     }
     rb_csv_row($out, [ucfirst($key), 'Initial allocation (%)', $data['allocation'][$key] ?? '', $status]);
 }
-rb_csv_row($out, ['Year', 'PAS Portfolio', 'PAS Annual Fee', 'PAS Cumulative Fees', 'Target Date Portfolio', 'Target Date Annual Fee', 'Target Date Cumulative Fees', 'Portfolio Difference', 'Calendar Point', 'PAS Withdrawal', 'Self-Managed Withdrawal', 'Conservative Balance', 'Moderate Balance', 'Aggressive Balance', 'Conservative Withdrawal', 'Moderate Withdrawal', 'Aggressive Withdrawal', 'Conservative Fee', 'Moderate Fee', 'Aggressive Fee']);
+rb_csv_row($out, ['Year', 'PAS Portfolio', 'PAS Annual Fee', 'PAS Cumulative Fees', 'Target Date Portfolio', 'Target Date Annual Fee', 'Target Date Cumulative Fees', 'Portfolio Difference', 'Calendar Point', 'PAS Withdrawal', 'Self-Managed Withdrawal', 'Conservative Balance', 'Moderate Balance', 'Aggressive Balance', 'Conservative Withdrawal', 'Moderate Withdrawal', 'Aggressive Withdrawal', 'Conservative Fee', 'Moderate Fee', 'Aggressive Fee', 'PAS Scheduled Withdrawal', 'Three-Bucket Scheduled Withdrawal', 'PAS Shortfall', 'Three-Bucket Shortfall']);
 for ($i = 0; $i < count($pRows) && $i < count($tRows); $i++) {
     $p = $pRows[$i];
     $t = $tRows[$i];
@@ -75,6 +73,10 @@ for ($i = 0; $i < count($pRows) && $i < count($tRows); $i++) {
         isset($t['bucketFees']['conservative']) ? number_format($t['bucketFees']['conservative'], 2) : '',
         isset($t['bucketFees']['moderate']) ? number_format($t['bucketFees']['moderate'], 2) : '',
         isset($t['bucketFees']['aggressive']) ? number_format($t['bucketFees']['aggressive'], 2) : '',
+        number_format($p['requiredWithdrawal'] ?? $p['withdrawal'] ?? 0, 2),
+        number_format($t['requiredWithdrawal'] ?? $t['withdrawal'] ?? 0, 2),
+        number_format($p['shortfall'] ?? 0, 2),
+        number_format($t['shortfall'] ?? 0, 2),
     ]);
 }
 fclose($out);

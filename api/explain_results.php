@@ -106,19 +106,11 @@ if ($is_follow_up) {
     }
 }
 
-// Follow-up requests from the shared modal retain the result summary, not custom mode fields.
-$is_pas_stress = $calculator_type === 'vanguard-pas-vs-target-date'
-    && (($data['analysis_mode'] ?? '') === 'stress' || str_starts_with($results_summary, 'Retirement Stress Test.'));
-
 // Build prompt
 $system_prompt = "You are a helpful financial planning assistant. Explain the user's calculator results in plain language. Be clear, educational, and supportive. Do not give specific investment or legal advice. Keep the tone friendly and professional. Do NOT say things like \"feel free to ask\" in your text—the interface provides a follow-up question box. End responses with a neutral closing sentence (e.g., \"This explanation is for educational purposes only.\").";
 
-if ($calculator_type === 'vanguard-pas-vs-target-date' && !$is_pas_stress) {
-    $system_prompt .= " For this calculator, Total Opportunity Cost is the grand total over the timeline—the sum of Direct Fee Difference plus compounding/withdrawal effects. Never describe Total Opportunity Cost as an extra cost in addition to those components (that would double-count). When you mention opportunity cost, clearly state that the total equals the modeled fee difference plus signed compounding/withdrawal effects. The latter are not fees and may be negative. Withdrawals use Conservative, Moderate, then Aggressive without replenishment; identical bucket returns do not create additional investment performance.";
-}
-
-if ($calculator_type === 'vanguard-pas-vs-target-date' && $is_pas_stress) {
-    $system_prompt .= " This is Retirement Stress Test mode, not Simple Projection. Treat Monte Carlo outcomes as hypothetical illustrations, never predictions or guarantees. Discuss assumptions, correlated market variability, inflation-adjusted withdrawals, fees, sequence risk, spending survival and ending-balance uncertainty separately. Differences in expected return or volatility are not fees. Do not apply the deterministic opportunity-cost identity to unrelated medians. Depletion and failure years are conditional on those events occurring. Explain no-replenishment sequential bucket spending without claiming it eliminates sequence risk. Do not declare either strategy better based on one statistic. Defaults are generic assumptions, not Vanguard forecasts.";
+if ($calculator_type === 'vanguard-pas-vs-target-date') {
+    $system_prompt .= " This calculator isolates costs with the same gross return for PAS and all three self-managed buckets. Lead with PAS total modeled fees, Target Date fund expenses, and their signed direct difference. Separately explain the ending portfolio difference; it is not all fees and is not an additional charge. The residual is compounding and, when actual withdrawals differ, withdrawal effects. Dollar scenarios apply the same inflation-adjusted spending requirement to both alternatives; identify any unfunded spending. Legacy percentage scenarios can have different withdrawals. Annual timing is growth, fees once on grown assets, then spending. Withdraw Conservative, then Moderate, then Aggressive without replenishment; sequencing alone does not create extra performance. Keep the explanation to deterministic costs and spending, not stochastic probabilities or investment predictions.";
 }
 
 $messages = [['role' => 'system', 'content' => $system_prompt]];
@@ -146,7 +138,7 @@ if ($is_follow_up) {
 } else {
     $user_prompt = "A user ran the \"" . $calculator_type . "\" calculator. Here are their results:\n\n" . $results_summary . "\n\nExplain these results in plain language. Use 2–4 short paragraphs.";
 
-    if ($calculator_type === 'vanguard-pas-vs-target-date' && !$is_pas_stress) {
+    if ($calculator_type === 'vanguard-pas-vs-target-date') {
         $user_prompt .= "\n\nExplain the signed ending-balance difference as the direct fee difference plus compounding and withdrawal effects. Do not call all of it fees or imply the total is additional to its components. Use the supplied bucket depletion and withdrawal assumptions.";
     }
 
