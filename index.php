@@ -117,7 +117,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
       --radius: 12px;
     }
     *{box-sizing:border-box}
-    html{scroll-behavior:smooth}
+    html{scroll-behavior:<?php echo $is_calculator_directory ? 'auto' : 'smooth'; ?>}
     body{
       margin:0;
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
@@ -858,8 +858,8 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
             <li>Your starting point for retirement decisions</li>
           </ul>
           <div class="hero-primary-actions">
-            <a href="https://journey.ronbelisle.com/" class="hero-btn hero-btn-primary" data-rb-event="retirement_plan_start" data-rb-param-placement="homepage_hero">Build My Free Retirement Plan</a>
-            <a href="calculators.php" class="hero-btn hero-btn-secondary" data-rb-event="calculator_explore_click" data-rb-param-placement="homepage_hero">Explore Individual Calculators</a>
+            <a href="https://journey.ronbelisle.com/" class="hero-btn <?php echo $is_calculator_directory ? 'hero-btn-secondary' : 'hero-btn-primary'; ?>" data-rb-event="retirement_plan_start" data-rb-param-placement="homepage_hero">Build My Free Retirement Plan</a>
+            <a href="calculators.php#planning-tools" class="hero-btn <?php echo $is_calculator_directory ? 'hero-btn-primary' : 'hero-btn-secondary'; ?>"<?php if ($is_calculator_directory): ?> aria-current="page"<?php endif; ?> data-rb-event="calculator_explore_click" data-rb-param-placement="homepage_hero">Explore Individual Calculators</a>
           </div>
         </div>
         <div class="hero-actions">
@@ -895,7 +895,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
     </div>
 
     <nav class="site-top-nav" aria-label="Site sections">
-      <a href="<?php echo $is_calculator_directory ? '/calculators.php' : '/'; ?>" class="active" aria-current="page">Calculators</a>
+      <a href="/calculators.php#planning-tools" class="active" aria-current="page">Calculators</a>
       <a href="https://journey.ronbelisle.com/" aria-label="Open the guided retirement plan" data-rb-event="journey_promotion_click" data-rb-param-placement="navigation">Guided Retirement Plan</a>
     </nav>
     <?php endif; ?>
@@ -1065,7 +1065,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
       <p class="section-kicker">Planning workspace</p>
       <h2 class="section-title" id="planning-tools-title">Start with one clear retirement plan</h2>
       <p class="section-copy">The Retirement Plan Builder brings your savings, Social Security, spending, RMDs, and estimated taxes into one year-by-year snapshot. If you already know the specific question you want to answer, browse the focused calculators.</p>
-      <a class="btn btn-primary" href="calculators.php">Browse Individual Calculators</a>
+      <a class="btn btn-primary" href="calculators.php#planning-tools">Browse Individual Calculators</a>
     </section>
     <?php endif; ?>
 
@@ -1113,7 +1113,7 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
           var tabId = tab.dataset.tab;
           switchTab(tabId);
           if (tabId === 'retirement') {
-            history.replaceState(null, '', location.pathname + location.search);
+            history.replaceState(null, '', location.pathname + location.search + '#planning-tools');
           } else {
             history.replaceState(null, '', location.pathname + location.search + '#' + tabId);
           }
@@ -1125,6 +1125,14 @@ $seo_og_image_alt = 'Ron Belisle — Retirement planning calculators and AI insi
       });
 
       switchTab(tabFromHash());
+
+      // The directory opens at its existing anchor; leave explicit section links intact.
+      // replace() avoids adding a second history entry for a bare directory visit.
+      if (!location.hash) {
+        location.replace(location.pathname + location.search + '#planning-tools');
+      } else if (['#foundation', '#early-career', '#retirement'].indexOf(location.hash.toLowerCase()) !== -1) {
+        document.getElementById('planning-tools').scrollIntoView();
+      }
     })();
     </script>
     <?php endif; ?>
