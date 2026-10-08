@@ -25,7 +25,8 @@ const JOURNEY_ADMIN_SIGNUP_SOURCE_JOURNEY = 'journey';
  *
  * The source and database ID must match a row that this dashboard can display.
  * Review-ledger cleanup is included in the same transaction so a successful
- * delete cannot leave dashboard-only metadata behind.
+ * delete cannot leave dashboard-only metadata behind. Journey deletion removes
+ * only the selected trial, never its shared user account or other subscriptions.
  */
 function journey_admin_delete_signup(mysqli $conn, string $source, int $recordId, bool $manageTransaction = true): bool
 {
@@ -48,7 +49,7 @@ function journey_admin_delete_signup(mysqli $conn, string $source, int $recordId
         if ($source === JOURNEY_ADMIN_SIGNUP_SOURCE_JOURNEY) {
             $productKey = JOURNEY_PRODUCT_KEY;
             $lookup = $conn->prepare(
-                'SELECT user_id, stripe_subscription_id FROM user_product_subscriptions
+                'SELECT stripe_subscription_id FROM user_product_subscriptions
                  WHERE id = ? AND product_key = ? AND trial_start IS NOT NULL
                  LIMIT 1 FOR UPDATE'
             );
@@ -64,7 +65,6 @@ function journey_admin_delete_signup(mysqli $conn, string $source, int $recordId
             }
 
             $subscriptionId = (string) ($row['stripe_subscription_id'] ?? '');
-            $userId = (int) ($row['user_id'] ?? 0);
             $deleteLedger = $conn->prepare(
                 'DELETE FROM journey_admin_trial_notifications WHERE stripe_subscription_id = ?'
             );
@@ -120,31 +120,6 @@ function journey_admin_delete_signup(mysqli $conn, string $source, int $recordId
         $deleteSource->close();
         if (!$deleted) {
             throw new RuntimeException('Signup deletion did not affect one row.');
-        }
-
-        if ($source === JOURNEY_ADMIN_SIGNUP_SOURCE_JOURNEY) {
-            $deleteUser = $conn->prepare('DELETE FROM users WHERE id = ?');
-            if (!$deleteUser) {
-                throw new RuntimeException('Could not prepare Journey user deletion.');
-            }
-            $deleteUser->bind_param('i', $userId);
-            $deleteUser->execute();
-            $userDeleted = $deleteUser->affected_rows === 1;
-            $deleteUser->close();
-            if (!$userDeleted) {
-                throw new RuntimeException('Journey user deletion failed.');
-            }
-
-            $ronSource = JOURNEY_ADMIN_SIGNUP_SOURCE_RON;
-            $deleteReview = $conn->prepare(
-                'DELETE FROM admin_signup_reviews WHERE source = ? AND record_id = ?'
-            );
-            if (!$deleteReview) {
-                throw new RuntimeException('Could not prepare Journey user review cleanup.');
-            }
-            $deleteReview->bind_param('si', $ronSource, $userId);
-            $deleteReview->execute();
-            $deleteReview->close();
         }
 
         if ($source !== JOURNEY_ADMIN_SIGNUP_SOURCE_JOURNEY) {
