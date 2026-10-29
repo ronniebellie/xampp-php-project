@@ -714,7 +714,9 @@
           if (!scenario) return;
           applyFormData(scenario.data);
           status.textContent = 'Loaded!';
-          runPlan();
+          lastResult = lastInputs = lastMcResult = null;
+          window.lastRetirementPlanResult = null;
+          el('results').style.display = 'none';
           setTimeout(function () { status.textContent = ''; }, 3000);
         });
       })
