@@ -271,6 +271,28 @@
       ((summary.temporaryCashUsed || summary.temporaryCashRemaining) ? ' Separate after-tax temporary cash: ' + fmt(summary.temporaryCashUsed) + ' used before portfolio withdrawals; ' + fmt(summary.temporaryCashRemaining) + ' unused. This reserve is not taxable income or part of the displayed portfolio balance.' : '');
   }
 
+  function moneyWithCents(amount) {
+    return amount.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function reportedShortfall(year) {
+    // Match the engine's existing per-component numerical tolerance. Do not
+    // change success classification or hide a genuine sub-dollar deficit.
+    return (year.spendingShortfall > 1e-6 ? year.spendingShortfall : 0) +
+      (year.taxShortfall > 1e-6 ? year.taxShortfall : 0);
+  }
+
+  function shortfallText(amount) {
+    return amount > 0 && amount < 0.01 ? 'Under $0.01' : moneyWithCents(amount);
+  }
+
+  function firstShortfallDetail(result) {
+    var year = result.years.find(function (row) { return reportedShortfall(row) > 0; });
+    return year ? ' First unfunded amount at age ' + year.age + ': ' +
+      shortfallText(year.spendingShortfall > 1e-6 ? year.spendingShortfall : 0) + ' spending and ' +
+      shortfallText(year.taxShortfall > 1e-6 ? year.taxShortfall : 0) + ' taxes.' : '';
+  }
+
   function renderSummary(result) {
     var s = result.summary;
     var card = el('statusCard');
@@ -279,7 +301,7 @@
     card.style.border = '2px solid ' + styles.border;
     el('statusHeadline').style.color = styles.text;
     el('statusHeadline').textContent = s.status.headline;
-    el('statusDetail').textContent = s.status.detail;
+    el('statusDetail').textContent = s.status.detail + firstShortfallDetail(result);
 
     var projectedLabel = el('metricProjectedLabel');
     var withdrawalsFuture = s.portfolioWithdrawalStartAge > lastInputs.currentAge;
@@ -468,20 +490,22 @@
   }
 
   function rowHtml(y) {
-    var taxCell = y.federalTax ? fmt(y.federalTax) : '—';
-    var rmdCell = y.rmd ? fmt(y.rmd) : '—';
+    var unfunded = reportedShortfall(y);
+    var cashFmt = unfunded > 0 ? moneyWithCents : fmt;
+    var taxCell = y.federalTax ? cashFmt(y.federalTax) : '—';
+    var rmdCell = y.rmd ? cashFmt(y.rmd) : '—';
     return '<tr>' +
       '<td>' + y.age + (y.rmdStarts ? ' <span style="color:#7c3aed;font-size:11px;">RMDs</span>' : '') + '</td>' +
       '<td>' + fmt(y.balanceEnd) + '</td>' +
-      '<td>' + (y.withdrawal ? fmt(y.withdrawal) : '—') + '</td>' +
-      '<td>' + (y.temporaryCashUsed ? fmt(y.temporaryCashUsed) : '—') + '</td>' +
-      '<td>' + (y.socialSecurity ? fmt(y.socialSecurity) : '—') + '</td>' +
-      '<td>' + (y.otherIncome ? fmt(y.otherIncome) : '—') + '</td>' +
+      '<td>' + (y.withdrawal ? cashFmt(y.withdrawal) : '—') + '</td>' +
+      '<td>' + (y.temporaryCashUsed ? cashFmt(y.temporaryCashUsed) : '—') + '</td>' +
+      '<td>' + (y.socialSecurity ? cashFmt(y.socialSecurity) : '—') + '</td>' +
+      '<td>' + (y.otherIncome ? cashFmt(y.otherIncome) : '—') + '</td>' +
       '<td>' + rmdCell + '</td>' +
       '<td>' + taxCell + '</td>' +
-      '<td>' + (y.totalIncome ? fmt(y.totalIncome) : '—') + '</td>' +
-      '<td>' + fmt(y.requestedSpending || 0) + ' / ' + fmt(y.fundedSpending || 0) + '</td>' +
-      '<td>' + fmt((y.spendingShortfall || 0) + (y.taxShortfall || 0)) + '</td>' +
+      '<td>' + (y.totalIncome ? cashFmt(y.totalIncome) : '—') + '</td>' +
+      '<td>' + cashFmt(y.requestedSpending || 0) + ' / ' + cashFmt(y.fundedSpending || 0) + '</td>' +
+      '<td>' + (unfunded > 0 ? shortfallText(unfunded) : fmt(0)) + '</td>' +
       '</tr>';
   }
 
@@ -521,7 +545,7 @@
     return 'Retirement Plan Builder. Age ' + lastInputs.currentAge + ' to ' + lastInputs.planEndAge +
       '. Retire at ' + lastInputs.retirementAge + '. Projected balance at retirement ' + fmt(s.balanceAtRetirement) +
       '. Target nest egg ' + (s.targetNestEgg > 0 ? fmt(s.targetNestEgg) : 'not required') +
-      '. Status: ' + s.status.headline + '. Household SS at claim (approx.): ' +
+      '. Status: ' + s.status.headline + '.' + firstShortfallDetail(result) + ' Household SS at claim (approx.): ' +
       fmt((s.householdSsMonthlyAtClaim || s.ssMonthlyAtClaim) * 12) + '/year. Lifetime est. federal tax in retirement years: ' +
       fmt(s.lifetimeFederalTax) + '. First RMD at age ' + s.rmdStartAge + ': ' +
       (s.firstRmdAmount > 0 ? fmt(s.firstRmdAmount) : 'n/a') + '.' +
@@ -733,21 +757,24 @@
     if (!lastResult || !lastInputs) return;
     var header = ['Age', 'Portfolio', 'Withdrawal', 'Social Security (household)', 'Other Income', 'RMD', 'Est Federal Tax', 'Total Income', 'Requested Spending', 'Funded Spending', 'Spending Shortfall', 'Taxes Paid', 'Unpaid Tax', 'Traditional Withdrawal', 'Other Withdrawal', 'Temporary Cash Used', 'Temporary Cash Remaining'];
     function csvCell(value) { return '"' + String(value).replace(/"/g, '""') + '"'; }
+    function csvMoney(value) {
+      return Math.abs(value) > 1e-6 && Math.abs(value) < 0.01 ? value.toPrecision(6) : Math.round(value * 100) / 100;
+    }
     var lines = ['Retirement Plan Builder — RonBelisle.com', 'Generated UTC,' + new Date().toISOString(), 'Model,consumer-income-timing-2026-09; fixed 2026 tax rules; nominal USD; annual age-year buckets', 'Income timing,' + csvCell(incomeTimingText(lastResult.summary)), 'Inputs,' + csvCell(JSON.stringify(lastInputs)), header.join(',')];
     lastResult.years.forEach(function (y) {
       lines.push([
         y.age,
-        Math.round(y.balanceEnd),
-        Math.round(y.withdrawal || 0),
-        Math.round(y.socialSecurity || 0),
-        Math.round(y.otherIncome || 0),
-        Math.round(y.rmd || 0),
-        Math.round(y.federalTax || 0),
-        Math.round(y.totalIncome || 0),
-        Math.round(y.requestedSpending || 0), Math.round(y.fundedSpending || 0),
-        Math.round(y.spendingShortfall || 0), Math.round(y.taxesPaid || 0), Math.round(y.taxShortfall || 0),
-        Math.round(y.traditionalWithdrawal || 0), Math.round(y.otherWithdrawal || 0),
-        Math.round(y.temporaryCashUsed || 0), Math.round(y.temporaryCashRemaining == null ? lastInputs.temporaryCash : y.temporaryCashRemaining)
+        csvMoney(y.balanceEnd),
+        csvMoney(y.withdrawal || 0),
+        csvMoney(y.socialSecurity || 0),
+        csvMoney(y.otherIncome || 0),
+        csvMoney(y.rmd || 0),
+        csvMoney(y.federalTax || 0),
+        csvMoney(y.totalIncome || 0),
+        csvMoney(y.requestedSpending || 0), csvMoney(y.fundedSpending || 0),
+        csvMoney(y.spendingShortfall || 0), csvMoney(y.taxesPaid || 0), csvMoney(y.taxShortfall || 0),
+        csvMoney(y.traditionalWithdrawal || 0), csvMoney(y.otherWithdrawal || 0),
+        csvMoney(y.temporaryCashUsed || 0), csvMoney(y.temporaryCashRemaining == null ? lastInputs.temporaryCash : y.temporaryCashRemaining)
       ].join(','));
     });
     var blob = new Blob([lines.join('\n')], { type: 'text/csv' });
@@ -815,7 +842,7 @@
         incomeTimingText: incomeTimingText(lastResult.summary),
         guaranteedIncomeAtRetirement: lastResult.summary.incomeTimeline.atRetirement,
         statusHeadline: lastResult.summary.status.headline,
-        statusDetail: lastResult.summary.status.detail,
+        statusDetail: lastResult.summary.status.detail + firstShortfallDetail(lastResult),
         balanceAtRetirement: lastResult.summary.balanceAtRetirement,
         balanceAtWithdrawalStart: lastResult.summary.balanceAtWithdrawalStart,
         compareBalanceForStatus: lastResult.summary.compareBalanceForStatus,

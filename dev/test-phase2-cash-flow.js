@@ -167,7 +167,7 @@ test('Retirement rendered table, summary, chart and exports agree on depleted ca
  source=source.replace(/\}\)\(\);\s*$/, `window.exercise=function(result,inputs){lastResult=result;lastInputs=inputs;renderSummary(result);renderChart(result);renderFullTable(result);exportCsv();downloadPdf();};})();`);
  vm.runInNewContext(source,ui);
  const input={...pBase,taxDeferredPct:0,balance:5000};const result=plan(input);ui.exercise(result,input);
- assert.equal(uiNodes.metricProjected.textContent,'$5,000');assert(uiNodes.fullTableBody.innerHTML.includes('$10,000 / $5,000'));
+ assert.equal(uiNodes.metricProjected.textContent,'$5,000');assert(uiNodes.fullTableBody.innerHTML.includes('$10,000.00 / $5,000.00'));
  close(uiCharts.planChart.data.datasets[0].data.at(-1),0,'Plan chart terminal');
  const rawLines=csv.trim().split('\n'); const lines=rawLines.slice(rawLines.findIndex(line=>line.startsWith('Age,Portfolio,'))).map(s=>s.split(','));
  close(Number(lines[1][lines[0].indexOf('Funded Spending')]),5000,'Plan CSV funded');
