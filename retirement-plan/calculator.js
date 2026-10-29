@@ -193,6 +193,7 @@
       birthYear: birthYear,
       birthDate: el('birthDate') ? el('birthDate').value : '',
       balance: readNumber('balance'),
+      temporaryCash: readNumber('temporaryCash', 0),
       portfolioWithdrawalStartAge: (function () {
         var v = readNumber('portfolioWithdrawalStartAge', NaN);
         return isNaN(v) || v <= 0 ? retirementAge : v;
@@ -226,6 +227,7 @@
 
   function validateInputs(inputs) {
     var errors = [];
+    if (!Number.isFinite(inputs.temporaryCash) || inputs.temporaryCash < 0 || inputs.temporaryCash > 1e12) errors.push('nonnegative temporary cash up to one trillion dollars');
     if(!Number.isFinite(inputs.volatilityPct)||inputs.volatilityPct<0||inputs.volatilityPct>50||!Number.isInteger(inputs.numSims)||inputs.numSims<100||inputs.numSims>5000)errors.push('volatility 0–50% and 100–5,000 whole simulations');
     if (inputs.currentAge < 18 || inputs.currentAge > 100) errors.push('birth year (implies age 18–100)');
     if (!isAlreadyRetired() && inputs.retirementAge < inputs.currentAge) {
@@ -265,7 +267,8 @@
       (t.fullyStartedAnnual == null ? 'Some selected income starts after the plan ends. ' :
       'All selected income has started by your age ' + t.fullyStartedAge + ': ' + fmt(t.fullyStartedAnnual) + '/year. The rule-of-thumb portfolio target then is ' + fmt(t.longRunTarget) + '. ') +
       'Before that transition, modeled bridge withdrawals total ' + fmt(t.bridgeWithdrawals) + ', including portfolio-funded taxes; unfunded spending and taxes total ' + fmt(t.bridgeShortfalls) + '. ' +
-      'These are nominal amounts across different dates, not targets to add together. Future income does not fund earlier spending.';
+      'These are nominal amounts across different dates, not targets to add together. Future income does not fund earlier spending.' +
+      ((summary.temporaryCashUsed || summary.temporaryCashRemaining) ? ' Separate after-tax temporary cash: ' + fmt(summary.temporaryCashUsed) + ' used before portfolio withdrawals; ' + fmt(summary.temporaryCashRemaining) + ' unused. This reserve is not taxable income or part of the displayed portfolio balance.' : '');
   }
 
   function renderSummary(result) {
@@ -289,7 +292,7 @@
         portfolioNote.style.display = 'block';
         portfolioNote.textContent =
           'Spending-gap withdrawals from your portfolio begin at age ' + s.portfolioWithdrawalStartAge +
-          ' (projected balance then: ' + fmt(s.balanceAtWithdrawalStart) + '). Until then, income and RMDs fund taxes and spending; unmet amounts are reported as shortfalls. Surplus cash is saved.';
+          ' (projected balance then: ' + fmt(s.balanceAtWithdrawalStart) + '). Until then, income, RMDs and any temporary cash reserve fund taxes and spending; unmet amounts are reported as shortfalls. Surplus cash is saved.';
       } else {
         portfolioNote.style.display = 'none';
         portfolioNote.textContent = '';
@@ -471,6 +474,7 @@
       '<td>' + y.age + (y.rmdStarts ? ' <span style="color:#7c3aed;font-size:11px;">RMDs</span>' : '') + '</td>' +
       '<td>' + fmt(y.balanceEnd) + '</td>' +
       '<td>' + (y.withdrawal ? fmt(y.withdrawal) : '—') + '</td>' +
+      '<td>' + (y.temporaryCashUsed ? fmt(y.temporaryCashUsed) : '—') + '</td>' +
       '<td>' + (y.socialSecurity ? fmt(y.socialSecurity) : '—') + '</td>' +
       '<td>' + (y.otherIncome ? fmt(y.otherIncome) : '—') + '</td>' +
       '<td>' + rmdCell + '</td>' +
@@ -571,6 +575,7 @@
       birthDate: el('birthDate') ? el('birthDate').value : '',
       retirementAge: readNumber('retirementAge'),
       balance: readNumber('balance'),
+      temporaryCash: readNumber('temporaryCash', 0),
       portfolioWithdrawalStartAge: readNumber('portfolioWithdrawalStartAge'),
       annualContribution: readNumber('annualContribution', 0),
       returnPreRetirement: readNumber('returnPreRetirement'),
@@ -605,6 +610,7 @@
 
   function applyFormData(data) {
     if (!data) return;
+    if (el('temporaryCash')) el('temporaryCash').value = data.temporaryCash == null ? 0 : data.temporaryCash;
     if (el('birthDate')) el('birthDate').value = data.birthDate == null ? '' : data.birthDate;
     if (el('spouseAge')) el('spouseAge').value = data.spouseAge == null ? '' : data.spouseAge;
     if (el('otherIncomeStartAge')) el('otherIncomeStartAge').value = data.otherIncomeStartAge == null ? '' : data.otherIncomeStartAge;
@@ -725,7 +731,7 @@
 
   function exportCsv() {
     if (!lastResult || !lastInputs) return;
-    var header = ['Age', 'Portfolio', 'Withdrawal', 'Social Security (household)', 'Other Income', 'RMD', 'Est Federal Tax', 'Total Income', 'Requested Spending', 'Funded Spending', 'Spending Shortfall', 'Taxes Paid', 'Unpaid Tax', 'Traditional Withdrawal', 'Other Withdrawal'];
+    var header = ['Age', 'Portfolio', 'Withdrawal', 'Social Security (household)', 'Other Income', 'RMD', 'Est Federal Tax', 'Total Income', 'Requested Spending', 'Funded Spending', 'Spending Shortfall', 'Taxes Paid', 'Unpaid Tax', 'Traditional Withdrawal', 'Other Withdrawal', 'Temporary Cash Used', 'Temporary Cash Remaining'];
     function csvCell(value) { return '"' + String(value).replace(/"/g, '""') + '"'; }
     var lines = ['Retirement Plan Builder — RonBelisle.com', 'Generated UTC,' + new Date().toISOString(), 'Model,consumer-income-timing-2026-09; fixed 2026 tax rules; nominal USD; annual age-year buckets', 'Income timing,' + csvCell(incomeTimingText(lastResult.summary)), 'Inputs,' + csvCell(JSON.stringify(lastInputs)), header.join(',')];
     lastResult.years.forEach(function (y) {
@@ -740,7 +746,8 @@
         Math.round(y.totalIncome || 0),
         Math.round(y.requestedSpending || 0), Math.round(y.fundedSpending || 0),
         Math.round(y.spendingShortfall || 0), Math.round(y.taxesPaid || 0), Math.round(y.taxShortfall || 0),
-        Math.round(y.traditionalWithdrawal || 0), Math.round(y.otherWithdrawal || 0)
+        Math.round(y.traditionalWithdrawal || 0), Math.round(y.otherWithdrawal || 0),
+        Math.round(y.temporaryCashUsed || 0), Math.round(y.temporaryCashRemaining == null ? lastInputs.temporaryCash : y.temporaryCashRemaining)
       ].join(','));
     });
     var blob = new Blob([lines.join('\n')], { type: 'text/csv' });
@@ -786,6 +793,7 @@
         retirementAge: lastInputs.retirementAge,
         planEndAge: lastInputs.planEndAge,
         balance: lastInputs.balance,
+        temporaryCash: lastInputs.temporaryCash,
         annualContribution: lastInputs.annualContribution,
         portfolioWithdrawalStartAge: lastInputs.portfolioWithdrawalStartAge,
         baseAnnualSpending: lastInputs.baseAnnualSpending,
@@ -823,6 +831,7 @@
           withdrawal: y.withdrawal || 0,
           socialSecurity: y.socialSecurity || 0,
           otherIncome: y.otherIncome || 0,
+          temporaryCashUsed: y.temporaryCashUsed || 0,
           rmd: y.rmd || 0,
           federalTax: y.federalTax || 0,
           requestedSpending: y.requestedSpending || 0, fundedSpending: y.fundedSpending || 0,

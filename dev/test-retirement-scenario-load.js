@@ -26,6 +26,7 @@ function fixture(response) {
   function get(id) { if (!nodes.has(id)) nodes.set(id, new Element(id)); return nodes.get(id); }
   get('birthYear').value = '1957';
   get('birthDate').type = 'date'; get('birthDate').value = '2026-10-29';
+  get('temporaryCash').value = '60000';
   get('results').style.display = 'block';
   const context = {
     console, Date, Number, alert: message => alerts.push(message), setTimeout() {},
@@ -47,7 +48,7 @@ function fixture(response) {
   const instrumented = source.replace('  function validateInputs(inputs) {',
     "  function validateInputs(inputs) { window.loadTrace.push('validate');")
     .replace("  document.addEventListener('DOMContentLoaded'",
-      "  window.loadRegression = { load: loadScenario, build: runPlan, prime: function () { lastResult = {}; lastInputs = {}; lastMcResult = {}; window.lastRetirementPlanResult = {}; }, cached: function () { return !!(lastResult || lastInputs || lastMcResult || window.lastRetirementPlanResult); } };\n  document.addEventListener('DOMContentLoaded'");
+      "  window.loadRegression = { load: loadScenario, build: runPlan, saveData: getFormDataForSave, collect: collectInputs, prime: function () { lastResult = {}; lastInputs = {}; lastMcResult = {}; window.lastRetirementPlanResult = {}; }, cached: function () { return !!(lastResult || lastInputs || lastMcResult || window.lastRetirementPlanResult); } };\n  document.addEventListener('DOMContentLoaded'");
   assert.notEqual(instrumented, source);
   vm.runInNewContext(instrumented, context, { filename });
   return { context, get, alerts, calls, trace };
@@ -70,6 +71,7 @@ async function load(data) {
   assert.equal(legacy.get('birthYear').value, '1957');
   assert.equal(legacy.get('birthDate').value, '', 'Legacy data must not inherit today\'s default date');
   assert.equal(legacy.get('balance').value, '123456');
+  assert.equal(legacy.get('temporaryCash').value, '0', 'Legacy plans must clear a previous cash reserve');
   assert.deepEqual(legacy.alerts, [], 'Loading legacy inputs must not raise birth-date validation');
   assert.deepEqual(legacy.trace, [], 'Loading must not calculate or validate');
   assert.equal(legacy.get('saveStatus').textContent, 'Loaded!');
@@ -80,9 +82,12 @@ async function load(data) {
   assert.match(legacy.alerts[0], /full birth date matching birth year/, 'Explicit Build must retain validation');
   assert.equal(legacy.calls.length, 1, 'Load/Build must not save or delete a scenario');
 
-  const dated = await load({ birthYear: 1957, birthDate: '1957-04-12', balance: 765432 });
+  const dated = await load({ birthYear: 1957, birthDate: '1957-04-12', balance: 765432, temporaryCash: 50000 });
   assert.equal(dated.get('birthDate').value, '1957-04-12');
   assert.equal(dated.get('balance').value, '765432');
+  assert.equal(dated.get('temporaryCash').value, '50000');
+  assert.equal(dated.context.loadRegression.saveData().temporaryCash, 50000);
+  assert.equal(dated.context.loadRegression.collect().temporaryCash, 50000);
   assert.deepEqual(dated.alerts, []);
   assert.deepEqual(dated.trace, []);
 

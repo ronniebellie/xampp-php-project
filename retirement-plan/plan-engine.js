@@ -79,6 +79,7 @@
     ['balance','annualContribution','baseAnnualSpending','otherGuaranteedAnnual'].forEach(function (key) {
       if (!Number.isFinite(inputs[key]) || inputs[key] < 0 || inputs[key] > 1e12) throw new RangeError('Enter finite nonnegative money amounts no greater than one trillion dollars.');
     });
+    if (inputs.temporaryCash != null && (!Number.isFinite(inputs.temporaryCash) || inputs.temporaryCash < 0 || inputs.temporaryCash > 1e12)) throw new RangeError('Temporary cash must be a finite nonnegative amount no greater than one trillion dollars.');
     ['returnPreRetirement','returnRetirement','inflation','colaRate'].forEach(function (key) {
       if (!Number.isFinite(inputs[key]) || inputs[key] <= -100 || inputs[key] > 100) throw new RangeError('Rates must be finite and greater than -100% through 100%.');
     });
@@ -235,6 +236,9 @@
     var shortfallAge = null;
     var traditional = balance * taxDeferredPct;
     var otherAssets = balance - traditional;
+    // Separate after-tax cash reserve: no return, no new taxable income, and
+    // never part of the retirement portfolio or its reported ending balance.
+    var temporaryCash = inputs.temporaryCash == null ? 0 : inputs.temporaryCash;
 
     for (var age = inputs.currentAge; age <= inputs.planEndAge; age++) {
       var balanceStart = balance;
@@ -286,12 +290,19 @@
         var traditionalWithdrawal = rmd, otherWithdrawal = 0;
         traditional -= rmd;
         var cash = income + rmd;
+        var temporaryCashUsed = 0;
         var taxableIncome, federalTax;
         for (var pass = 0; pass < 128; pass++) {
           taxableIncome = TR.estimateTaxableIncome(traditionalWithdrawal, householdSsAnnual,
             otherIncome, inputs.filingStatus, inputs.useStandardDeduction !== false);
           federalTax = TR.calculateFederalTax(taxableIncome, inputs.filingStatus);
           var need = Math.max(0, spending + federalTax - cash);
+          if (!canWithdraw && need > 0 && temporaryCash > 0) {
+            temporaryCashUsed = Math.min(need, temporaryCash);
+            temporaryCash -= temporaryCashUsed;
+            cash += temporaryCashUsed;
+            need -= temporaryCashUsed;
+          }
           if (!canWithdraw || need < 1e-7 || traditional + otherAssets < 1e-7) break;
           var fromOther = Math.min(need, otherAssets);
           otherAssets -= fromOther; otherWithdrawal += fromOther; cash += fromOther;
@@ -322,6 +333,7 @@
           traditionalStart: traditionalStart, otherAssetsStart: otherAssetsStart,
           traditionalBalance: traditional, otherAssetsBalance: otherAssets,
           traditionalWithdrawal: traditionalWithdrawal, otherWithdrawal: otherWithdrawal,
+          temporaryCashUsed: temporaryCashUsed, temporaryCashRemaining: temporaryCash,
           requestedSpending: spending, fundedSpending: fundedSpending, spendingShortfall: spendingShortfall,
           taxesPaid: taxesPaid, taxShortfall: taxShortfall, surplus: surplus, investmentReturn: investmentReturn,
           taxFunding: {income: Math.min(taxesPaid, income),
@@ -335,7 +347,7 @@
           withdrawal: portfolioWithdrawal,
           federalTax: federalTax,
           marginalRate: marginalRate,
-          totalIncome: householdSsAnnual + otherIncome + portfolioWithdrawal,
+          totalIncome: householdSsAnnual + otherIncome + portfolioWithdrawal + temporaryCashUsed,
           rmdStarts: age === rmdStartAge
         });
       }
@@ -413,6 +425,8 @@
         householdSsMonthlyAtClaim: summaryUserMonthly + summarySpouseMonthly,
         fraAge: FC.fraAgeFromBirthYear(inputs.birthYear),
         shortfallAge: shortfallAge,
+        temporaryCashUsed: years.reduce(function (sum, row) { return sum + (row.temporaryCashUsed || 0); }, 0),
+        temporaryCashRemaining: temporaryCash,
         totalSpendingShortfall: years.reduce(function (sum, row) { return sum + row.spendingShortfall; }, 0),
         totalTaxShortfall: years.reduce(function (sum, row) { return sum + row.taxShortfall; }, 0),
         depletedAge: depletedAge,

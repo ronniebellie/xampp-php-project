@@ -297,6 +297,14 @@ $defaultRetirementAge = 67;
         </div>
       </div>
 
+      <div class="form-grid">
+        <div>
+          <label class="field-label" for="temporaryCash">Temporary cash before portfolio withdrawals ($, after tax)</label>
+          <input type="number" id="temporaryCash" min="0" max="1000000000000" step="any" value="0">
+          <small>Cash outside the portfolio, such as net insurance surrender proceeds. Used only as needed for spending and modeled taxes before your portfolio withdrawal start age. Enter cash available after setting aside any taxes on its source; this calculator does not calculate insurance surrender taxes. Using this reserve is not treated as new taxable income. It earns no modeled return; unused cash stays separate from portfolio balances.</small>
+        </div>
+      </div>
+
       <details class="advanced" open>
         <summary>Tax &amp; RMD assumptions</summary>
         <div class="form-grid" style="margin-top: 14px;">
@@ -421,6 +429,7 @@ $defaultRetirementAge = 67;
                 <th>Age</th>
                 <th>Portfolio</th>
                 <th>Withdrawal</th>
+                <th>Temporary cash used</th>
                 <th>Social Security (household)</th>
                 <th>Other income</th>
                 <th>RMD</th>
@@ -442,6 +451,7 @@ $defaultRetirementAge = 67;
                 <th>Age</th>
                 <th>Portfolio</th>
                 <th>Withdrawal</th>
+                <th>Temporary cash used</th>
                 <th>Social Security (household)</th>
                 <th>Other income</th>
                 <th>RMD</th>
