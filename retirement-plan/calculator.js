@@ -176,15 +176,23 @@
     var retirementAge = isAlreadyRetired() ? currentAge : readNumber('retirementAge');
     var method = document.querySelector('input[name="spendingMethod"]:checked');
     var spendingMethod = method ? method.value : 'estimate';
-    var baseAnnualSpending = 0;
+    var householdBudgetAnnual = 0;
+    var spendingFactor = 1;
+    var federalTaxIncludedMonthly = readNumber('federalTaxIncludedMonthly', 0);
 
     if (spendingMethod === 'direct') {
-      baseAnnualSpending = readNumber('annualSpendingDirect');
+      householdBudgetAnnual = readNumber('annualSpendingDirect');
     } else {
       var monthly = readNumber('currentMonthlySpending');
       var pct = readNumber('retirementSpendingPct', 80);
-      baseAnnualSpending = monthly * 12 * (pct / 100);
+      householdBudgetAnnual = monthly * 12;
+      spendingFactor = pct / 100;
     }
+    // Remove a budgeted tax allowance once, before the unchanged annual ledger.
+    // Both portions use today's dollars and the same retirement percentage.
+    var enteredAnnualSpending = householdBudgetAnnual * spendingFactor;
+    var annualFederalTaxAllowanceRemoved = federalTaxIncludedMonthly * 12 * spendingFactor;
+    var baseAnnualSpending = (householdBudgetAnnual - federalTaxIncludedMonthly * 12) * spendingFactor;
 
     return {
       currentAge: currentAge,
@@ -202,6 +210,10 @@
       returnPreRetirement: readNumber('returnPreRetirement'),
       returnRetirement: readNumber('returnRetirement'),
       baseAnnualSpending: baseAnnualSpending,
+      householdBudgetAnnual: householdBudgetAnnual,
+      enteredAnnualSpending: enteredAnnualSpending,
+      federalTaxIncludedMonthly: federalTaxIncludedMonthly,
+      annualFederalTaxAllowanceRemoved: annualFederalTaxAllowanceRemoved,
       ssAlreadyReceiving: !!(el('ssAlreadyReceiving') && el('ssAlreadyReceiving').checked),
       ssCurrentMonthly: readNumber('ssCurrentMonthly', 0),
       ssPiaMonthly: readNumber('ssPiaMonthly', 0),
@@ -225,8 +237,14 @@
     };
   }
 
+  function invalidFederalTaxAllowance(inputs) {
+    return !Number.isFinite(inputs.federalTaxIncludedMonthly) || inputs.federalTaxIncludedMonthly < 0 ||
+      (inputs.federalTaxIncludedMonthly > 0 && (!Number.isFinite(inputs.householdBudgetAnnual) || inputs.federalTaxIncludedMonthly * 12 > inputs.householdBudgetAnnual));
+  }
+
   function validateInputs(inputs) {
     var errors = [];
+    if (invalidFederalTaxAllowance(inputs)) errors.push('monthly federal-tax allowance between zero and the household spending amount');
     if (!Number.isFinite(inputs.temporaryCash) || inputs.temporaryCash < 0 || inputs.temporaryCash > 1e12) errors.push('nonnegative temporary cash up to one trillion dollars');
     if(!Number.isFinite(inputs.volatilityPct)||inputs.volatilityPct<0||inputs.volatilityPct>50||!Number.isInteger(inputs.numSims)||inputs.numSims<100||inputs.numSims>5000)errors.push('volatility 0–50% and 100–5,000 whole simulations');
     if (inputs.currentAge < 18 || inputs.currentAge > 100) errors.push('birth year (implies age 18–100)');
@@ -237,7 +255,7 @@
       errors.push('planned retirement age (enter an age such as 67, not a calendar year)');
     }
     if (inputs.balance < 0) errors.push('retirement savings');
-    if (inputs.baseAnnualSpending <= 0) errors.push('retirement spending');
+    if (!Number.isFinite(inputs.baseAnnualSpending) || inputs.baseAnnualSpending < 0 || (inputs.baseAnnualSpending === 0 && !(inputs.federalTaxIncludedMonthly > 0))) errors.push('retirement spending');
     if (inputs.birthYear < 1900 || inputs.birthYear > new Date().getFullYear()) errors.push('birth year');
     if (!inputs.birthDate || parseInt(inputs.birthDate.slice(0,4),10) !== inputs.birthYear) errors.push('full birth date matching birth year');
     if (inputs.portfolioWithdrawalStartAge < inputs.currentAge) {
@@ -273,6 +291,14 @@
 
   function moneyWithCents(amount) {
     return amount.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function spendingBasisText(inputs) {
+    var entered = inputs.enteredAnnualSpending == null ? inputs.baseAnnualSpending : inputs.enteredAnnualSpending;
+    return 'Annual spending entered: ' + moneyWithCents(entered) +
+      '. Federal-tax budget allowance removed: ' + moneyWithCents(inputs.annualFederalTaxAllowanceRemoved || 0) +
+      '. Annual non-tax spending baseline: ' + moneyWithCents(inputs.baseAnnualSpending) +
+      '. This baseline follows spending inflation; federal taxes are estimated separately each year. The allowance is not a tax credit or an override of calculated taxes.';
   }
 
   function reportedShortfall(year) {
@@ -324,6 +350,7 @@
     el('metricTarget').textContent = s.targetNestEgg > 0 ? fmt(s.targetNestEgg) : 'Not required';
     el('metricIncome').textContent = fmt(s.incomeTimeline.atRetirement);
     if (el('incomeTimingNote')) el('incomeTimingNote').textContent = incomeTimingText(s);
+    if (el('spendingBasisNote')) el('spendingBasisNote').textContent = spendingBasisText(lastInputs);
     el('metricLifetimeTax').textContent = fmt(s.lifetimeFederalTax);
 
     var takeaway = el('planTakeaway');
@@ -545,7 +572,7 @@
     return 'Retirement Plan Builder. Age ' + lastInputs.currentAge + ' to ' + lastInputs.planEndAge +
       '. Retire at ' + lastInputs.retirementAge + '. Projected balance at retirement ' + fmt(s.balanceAtRetirement) +
       '. Target nest egg ' + (s.targetNestEgg > 0 ? fmt(s.targetNestEgg) : 'not required') +
-      '. Status: ' + s.status.headline + '.' + firstShortfallDetail(result) + ' Household SS at claim (approx.): ' +
+      '. ' + spendingBasisText(lastInputs) + ' Status: ' + s.status.headline + '.' + firstShortfallDetail(result) + ' Household SS at claim (approx.): ' +
       fmt((s.householdSsMonthlyAtClaim || s.ssMonthlyAtClaim) * 12) + '/year. Lifetime est. federal tax in retirement years: ' +
       fmt(s.lifetimeFederalTax) + '. First RMD at age ' + s.rmdStartAge + ': ' +
       (s.firstRmdAmount > 0 ? fmt(s.firstRmdAmount) : 'n/a') + '.' +
@@ -608,6 +635,7 @@
       annualSpendingDirect: readNumber('annualSpendingDirect'),
       currentMonthlySpending: readNumber('currentMonthlySpending'),
       retirementSpendingPct: readNumber('retirementSpendingPct'),
+      federalTaxIncludedMonthly: readNumber('federalTaxIncludedMonthly', 0),
       ssAlreadyReceiving: !!(el('ssAlreadyReceiving') && el('ssAlreadyReceiving').checked),
       ssCurrentMonthly: readNumber('ssCurrentMonthly', 0),
       ssPiaMonthly: readNumber('ssPiaMonthly', 0),
@@ -634,6 +662,7 @@
 
   function applyFormData(data) {
     if (!data) return;
+    if (el('federalTaxIncludedMonthly')) el('federalTaxIncludedMonthly').value = data.federalTaxIncludedMonthly == null ? 0 : data.federalTaxIncludedMonthly;
     if (el('temporaryCash')) el('temporaryCash').value = data.temporaryCash == null ? 0 : data.temporaryCash;
     if (el('birthDate')) el('birthDate').value = data.birthDate == null ? '' : data.birthDate;
     if (el('spouseAge')) el('spouseAge').value = data.spouseAge == null ? '' : data.spouseAge;
@@ -686,6 +715,10 @@
     function submit() {
       var name = input.value.trim();
       if (!name) { input.focus(); return; }
+      if (invalidFederalTaxAllowance(collectInputs())) {
+        alert('Enter a monthly federal-tax allowance between zero and the household spending amount.');
+        return;
+      }
       status.textContent = 'Saving…';
     rbScenarioFetch(API_BASE + 'api/save_scenario.php', {
       method: 'POST',
@@ -760,7 +793,7 @@
     function csvMoney(value) {
       return Math.abs(value) > 1e-6 && Math.abs(value) < 0.01 ? value.toPrecision(6) : Math.round(value * 100) / 100;
     }
-    var lines = ['Retirement Plan Builder — RonBelisle.com', 'Generated UTC,' + new Date().toISOString(), 'Model,consumer-income-timing-2026-09; fixed 2026 tax rules; nominal USD; annual age-year buckets', 'Income timing,' + csvCell(incomeTimingText(lastResult.summary)), 'Inputs,' + csvCell(JSON.stringify(lastInputs)), header.join(',')];
+    var lines = ['Retirement Plan Builder — RonBelisle.com', 'Generated UTC,' + new Date().toISOString(), 'Model,consumer-income-timing-2026-09; fixed 2026 tax rules; nominal USD; annual age-year buckets', 'Spending basis,' + csvCell(spendingBasisText(lastInputs)), 'Income timing,' + csvCell(incomeTimingText(lastResult.summary)), 'Inputs,' + csvCell(JSON.stringify(lastInputs)), header.join(',')];
     lastResult.years.forEach(function (y) {
       lines.push([
         y.age,
@@ -824,6 +857,9 @@
         annualContribution: lastInputs.annualContribution,
         portfolioWithdrawalStartAge: lastInputs.portfolioWithdrawalStartAge,
         baseAnnualSpending: lastInputs.baseAnnualSpending,
+        enteredAnnualSpending: lastInputs.enteredAnnualSpending,
+        federalTaxIncludedMonthly: lastInputs.federalTaxIncludedMonthly || 0,
+        annualFederalTaxAllowanceRemoved: lastInputs.annualFederalTaxAllowanceRemoved || 0,
         ssAlreadyReceiving: lastInputs.ssAlreadyReceiving,
         ssCurrentMonthly: lastInputs.ssCurrentMonthly,
         ssPiaMonthly: lastInputs.ssPiaMonthly,
@@ -839,7 +875,7 @@
         returnRetirement: lastInputs.returnRetirement
       },
       summary: {
-        incomeTimingText: incomeTimingText(lastResult.summary),
+        incomeTimingText: spendingBasisText(lastInputs) + ' ' + incomeTimingText(lastResult.summary),
         guaranteedIncomeAtRetirement: lastResult.summary.incomeTimeline.atRetirement,
         statusHeadline: lastResult.summary.status.headline,
         statusDetail: lastResult.summary.status.detail + firstShortfallDetail(lastResult),

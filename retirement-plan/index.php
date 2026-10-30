@@ -203,9 +203,9 @@ $defaultRetirementAge = 67;
 
       <div id="estimateSpendingWrap" class="form-grid">
         <div>
-          <label class="field-label" for="currentMonthlySpending">Household monthly spending ($)</label>
+          <label class="field-label" for="currentMonthlySpending">Household monthly spending, normally excluding federal income taxes ($)</label>
           <input type="number" id="currentMonthlySpending" min="0" step="any" value="6000">
-          <small>What your household spends now (or expects to spend in retirement) — not gross income.</small>
+          <small>Living expenses, not gross income. Federal income taxes are calculated separately. If this budget already includes a federal-tax allowance, enter it below to prevent double-counting.</small>
         </div>
         <div id="retirementSpendingPctWrap">
           <label class="field-label" for="retirementSpendingPct">Retirement spending (% of current)</label>
@@ -216,9 +216,17 @@ $defaultRetirementAge = 67;
 
       <div id="directSpendingWrap" class="form-grid" style="display:none;">
         <div>
-          <label class="field-label" for="annualSpendingDirect">Annual household spending in retirement ($)</label>
+          <label class="field-label" for="annualSpendingDirect">Annual household spending in retirement, normally excluding federal income taxes ($)</label>
           <input type="number" id="annualSpendingDirect" min="0" step="any" value="72000">
-          <small>Total yearly expenses for your household — not income.</small>
+          <small>Living expenses, not income. Federal income taxes are calculated separately. If this amount includes a federal-tax allowance, enter its monthly equivalent below.</small>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div>
+          <label class="field-label" for="federalTaxIncludedMonthly">Federal income taxes already included in your spending ($/month)</label>
+          <input type="number" id="federalTaxIncludedMonthly" min="0" step="any" value="0">
+          <small>Optional: enter the monthly federal-tax allowance already included in the household budget above, in today's dollars. It is removed before any retirement-spending percentage; the remaining non-tax baseline follows spending inflation. The calculator still estimates federal taxes independently each year. This allowance prevents double-counting; it does not reduce or override calculated taxes. Leave $0 if your spending already excludes federal income taxes.</small>
         </div>
       </div>
 
@@ -403,6 +411,7 @@ $defaultRetirementAge = 67;
           </div>
         </div>
         <p id="portfolioWithdrawalNote" style="margin: 8px 0 0; font-size: 14px; color: #4b5563; display: none;"></p>
+        <p id="spendingBasisNote" role="status" aria-live="polite"></p>
         <p id="incomeTimingNote" role="status" aria-live="polite"></p>
         <p id="rmdNote" style="margin: 8px 0 0; font-size: 14px; color: #4b5563;"></p>
         <p id="depletedNote" style="margin: 12px 0 0; font-size: 14px; color: #4b5563;"></p>
