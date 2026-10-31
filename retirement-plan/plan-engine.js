@@ -15,6 +15,21 @@
     return result.age;
   }
 
+  // Explicit-year scenarios use start-year dollars and ages. Legacy inputs are untouched.
+  function normalizeInputs(inputs) {
+    if (inputs.projectionStartYear == null) return inputs;
+    var copy = Object.assign({}, inputs);
+    var year = Number(copy.projectionStartYear);
+    var age = year - copy.birthYear;
+    if (!Number.isInteger(year) || year < 1900 || year > 2200 ||
+        !Number.isInteger(age) || age < 18 || age >= copy.planEndAge) {
+      throw new Error('Choose a whole projection start year before your planning end age.');
+    }
+    copy.currentAge = age;
+    copy.retirementAge = copy.alreadyRetired ? age : copy.retirementAge;
+    return copy;
+  }
+
   function annualSocialSecurity(age, inputs, ssMonthlyBaseline) {
     if (inputs.ssAlreadyReceiving) {
       if (age < inputs.currentAge) return 0;
@@ -111,7 +126,8 @@
 
   function annualSpendingAtAge(age, inputs) {
     if (age < inputs.retirementAge) return 0;
-    var yearsSinceRetirement = age - inputs.retirementAge;
+    var yearsSinceRetirement = age - (inputs.projectionStartYear != null
+      ? Math.max(inputs.currentAge, inputs.retirementAge) : inputs.retirementAge);
     return inputs.baseAnnualSpending * Math.pow(1 + inputs.inflation / 100, yearsSinceRetirement);
   }
 
@@ -210,6 +226,7 @@
    * @returns {{ years: object[], summary: object, milestones: object[] }}
    */
   function runDeterministicPlan(inputs, retirementReturn) {
+    inputs = normalizeInputs(inputs);
     validatePlan(inputs);
     var rmdStartAge = getRmdStartAge(inputs);
     if (inputs.retirementAge > Math.max(inputs.currentAge, rmdStartAge) && inputs.balance > 0 && (inputs.taxDeferredPct == null || inputs.taxDeferredPct > 0)) throw new RangeError('Pre-retirement RMDs are outside this snapshot model. Model the distribution years as retirement or use the RMD calculator.');
@@ -255,6 +272,7 @@
         otherAssets = otherAssets * (1 + returnRate / 100) + contribution * (1 - taxDeferredPct);
         balance = traditional + otherAssets;
         years.push({
+          year: inputs.projectionStartYear != null ? inputs.birthYear + age : undefined,
           age: age,
           phase: phase,
           balanceStart: balanceStart,
@@ -326,6 +344,7 @@
         if ((spendingShortfall > 1e-6 || taxShortfall > 1e-6) && shortfallAge === null) shortfallAge = age;
 
         years.push({
+          year: inputs.projectionStartYear != null ? inputs.birthYear + age : undefined,
           age: age,
           phase: phase,
           balanceStart: balanceStart,
@@ -441,6 +460,7 @@
 
   global.RBPlanEngine = {
     rmdStartAgeForBirthYear: TR.rmdStartAgeForBirthYear,
+    normalizeInputs: normalizeInputs,
     runDeterministicPlan: runDeterministicPlan,
     targetNestEggAtRetirement: targetNestEggAtRetirement
   };

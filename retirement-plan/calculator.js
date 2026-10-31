@@ -10,6 +10,7 @@
   var lastResult = null;
   var lastMcResult = null;
   var lastInputs = null;
+  var legacyProjection = false;
 
   var API_BASE = (function () {
     var path = window.location.pathname;
@@ -36,7 +37,7 @@
   }
 
   function ageFromBirthYear(birthYear) {
-    return currentCalendarYear() - birthYear;
+    return (legacyProjection ? currentCalendarYear() : readNumber('projectionStartYear', currentCalendarYear())) - birthYear;
   }
 
   function isAlreadyRetired() {
@@ -145,7 +146,7 @@
 
     if (fraHint) {
       fraHint.textContent =
-        'You\'re about ' + age + ' today. Your Full Retirement Age is about ' +
+        'You\'re about ' + age + ' in the projection start year. Your Full Retirement Age is about ' +
         fra.toFixed(1).replace(/\.0$/, '') + '.';
     }
     if (claimSelect && !claimSelect.dataset.userTouched) {
@@ -189,12 +190,14 @@
       spendingFactor = pct / 100;
     }
     // Remove a budgeted tax allowance once, before the unchanged annual ledger.
-    // Both portions use today's dollars and the same retirement percentage.
+    // Both portions use the same spending dollar basis and retirement percentage.
     var enteredAnnualSpending = householdBudgetAnnual * spendingFactor;
     var annualFederalTaxAllowanceRemoved = federalTaxIncludedMonthly * 12 * spendingFactor;
     var baseAnnualSpending = (householdBudgetAnnual - federalTaxIncludedMonthly * 12) * spendingFactor;
 
     return {
+      projectionStartYear: legacyProjection ? null : readNumber('projectionStartYear'),
+      alreadyRetired: isAlreadyRetired(),
       currentAge: currentAge,
       retirementAge: retirementAge,
       planEndAge: readNumber('planEndAge'),
@@ -244,12 +247,16 @@
 
   function validateInputs(inputs) {
     var errors = [];
+    if (!legacyProjection && (!Number.isInteger(inputs.projectionStartYear) || inputs.projectionStartYear < 1900 || inputs.projectionStartYear > 2200)) {
+      errors.push('projection start year (enter a whole year from 1900 to 2200)');
+    }
+    if (readNumber('planEndAge') <= inputs.currentAge) errors.push('plan through age (must be after your age in the selected start year)');
     if (invalidFederalTaxAllowance(inputs)) errors.push('monthly federal-tax allowance between zero and the household spending amount');
     if (!Number.isFinite(inputs.temporaryCash) || inputs.temporaryCash < 0 || inputs.temporaryCash > 1e12) errors.push('nonnegative temporary cash up to one trillion dollars');
     if(!Number.isFinite(inputs.volatilityPct)||inputs.volatilityPct<0||inputs.volatilityPct>50||!Number.isInteger(inputs.numSims)||inputs.numSims<100||inputs.numSims>5000)errors.push('volatility 0–50% and 100–5,000 whole simulations');
     if (inputs.currentAge < 18 || inputs.currentAge > 100) errors.push('birth year (implies age 18–100)');
     if (!isAlreadyRetired() && inputs.retirementAge < inputs.currentAge) {
-      errors.push('planned retirement age (must be at or after your current age)');
+      errors.push('planned retirement age (must be at or after your age in the projection start year)');
     }
     if (!isAlreadyRetired() && inputs.retirementAge > 100) {
       errors.push('planned retirement age (enter an age such as 67, not a calendar year)');
@@ -259,7 +266,7 @@
     if (inputs.birthYear < 1900 || inputs.birthYear > new Date().getFullYear()) errors.push('birth year');
     if (!inputs.birthDate || parseInt(inputs.birthDate.slice(0,4),10) !== inputs.birthYear) errors.push('full birth date matching birth year');
     if (inputs.portfolioWithdrawalStartAge < inputs.currentAge) {
-      errors.push('portfolio withdrawal start age (must be at or after your current age)');
+      errors.push('portfolio withdrawal start age (must be at or after your age in the projection start year)');
     }
     if (inputs.planEndAge <= inputs.currentAge) {
       errors.push('plan through age (must be after your current age)');
@@ -295,7 +302,7 @@
 
   function spendingBasisText(inputs) {
     var entered = inputs.enteredAnnualSpending == null ? inputs.baseAnnualSpending : inputs.enteredAnnualSpending;
-    return 'Annual spending entered: ' + moneyWithCents(entered) +
+    return 'Projection begins ' + (inputs.projectionStartYear || currentCalendarYear()) + (inputs.projectionStartYear == null ? ' (legacy dollar assumptions). ' : '; savings are the January 1 opening balance. Spending uses dollars for the later of start year or retirement; receiving benefits use start-year dollars. No earlier years or extra inflation/COLA are applied. ') + 'Annual spending entered: ' + moneyWithCents(entered) +
       '. Federal-tax budget allowance removed: ' + moneyWithCents(inputs.annualFederalTaxAllowanceRemoved || 0) +
       '. Annual non-tax spending baseline: ' + moneyWithCents(inputs.baseAnnualSpending) +
       '. This baseline follows spending inflation; federal taxes are estimated separately each year. The allowance is not a tax credit or an override of calculated taxes.';
@@ -462,7 +469,7 @@
   function renderChart(result) {
     var canvas = el('planChart');
     if (!canvas || typeof Chart === 'undefined') return;
-    var labels = result.years.map(function (y) { return 'Age ' + y.age; });
+    var labels = result.years.map(function (y) { return (lastInputs.birthYear + y.age) + ' (age ' + y.age + ')'; });
     var data = result.years.map(function (y) { return Math.round(y.balanceEnd); });
 
     if (planChart) planChart.destroy();
@@ -522,7 +529,7 @@
     var taxCell = y.federalTax ? cashFmt(y.federalTax) : '—';
     var rmdCell = y.rmd ? cashFmt(y.rmd) : '—';
     return '<tr>' +
-      '<td>' + y.age + (y.rmdStarts ? ' <span style="color:#7c3aed;font-size:11px;">RMDs</span>' : '') + '</td>' +
+      '<td>' + (lastInputs.birthYear + y.age) + ' / ' + y.age + (y.rmdStarts ? ' <span style="color:#7c3aed;font-size:11px;">RMDs</span>' : '') + '</td>' +
       '<td>' + fmt(y.balanceEnd) + '</td>' +
       '<td>' + (y.withdrawal ? cashFmt(y.withdrawal) : '—') + '</td>' +
       '<td>' + (y.temporaryCashUsed ? cashFmt(y.temporaryCashUsed) : '—') + '</td>' +
@@ -569,7 +576,7 @@
 
   function buildSummaryText(result) {
     var s = result.summary;
-    return 'Retirement Plan Builder. Age ' + lastInputs.currentAge + ' to ' + lastInputs.planEndAge +
+    return 'Retirement Plan Builder. Projection begins ' + (lastInputs.projectionStartYear || currentCalendarYear()) + '. Age ' + lastInputs.currentAge + ' to ' + lastInputs.planEndAge +
       '. Retire at ' + lastInputs.retirementAge + '. Projected balance at retirement ' + fmt(s.balanceAtRetirement) +
       '. Target nest egg ' + (s.targetNestEgg > 0 ? fmt(s.targetNestEgg) : 'not required') +
       '. ' + spendingBasisText(lastInputs) + ' Status: ' + s.status.headline + '.' + firstShortfallDetail(result) + ' Household SS at claim (approx.): ' +
@@ -622,6 +629,7 @@
 
   function getFormDataForSave() {
     return {
+      projectionStartYear: legacyProjection ? null : readNumber('projectionStartYear'),
       birthYear: readNumber('birthYear'),
       birthDate: el('birthDate') ? el('birthDate').value : '',
       retirementAge: readNumber('retirementAge'),
@@ -662,6 +670,11 @@
 
   function applyFormData(data) {
     if (!data) return;
+    legacyProjection = data.projectionStartYear == null;
+    el('projectionStartYear').value = legacyProjection ? currentCalendarYear() : data.projectionStartYear;
+    el('projectionBasis').textContent = legacyProjection
+      ? 'Legacy scenario: original current-year calculations and dollar assumptions are preserved. Change Projection start year explicitly to use start-year balances and dollars. No saved record is changed until you save.'
+      : defaultProjectionBasis;
     if (el('federalTaxIncludedMonthly')) el('federalTaxIncludedMonthly').value = data.federalTaxIncludedMonthly == null ? 0 : data.federalTaxIncludedMonthly;
     if (el('temporaryCash')) el('temporaryCash').value = data.temporaryCash == null ? 0 : data.temporaryCash;
     if (el('birthDate')) el('birthDate').value = data.birthDate == null ? '' : data.birthDate;
@@ -671,7 +684,7 @@
       el('birthYear').value = currentCalendarYear() - data.currentAge;
     }
     Object.keys(data).forEach(function (key) {
-      if (key === 'currentAge') return;
+      if (key === 'currentAge' || key === 'projectionStartYear') return;
       var node = el(key);
       if (!node) return;
       if (node.type === 'checkbox') node.checked = !!data[key];
@@ -788,7 +801,7 @@
 
   function exportCsv() {
     if (!lastResult || !lastInputs) return;
-    var header = ['Age', 'Portfolio', 'Withdrawal', 'Social Security (household)', 'Other Income', 'RMD', 'Est Federal Tax', 'Total Income', 'Requested Spending', 'Funded Spending', 'Spending Shortfall', 'Taxes Paid', 'Unpaid Tax', 'Traditional Withdrawal', 'Other Withdrawal', 'Temporary Cash Used', 'Temporary Cash Remaining'];
+    var header = ['Year', 'Age', 'Portfolio', 'Withdrawal', 'Social Security (household)', 'Other Income', 'RMD', 'Est Federal Tax', 'Total Income', 'Requested Spending', 'Funded Spending', 'Spending Shortfall', 'Taxes Paid', 'Unpaid Tax', 'Traditional Withdrawal', 'Other Withdrawal', 'Temporary Cash Used', 'Temporary Cash Remaining'];
     function csvCell(value) { return '"' + String(value).replace(/"/g, '""') + '"'; }
     function csvMoney(value) {
       return Math.abs(value) > 1e-6 && Math.abs(value) < 0.01 ? value.toPrecision(6) : Math.round(value * 100) / 100;
@@ -796,6 +809,7 @@
     var lines = ['Retirement Plan Builder — RonBelisle.com', 'Generated UTC,' + new Date().toISOString(), 'Model,consumer-income-timing-2026-09; fixed 2026 tax rules; nominal USD; annual age-year buckets', 'Spending basis,' + csvCell(spendingBasisText(lastInputs)), 'Income timing,' + csvCell(incomeTimingText(lastResult.summary)), 'Inputs,' + csvCell(JSON.stringify(lastInputs)), header.join(',')];
     lastResult.years.forEach(function (y) {
       lines.push([
+        lastInputs.birthYear + y.age,
         y.age,
         csvMoney(y.balanceEnd),
         csvMoney(y.withdrawal || 0),
@@ -849,6 +863,8 @@
         inflation: lastInputs.inflation,
         colaRate: lastInputs.colaRate,
         withdrawalRate: lastInputs.withdrawalRate,
+        projectionStartYear: lastInputs.projectionStartYear || currentCalendarYear(),
+        legacyProjection: legacyProjection,
         currentAge: lastInputs.currentAge,
         retirementAge: lastInputs.retirementAge,
         planEndAge: lastInputs.planEndAge,
@@ -889,6 +905,7 @@
       },
       projections: lastResult.years.map(function (y) {
         return {
+          year: lastInputs.birthYear + y.age,
           age: y.age,
           balanceEnd: y.balanceEnd,
           withdrawal: y.withdrawal || 0,
@@ -998,21 +1015,26 @@
       });
   }
 
+  var defaultProjectionBasis;
   document.addEventListener('DOMContentLoaded', function () {
     var form = el('planForm');
     if (!form) return;
+    defaultProjectionBasis = el('projectionBasis').textContent;
+    el('projectionStartYear').value = currentCalendarYear();
 
     document.querySelectorAll('input[name="spendingMethod"]').forEach(function (radio) {
       radio.addEventListener('change', syncSpendingMode);
     });
-    ['birthYear'].forEach(function (id) {
+    ['birthYear', 'projectionStartYear'].forEach(function (id) {
       var node = el(id);
       if (node) node.addEventListener('change', function () {
         if (el('birthDate') && parseInt(el('birthDate').value.slice(0,4),10) !== readNumber('birthYear')) el('birthDate').value = '';
+        if (id === 'projectionStartYear') { legacyProjection = false; el('projectionBasis').textContent = defaultProjectionBasis; }
         syncBirthYearDerived();
         syncRetiredState();
       });
       if (node) node.addEventListener('input', function () {
+        if (id === 'projectionStartYear') { legacyProjection = false; el('projectionBasis').textContent = defaultProjectionBasis; }
         syncBirthYearDerived();
         syncRetiredState();
       });

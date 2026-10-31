@@ -44,6 +44,7 @@
    * @param {object} options - { expectedReturnPct, volatilityPct, numSims }
    */
   function runRetirementStressTest(inputs, deterministic, options) {
+    inputs = global.RBPlanEngine.normalizeInputs(inputs);
     var withdrawalStartAge = inputs.portfolioWithdrawalStartAge || inputs.retirementAge;
     var startAge = Math.max(inputs.currentAge, inputs.retirementAge);
     var yearsToModel = inputs.planEndAge - startAge + 1;

@@ -31,7 +31,7 @@ assert(nodes.statusDetail.textContent.includes('$0.40'),'Summary must explain th
 assert.equal(nodes.mcSuccessRate.textContent,'0%','A real forty-cent shortfall must still fail');
 assert(ui.lastRetirementPlanResult.summary.includes('$0.40'),'Copyable summary must preserve the amount');
 ui.precisionTest.csv();ui.precisionTest.pdf();
-const lines=csv.trim().split('\n'),headerIndex=lines.findIndex(x=>x.startsWith('Age,Portfolio,')),headers=lines[headerIndex].split(','),first=lines[headerIndex+1].split(',');
+const lines=csv.trim().split('\n'),headerIndex=lines.findIndex(x=>x.startsWith('Year,Age,Portfolio,')),headers=lines[headerIndex].split(','),first=lines[headerIndex+1].split(',');
 assert.equal(Number(first[headers.indexOf('Spending Shortfall')]),.40,'CSV must not round a real shortfall to zero');
 assert(pdfPayloads.at(-1).summary.statusDetail.includes('$0.40'),'PDF summary must preserve exact shortfall');
 ui.precisionTest.display(good,fullyFunded);

@@ -143,9 +143,12 @@ $defaultRetirementAge = 67;
 <?php endif; ?>
 
     <p class="sub">Federal estimates use fixed 2026 ordinary-income brackets and base standard deductions. Future calendar years reuse these values as a projection assumption, not future statutory law. Credits, itemized deductions and additional age-based deductions are not included.</p>
-        <p class="sub">This is a quick annual planning snapshot. Ages mean ages attained in each calendar year; retirement and claims begin at the start of the selected modeled age-year, with 12 monthly payments. Exact birthday-month, midyear retirement, payment lag, spousal top-ups and survivor benefits are not modeled. Spending is entered in retirement-start dollars and inflates after retirement. Before retirement, contributions represent your net saving after living costs and taxes. Use <a href="https://journey.ronbelisle.com/">Your Retirement Journey Matters</a> for the deeper six-phase process.</p>
+        <p class="sub">This is a quick annual planning snapshot. Ages mean ages attained in each calendar year; retirement and claims begin at the start of the selected modeled age-year, with 12 monthly payments. Exact birthday-month, midyear retirement, payment lag, spousal top-ups and survivor benefits are not modeled. Spending is entered in dollars for the later of projection start or retirement start, and inflates after that year. Before retirement, contributions represent your net saving after living costs and taxes. Use <a href="https://journey.ronbelisle.com/">Your Retirement Journey Matters</a> for the deeper six-phase process.</p>
         <form id="planForm">
       <h3>About you</h3>
+      <label class="field-label" for="projectionStartYear">Projection start year</label>
+      <input type="number" id="projectionStartYear" min="1900" max="2200" step="1" value="<?php echo date('Y'); ?>" required>
+      <p id="projectionBasis" style="color:#4b5563;font-size:14px;">Enter savings as the estimated portfolio balance on January 1 of the selected year. For an already-retired household, enter spending and benefits already being received in start-year dollars; enter spouse age attained in that year. For future retirement, enter spending in retirement-start dollars. Other income and future Social Security estimates retain their existing income-start/claim-year basis. No earlier years are simulated. Spending inflation and benefit COLAs begin after the first modeled year (or after retirement/claiming for future benefits). Enter any federal tax allowance already included in spending in the allowance field; it is removed once before the model estimates taxes independently. Budget surplus is never automatically added to assets.</p>
       <div class="form-grid">
         <div>
           <label class="field-label" for="birthYear">Birth year</label>
@@ -169,10 +172,10 @@ $defaultRetirementAge = 67;
         </label>
       </div>
 
-      <h3>Money today</h3>
+      <h3>Money at projection start</h3>
       <div class="form-grid">
         <div>
-          <label class="field-label" for="balance">Retirement savings today ($)</label>
+          <label class="field-label" for="balance">Retirement savings at projection start ($)</label>
           <input type="number" id="balance" min="0" step="any" value="850000" required>
           <small>401(k), IRA, brokerage — one combined total for this snapshot.</small>
         </div>
@@ -226,7 +229,7 @@ $defaultRetirementAge = 67;
         <div>
           <label class="field-label" for="federalTaxIncludedMonthly">Federal income taxes already included in your spending ($/month)</label>
           <input type="number" id="federalTaxIncludedMonthly" min="0" step="any" value="0">
-          <small>Optional: enter the monthly federal-tax allowance already included in the household budget above, in today's dollars. It is removed before any retirement-spending percentage; the remaining non-tax baseline follows spending inflation. The calculator still estimates federal taxes independently each year. This allowance prevents double-counting; it does not reduce or override calculated taxes. Leave $0 if your spending already excludes federal income taxes.</small>
+          <small>Optional: enter the monthly federal-tax allowance already included in the household budget above, in the same dollars as the spending budget. It is removed before any retirement-spending percentage; the remaining non-tax baseline follows spending inflation. The calculator still estimates federal taxes independently each year. This allowance prevents double-counting; it does not reduce or override calculated taxes. Leave $0 if your spending already excludes federal income taxes.</small>
         </div>
       </div>
 
@@ -338,7 +341,7 @@ $defaultRetirementAge = 67;
             <small>If your sole beneficiary spouse is more than 10 years younger, a joint-life divisor may apply; only verified table entries are supported.</small>
           </div>
           <div id="spouseAgeGroup">
-            <label class="field-label" for="spouseAge">Spouse's age attained this calendar year</label>
+            <label class="field-label" for="spouseAge">Spouse's age attained in projection start year</label>
             <input type="number" id="spouseAge" min="18" max="100" value="">
           </div>
         </div>
@@ -435,7 +438,7 @@ $defaultRetirementAge = 67;
           <table class="data-table">
             <thead>
               <tr>
-                <th>Age</th>
+                <th>Year / Age</th>
                 <th>Portfolio</th>
                 <th>Withdrawal</th>
                 <th>Temporary cash used</th>
@@ -457,7 +460,7 @@ $defaultRetirementAge = 67;
           <table class="data-table">
             <thead>
               <tr>
-                <th>Age</th>
+                <th>Year / Age</th>
                 <th>Portfolio</th>
                 <th>Withdrawal</th>
                 <th>Temporary cash used</th>

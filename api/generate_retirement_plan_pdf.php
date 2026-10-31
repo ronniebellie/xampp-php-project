@@ -164,14 +164,15 @@ $pdf->Ln(2);
 
 $pdf->SetFont('helvetica', '', 10);
 $inputRows = [
-    ['Current age', $inputs['currentAge'] ?? '—'],
-    ['Spouse age attained this year', $inputs['spouseAge'] ?? 'Not applicable'],
+    ['Projection start year', $inputs['projectionStartYear'] ?? 'Legacy current year'],
+    ['Age at projection start', $inputs['currentAge'] ?? '—'],
+    ['Spouse age at projection start', $inputs['spouseAge'] ?? 'Not applicable'],
     ['Inflation / Social Security COLA', ($inputs['inflation'] ?? 0) . '% / ' . ($inputs['colaRate'] ?? 0) . '%'],
     ['Withdrawal-rate rule', (($inputs['withdrawalRate'] ?? 0) * 100) . '%'],
     ['Other income begins at your age', $inputs['otherIncomeStartAge'] ?? $inputs['retirementAge'] ?? 'Not specified'],
     ['Retirement age', $inputs['retirementAge'] ?? '—'],
     ['Plan through age', $inputs['planEndAge'] ?? '90'],
-    ['Retirement savings today', rp_money($inputs['balance'] ?? 0)],
+    ['Retirement savings at projection start', rp_money($inputs['balance'] ?? 0)],
     ['Portfolio withdrawals begin at age', $inputs['portfolioWithdrawalStartAge'] ?? '—'],
     ['Annual contributions (pre-retirement)', rp_money($inputs['annualContribution'] ?? 0)],
     ['Annual spending in retirement', rp_money($inputs['baseAnnualSpending'] ?? 0)],
@@ -205,6 +206,7 @@ foreach ($inputRows as $i => $row) {
 $inputsHtml .= '</table>';
 $pdf->writeHTML($inputsHtml, true, false, true, false, '');
 $pdf->Ln(6);
+$pdf->MultiCell(0, 5, !empty($inputs['legacyProjection']) ? 'Legacy scenario: original dollar assumptions preserved.' : 'Amounts are entered in projection start-year dollars. Spending uses dollars for the later of projection start or retirement, inflating afterward. Benefits already received use start-year dollars, with COLAs afterward. Future benefits retain their claim-year basis. The entered federal-tax budget allowance is removed once; actual federal taxes are modeled independently.', 0, 'L');
 
 if (isset($data['chartImage']) && !empty($data['chartImage'])) {
     rp_embed_chart(
@@ -254,27 +256,27 @@ $pdf->Ln(3);
 
 $tableHtml = '<table border="1" cellpadding="5" style="border-collapse:collapse;font-size:8px;">'
     . '<thead><tr style="background-color:#667eea;color:white;font-weight:bold;text-align:center;">'
-    . '<th width="6%">Age</th>'
-    . '<th width="16%">Portfolio</th>'
-    . '<th width="14%">Withdrawal</th>'
+    . '<th width="14%">Year / Age</th>'
+    . '<th width="14%">Portfolio</th>'
+    . '<th width="12%">Withdrawal</th>'
     . '<th width="12%">SS</th>'
     . '<th width="10%">Other</th>'
-    . '<th width="12%">RMD</th>'
+    . '<th width="10%">RMD</th>'
     . '<th width="14%">Est. tax</th>'
-    . '<th width="16%">Income</th>'
+    . '<th width="14%">Income</th>'
     . '</tr></thead><tbody>';
 
 foreach ($projections as $i => $row) {
     $rowColor = ($i % 2 === 0) ? '#f9fafb' : '#ffffff';
     $tableHtml .= '<tr style="background-color:' . $rowColor . ';text-align:right;">'
-        . '<td width="6%" style="text-align:center;">' . (int) ($row['age'] ?? 0) . '</td>'
-        . '<td width="16%">' . rp_money($row['balanceEnd'] ?? 0) . '</td>'
-        . '<td width="14%">' . rp_money($row['withdrawal'] ?? 0) . '</td>'
+        . '<td width="14%" style="text-align:center;">' . rp_h($row['year'] ?? '') . ' / ' . (int) ($row['age'] ?? 0) . '</td>'
+        . '<td width="14%">' . rp_money($row['balanceEnd'] ?? 0) . '</td>'
+        . '<td width="12%">' . rp_money($row['withdrawal'] ?? 0) . '</td>'
         . '<td width="12%">' . rp_money($row['socialSecurity'] ?? 0) . '</td>'
         . '<td width="10%">' . rp_money($row['otherIncome'] ?? 0) . '</td>'
-        . '<td width="12%">' . rp_money($row['rmd'] ?? 0) . '</td>'
+        . '<td width="10%">' . rp_money($row['rmd'] ?? 0) . '</td>'
         . '<td width="14%">' . rp_money($row['federalTax'] ?? 0) . '</td>'
-        . '<td width="16%">' . rp_money($row['totalIncome'] ?? 0) . '</td>'
+        . '<td width="14%">' . rp_money($row['totalIncome'] ?? 0) . '</td>'
         . '</tr>';
 }
 $tableHtml .= '</tbody></table>';
@@ -285,9 +287,9 @@ $pdf->Ln(8);
 $pdf->SetFont('helvetica', '', 9);
 $pdf->SetTextColor(80, 80, 80);
 $pdf->AddPage();
-$cashFlowHtml = '<h3>Spending funding</h3><table border="1" cellpadding="4"><thead><tr><th>Age</th><th>Requested</th><th>Funded</th><th>Spending shortfall</th><th>Unpaid tax</th></tr></thead><tbody>';
+$cashFlowHtml = '<h3>Spending funding</h3><table border="1" cellpadding="4"><thead><tr><th>Year / Age</th><th>Requested</th><th>Funded</th><th>Spending shortfall</th><th>Unpaid tax</th></tr></thead><tbody>';
 foreach ($projections as $row) {
-    $cashFlowHtml .= '<tr><td>' . (int)($row['age'] ?? 0) . '</td><td>' . rp_money($row['requestedSpending'] ?? 0) . '</td><td>' . rp_money($row['fundedSpending'] ?? 0) . '</td><td>' . rp_money($row['spendingShortfall'] ?? 0) . '</td><td>' . rp_money($row['taxShortfall'] ?? 0) . '</td></tr>';
+    $cashFlowHtml .= '<tr><td>' . rp_h($row['year'] ?? '') . ' / ' . (int)($row['age'] ?? 0) . '</td><td>' . rp_money($row['requestedSpending'] ?? 0) . '</td><td>' . rp_money($row['fundedSpending'] ?? 0) . '</td><td>' . rp_money($row['spendingShortfall'] ?? 0) . '</td><td>' . rp_money($row['taxShortfall'] ?? 0) . '</td></tr>';
 }
 $pdf->writeHTML($cashFlowHtml . '</tbody></table>', true, false, true, false, '');
 $disclaimer = 'Educational model only. Federal tax estimates are simplified. RMDs apply to the tax-deferred '
