@@ -265,6 +265,7 @@
     if (!Number.isFinite(inputs.baseAnnualSpending) || inputs.baseAnnualSpending < 0 || (inputs.baseAnnualSpending === 0 && !(inputs.federalTaxIncludedMonthly > 0))) errors.push('retirement spending');
     if (inputs.birthYear < 1900 || inputs.birthYear > new Date().getFullYear()) errors.push('birth year');
     if (!inputs.birthDate || parseInt(inputs.birthDate.slice(0,4),10) !== inputs.birthYear) errors.push('full birth date matching birth year');
+    if (!Number.isInteger(inputs.portfolioWithdrawalStartAge) || inputs.portfolioWithdrawalStartAge > 100) errors.push('withdrawal start AGE (18–100, not a calendar year: enter 70 for birth year 1957 and withdrawals in 2027)');
     if (inputs.portfolioWithdrawalStartAge < inputs.currentAge) {
       errors.push('portfolio withdrawal start age (must be at or after your age in the projection start year)');
     }
@@ -388,6 +389,27 @@
     }
   }
 
+  function earlyShortfallExplanation(result, inputs) {
+    var first = result.years.find(function (y) {
+      return y.age < inputs.portfolioWithdrawalStartAge &&
+        ((y.spendingShortfall || 0) > 1e-6 || (y.taxShortfall || 0) > 1e-6);
+    });
+    if (!first) return '';
+    var year = inputs.birthYear + first.age;
+    return 'The fixed-return plan has unfunded spending or taxes in ' + year +
+      ' (age ' + first.age + '), before spending withdrawals are allowed at age ' +
+      inputs.portfolioWithdrawalStartAge + '. A positive ending portfolio does not erase an earlier shortfall. ' +
+      'If you intend to model only the withdrawal years, explicitly select that calendar year in Projection start year and enter its opening portfolio balance. Existing saved scenarios are not changed automatically.';
+  }
+
+  function withdrawalAgeValidity() {
+    var node = el('portfolioWithdrawalStartAge');
+    if (!node || !node.setCustomValidity) return;
+    var value = Number(node.value);
+    node.setCustomValidity(node.value !== '' && (!Number.isInteger(value) || value < 18 || value > 100)
+      ? 'Enter an AGE from 18 to 100, not a calendar year. Born in 1957 with withdrawals in 2027? Enter 70 here; enter 2027 in Projection start year.' : '');
+  }
+
   function renderMonteCarlo(deterministic, inputs) {
     var isPremium = typeof isPremiumUser !== 'undefined' && isPremiumUser;
     if (!isPremium || !MC) return;
@@ -421,7 +443,8 @@
         'both use the same annual taxes, RMDs and cash-flow timing. Zero volatility reproduces the fixed-return plan.</span><br><br>' +
         '<strong>Ending balance at age ' + inputs.planEndAge + ':</strong> 25th percentile = ' + fmt(mc.p25) +
         ', median = ' + fmt(mc.p50) + ', 75th = ' + fmt(mc.p75) +
-        '. Failures mean available income and permitted withdrawals could not cover spending or estimated taxes in at least one year.';
+        '. Failures mean available income and permitted withdrawals could not cover spending or estimated taxes in at least one year. Positive ending balances can occur in failed simulations.' +
+        '<br><br>' + earlyShortfallExplanation(deterministic, inputs);
     }
 
     var canvas = el('mcDistributionChart');
@@ -579,7 +602,7 @@
     return 'Retirement Plan Builder. Projection begins ' + (lastInputs.projectionStartYear || currentCalendarYear()) + '. Age ' + lastInputs.currentAge + ' to ' + lastInputs.planEndAge +
       '. Retire at ' + lastInputs.retirementAge + '. Projected balance at retirement ' + fmt(s.balanceAtRetirement) +
       '. Target nest egg ' + (s.targetNestEgg > 0 ? fmt(s.targetNestEgg) : 'not required') +
-      '. ' + spendingBasisText(lastInputs) + ' Status: ' + s.status.headline + '.' + firstShortfallDetail(result) + ' Household SS at claim (approx.): ' +
+      '. ' + spendingBasisText(lastInputs) + ' ' + earlyShortfallExplanation(result, lastInputs) + ' Status: ' + s.status.headline + '.' + firstShortfallDetail(result) + ' Household SS at claim (approx.): ' +
       fmt((s.householdSsMonthlyAtClaim || s.ssMonthlyAtClaim) * 12) + '/year. Lifetime est. federal tax in retirement years: ' +
       fmt(s.lifetimeFederalTax) + '. First RMD at age ' + s.rmdStartAge + ': ' +
       (s.firstRmdAmount > 0 ? fmt(s.firstRmdAmount) : 'n/a') + '.' +
@@ -670,6 +693,7 @@
 
   function applyFormData(data) {
     if (!data) return;
+    if (el('portfolioWithdrawalStartAge') && el('portfolioWithdrawalStartAge').setCustomValidity) el('portfolioWithdrawalStartAge').setCustomValidity('');
     legacyProjection = data.projectionStartYear == null;
     el('projectionStartYear').value = legacyProjection ? currentCalendarYear() : data.projectionStartYear;
     el('projectionBasis').textContent = legacyProjection
@@ -1039,6 +1063,11 @@
         syncRetiredState();
       });
     });
+    var withdrawalAge = el('portfolioWithdrawalStartAge');
+    if (withdrawalAge) {
+      withdrawalAge.addEventListener('input', withdrawalAgeValidity);
+      withdrawalAge.addEventListener('invalid', withdrawalAgeValidity);
+    }
     var claimSelect = el('ssClaimAge');
     if (claimSelect) {
       claimSelect.addEventListener('change', function () {

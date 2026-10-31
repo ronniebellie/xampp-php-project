@@ -11,7 +11,7 @@ class Element {
  set value(v){this._value=v==null?'':String(v);} get value(){return this._value;}
  set textContent(v){this._text=v;this.children=[];for(const id of ['scenarioNameInput','confirmSaveScenario','scenarioLoadSelect'])nodes.delete(id);}get textContent(){return this._text;}
  set innerHTML(v){this._html=v;if(v.includes('scenarioNameInput')){nodes.set('scenarioNameInput',new Element('scenarioNameInput'));nodes.set('confirmSaveScenario',new Element('confirmSaveScenario'));}}get innerHTML(){return this._html;}
- addEventListener(n,fn){this.events[n]=fn;}setAttribute(){}focus(){}scrollIntoView(){}click(){}getContext(){return this.id;}
+ addEventListener(n,fn){this.events[n]=fn;}setCustomValidity(message){this.validationMessage=message;}setAttribute(){}focus(){}scrollIntoView(){}click(){}getContext(){return this.id;}
  appendChild(child){this.children.push(child);if(child.id)nodes.set(child.id,child);}
 }
 function get(id){if(['scenarioNameInput','confirmSaveScenario','scenarioLoadSelect'].includes(id))return nodes.get(id)||null;if(!nodes.has(id))nodes.set(id,new Element(id));return nodes.get(id);}
@@ -27,7 +27,7 @@ const ui={Chart:function(node,config){charts[node.id||node]=config;this.destroy=
  alert(message){throw new Error(message);},setTimeout:fn=>timers.push(fn),fetch:request,rbScenarioFetch:request,Blob:function(parts){csv=parts.join('');},URL:{createObjectURL(){return 'synthetic';}}};
 ui.window=ui;
 let source=fs.readFileSync(path.join(root,'retirement-plan/calculator.js'),'utf8');
-source=source.replace(/\}\)\(\);\s*$/, 'window.allowanceTest={collect:collectInputs,validate:validateInputs,saveData:getFormDataForSave,apply:applyFormData,save:saveScenario,load:loadScenario,display:displayResults,csv:exportCsv,pdf:downloadPdf};})();');
+source=source.replace(/\}\)\(\);\s*$/, 'window.allowanceTest={ageValidity:withdrawalAgeValidity,collect:collectInputs,validate:validateInputs,saveData:getFormDataForSave,apply:applyFormData,save:saveScenario,load:loadScenario,display:displayResults,csv:exportCsv,pdf:downloadPdf};})();');
 vm.runInNewContext(source,ui);const h=ui.allowanceTest;
 // Exercise legacy scenarios through the real loader before populating the fixture.
 h.apply({});
@@ -72,6 +72,15 @@ const run=x=>c.RBPlanEngine.runDeterministicPlan(x),mc=(x,d,v=10)=>c.RBMonteCarl
  h.apply({...future,projectionStartYear:2100});assert(h.validate(h.collect()).length>0);
  // Loading a legacy record after future-year use must reset the year and mode.
  const old={...same};delete old.projectionStartYear;h.apply(old);assert.equal(h.collect().projectionStartYear,null);assert.deepEqual(strip(run(h.collect())),strip(legacy));
+ // An early unfunded bridge fails despite positive terminal wealth; explain it.
+ const bridge={...legacyInputs,temporaryCash:0};const b=run(bridge),bm=mc(bridge,b);
+ assert.equal(bm.successRate,0);assert(bm.p50>0);h.display(b,bridge);
+ assert(get('mcSummaryText').innerHTML.includes('before spending withdrawals are allowed'));
+ assert(get('mcSummaryText').innerHTML.includes('Positive ending balances can occur in failed simulations'));
+ get('portfolioWithdrawalStartAge').value='2027';h.ageValidity();assert(get('portfolioWithdrawalStartAge').validationMessage.includes('Enter an AGE'));
+ get('portfolioWithdrawalStartAge').value='70';h.ageValidity();assert.equal(get('portfolioWithdrawalStartAge').validationMessage,'');
+ for(const age of [2027,70.5,101]){h.apply({...future,portfolioWithdrawalStartAge:age});assert(h.validate(h.collect()).some(e=>e.includes('withdrawal start AGE')));}
+ h.apply(old);
  const stillLegacy=h.saveData();assert.equal(stillLegacy.projectionStartYear,null);h.apply(stillLegacy);assert.equal(h.collect().projectionStartYear,null);
  console.log('Projection start year passed: same-year financial regression, future opening balance, no prior rows/cash, allowance once, first-year SS/COLA, RMD cohort, MC parity, save/load, legacy reset, chart/timeline, CSV/PDF payloads and validation.');
 })().catch(e=>{console.error(e);process.exitCode=1;});

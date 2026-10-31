@@ -180,9 +180,9 @@ $defaultRetirementAge = 67;
           <small>401(k), IRA, brokerage — one combined total for this snapshot.</small>
         </div>
         <div>
-          <label class="field-label" for="portfolioWithdrawalStartAge">Portfolio withdrawals for spending begin at age</label>
-          <input type="number" id="portfolioWithdrawalStartAge" min="18" max="100" step="any" value="">
-          <small>When you'll start drawing from savings to cover spending (after Social Security). RMDs still apply when required. For a calendar date (e.g. Jan 2027), use the age you'll be that year.</small>
+          <label class="field-label" for="portfolioWithdrawalStartAge">Withdrawal start AGE (not calendar year)</label>
+          <input type="number" id="portfolioWithdrawalStartAge" min="18" max="100" step="1" value="" placeholder="Age, e.g. 70" aria-describedby="withdrawalAgeHelp">
+          <small id="withdrawalAgeHelp">Enter your AGE, not a year. Born in 1957 and starting withdrawals in 2027? Enter 70 here and choose 2027 in Projection start year above. Projection start year controls the first year modeled; withdrawal start age controls when portfolio spending draws are allowed. Leave blank to use retirement age. RMDs still apply when required.</small>
         </div>
         <div id="annualContributionWrap">
           <label class="field-label" for="annualContribution">Annual contributions until retirement ($)</label>
